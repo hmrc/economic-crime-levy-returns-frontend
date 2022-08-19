@@ -1,7 +1,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkAnswers
 
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, Return}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn}
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -11,7 +11,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.implicits._
 
 object $className$Summary  {
 
-  def row(eclReturn: Return)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(eclReturn: EclReturn)(implicit messages: Messages): Option[SummaryListRow] =
     eclReturn.???.map { //TODO Choose the data you want
       answer =>
 

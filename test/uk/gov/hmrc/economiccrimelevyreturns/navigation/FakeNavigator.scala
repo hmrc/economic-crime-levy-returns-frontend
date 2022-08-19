@@ -17,11 +17,11 @@
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.Call
-import uk.gov.hmrc.economiccrimelevyreturns.models.{Mode, Return}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.pages.Page
 
 class FakeNavigator(desiredRoute: Call) extends Navigator {
 
-  override def nextPage(page: Page, mode: Mode, eclReturn: Return): Call =
+  override def nextPage(page: Page, mode: Mode, eclReturn: EclReturn): Call =
     desiredRoute
 }

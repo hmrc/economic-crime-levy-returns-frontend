@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.models.requests
 
 import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.economiccrimelevyreturns.models.Return
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 
-case class ReturnDataRequest[A](request: Request[A], internalId: String, eclReturn: Return)
+case class ReturnDataRequest[A](request: Request[A], internalId: String, eclReturn: EclReturn)
     extends WrappedRequest[A](request)

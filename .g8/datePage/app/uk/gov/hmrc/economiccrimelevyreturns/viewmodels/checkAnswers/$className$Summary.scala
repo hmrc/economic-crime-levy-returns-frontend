@@ -1,7 +1,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkAnswers
 
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, Return}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter
 
 object $className$Summary  {
 
-  def row(eclReturn: Return)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(eclReturn: EclReturn)(implicit messages: Messages): Option[SummaryListRow] =
     eclReturn.???.map { //TODO Choose the data you want
       answer =>
 

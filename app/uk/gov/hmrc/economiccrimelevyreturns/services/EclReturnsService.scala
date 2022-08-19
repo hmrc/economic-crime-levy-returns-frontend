@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
-import uk.gov.hmrc.economiccrimelevyreturns.models.Return
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 
 import javax.inject.Singleton
 import scala.concurrent.Future
 
 @Singleton
 class EclReturnsService {
-  def getOrCreateReturn(internalId: String): Future[Return] = Future.successful(Return.empty)
+  def getOrCreateReturn(internalId: String): Future[EclReturn] = Future.successful(EclReturn.empty)
 }

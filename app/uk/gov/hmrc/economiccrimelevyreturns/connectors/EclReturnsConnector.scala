@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
-import uk.gov.hmrc.economiccrimelevyreturns.models.Return
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 
 import javax.inject.Singleton
 import scala.concurrent.Future
@@ -24,12 +24,12 @@ import scala.concurrent.Future
 @Singleton
 class EclReturnsConnector {
 
-  def createReturn: Future[Return] = ???
+  def createReturn: Future[EclReturn] = ???
 
-  def getReturn(internalId: String): Future[Option[Return]] = ???
+  def getReturn(internalId: String): Future[Option[EclReturn]] = ???
 
-  def updateReturn(eclReturn: Return): Future[Return] = Future.successful(Return.empty)
+  def updateReturn(eclReturn: EclReturn): Future[EclReturn] = Future.successful(EclReturn.empty)
 
-  def deleteReturn(internalId: Return): Future[Unit] = ???
+  def deleteReturn(internalId: EclReturn): Future[Unit] = ???
 
 }

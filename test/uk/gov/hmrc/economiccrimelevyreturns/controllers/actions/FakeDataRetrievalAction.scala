@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 
-import uk.gov.hmrc.economiccrimelevyreturns.models.Return
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeDataRetrievalAction(data: Return) extends DataRetrievalAction {
+class FakeDataRetrievalAction(data: EclReturn) extends DataRetrievalAction {
 
   override protected def transform[A](request: AuthorisedRequest[A]): Future[ReturnDataRequest[A]] =
     Future(ReturnDataRequest(request.request, request.internalId, data))

@@ -8,7 +8,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.$className$FormProvider
-import uk.gov.hmrc.economiccrimelevyreturns.models.{$className$, NormalMode, Return}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{$className$, NormalMode, EclReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.$className$View
 
 import scala.concurrent.Future
@@ -23,7 +23,7 @@ class $className$ControllerSpec extends SpecBase {
 
   val mockEclReturnConnector: EclReturnsConnector = mock[EclReturnsConnector]
 
-  class TestFixture(data: Return = emptyReturn) {
+  class TestFixture(data: EclReturn = emptyReturn) {
     val controller = new $className$Controller(
       messagesApi = messagesApi,
       eclReturnsConnector = mockEclReturnConnector,

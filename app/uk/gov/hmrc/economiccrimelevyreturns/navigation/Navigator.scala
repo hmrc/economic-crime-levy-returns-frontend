@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.Call
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, Mode, NormalMode, Return}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.pages.Page
 
 import javax.inject.{Inject, Singleton}
@@ -26,15 +26,15 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class Navigator @Inject() () {
 
-  private val normalRoutes: Page => Return => Call = { case _ =>
+  private val normalRoutes: Page => EclReturn => Call = { case _ =>
     _ => routes.IndexController.onPageLoad
   }
 
-  private val checkRouteMap: Page => Return => Call = { case _ =>
+  private val checkRouteMap: Page => EclReturn => Call = { case _ =>
     _ => routes.CheckYourAnswersController.onPageLoad
   }
 
-  def nextPage(page: Page, mode: Mode, eclReturn: Return): Call = mode match {
+  def nextPage(page: Page, mode: Mode, eclReturn: EclReturn): Call = mode match {
     case NormalMode =>
       normalRoutes(page)(eclReturn)
     case CheckMode  =>

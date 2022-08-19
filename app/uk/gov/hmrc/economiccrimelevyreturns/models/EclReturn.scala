@@ -18,13 +18,13 @@ package uk.gov.hmrc.economiccrimelevyreturns.models
 
 import java.time.Instant
 
-final case class Return(
+final case class EclReturn(
   id: String,
   lastUpdated: Instant = Instant.now
 )
 
-object Return {
-  def empty: Return = Return(
+object EclReturn {
+  def empty: EclReturn = EclReturn(
     "id",
     Instant.now()
   )

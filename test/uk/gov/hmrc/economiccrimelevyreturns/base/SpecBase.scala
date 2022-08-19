@@ -29,7 +29,7 @@ import play.api.test.Helpers.{stubBodyParser, stubControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.EclTestData
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{FakeAuthorisedAction, FakeDataRetrievalAction}
-import uk.gov.hmrc.economiccrimelevyreturns.models.Return
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.FakeNavigator
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -46,15 +46,15 @@ trait SpecBase
     with MockitoSugar
     with EclTestData {
 
-  val internalId: String                                  = "id"
-  val emptyReturn: Return                                 = Return(internalId)
-  val fakeRequest: FakeRequest[AnyContentAsEmpty.type]    = FakeRequest()
-  val appConfig: AppConfig                                = app.injector.instanceOf[AppConfig]
-  val messagesApi: MessagesApi                            = app.injector.instanceOf[MessagesApi]
-  val messages: Messages                                  = messagesApi.preferred(fakeRequest)
-  val bodyParsers: PlayBodyParsers                        = app.injector.instanceOf[PlayBodyParsers]
-  val fakeAuthorisedAction                                = new FakeAuthorisedAction(bodyParsers)
-  def fakeDataRetrievalAction(data: Return = emptyReturn) = new FakeDataRetrievalAction(data)
+  val internalId: String                                     = "id"
+  val emptyReturn: EclReturn                                 = EclReturn(internalId)
+  val fakeRequest: FakeRequest[AnyContentAsEmpty.type]       = FakeRequest()
+  val appConfig: AppConfig                                   = app.injector.instanceOf[AppConfig]
+  val messagesApi: MessagesApi                               = app.injector.instanceOf[MessagesApi]
+  val messages: Messages                                     = messagesApi.preferred(fakeRequest)
+  val bodyParsers: PlayBodyParsers                           = app.injector.instanceOf[PlayBodyParsers]
+  val fakeAuthorisedAction                                   = new FakeAuthorisedAction(bodyParsers)
+  def fakeDataRetrievalAction(data: EclReturn = emptyReturn) = new FakeDataRetrievalAction(data)
 
   def onwardRoute: Call = Call("GET", "/foo")
 
