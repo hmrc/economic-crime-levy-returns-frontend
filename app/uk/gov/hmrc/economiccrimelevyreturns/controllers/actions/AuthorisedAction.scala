@@ -50,7 +50,7 @@ class BaseAuthorisedAction @Inject() (
       }.getOrElse(throw new UnauthorizedException("Unable to retrieve internalId"))
     }(hc(request), executionContext) recover {
       case _: NoActiveSession        =>
-        Redirect(config.signInUrl, Map("continue" -> Seq(config.signInContinueUrl)))
+        Redirect(config.signInUrl, Map("continue" -> Seq(s"${config.host}${request.uri}")))
       case _: AuthorisationException =>
         Redirect(routes.UnauthorisedController.onPageLoad())
     }
