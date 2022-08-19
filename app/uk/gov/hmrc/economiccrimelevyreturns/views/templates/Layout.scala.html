@@ -1,0 +1,76 @@
+@*
+ * Copyright 2022 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+@import uk.gov.hmrc.hmrcfrontend.views.config.StandardAlphaBanner
+@import views.html.helper.CSPNonce
+
+@this(
+    appConfig: AppConfig,
+    hmrcLayout: HmrcLayout,
+    govukBackLink: GovukBackLink,
+    hmrcHead: HmrcHead,
+    hmrcTimeoutDialog: HmrcTimeoutDialog,
+    hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
+    alphaBanner: StandardAlphaBanner
+)
+
+@(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+
+@head = @{
+    if(timeout) { Some(
+            hmrcTimeoutDialog(TimeoutDialog(
+                timeout             = Some(appConfig.timeout),
+                countdown           = Some(appConfig.countdown),
+                keepAliveUrl        = Some(uk.gov.hmrc.hmrcfrontend.controllers.routes.KeepAliveController.keepAlive.url),
+                keepAliveButtonText = Some(messages("timeout.keepAlive")),
+                signOutUrl          = Some(SignOutController.signOut.url),
+                signOutButtonText   = Some(messages("timeout.signOut")),
+                title               = Some(messages("timeout.title")),
+                message             = Some(messages("timeout.message"))
+            )))
+        } else None
+}
+
+@additionalScripts = {
+    <script src='@controllers.routes.Assets.versioned("javascripts/application.min.js")'></script>
+}
+
+@backLink = @{
+    if(showBackLink) {
+        Some("#")
+    } else None
+}
+
+@content = {
+    @contentBlock
+
+    <div class="govuk-!-margin-top-8">
+        @hmrcReportTechnicalIssueHelper()
+    </div>
+}
+
+@hmrcLayout(
+    pageTitle = Some(pageTitle),
+    nonce = CSPNonce.get,
+    signOutUrl = Some(SignOutController.signOut.url),
+    serviceUrl = Some(IndexController.onPageLoad.url),
+    isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
+    additionalScriptsBlock = Some(additionalScripts),
+    additionalHeadBlock = head,
+    backLinkUrl = backLink,
+    phaseBanner = Some(alphaBanner(appConfig.feedbackUrl))
+)(content)

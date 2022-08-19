@@ -1,0 +1,4 @@
+// Hide the 'Print this page' link when body does not have .js-enabled
+body:not(.js-enabled) .print-page-link {
+    display: none;
+}
