@@ -16,16 +16,12 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.models
 
-import java.time.Instant
+import play.api.libs.json.{Json, OFormat}
 
 final case class EclReturn(
-  id: String,
-  lastUpdated: Instant = Instant.now
+  internalId: String
 )
 
 object EclReturn {
-  def empty: EclReturn = EclReturn(
-    "id",
-    Instant.now()
-  )
+  implicit val format: OFormat[EclReturn] = Json.format[EclReturn]
 }

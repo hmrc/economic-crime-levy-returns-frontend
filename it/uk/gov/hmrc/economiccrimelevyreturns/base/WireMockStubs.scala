@@ -7,7 +7,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.base
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import WireMockHelper._
+import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
 
 trait WireMockStubs {
 
@@ -30,7 +30,7 @@ trait WireMockStubs {
         .withStatus(200)
         .withBody(s"""
                      |{
-                     |  "internalId": "id"
+                     |  "internalId": "test-id"
                      |}
            """.stripMargin)
     )

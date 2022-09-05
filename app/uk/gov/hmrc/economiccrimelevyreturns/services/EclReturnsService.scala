@@ -23,5 +23,5 @@ import scala.concurrent.Future
 
 @Singleton
 class EclReturnsService {
-  def getOrCreateReturn(internalId: String): Future[EclReturn] = Future.successful(EclReturn.empty)
+  def getOrCreateReturn(internalId: String): Future[EclReturn] = Future.successful(EclReturn("test-id"))
 }

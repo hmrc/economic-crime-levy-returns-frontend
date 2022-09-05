@@ -28,7 +28,7 @@ class EclReturnsConnector {
 
   def getReturn(internalId: String): Future[Option[EclReturn]] = ???
 
-  def updateReturn(eclReturn: EclReturn): Future[EclReturn] = Future.successful(EclReturn.empty)
+  def updateReturn(eclReturn: EclReturn): Future[EclReturn] = Future.successful(EclReturn("test-id"))
 
   def deleteReturn(internalId: EclReturn): Future[Unit] = ???
 
