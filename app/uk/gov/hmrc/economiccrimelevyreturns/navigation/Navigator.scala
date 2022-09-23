@@ -27,11 +27,11 @@ import javax.inject.{Inject, Singleton}
 class Navigator @Inject() () {
 
   private val normalRoutes: Page => EclReturn => Call = { case _ =>
-    _ => routes.IndexController.onPageLoad
+    _ => routes.IndexController.onPageLoad()
   }
 
   private val checkRouteMap: Page => EclReturn => Call = { case _ =>
-    _ => routes.CheckYourAnswersController.onPageLoad
+    _ => routes.CheckYourAnswersController.onPageLoad()
   }
 
   def nextPage(page: Page, mode: Mode, eclReturn: EclReturn): Call = mode match {

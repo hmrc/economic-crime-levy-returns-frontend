@@ -49,7 +49,7 @@ class SignOutControllerSpec extends SpecBase {
     "redirect to sign out, specifying SignedOut as the continue URL" in {
       val result = controller.signOutNoSurvey()(fakeRequest)
 
-      val encodedContinueUrl  = URLEncoder.encode(routes.SignOutController.signedOut.url, "UTF-8")
+      val encodedContinueUrl  = URLEncoder.encode(routes.SignOutController.signedOut().url, "UTF-8")
       val expectedRedirectUrl = s"${appConfig.signOutUrl}?continue=$encodedContinueUrl"
 
       status(result)                 shouldBe SEE_OTHER
