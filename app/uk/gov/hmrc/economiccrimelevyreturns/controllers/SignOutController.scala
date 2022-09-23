@@ -38,7 +38,7 @@ class SignOutController @Inject() (
   }
 
   def signOutNoSurvey(): Action[AnyContent] = authorise { _ =>
-    Redirect(config.signOutUrl, Map("continue" -> Seq(routes.SignOutController.signedOut.url)))
+    Redirect(config.signOutUrl, Map("continue" -> Seq(routes.SignOutController.signedOut().url)))
   }
 
   def signedOut(): Action[AnyContent] = Action { implicit request =>
