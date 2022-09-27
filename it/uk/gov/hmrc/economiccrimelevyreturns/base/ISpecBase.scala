@@ -63,7 +63,7 @@ abstract class ISpecBase
     "economic-crime-levy-returns"
   )
 
-  val contextPath: String = "submit-your-economic-crime-levy-return"
+  val contextPath: String = "submit-economic-crime-levy-return"
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()

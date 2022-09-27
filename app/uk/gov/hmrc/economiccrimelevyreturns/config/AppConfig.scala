@@ -20,9 +20,10 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject() (configuration: Configuration) {
+class AppConfig @Inject() (configuration: Configuration, servicesConfig: ServicesConfig) {
 
   val host: String    = configuration.get[String]("host")
   val appName: String = configuration.get[String]("appName")
@@ -46,4 +47,6 @@ class AppConfig @Inject() (configuration: Configuration) {
 
   val timeout: Int   = configuration.get[Int]("timeout-dialog.timeout")
   val countdown: Int = configuration.get[Int]("timeout-dialog.countdown")
+
+  val eclReturnsBaseUrl: String = servicesConfig.baseUrl("economic-crime-levy-returns")
 }
