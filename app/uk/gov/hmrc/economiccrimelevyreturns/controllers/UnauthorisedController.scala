@@ -21,8 +21,9 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UnauthorisedView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
+@Singleton
 class UnauthorisedController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   view: UnauthorisedView

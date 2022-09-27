@@ -17,10 +17,10 @@ trait WireMockStubs {
         .withRequestBody(
           equalToJson(
             s"""
-             |{
-             |  "authorise": [],
-             |  "retrieve": [ "internalId" ]
-             |}
+               |{
+               |  "authorise": [],
+               |  "retrieve": [ "internalId" ]
+               |}
            """.stripMargin,
             true,
             true
@@ -28,11 +28,25 @@ trait WireMockStubs {
         ),
       aResponse()
         .withStatus(200)
-        .withBody(s"""
-                     |{
-                     |  "internalId": "test-id"
-                     |}
+        .withBody(
+          s"""
+             |{
+             |  "internalId": "test-id"
+             |}
            """.stripMargin)
+    )
+
+  def stubGetReturn(): StubMapping =
+    stub(
+      post(urlEqualTo("/economic-crime-levy-returns/returns/test-id")),
+      aResponse()
+        .withStatus(200)
+        .withBody(
+          s"""
+             |{
+             |  "internalId": "test-id"
+             |}
+         """.stripMargin)
     )
 
 }

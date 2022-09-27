@@ -18,20 +18,22 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.IndexView
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.StartView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
-class IndexController @Inject() (
+@Singleton
+class StartController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
-  view: IndexView
+  getReturnsData: DataRetrievalAction,
+  view: StartView
 ) extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = authorise { implicit request =>
+  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnsData) { implicit request =>
     Ok(view())
   }
 }

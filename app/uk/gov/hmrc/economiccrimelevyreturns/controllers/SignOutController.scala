@@ -23,8 +23,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.SignedOutView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
+@Singleton
 class SignOutController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   config: AppConfig,
