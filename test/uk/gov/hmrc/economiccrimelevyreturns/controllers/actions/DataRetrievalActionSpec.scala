@@ -18,7 +18,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 
 import org.mockito.ArgumentMatchers.any
 import play.api.mvc.{AnyContentAsEmpty, Request, Result}
-import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
@@ -43,7 +42,7 @@ class DataRetrievalActionSpec extends SpecBase {
 
   "transform" should {
     "transform an AuthorisedRequest into a ReturnDataRequest" in {
-      when(mockEclReturnService.getOrCreateReturn(any())).thenReturn(Future(emptyReturn))
+      when(mockEclReturnService.getOrCreateReturn(any())(any())).thenReturn(Future(emptyReturn))
 
       val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
         dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId))

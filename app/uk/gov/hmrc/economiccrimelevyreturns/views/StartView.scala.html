@@ -21,11 +21,11 @@
 @()(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle    = title(messages("index.title")),
+    pageTitle    = title(messages("start.title")),
     showBackLink = false
 ) {
 
-    <h1 class="govuk-heading-xl">@messages("index.heading")</h1>
+    <h1 class="govuk-heading-xl">@messages("start.heading")</h1>
 
-    <p class="govuk-body">@messages("index.guidance")</p>
+    <p class="govuk-body">@messages("start.guidance")</p>
 }

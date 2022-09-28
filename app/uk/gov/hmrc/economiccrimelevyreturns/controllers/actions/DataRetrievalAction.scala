@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 import play.api.mvc.ActionTransformer
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,10 +27,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class ReturnDataRetrievalAction @Inject() (
   val eclReturnService: EclReturnsService
 )(implicit val executionContext: ExecutionContext)
-    extends DataRetrievalAction {
+    extends DataRetrievalAction
+    with FrontendHeaderCarrierProvider {
 
   override protected def transform[A](request: AuthorisedRequest[A]): Future[ReturnDataRequest[A]] =
-    eclReturnService.getOrCreateReturn(request.internalId).map {
+    eclReturnService.getOrCreateReturn(request.internalId)(hc(request)).map {
       ReturnDataRequest(request.request, request.internalId, _)
     }
 }

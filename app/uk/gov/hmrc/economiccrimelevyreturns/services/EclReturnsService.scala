@@ -16,12 +16,21 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.http.HeaderCarrier
 
-import javax.inject.Singleton
-import scala.concurrent.Future
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EclReturnsService {
-  def getOrCreateReturn(internalId: String): Future[EclReturn] = Future.successful(EclReturn("test-id"))
+class EclReturnsService @Inject() (eclReturnsConnector: EclReturnsConnector)(implicit
+  ec: ExecutionContext
+) {
+
+  def getOrCreateReturn(internalId: String)(implicit hc: HeaderCarrier): Future[EclReturn] =
+    eclReturnsConnector.getReturn(internalId).flatMap {
+      case Some(eclReturn) => Future.successful(eclReturn)
+      case None            => eclReturnsConnector.upsertReturn(EclReturn(internalId))
+    }
 }

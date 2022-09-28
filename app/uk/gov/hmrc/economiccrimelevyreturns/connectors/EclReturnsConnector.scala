@@ -16,20 +16,35 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
+import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
-import javax.inject.Singleton
-import scala.concurrent.Future
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EclReturnsConnector {
+class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext) {
 
-  def createReturn: Future[EclReturn] = ???
+  private val eclReturnsUrl: String = s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns/returns"
 
-  def getReturn(internalId: String): Future[Option[EclReturn]] = ???
+  def getReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Option[EclReturn]] =
+    httpClient.GET[Option[EclReturn]](
+      s"$eclReturnsUrl/$internalId"
+    )
 
-  def updateReturn(eclReturn: EclReturn): Future[EclReturn] = Future.successful(EclReturn("test-id"))
+  def upsertReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): Future[EclReturn] =
+    httpClient.PUT[EclReturn, EclReturn](
+      eclReturnsUrl,
+      eclReturn
+    )
 
-  def deleteReturn(internalId: EclReturn): Future[Unit] = ???
+  def deleteReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] =
+    httpClient
+      .DELETE[HttpResponse](
+        s"$eclReturnsUrl/$internalId"
+      )
+      .map(_ => ())
 
 }

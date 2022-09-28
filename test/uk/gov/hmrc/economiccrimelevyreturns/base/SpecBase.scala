@@ -17,14 +17,13 @@
 package uk.gov.hmrc.economiccrimelevyreturns.base
 
 import org.mockito.MockitoSugar
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.{OptionValues, TryValues}
+import org.scalatest.{BeforeAndAfterEach, OptionValues, TryValues}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc._
-import play.api.test.FakeRequest
+import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits}
 import play.api.test.Helpers.{stubBodyParser, stubControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.EclTestData
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
@@ -40,10 +39,12 @@ trait SpecBase
     with Matchers
     with TryValues
     with OptionValues
-    with ScalaFutures
+    with DefaultAwaitTimeout
+    with FutureAwaits
     with Results
     with GuiceOneAppPerSuite
     with MockitoSugar
+    with BeforeAndAfterEach
     with EclTestData {
 
   val internalId: String                                     = "test-id"

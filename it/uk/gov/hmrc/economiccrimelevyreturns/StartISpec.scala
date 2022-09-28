@@ -20,13 +20,14 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 
-class IndexISpec extends ISpecBase {
+class StartISpec extends ISpecBase {
 
   s"GET /$contextPath/" should {
-    "respond with 200 status and the index HTML view" in {
+    "respond with 200 status and the start HTML view" in {
       stubAuthorised()
+      stubGetReturn()
 
-      val result = callRoute(FakeRequest(routes.IndexController.onPageLoad()))
+      val result = callRoute(FakeRequest(routes.StartController.onPageLoad()))
 
       status(result) shouldBe OK
       html(result)     should include("economic-crime-levy-returns-frontend")
