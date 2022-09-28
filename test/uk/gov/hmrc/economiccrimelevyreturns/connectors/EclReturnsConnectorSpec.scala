@@ -29,7 +29,7 @@ class EclReturnsConnectorSpec extends SpecBase {
   val connector                  = new EclReturnsConnector(appConfig, mockHttpClient)
 
   "getReturn" should {
-    "return an ecl return when the Http Client returns an ecl return" in {
+    "return an ecl return when the http client returns an ecl return" in {
       when(mockHttpClient.GET[Option[EclReturn]](any(), any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Some(emptyReturn)))
 
