@@ -33,7 +33,7 @@ class EclReturnsConnectorSpec extends SpecBase {
   override def afterEach(): Unit = reset(mockHttpClient)
 
   "getReturn" should {
-    val expectedUrl = s"$eclReturnsUrl/test-id"
+    val expectedUrl = s"$eclReturnsUrl/$internalId"
     "return an ecl return when the http client returns an ecl return" in {
       when(mockHttpClient.GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Some(emptyReturn)))
@@ -60,7 +60,7 @@ class EclReturnsConnectorSpec extends SpecBase {
   "deleteReturn" should {
     "return unit when the http client successfully returns a http response" in {
       val response    = HttpResponse(NO_CONTENT, "", Map.empty)
-      val expectedUrl = s"$eclReturnsUrl/test-id"
+      val expectedUrl = s"$eclReturnsUrl/$internalId"
 
       when(mockHttpClient.DELETE[HttpResponse](ArgumentMatchers.eq(expectedUrl), any())(any(), any(), any()))
         .thenReturn(Future.successful(response))
