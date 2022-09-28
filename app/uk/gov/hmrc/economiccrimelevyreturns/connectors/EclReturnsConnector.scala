@@ -27,23 +27,23 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext) {
 
-  private val eclReturnsPath: String = "economic-crime-levy-returns/returns"
+  private val eclReturnsUrl: String = s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns/returns"
 
   def getReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Option[EclReturn]] =
     httpClient.GET[Option[EclReturn]](
-      s"${appConfig.eclReturnsBaseUrl}/$eclReturnsPath/$internalId"
+      s"$eclReturnsUrl/$internalId"
     )
 
   def upsertReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): Future[EclReturn] =
     httpClient.PUT[EclReturn, EclReturn](
-      s"${appConfig.eclReturnsBaseUrl}/$eclReturnsPath",
+      eclReturnsUrl,
       eclReturn
     )
 
   def deleteReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] =
     httpClient
       .DELETE[HttpResponse](
-        s"${appConfig.eclReturnsBaseUrl}/$eclReturnsPath/$internalId"
+        s"$eclReturnsUrl/$internalId"
       )
       .map(_ => ())
 
