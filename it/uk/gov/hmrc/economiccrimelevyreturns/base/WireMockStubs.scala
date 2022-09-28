@@ -38,7 +38,7 @@ trait WireMockStubs {
 
   def stubGetReturn(): StubMapping =
     stub(
-      post(urlEqualTo("/economic-crime-levy-returns/returns/test-id")),
+      get(urlEqualTo("/economic-crime-levy-returns/returns/test-id")),
       aResponse()
         .withStatus(200)
         .withBody(
