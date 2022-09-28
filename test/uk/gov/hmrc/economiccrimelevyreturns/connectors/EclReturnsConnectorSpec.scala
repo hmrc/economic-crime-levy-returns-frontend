@@ -37,7 +37,7 @@ class EclReturnsConnectorSpec extends SpecBase {
       result shouldBe Some(emptyReturn)
     }
 
-    "return none when the Http Client returns none" in {
+    "return none when the http client returns none" in {
       when(mockHttpClient.GET[Option[EclReturn]](any(), any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(None))
 
