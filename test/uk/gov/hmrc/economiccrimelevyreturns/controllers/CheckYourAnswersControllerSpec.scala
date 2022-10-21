@@ -30,11 +30,11 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
   val view: CheckYourAnswersView = app.injector.instanceOf[CheckYourAnswersView]
 
-  class TestContext(returnData: EclReturn) {
+  class TestContext(eclReturnData: EclReturn) {
     val controller = new CheckYourAnswersController(
       messagesApi,
       fakeAuthorisedAction,
-      fakeDataRetrievalAction(returnData),
+      fakeDataRetrievalAction(eclReturnData),
       mcc,
       view
     )

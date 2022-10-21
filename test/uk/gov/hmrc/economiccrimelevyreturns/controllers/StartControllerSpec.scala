@@ -29,11 +29,11 @@ class StartControllerSpec extends SpecBase {
 
   val view: StartView = app.injector.instanceOf[StartView]
 
-  class TestContext(returnData: EclReturn) {
+  class TestContext(eclReturnData: EclReturn) {
     val controller = new StartController(
       mcc,
       fakeAuthorisedAction,
-      fakeDataRetrievalAction(returnData),
+      fakeDataRetrievalAction(eclReturnData),
       view
     )
   }
