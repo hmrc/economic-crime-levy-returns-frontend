@@ -8,6 +8,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.base
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
+import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 
 trait WireMockStubs {
 
@@ -19,7 +20,7 @@ trait WireMockStubs {
             s"""
                |{
                |  "authorise": [],
-               |  "retrieve": [ "internalId" ]
+               |  "retrieve": [ "internalId", "allEnrolments" ]
                |}
            """.stripMargin,
             true,
@@ -28,12 +29,41 @@ trait WireMockStubs {
         ),
       aResponse()
         .withStatus(200)
-        .withBody(
-          s"""
+        .withBody(s"""
              |{
-             |  "internalId": "test-id"
+             |  "internalId": "test-id",
+             |  "allEnrolments": [{
+             |    "key":"${EclEnrolment.Key}",
+             |    "identifiers": [{ "key":"${EclEnrolment.Identifier}", "value": "X00000123456789" }],
+             |    "state": "activated"
+             |  }]
              |}
-           """.stripMargin)
+                   """.stripMargin)
+    )
+
+  def stubAuthorisedWithNoEnrolments(): StubMapping =
+    stub(
+      post(urlEqualTo("/auth/authorise"))
+        .withRequestBody(
+          equalToJson(
+            s"""
+               |{
+               |  "authorise": [],
+               |  "retrieve": [ "internalId", "allEnrolments" ]
+               |}
+           """.stripMargin,
+            true,
+            true
+          )
+        ),
+      aResponse()
+        .withStatus(200)
+        .withBody(s"""
+             |{
+             |  "internalId": "test-id",
+             |  "allEnrolments": []
+             |}
+                   """.stripMargin)
     )
 
   def stubGetReturn(): StubMapping =
@@ -41,8 +71,7 @@ trait WireMockStubs {
       get(urlEqualTo("/economic-crime-levy-returns/returns/test-id")),
       aResponse()
         .withStatus(200)
-        .withBody(
-          s"""
+        .withBody(s"""
              |{
              |  "internalId": "test-id"
              |}
