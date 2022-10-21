@@ -41,13 +41,14 @@ class DataRetrievalActionSpec extends SpecBase {
   }
 
   "transform" should {
-    "transform an AuthorisedRequest into a ReturnDataRequest" in {
-      when(mockEclReturnService.getOrCreateReturn(any())(any())).thenReturn(Future(emptyReturn))
+    "transform an AuthorisedRequest into a ReturnDataRequest" in forAll {
+      (internalId: String, eclReferenceNumber: String) =>
+        when(mockEclReturnService.getOrCreateReturn(any())(any())).thenReturn(Future(emptyReturn))
 
-      val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
-        dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId))
+        val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
+          dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
 
-      await(result) shouldBe ReturnDataRequest(fakeRequest, internalId, emptyReturn)
+        await(result) shouldBe ReturnDataRequest(fakeRequest, internalId, emptyReturn)
     }
   }
 

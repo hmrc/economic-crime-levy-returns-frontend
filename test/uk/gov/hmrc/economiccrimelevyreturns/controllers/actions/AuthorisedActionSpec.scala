@@ -26,6 +26,7 @@ import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.auth.core.syntax.retrieved.authSyntaxForRetrieved
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.{EnrolmentsWithEcl, EnrolmentsWithoutEcl}
 import uk.gov.hmrc.http.UnauthorizedException
 
@@ -43,13 +44,14 @@ class AuthorisedActionSpec extends SpecBase {
     Future(Ok("Test"))
   }
 
-  val expectedRetrievals: Retrieval[Option[String] ~ Enrolments] = Retrievals.internalId and Retrievals.allEnrolments
+  val expectedRetrievals: Retrieval[Option[String] ~ Enrolments] =
+    Retrievals.internalId and Retrievals.authorisedEnrolments
 
   "invokeBlock" should {
     "execute the block and return the result if authorised" in forAll {
       (internalId: String, enrolmentsWithEcl: EnrolmentsWithEcl) =>
         when(mockAuthConnector.authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any()))
-          .thenReturn(Future(Some("id") and enrolmentsWithEcl.enrolments))
+          .thenReturn(Future(Some(internalId) and enrolmentsWithEcl.enrolments))
 
         val result: Future[Result] = authorisedAction.invokeBlock(fakeRequest, testAction)
 
@@ -98,18 +100,44 @@ class AuthorisedActionSpec extends SpecBase {
       result.message shouldBe "Unable to retrieve internalId"
     }
 
-    "redirect the user to the not enrolled page if they don't have the ECL enrolment" in forAll {
+    "redirect the user to the not enrolled page if they don't have the ECL enrolment" in {
+      when(
+        mockAuthConnector
+          .authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any())
+      )
+        .thenReturn(Future.failed(InsufficientEnrolments()))
+
+      val result: Future[Result] = authorisedAction.invokeBlock(fakeRequest, testAction)
+
+      status(result)          shouldBe OK
+      contentAsString(result) shouldBe "User does not have an ECL enrolment"
+    }
+
+    "throw an IllegalStateException when the ECL enrolment is not present in the set of authorised enrolments" in forAll {
       (internalId: String, enrolmentsWithoutEcl: EnrolmentsWithoutEcl) =>
-        when(
-          mockAuthConnector
-            .authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any())
-        )
-          .thenReturn(Future.failed(InsufficientEnrolments()))
+        when(mockAuthConnector.authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any()))
+          .thenReturn(Future(Some(internalId) and enrolmentsWithoutEcl.enrolments))
 
-        val result: Future[Result] = authorisedAction.invokeBlock(fakeRequest, testAction)
+        val result = intercept[IllegalStateException] {
+          await(authorisedAction.invokeBlock(fakeRequest, testAction))
+        }
 
-        status(result)          shouldBe OK
-        contentAsString(result) shouldBe "User does not have an ECL enrolment"
+        result.getMessage shouldBe s"Enrolment not found with key ${EclEnrolment.Key}"
+    }
+
+    "throw an IllegalStateException when the ECL enrolment is present but the identifier is not" in forAll {
+      (internalId: String, enrolmentsWithEcl: EnrolmentsWithEcl) =>
+        val eclEnrolmentWithoutIdentifiers =
+          Enrolments(enrolmentsWithEcl.enrolments.enrolments.map(_.copy(identifiers = Seq.empty)))
+
+        when(mockAuthConnector.authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any()))
+          .thenReturn(Future(Some(internalId) and eclEnrolmentWithoutIdentifiers))
+
+        val result = intercept[IllegalStateException] {
+          await(authorisedAction.invokeBlock(fakeRequest, testAction))
+        }
+
+        result.getMessage shouldBe s"Identifier not found in enrolment with name ${EclEnrolment.Identifier}"
     }
   }
 

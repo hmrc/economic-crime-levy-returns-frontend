@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
 import org.scalacheck.Arbitrary
-import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
 
@@ -29,16 +29,21 @@ trait EclTestData {
 
   implicit val arbEnrolmentsWithEcl: Arbitrary[EnrolmentsWithEcl] = Arbitrary {
     for {
-      enrolments  <- Arbitrary.arbitrary[Enrolments]
-      enrolment   <- Arbitrary.arbitrary[Enrolment]
-      eclEnrolment = enrolment.copy(key = EclEnrolment.Key)
+      enrolments             <- Arbitrary.arbitrary[Enrolments]
+      enrolment              <- Arbitrary.arbitrary[Enrolment]
+      etmpRegistrationNumber <- Arbitrary.arbitrary[String]
+      eclEnrolmentIdentifier  = EnrolmentIdentifier(EclEnrolment.Identifier, etmpRegistrationNumber)
+      eclEnrolment            =
+        enrolment.copy(key = EclEnrolment.Key, identifiers = enrolment.identifiers :+ eclEnrolmentIdentifier)
     } yield EnrolmentsWithEcl(enrolments.copy(enrolments.enrolments + eclEnrolment))
   }
 
   implicit val arbEnrolmentsWithoutEcl: Arbitrary[EnrolmentsWithoutEcl] = Arbitrary {
     Arbitrary
       .arbitrary[Enrolments]
-      .retryUntil(!_.enrolments.exists(_.key == EclEnrolment.Key))
+      .retryUntil(
+        !_.enrolments.exists(e => e.key == EclEnrolment.Key && e.identifiers.exists(_.key == EclEnrolment.Identifier))
+      )
       .map(EnrolmentsWithoutEcl)
   }
 
