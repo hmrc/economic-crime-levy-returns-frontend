@@ -14,8 +14,12 @@ trait AuthStubs {
           equalToJson(
             s"""
                |{
-               |  "authorise": [],
-               |  "retrieve": [ "internalId", "allEnrolments" ]
+               |  "authorise": [ {
+               |    "enrolment": "${EclEnrolment.Key}",
+               |    "identifiers": [],
+               |    "state": "Activated"
+               |  } ],
+               |  "retrieve": [ "internalId", "authorisedEnrolments" ]
                |}
            """.stripMargin,
             true,
@@ -27,8 +31,8 @@ trait AuthStubs {
         .withBody(s"""
              |{
              |  "internalId": "test-id",
-             |  "allEnrolments": [{
-             |    "key":"${EclEnrolment.Key}",
+             |  "authorisedEnrolments": [{
+             |    "key": "${EclEnrolment.Key}",
              |    "identifiers": [{ "key":"${EclEnrolment.Identifier}", "value": "X00000123456789" }],
              |    "state": "activated"
              |  }]
@@ -36,15 +40,19 @@ trait AuthStubs {
                    """.stripMargin)
     )
 
-  def stubAuthorisedWithNoEnrolments(): StubMapping =
+  def stubInsufficientEnrolments(): StubMapping =
     stub(
       post(urlEqualTo("/auth/authorise"))
         .withRequestBody(
           equalToJson(
             s"""
                |{
-               |  "authorise": [],
-               |  "retrieve": [ "internalId", "allEnrolments" ]
+               |  "authorise": [ {
+               |    "enrolment": "${EclEnrolment.Key}",
+               |    "identifiers": [],
+               |    "state": "Activated"
+               |  } ],
+               |  "retrieve": [ "internalId", "authorisedEnrolments" ]
                |}
            """.stripMargin,
             true,
@@ -52,13 +60,8 @@ trait AuthStubs {
           )
         ),
       aResponse()
-        .withStatus(200)
-        .withBody(s"""
-             |{
-             |  "internalId": "test-id",
-             |  "allEnrolments": []
-             |}
-                   """.stripMargin)
+        .withStatus(401)
+        .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")
     )
 
 }

@@ -11,7 +11,7 @@ trait AuthorisedBehaviour {
 
   def authorisedActionRoute(call: Call): Unit =
     "go to the not enrolled page if the user doesn't have an ECL enrolment" in {
-      stubAuthorisedWithNoEnrolments()
+      stubInsufficientEnrolments()
 
       val result: Future[Result] = callRoute(FakeRequest(call))
 
