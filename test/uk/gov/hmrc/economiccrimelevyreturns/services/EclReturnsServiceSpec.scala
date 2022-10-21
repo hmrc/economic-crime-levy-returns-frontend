@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
+import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
 import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 
 import scala.concurrent.Future
 
@@ -27,23 +29,23 @@ class EclReturnsServiceSpec extends SpecBase {
   val service                                      = new EclReturnsService(mockEclReturnsConnector)
 
   "getOrCreateReturn" should {
-    "return a created ecl return when one does not exist" in {
+    "return a created ecl return when one does not exist" in forAll { (internalId: String, eclReturn: EclReturn) =>
       when(mockEclReturnsConnector.getReturn(any())(any()))
         .thenReturn(Future.successful(None))
 
       when(mockEclReturnsConnector.upsertReturn(any())(any()))
-        .thenReturn(Future.successful(emptyReturn))
+        .thenReturn(Future.successful(eclReturn))
 
       val result = await(service.getOrCreateReturn(internalId))
-      result shouldBe emptyReturn
+      result shouldBe eclReturn
     }
 
-    "return an existing ecl return" in {
+    "return an existing ecl return" in forAll { (internalId: String, eclReturn: EclReturn) =>
       when(mockEclReturnsConnector.getReturn(any())(any()))
-        .thenReturn(Future.successful(Some(emptyReturn)))
+        .thenReturn(Future.successful(Some(eclReturn)))
 
       val result = await(service.getOrCreateReturn(internalId))
-      result shouldBe emptyReturn
+      result shouldBe eclReturn
     }
   }
 }
