@@ -48,7 +48,7 @@ class BaseAuthorisedAction @Inject() (
   override def invokeBlock[A](request: Request[A], block: AuthorisedRequest[A] => Future[Result]): Future[Result] =
     authorised(Enrolment(EclEnrolment.Key)).retrieve(internalId and allEnrolments) { case internalIdOpt ~ enrolments =>
       val internalId = internalIdOpt.getOrElse(throw new UnauthorizedException("Unable to retrieve internalId"))
-
+      
       block(AuthorisedRequest(request, internalId))
     }(hc(request), executionContext) recover {
       case _: NoActiveSession        =>
