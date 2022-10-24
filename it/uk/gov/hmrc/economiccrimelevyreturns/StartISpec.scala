@@ -18,11 +18,14 @@ package uk.gov.hmrc.economiccrimelevyreturns
 
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 
-class StartISpec extends ISpecBase {
+class StartISpec extends ISpecBase with AuthorisedBehaviour {
 
   s"GET /$contextPath/" should {
+    behave like authorisedActionRoute(routes.StartController.onPageLoad())
+
     "respond with 200 status and the start HTML view" in {
       stubAuthorised()
       stubGetReturn()

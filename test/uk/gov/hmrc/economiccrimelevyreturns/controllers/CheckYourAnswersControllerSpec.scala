@@ -16,31 +16,40 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
+import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
+
+import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec extends SpecBase {
 
   val view: CheckYourAnswersView = app.injector.instanceOf[CheckYourAnswersView]
 
-  val controller = new CheckYourAnswersController(
-    messagesApi,
-    fakeAuthorisedAction,
-    fakeDataRetrievalAction(),
-    mcc,
-    view
-  )
+  class TestContext(eclReturn: EclReturn) {
+    val controller = new CheckYourAnswersController(
+      messagesApi,
+      fakeAuthorisedAction,
+      fakeDataRetrievalAction(eclReturn),
+      mcc,
+      view
+    )
+  }
 
   "onPageLoad" should {
-    "return OK and the correct view" in {
-      val result = controller.onPageLoad()(fakeRequest)
+    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
+      new TestContext(eclReturn) {
+        val result: Future[Result] = controller.onPageLoad()(fakeRequest)
 
-      val list = SummaryList(Seq.empty)
+        val list: SummaryList = SummaryList(Seq.empty)
 
-      status(result)          shouldBe OK
-      contentAsString(result) shouldBe view(list)(fakeRequest, messages).toString
+        status(result)          shouldBe OK
+        contentAsString(result) shouldBe view(list)(fakeRequest, messages).toString
+      }
     }
   }
 

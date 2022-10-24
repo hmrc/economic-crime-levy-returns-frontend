@@ -16,4 +16,37 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns
 
-trait EclTestData {}
+import org.scalacheck.Arbitrary
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
+import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
+import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
+
+case class EnrolmentsWithEcl(enrolments: Enrolments)
+
+case class EnrolmentsWithoutEcl(enrolments: Enrolments)
+
+trait EclTestData {
+
+  implicit val arbEnrolmentsWithEcl: Arbitrary[EnrolmentsWithEcl] = Arbitrary {
+    for {
+      enrolments             <- Arbitrary.arbitrary[Enrolments]
+      enrolment              <- Arbitrary.arbitrary[Enrolment]
+      etmpRegistrationNumber <- Arbitrary.arbitrary[String]
+      eclEnrolmentIdentifier  = EnrolmentIdentifier(EclEnrolment.IdentifierKey, etmpRegistrationNumber)
+      eclEnrolment            =
+        enrolment.copy(key = EclEnrolment.ServiceName, identifiers = enrolment.identifiers :+ eclEnrolmentIdentifier)
+    } yield EnrolmentsWithEcl(enrolments.copy(enrolments.enrolments + eclEnrolment))
+  }
+
+  implicit val arbEnrolmentsWithoutEcl: Arbitrary[EnrolmentsWithoutEcl] = Arbitrary {
+    Arbitrary
+      .arbitrary[Enrolments]
+      .retryUntil(
+        !_.enrolments.exists(e =>
+          e.key == EclEnrolment.ServiceName && e.identifiers.exists(_.key == EclEnrolment.IdentifierKey)
+        )
+      )
+      .map(EnrolmentsWithoutEcl)
+  }
+
+}

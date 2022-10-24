@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.StartView
 
 import scala.concurrent.Future
@@ -27,20 +29,24 @@ class StartControllerSpec extends SpecBase {
 
   val view: StartView = app.injector.instanceOf[StartView]
 
-  val controller = new StartController(
-    mcc,
-    fakeAuthorisedAction,
-    fakeDataRetrievalAction(),
-    view
-  )
+  class TestContext(eclReturn: EclReturn) {
+    val controller = new StartController(
+      mcc,
+      fakeAuthorisedAction,
+      fakeDataRetrievalAction(eclReturn),
+      view
+    )
+  }
 
   "onPageLoad" should {
-    "return OK and the correct view" in {
-      val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
+      new TestContext(eclReturn) {
+        val result: Future[Result] = controller.onPageLoad()(fakeRequest)
 
-      status(result) shouldBe OK
+        status(result) shouldBe OK
 
-      contentAsString(result) shouldBe view()(fakeRequest, messages).toString
+        contentAsString(result) shouldBe view()(fakeRequest, messages).toString
+      }
     }
   }
 

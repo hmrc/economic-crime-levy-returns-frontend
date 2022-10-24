@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
+import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.NO_CONTENT
@@ -30,22 +31,26 @@ class EclReturnsConnectorSpec extends SpecBase {
   val connector                  = new EclReturnsConnector(appConfig, mockHttpClient)
   val eclReturnsUrl              = "http://localhost:14003/economic-crime-levy-returns/returns"
 
-  override def afterEach(): Unit = reset(mockHttpClient)
-
   "getReturn" should {
-    val expectedUrl = s"$eclReturnsUrl/$internalId"
-    "return an ecl return when the http client returns an ecl return" in {
-      when(mockHttpClient.GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any()))
-        .thenReturn(Future.successful(Some(emptyReturn)))
+    "return an ecl return when the http client returns an ecl return" in forAll {
+      (internalId: String, eclReturn: EclReturn) =>
+        val expectedUrl = s"$eclReturnsUrl/$internalId"
 
-      val result = await(connector.getReturn(internalId))
-      result shouldBe Some(emptyReturn)
+        when(mockHttpClient.GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any()))
+          .thenReturn(Future.successful(Some(eclReturn)))
 
-      verify(mockHttpClient, times(1))
-        .GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any())
+        val result = await(connector.getReturn(internalId))
+        result shouldBe Some(eclReturn)
+
+        verify(mockHttpClient, times(1))
+          .GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any())
+
+        reset(mockHttpClient)
     }
 
-    "return none when the http client returns none" in {
+    "return none when the http client returns none" in forAll { internalId: String =>
+      val expectedUrl = s"$eclReturnsUrl/$internalId"
+
       when(mockHttpClient.GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(None))
 
@@ -54,11 +59,13 @@ class EclReturnsConnectorSpec extends SpecBase {
 
       verify(mockHttpClient, times(1))
         .GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any())
+
+      reset(mockHttpClient)
     }
   }
 
   "deleteReturn" should {
-    "return unit when the http client successfully returns a http response" in {
+    "return unit when the http client successfully returns a http response" in forAll { internalId: String =>
       val response    = HttpResponse(NO_CONTENT, "", Map.empty)
       val expectedUrl = s"$eclReturnsUrl/$internalId"
 
@@ -70,24 +77,28 @@ class EclReturnsConnectorSpec extends SpecBase {
 
       verify(mockHttpClient, times(1))
         .DELETE[HttpResponse](ArgumentMatchers.eq(expectedUrl), any())(any(), any(), any())
+
+      reset(mockHttpClient)
     }
   }
 
   "upsertReturn" should {
-    "return the new or updated ecl return" in {
+    "return the new or updated ecl return" in forAll { eclReturn: EclReturn =>
       val expectedUrl = eclReturnsUrl
 
       when(
         mockHttpClient
           .PUT[EclReturn, EclReturn](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any(), any())
       )
-        .thenReturn(Future.successful(emptyReturn))
+        .thenReturn(Future.successful(eclReturn))
 
-      val result = await(connector.upsertReturn(emptyReturn))
-      result shouldBe emptyReturn
+      val result = await(connector.upsertReturn(eclReturn))
+      result shouldBe eclReturn
 
       verify(mockHttpClient, times(1))
         .PUT[EclReturn, EclReturn](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any(), any())
+
+      reset(mockHttpClient)
     }
   }
 }
