@@ -48,7 +48,7 @@ class EclReturnsConnectorSpec extends SpecBase {
         reset(mockHttpClient)
     }
 
-    "return none when the http client returns none" in forAll { (internalId: String, eclReturn: EclReturn) =>
+    "return none when the http client returns none" in forAll { internalId: String =>
       val expectedUrl = s"$eclReturnsUrl/$internalId"
 
       when(mockHttpClient.GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any()))
@@ -83,7 +83,7 @@ class EclReturnsConnectorSpec extends SpecBase {
   }
 
   "upsertReturn" should {
-    "return the new or updated ecl return" in forAll { (internalId: String, eclReturn: EclReturn) =>
+    "return the new or updated ecl return" in forAll { eclReturn: EclReturn =>
       val expectedUrl = eclReturnsUrl
 
       when(

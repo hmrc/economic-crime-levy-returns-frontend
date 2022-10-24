@@ -18,5 +18,5 @@ package uk.gov.hmrc.economiccrimelevyreturns.models.requests
 
 import play.api.mvc.{Request, WrappedRequest}
 
-case class AuthorisedRequest[A](request: Request[A], internalId: String, eclReferenceNumber: String)
+case class AuthorisedRequest[A](request: Request[A], internalId: String, eclRegistrationNumber: String)
     extends WrappedRequest[A](request)

@@ -28,7 +28,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.{EnrolmentsWithEcl, EnrolmentsWithoutEcl}
-import uk.gov.hmrc.http.UnauthorizedException
 
 import scala.concurrent.Future
 
@@ -89,17 +88,6 @@ class AuthorisedActionSpec extends SpecBase {
       }
     }
 
-    "throw an UnauthorizedException if there is no internal id" in {
-      when(mockAuthConnector.authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any()))
-        .thenReturn(Future(None and Enrolments(Set.empty)))
-
-      val result = intercept[UnauthorizedException] {
-        await(authorisedAction.invokeBlock(fakeRequest, testAction))
-      }
-
-      result.message shouldBe "Unable to retrieve internalId"
-    }
-
     "redirect the user to the not enrolled page if they don't have the ECL enrolment" in {
       when(
         mockAuthConnector
@@ -113,7 +101,18 @@ class AuthorisedActionSpec extends SpecBase {
       contentAsString(result) shouldBe "User does not have an ECL enrolment"
     }
 
-    "throw an IllegalStateException when the ECL enrolment is not present in the set of authorised enrolments" in forAll {
+    "throw an IllegalStateException if there is no internal id" in {
+      when(mockAuthConnector.authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any()))
+        .thenReturn(Future(None and Enrolments(Set.empty)))
+
+      val result = intercept[IllegalStateException] {
+        await(authorisedAction.invokeBlock(fakeRequest, testAction))
+      }
+
+      result.getMessage shouldBe "Unable to retrieve internalId"
+    }
+
+    "throw an IllegalStateException if there is no ECL enrolment in the set of authorised enrolments" in forAll {
       (internalId: String, enrolmentsWithoutEcl: EnrolmentsWithoutEcl) =>
         when(mockAuthConnector.authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any()))
           .thenReturn(Future(Some(internalId) and enrolmentsWithoutEcl.enrolments))
@@ -122,7 +121,7 @@ class AuthorisedActionSpec extends SpecBase {
           await(authorisedAction.invokeBlock(fakeRequest, testAction))
         }
 
-        result.getMessage shouldBe s"Enrolment not found with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
+        result.getMessage shouldBe s"Unable to retrieve enrolment with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
     }
   }
 

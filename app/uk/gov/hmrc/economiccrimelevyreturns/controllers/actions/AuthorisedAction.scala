@@ -26,7 +26,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
-import uk.gov.hmrc.http.UnauthorizedException
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -48,19 +47,19 @@ class BaseAuthorisedAction @Inject() (
   override def invokeBlock[A](request: Request[A], block: AuthorisedRequest[A] => Future[Result]): Future[Result] =
     authorised(Enrolment(EclEnrolment.ServiceName)).retrieve(internalId and authorisedEnrolments) {
       case optInternalId ~ enrolments =>
-        val internalId         = optInternalId.getOrElse(throw new UnauthorizedException("Unable to retrieve internalId"))
-        val eclReferenceNumber =
+        val internalId            = optInternalId.getOrElse(throw new IllegalStateException("Unable to retrieve internalId"))
+        val eclRegistrationNumber =
           enrolments
             .getEnrolment(EclEnrolment.ServiceName)
             .flatMap(_.getIdentifier(EclEnrolment.IdentifierKey))
             .getOrElse(
               throw new IllegalStateException(
-                s"Enrolment not found with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
+                s"Unable to retrieve enrolment with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
               )
             )
             .value
 
-        block(AuthorisedRequest(request, internalId, eclReferenceNumber))
+        block(AuthorisedRequest(request, internalId, eclRegistrationNumber))
     }(hc(request), executionContext) recover {
       case _: NoActiveSession        =>
         Redirect(config.signInUrl, Map("continue" -> Seq(s"${config.host}${request.uri}")))
