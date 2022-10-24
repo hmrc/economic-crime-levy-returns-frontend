@@ -122,22 +122,7 @@ class AuthorisedActionSpec extends SpecBase {
           await(authorisedAction.invokeBlock(fakeRequest, testAction))
         }
 
-        result.getMessage shouldBe s"Enrolment not found with key ${EclEnrolment.ServiceName}"
-    }
-
-    "throw an IllegalStateException when the ECL enrolment is present but the identifier is not" in forAll {
-      (internalId: String, enrolmentsWithEcl: EnrolmentsWithEcl) =>
-        val eclEnrolmentWithoutIdentifiers =
-          Enrolments(enrolmentsWithEcl.enrolments.enrolments.map(_.copy(identifiers = Seq.empty)))
-
-        when(mockAuthConnector.authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any()))
-          .thenReturn(Future(Some(internalId) and eclEnrolmentWithoutIdentifiers))
-
-        val result = intercept[IllegalStateException] {
-          await(authorisedAction.invokeBlock(fakeRequest, testAction))
-        }
-
-        result.getMessage shouldBe s"Identifier not found in enrolment with name ${EclEnrolment.IdentifierKey}"
+        result.getMessage shouldBe s"Enrolment not found with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
     }
   }
 

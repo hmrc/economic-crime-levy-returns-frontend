@@ -52,11 +52,10 @@ class BaseAuthorisedAction @Inject() (
         val eclReferenceNumber =
           enrolments
             .getEnrolment(EclEnrolment.ServiceName)
-            .getOrElse(throw new IllegalStateException(s"Enrolment not found with key ${EclEnrolment.ServiceName}"))
-            .getIdentifier(EclEnrolment.IdentifierKey)
+            .flatMap(_.getIdentifier(EclEnrolment.IdentifierKey))
             .getOrElse(
               throw new IllegalStateException(
-                s"Identifier not found in enrolment with name ${EclEnrolment.IdentifierKey}"
+                s"Enrolment not found with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
               )
             )
             .value
