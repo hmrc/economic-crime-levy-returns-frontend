@@ -46,16 +46,18 @@ class BaseAuthorisedAction @Inject() (
     with AuthorisedFunctions {
 
   override def invokeBlock[A](request: Request[A], block: AuthorisedRequest[A] => Future[Result]): Future[Result] =
-    authorised(Enrolment(EclEnrolment.Key)).retrieve(internalId and authorisedEnrolments) {
+    authorised(Enrolment(EclEnrolment.ServiceName)).retrieve(internalId and authorisedEnrolments) {
       case optInternalId ~ enrolments =>
         val internalId         = optInternalId.getOrElse(throw new UnauthorizedException("Unable to retrieve internalId"))
         val eclReferenceNumber =
           enrolments
-            .getEnrolment(EclEnrolment.Key)
-            .getOrElse(throw new IllegalStateException(s"Enrolment not found with key ${EclEnrolment.Key}"))
-            .getIdentifier(EclEnrolment.Identifier)
+            .getEnrolment(EclEnrolment.ServiceName)
+            .getOrElse(throw new IllegalStateException(s"Enrolment not found with key ${EclEnrolment.ServiceName}"))
+            .getIdentifier(EclEnrolment.IdentifierKey)
             .getOrElse(
-              throw new IllegalStateException(s"Identifier not found in enrolment with name ${EclEnrolment.Identifier}")
+              throw new IllegalStateException(
+                s"Identifier not found in enrolment with name ${EclEnrolment.IdentifierKey}"
+              )
             )
             .value
 

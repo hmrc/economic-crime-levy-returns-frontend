@@ -32,9 +32,9 @@ trait EclTestData {
       enrolments             <- Arbitrary.arbitrary[Enrolments]
       enrolment              <- Arbitrary.arbitrary[Enrolment]
       etmpRegistrationNumber <- Arbitrary.arbitrary[String]
-      eclEnrolmentIdentifier  = EnrolmentIdentifier(EclEnrolment.Identifier, etmpRegistrationNumber)
+      eclEnrolmentIdentifier  = EnrolmentIdentifier(EclEnrolment.IdentifierKey, etmpRegistrationNumber)
       eclEnrolment            =
-        enrolment.copy(key = EclEnrolment.Key, identifiers = enrolment.identifiers :+ eclEnrolmentIdentifier)
+        enrolment.copy(key = EclEnrolment.ServiceName, identifiers = enrolment.identifiers :+ eclEnrolmentIdentifier)
     } yield EnrolmentsWithEcl(enrolments.copy(enrolments.enrolments + eclEnrolment))
   }
 
@@ -42,7 +42,9 @@ trait EclTestData {
     Arbitrary
       .arbitrary[Enrolments]
       .retryUntil(
-        !_.enrolments.exists(e => e.key == EclEnrolment.Key && e.identifiers.exists(_.key == EclEnrolment.Identifier))
+        !_.enrolments.exists(e =>
+          e.key == EclEnrolment.ServiceName && e.identifiers.exists(_.key == EclEnrolment.IdentifierKey)
+        )
       )
       .map(EnrolmentsWithoutEcl)
   }

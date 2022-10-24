@@ -122,7 +122,7 @@ class AuthorisedActionSpec extends SpecBase {
           await(authorisedAction.invokeBlock(fakeRequest, testAction))
         }
 
-        result.getMessage shouldBe s"Enrolment not found with key ${EclEnrolment.Key}"
+        result.getMessage shouldBe s"Enrolment not found with key ${EclEnrolment.ServiceName}"
     }
 
     "throw an IllegalStateException when the ECL enrolment is present but the identifier is not" in forAll {
@@ -137,7 +137,7 @@ class AuthorisedActionSpec extends SpecBase {
           await(authorisedAction.invokeBlock(fakeRequest, testAction))
         }
 
-        result.getMessage shouldBe s"Identifier not found in enrolment with name ${EclEnrolment.Identifier}"
+        result.getMessage shouldBe s"Identifier not found in enrolment with name ${EclEnrolment.IdentifierKey}"
     }
   }
 

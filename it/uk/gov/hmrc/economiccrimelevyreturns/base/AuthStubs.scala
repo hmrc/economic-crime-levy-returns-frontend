@@ -15,7 +15,7 @@ trait AuthStubs {
             s"""
                |{
                |  "authorise": [ {
-               |    "enrolment": "${EclEnrolment.Key}",
+               |    "enrolment": "${EclEnrolment.ServiceName}",
                |    "identifiers": [],
                |    "state": "Activated"
                |  } ],
@@ -32,8 +32,8 @@ trait AuthStubs {
              |{
              |  "internalId": "test-id",
              |  "authorisedEnrolments": [{
-             |    "key": "${EclEnrolment.Key}",
-             |    "identifiers": [{ "key":"${EclEnrolment.Identifier}", "value": "X00000123456789" }],
+             |    "key": "${EclEnrolment.ServiceName}",
+             |    "identifiers": [{ "key":"${EclEnrolment.IdentifierKey}", "value": "X00000123456789" }],
              |    "state": "activated"
              |  }]
              |}
@@ -48,7 +48,7 @@ trait AuthStubs {
             s"""
                |{
                |  "authorise": [ {
-               |    "enrolment": "${EclEnrolment.Key}",
+               |    "enrolment": "${EclEnrolment.ServiceName}",
                |    "identifiers": [],
                |    "state": "Activated"
                |  } ],
