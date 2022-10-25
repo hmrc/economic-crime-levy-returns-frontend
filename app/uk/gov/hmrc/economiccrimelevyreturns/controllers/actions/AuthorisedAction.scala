@@ -65,7 +65,5 @@ class BaseAuthorisedAction @Inject() (
         Redirect(config.signInUrl, Map("continue" -> Seq(s"${config.host}${request.uri}")))
       case _: InsufficientEnrolments =>
         Ok("User does not have an ECL enrolment")
-      case _: AuthorisationException =>
-        Redirect(routes.UnauthorisedController.onPageLoad())
     }
 }
