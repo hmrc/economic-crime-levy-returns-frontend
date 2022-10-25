@@ -25,7 +25,6 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.auth.core.syntax.retrieved.authSyntaxForRetrieved
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.{EnrolmentsWithEcl, EnrolmentsWithoutEcl}
 
@@ -67,24 +66,6 @@ class AuthorisedActionSpec extends SpecBase {
 
           status(result)               shouldBe SEE_OTHER
           redirectLocation(result).value should startWith(appConfig.signInUrl)
-      }
-    }
-
-    "redirect the user to the unauthorised page if there is an authorisation exception" in {
-      List(
-        InsufficientConfidenceLevel(),
-        UnsupportedAffinityGroup(),
-        UnsupportedCredentialRole(),
-        UnsupportedAuthProvider(),
-        IncorrectCredentialStrength(),
-        InternalError()
-      ).foreach { exception =>
-        when(mockAuthConnector.authorise[Unit](any(), any())(any(), any())).thenReturn(Future.failed(exception))
-
-        val result: Future[Result] = authorisedAction.invokeBlock(fakeRequest, testAction)
-
-        status(result)                 shouldBe SEE_OTHER
-        redirectLocation(result).value shouldBe routes.UnauthorisedController.onPageLoad().url
       }
     }
 
