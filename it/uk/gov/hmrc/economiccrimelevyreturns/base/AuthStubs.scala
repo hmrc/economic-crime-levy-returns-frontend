@@ -2,10 +2,11 @@ package uk.gov.hmrc.economiccrimelevyreturns.base
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import play.api.http.Status.{OK, UNAUTHORIZED}
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 
-trait AuthStubs {
+trait AuthStubs { self: WireMockStubs =>
 
   def stubAuthorised(): StubMapping =
     stub(
@@ -19,7 +20,7 @@ trait AuthStubs {
                |    "identifiers": [],
                |    "state": "Activated"
                |  } ],
-               |  "retrieve": [ "internalId", "authorisedEnrolments" ]
+               |  "retrieve": [ "internalId", "authorisedEnrolments", "affinityGroup" ]
                |}
            """.stripMargin,
             true,
@@ -27,17 +28,18 @@ trait AuthStubs {
           )
         ),
       aResponse()
-        .withStatus(200)
+        .withStatus(OK)
         .withBody(s"""
              |{
-             |  "internalId": "test-id",
-             |  "authorisedEnrolments": [{
+             |  "internalId": "$testInternalId",
+             |  "affinityGroup": "Organisation",
+             |  "authorisedEnrolments": [ {
              |    "key": "${EclEnrolment.ServiceName}",
-             |    "identifiers": [{ "key":"${EclEnrolment.IdentifierKey}", "value": "X00000123456789" }],
+             |    "identifiers": [{ "key":"${EclEnrolment.IdentifierKey}", "value": "$testEclRegistrationNumber" }],
              |    "state": "activated"
-             |  }]
+             |  } ]
              |}
-                   """.stripMargin)
+         """.stripMargin)
     )
 
   def stubInsufficientEnrolments(): StubMapping =
@@ -52,7 +54,7 @@ trait AuthStubs {
                |    "identifiers": [],
                |    "state": "Activated"
                |  } ],
-               |  "retrieve": [ "internalId", "authorisedEnrolments" ]
+               |  "retrieve": [ "internalId", "authorisedEnrolments", "affinityGroup" ]
                |}
            """.stripMargin,
             true,
@@ -60,8 +62,42 @@ trait AuthStubs {
           )
         ),
       aResponse()
-        .withStatus(401)
+        .withStatus(UNAUTHORIZED)
         .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")
+    )
+
+  def stubAuthorisedWithAgentAffinityGroup(): StubMapping =
+    stub(
+      post(urlEqualTo("/auth/authorise"))
+        .withRequestBody(
+          equalToJson(
+            s"""
+               |{
+               |  "authorise": [ {
+               |    "enrolment": "${EclEnrolment.ServiceName}",
+               |    "identifiers": [],
+               |    "state": "Activated"
+               |  } ],
+               |  "retrieve": [ "internalId", "authorisedEnrolments", "affinityGroup" ]
+               |}
+           """.stripMargin,
+            true,
+            true
+          )
+        ),
+      aResponse()
+        .withStatus(OK)
+        .withBody(s"""
+             |{
+             |  "internalId": "$testInternalId",
+             |  "affinityGroup": "Agent",
+             |  "authorisedEnrolments": [ {
+             |    "key": "${EclEnrolment.ServiceName}",
+             |    "identifiers": [{ "key":"${EclEnrolment.IdentifierKey}", "value": "$testEclRegistrationNumber" }],
+             |    "state": "activated"
+             |  } ]
+             |}
+         """.stripMargin)
     )
 
 }

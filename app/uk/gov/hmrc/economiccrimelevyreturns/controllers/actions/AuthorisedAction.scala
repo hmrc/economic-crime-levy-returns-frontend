@@ -19,11 +19,11 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 import com.google.inject.Inject
 import play.api.mvc.Results._
 import play.api.mvc._
+import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
@@ -45,25 +45,31 @@ class BaseAuthorisedAction @Inject() (
     with AuthorisedFunctions {
 
   override def invokeBlock[A](request: Request[A], block: AuthorisedRequest[A] => Future[Result]): Future[Result] =
-    authorised(Enrolment(EclEnrolment.ServiceName)).retrieve(internalId and authorisedEnrolments) {
-      case optInternalId ~ enrolments =>
-        val internalId            = optInternalId.getOrElse(throw new IllegalStateException("Unable to retrieve internalId"))
-        val eclRegistrationNumber =
+    authorised(Enrolment(EclEnrolment.ServiceName)).retrieve(internalId and authorisedEnrolments and affinityGroup) {
+      case optInternalId ~ enrolments ~ optAffinityGroup =>
+        val internalId                   = optInternalId.getOrElseFail("Unable to retrieve internalId")
+        val eclRegistrationNumber        =
           enrolments
             .getEnrolment(EclEnrolment.ServiceName)
             .flatMap(_.getIdentifier(EclEnrolment.IdentifierKey))
-            .getOrElse(
-              throw new IllegalStateException(
-                s"Unable to retrieve enrolment with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
-              )
+            .getOrElseFail(
+              s"Unable to retrieve enrolment with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
             )
             .value
+        val affinityGroup: AffinityGroup = optAffinityGroup.getOrElseFail("Unable to retrieve affinityGroup")
 
-        block(AuthorisedRequest(request, internalId, eclRegistrationNumber))
+        affinityGroup match {
+          case Agent => Future.successful(Ok("Agent account not supported - must be an organisation or individual"))
+          case _     => block(AuthorisedRequest(request, internalId, eclRegistrationNumber))
+        }
     }(hc(request), executionContext) recover {
       case _: NoActiveSession        =>
         Redirect(config.signInUrl, Map("continue" -> Seq(s"${config.host}${request.uri}")))
       case _: InsufficientEnrolments =>
         Ok("User does not have an ECL enrolment")
     }
+
+  implicit class OptionOps[T](o: Option[T]) {
+    def getOrElseFail(failureMessage: String): T = o.getOrElse(throw new IllegalStateException(failureMessage))
+  }
 }
