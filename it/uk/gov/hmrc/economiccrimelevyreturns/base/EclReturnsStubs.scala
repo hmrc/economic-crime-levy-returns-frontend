@@ -2,18 +2,19 @@ package uk.gov.hmrc.economiccrimelevyreturns.base
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import play.api.http.Status.OK
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
 
-trait EclReturnsStubs {
+trait EclReturnsStubs { self: WireMockStubs =>
 
   def stubGetReturn(): StubMapping =
     stub(
-      get(urlEqualTo("/economic-crime-levy-returns/returns/test-id")),
+      get(urlEqualTo(s"/economic-crime-levy-returns/returns/$testInternalId")),
       aResponse()
-        .withStatus(200)
+        .withStatus(OK)
         .withBody(s"""
              |{
-             |  "internalId": "test-id"
+             |  "internalId": "$testInternalId"
              |}
          """.stripMargin)
     )

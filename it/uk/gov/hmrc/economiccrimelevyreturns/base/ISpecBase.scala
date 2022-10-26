@@ -8,7 +8,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.base
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import org.jsoup.Jsoup
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{Status => _, _}
@@ -18,7 +17,6 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Result, Results}
 import play.api.test._
 import play.api.{Application, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.EclTestData
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
 
 import scala.concurrent.ExecutionContext.global
@@ -30,26 +28,16 @@ abstract class ISpecBase
     with BeforeAndAfterEach
     with BeforeAndAfterAll
     with Matchers
-    with Inspectors
-    with ScalaFutures
     with DefaultAwaitTimeout
     with Writeables
-    with EssentialActionCaller
     with RouteInvokers
-    with LoneElement
-    with Inside
-    with OptionValues
     with Results
     with Status
     with HeaderNames
     with MimeTypes
-    with HttpProtocol
-    with HttpVerbs
     with ResultExtractors
     with WireMockHelper
-    with WireMockStubs
-    with IntegrationPatience
-    with EclTestData {
+    with WireMockStubs {
 
   implicit lazy val system: ActorSystem        = ActorSystem()
   implicit lazy val materializer: Materializer = Materializer(system)
@@ -76,7 +64,7 @@ abstract class ISpecBase
   This is to initialise the app before running any tests, as it is lazy by default in org.scalatestplus.play.BaseOneAppPerSuite.
   It enables us to include behaviour tests that call routes within the `should` part of a test but before `in`.
    */
-  locally {  val _ = app }
+  locally { val _ = app }
 
   override def beforeAll(): Unit = {
     startWireMock()
@@ -110,6 +98,9 @@ abstract class ISpecBase
     }
   }
 
-  def html(result: Future[Result]): String = Jsoup.parse(contentAsString(result)).html()
+  def html(result: Future[Result]): String = {
+    contentType(result) shouldBe Some("text/html")
+    Jsoup.parse(contentAsString(result)).html()
+  }
 
 }
