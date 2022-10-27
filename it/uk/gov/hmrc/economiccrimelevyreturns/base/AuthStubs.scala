@@ -35,7 +35,7 @@ trait AuthStubs { self: WireMockStubs =>
              |  "affinityGroup": "Organisation",
              |  "authorisedEnrolments": [ {
              |    "key": "${EclEnrolment.ServiceName}",
-             |    "identifiers": [{ "key":"${EclEnrolment.IdentifierKey}", "value": "$testEclRegistrationNumber" }],
+             |    "identifiers": [{ "key":"${EclEnrolment.IdentifierKey}", "value": "$testEclRegistrationReference" }],
              |    "state": "activated"
              |  } ]
              |}
@@ -93,7 +93,7 @@ trait AuthStubs { self: WireMockStubs =>
              |  "affinityGroup": "Agent",
              |  "authorisedEnrolments": [ {
              |    "key": "${EclEnrolment.ServiceName}",
-             |    "identifiers": [{ "key":"${EclEnrolment.IdentifierKey}", "value": "$testEclRegistrationNumber" }],
+             |    "identifiers": [{ "key":"${EclEnrolment.IdentifierKey}", "value": "$testEclRegistrationReference" }],
              |    "state": "activated"
              |  } ]
              |}

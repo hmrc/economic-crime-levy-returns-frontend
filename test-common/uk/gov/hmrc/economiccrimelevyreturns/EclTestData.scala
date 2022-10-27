@@ -29,11 +29,11 @@ trait EclTestData {
 
   implicit val arbEnrolmentsWithEcl: Arbitrary[EnrolmentsWithEcl] = Arbitrary {
     for {
-      enrolments            <- Arbitrary.arbitrary[Enrolments]
-      enrolment             <- Arbitrary.arbitrary[Enrolment]
-      eclRegistrationNumber <- Arbitrary.arbitrary[String]
-      eclEnrolmentIdentifier = EnrolmentIdentifier(EclEnrolment.IdentifierKey, eclRegistrationNumber)
-      eclEnrolment           =
+      enrolments               <- Arbitrary.arbitrary[Enrolments]
+      enrolment                <- Arbitrary.arbitrary[Enrolment]
+      eclRegistrationReference <- Arbitrary.arbitrary[String]
+      eclEnrolmentIdentifier    = EnrolmentIdentifier(EclEnrolment.IdentifierKey, eclRegistrationReference)
+      eclEnrolment              =
         enrolment.copy(key = EclEnrolment.ServiceName, identifiers = enrolment.identifiers :+ eclEnrolmentIdentifier)
     } yield EnrolmentsWithEcl(enrolments.copy(enrolments.enrolments + eclEnrolment))
   }
@@ -51,7 +51,7 @@ trait EclTestData {
 
   def alphaNumericString: String = Gen.alphaNumStr.sample.get
 
-  val testInternalId: String            = alphaNumericString
-  val testEclRegistrationNumber: String = alphaNumericString
+  val testInternalId: String               = alphaNumericString
+  val testEclRegistrationReference: String = alphaNumericString
 
 }
