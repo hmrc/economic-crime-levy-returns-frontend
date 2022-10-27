@@ -48,7 +48,7 @@ class BaseAuthorisedAction @Inject() (
     authorised(Enrolment(EclEnrolment.ServiceName)).retrieve(internalId and authorisedEnrolments and affinityGroup) {
       case optInternalId ~ enrolments ~ optAffinityGroup =>
         val internalId                   = optInternalId.getOrElseFail("Unable to retrieve internalId")
-        val eclRegistrationNumber        =
+        val eclRegistrationReference     =
           enrolments
             .getEnrolment(EclEnrolment.ServiceName)
             .flatMap(_.getIdentifier(EclEnrolment.IdentifierKey))
@@ -60,7 +60,7 @@ class BaseAuthorisedAction @Inject() (
 
         affinityGroup match {
           case Agent => Future.successful(Ok("Agent account not supported - must be an organisation or individual"))
-          case _     => block(AuthorisedRequest(request, internalId, eclRegistrationNumber))
+          case _     => block(AuthorisedRequest(request, internalId, eclRegistrationReference))
         }
     }(hc(request), executionContext) recover {
       case _: NoActiveSession        =>
