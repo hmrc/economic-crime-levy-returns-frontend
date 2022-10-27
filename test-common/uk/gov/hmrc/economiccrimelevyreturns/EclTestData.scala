@@ -29,11 +29,11 @@ trait EclTestData {
 
   implicit val arbEnrolmentsWithEcl: Arbitrary[EnrolmentsWithEcl] = Arbitrary {
     for {
-      enrolments             <- Arbitrary.arbitrary[Enrolments]
-      enrolment              <- Arbitrary.arbitrary[Enrolment]
-      etmpRegistrationNumber <- Arbitrary.arbitrary[String]
-      eclEnrolmentIdentifier  = EnrolmentIdentifier(EclEnrolment.IdentifierKey, etmpRegistrationNumber)
-      eclEnrolment            =
+      enrolments            <- Arbitrary.arbitrary[Enrolments]
+      enrolment             <- Arbitrary.arbitrary[Enrolment]
+      eclRegistrationNumber <- Arbitrary.arbitrary[String]
+      eclEnrolmentIdentifier = EnrolmentIdentifier(EclEnrolment.IdentifierKey, eclRegistrationNumber)
+      eclEnrolment           =
         enrolment.copy(key = EclEnrolment.ServiceName, identifiers = enrolment.identifiers :+ eclEnrolmentIdentifier)
     } yield EnrolmentsWithEcl(enrolments.copy(enrolments.enrolments + eclEnrolment))
   }
