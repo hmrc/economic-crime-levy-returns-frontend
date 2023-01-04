@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.StartView
 

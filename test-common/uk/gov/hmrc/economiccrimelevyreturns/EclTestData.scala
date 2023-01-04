@@ -18,8 +18,8 @@ package uk.gov.hmrc.economiccrimelevyreturns
 
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
 
 case class EnrolmentsWithEcl(enrolments: Enrolments)
 
