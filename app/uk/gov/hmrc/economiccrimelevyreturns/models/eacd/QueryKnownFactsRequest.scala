@@ -16,8 +16,11 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.models.eacd
 
-object EclEnrolment {
-  val ServiceName: String   = "HMRC-ECL-ORG"
-  val IdentifierKey: String = "EclRegistrationReference"
-  val VerifierKey: String   = "EclRegistrationDate"
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.economiccrimelevyreturns.models.KeyValue
+
+final case class QueryKnownFactsRequest(service: String, knownFacts: Seq[KeyValue])
+
+object QueryKnownFactsRequest {
+  implicit val format: OFormat[QueryKnownFactsRequest] = Json.format[QueryKnownFactsRequest]
 }

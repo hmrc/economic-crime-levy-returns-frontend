@@ -49,4 +49,7 @@ class AppConfig @Inject() (configuration: Configuration, servicesConfig: Service
   val countdown: Int = configuration.get[Int]("timeout-dialog.countdown")
 
   val eclReturnsBaseUrl: String = servicesConfig.baseUrl("economic-crime-levy-returns")
+
+  val enrolmentStoreProxyBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
+
 }

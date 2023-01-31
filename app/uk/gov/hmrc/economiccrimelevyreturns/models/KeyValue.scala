@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.models.eacd
+package uk.gov.hmrc.economiccrimelevyreturns.models
 
-object EclEnrolment {
-  val ServiceName: String   = "HMRC-ECL-ORG"
-  val IdentifierKey: String = "EclRegistrationReference"
-  val VerifierKey: String   = "EclRegistrationDate"
+import play.api.libs.json.{Json, OFormat}
+
+final case class KeyValue(key: String, value: String)
+
+object KeyValue {
+  implicit val format: OFormat[KeyValue] = Json.format[KeyValue]
 }
