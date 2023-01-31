@@ -7,4 +7,4 @@ package uk.gov.hmrc.economiccrimelevyreturns.base
 
 import uk.gov.hmrc.economiccrimelevyreturns.EclTestData
 
-trait WireMockStubs extends EclTestData with AuthStubs with EclReturnsStubs
+trait WireMockStubs extends EclTestData with AuthStubs with EclReturnsStubs with EnrolmentStoreProxyStubs

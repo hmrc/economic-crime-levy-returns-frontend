@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns
 
+import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
@@ -28,12 +29,16 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
 
     "respond with 200 status and the start HTML view" in {
       stubAuthorised()
-      stubGetReturn()
+
+      val eclRegistrationReference = random[String]
+      val eclRegistrationDate      = "20230901"
+
+      stubQueryKnownFacts(eclRegistrationReference, eclRegistrationDate)
 
       val result = callRoute(FakeRequest(routes.StartController.onPageLoad()))
 
       status(result) shouldBe OK
-      html(result)     should include("economic-crime-levy-returns-frontend")
+      html(result)     should include("Submit your Economic Crime Levy return")
     }
   }
 

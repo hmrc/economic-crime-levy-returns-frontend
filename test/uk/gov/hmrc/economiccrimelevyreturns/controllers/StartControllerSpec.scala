@@ -16,37 +16,46 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.services.EnrolmentStoreProxyService
+import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.StartView
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class StartControllerSpec extends SpecBase {
 
+  val mockEnrolmentStoreProxyService: EnrolmentStoreProxyService = mock[EnrolmentStoreProxyService]
+
   val view: StartView = app.injector.instanceOf[StartView]
 
-  class TestContext(eclReturn: EclReturn) {
-    val controller = new StartController(
-      mcc,
-      fakeAuthorisedAction,
-      fakeDataRetrievalAction(eclReturn),
-      view
-    )
-  }
+  val controller = new StartController(
+    mcc,
+    fakeAuthorisedAction,
+    mockEnrolmentStoreProxyService,
+    view
+  )
 
   "onPageLoad" should {
-    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
-        val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+    "return OK and the correct view" in forAll { eclRegistrationDate: LocalDate =>
+      val eclRegistrationReference = "test-ecl-registration-reference"
 
-        status(result) shouldBe OK
+      when(mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any()))
+        .thenReturn(Future.successful(eclRegistrationDate))
 
-        contentAsString(result) shouldBe view()(fakeRequest, messages).toString
-      }
+      val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+
+      status(result) shouldBe OK
+
+      contentAsString(result) shouldBe view(
+        eclRegistrationReference,
+        ViewUtils.formatLocalDate(eclRegistrationDate)(messages)
+      )(fakeRequest, messages).toString
     }
   }
 

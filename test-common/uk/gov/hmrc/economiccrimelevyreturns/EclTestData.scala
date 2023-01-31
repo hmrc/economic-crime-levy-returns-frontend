@@ -21,11 +21,17 @@ import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 
+import java.time.LocalDate
+
 case class EnrolmentsWithEcl(enrolments: Enrolments)
 
 case class EnrolmentsWithoutEcl(enrolments: Enrolments)
 
 trait EclTestData {
+
+  implicit val arbLocalDate: Arbitrary[LocalDate] = Arbitrary {
+    LocalDate.now()
+  }
 
   implicit val arbEnrolmentsWithEcl: Arbitrary[EnrolmentsWithEcl] = Arbitrary {
     for {
