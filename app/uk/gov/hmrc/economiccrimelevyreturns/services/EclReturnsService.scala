@@ -31,6 +31,6 @@ class EclReturnsService @Inject() (eclReturnsConnector: EclReturnsConnector)(imp
   def getOrCreateReturn(internalId: String)(implicit hc: HeaderCarrier): Future[EclReturn] =
     eclReturnsConnector.getReturn(internalId).flatMap {
       case Some(eclReturn) => Future.successful(eclReturn)
-      case None            => eclReturnsConnector.upsertReturn(EclReturn(internalId))
+      case None            => eclReturnsConnector.upsertReturn(EclReturn.empty(internalId))
     }
 }

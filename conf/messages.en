@@ -6,6 +6,7 @@ site.change = Change
 site.no = No
 site.yes = Yes
 site.continue = Continue
+site.saveAndContinue = Save and continue
 site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
@@ -35,6 +36,13 @@ error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
 
+journeyRecovery.title = The answers you provided are not valid
+journeyRecovery.heading = The answers you provided are not valid
+journeyRecovery.p1 = The answers you provided are not valid or are incomplete.
+journeyRecovery.p2 = This might have happened because you bookmarked a URL in the journey and tried to come back to it after 30 days.
+journeyRecovery.p3 = You will need to submit your answers again.
+journeyRecovery.button = Submit an Economic Crime Levy return
+
 start.title = Submit your Economic Crime Levy return
 start.heading = Submit your Economic Crime Levy return
 start.h2 = ECL registration details
@@ -48,6 +56,12 @@ start.tellUsAbout.b1 = the relevant accounting period for your organisation
 start.tellUsAbout.b2 = your UK revenue for the relevant account period
 start.tellUsAbout.b3 = if you carried out Anti-Money Laundering (AML) regulated activities in the last financial year
 start.tellUsAbout.b4 = the name and role of the person in your organisation who is completing this return
+
+relevantAp12Months.title = Is your relevant accounting period 12 months?
+relevantAp12Months.heading = Is your relevant accounting period 12 months?
+relevantAp12Months.p1 = Your relevant accounting period is the one that ends in the financial year. It is based on the accounting period you use for your Company Tax return.
+relevantAp12Months.p2 = For the purposes of the Economic Crime Levy (ECL), the financial year starts on 1 April and ends on 31 March of the following year.
+relevantAp12Months.error.required = Select an answer
 
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers

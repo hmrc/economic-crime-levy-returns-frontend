@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.navigation
+package uk.gov.hmrc.economiccrimelevyreturns.forms
 
-import play.api.mvc.Call
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.pages.Page
+import play.api.data.Form
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.Mappings
 
-class FakeNavigator(desiredRoute: Call) extends Navigator {
-
-  override def nextPage(page: Page, mode: Mode, eclReturn: EclReturn): Call =
-    desiredRoute
+class RelevantAp12MonthsFormProvider extends Mappings {
+  def apply(): Form[Boolean] = Form(
+    ("value", boolean("relevantAp12Months.error.required"))
+  )
 }

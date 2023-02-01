@@ -17,29 +17,23 @@
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.pages.Page
 
-class NavigatorSpec extends SpecBase {
+class RelevantAp12MonthsPageNavigatorSpec extends SpecBase {
 
-  val navigator = new Navigator
+  val pageNavigator = new RelevantAp12MonthsPageNavigator
 
   "nextPage" should {
-    "go from a page that doesn't exist in the route map to Index in NormalMode" in forAll { eclReturn: EclReturn =>
-      case object UnknownPage extends Page
-      navigator.nextPage(UnknownPage, NormalMode, eclReturn) shouldBe routes.StartController.onPageLoad()
+    "return a Call to the UK revenue page from the relevant AP 12 months page in NormalMode when the 'Yes' option is selected" in forAll {
+      eclReturn: EclReturn =>
+        //TODO Implement call and assertion when building the next page
     }
 
-    "go from a page that doesn't exist in the edit route map to CheckYourAnswers in CheckMode" in forAll {
+    "return a Call to the relevant AP length page from the relevant AP 12 months page in NormalMode when the 'No' option is selected" in forAll {
       eclReturn: EclReturn =>
-        case object UnknownPage extends Page
-        navigator.nextPage(
-          UnknownPage,
-          CheckMode,
-          eclReturn
-        ) shouldBe routes.CheckYourAnswersController.onPageLoad()
+        //TODO Implement call and assertion when building the next page
     }
   }
+
 }

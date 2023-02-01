@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.models
+package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.mvc.Call
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 
-final case class EclReturn(
-  internalId: String,
-  relevantAp12Months: Option[Boolean]
-)
+trait PageNavigator {
+  def nextPage(mode: Mode, eclReturn: EclReturn): Call = mode match {
+    case NormalMode => navigateInNormalMode(eclReturn)
+    case CheckMode  => navigateInCheckMode(eclReturn)
+  }
 
-object EclReturn {
-  def empty(internalId: String): EclReturn = EclReturn(
-    internalId = internalId,
-    relevantAp12Months = None
-  )
+  protected def navigateInNormalMode(eclReturn: EclReturn): Call
 
-  implicit val format: OFormat[EclReturn] = Json.format[EclReturn]
+  protected def navigateInCheckMode(eclReturn: EclReturn): Call
+
 }
