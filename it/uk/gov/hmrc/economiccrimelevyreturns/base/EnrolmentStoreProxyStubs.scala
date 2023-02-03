@@ -12,7 +12,7 @@ trait EnrolmentStoreProxyStubs { self: WireMockStubs =>
 
   def stubQueryKnownFacts(eclRegistrationReference: String, eclRegistrationDate: String): StubMapping =
     stub(
-      post(urlEqualTo(s"/enrolment-store-proxy/enrolments")).withRequestBody(
+      post(urlEqualTo(s"/enrolment-store-proxy/enrolment-store/enrolments")).withRequestBody(
         equalToJson(
           Json
             .toJson(
