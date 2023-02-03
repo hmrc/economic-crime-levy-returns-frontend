@@ -19,47 +19,42 @@
 @import views.html.helper.CSPNonce
 
 @this(
-    appConfig: AppConfig,
-    hmrcLayout: HmrcLayout,
-    govukBackLink: GovukBackLink,
-    hmrcHead: HmrcHead,
-    hmrcTimeoutDialog: HmrcTimeoutDialog,
-    hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
-    alphaBanner: StandardAlphaBanner
+        appConfig: AppConfig,
+        hmrcLayout: HmrcLayout,
+        govukBackLink: GovukBackLink,
+        hmrcHead: HmrcHead,
+        hmrcTimeoutDialog: HmrcTimeoutDialog,
+        hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
+        betaBanner: StandardBetaBanner
 )
 
 @(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
 @head = @{
-    if(timeout) { Some(
+    if(timeout) {
+        Some(
             hmrcTimeoutDialog(TimeoutDialog(
-                timeout             = Some(appConfig.timeout),
-                countdown           = Some(appConfig.countdown),
-                keepAliveUrl        = Some(uk.gov.hmrc.hmrcfrontend.controllers.routes.KeepAliveController.keepAlive.url),
+                timeout = Some(appConfig.timeout),
+                countdown = Some(appConfig.countdown),
+                keepAliveUrl = Some(uk.gov.hmrc.hmrcfrontend.controllers.routes.KeepAliveController.keepAlive.url),
                 keepAliveButtonText = Some(messages("timeout.keepAlive")),
-                signOutUrl          = Some(SignOutController.signOut.url),
-                signOutButtonText   = Some(messages("timeout.signOut")),
-                title               = Some(messages("timeout.title")),
-                message             = Some(messages("timeout.message"))
+                signOutUrl = Some(SignOutController.signOut.url),
+                signOutButtonText = Some(messages("timeout.signOut")),
+                title = Some(messages("timeout.title")),
+                message = Some(messages("timeout.message"))
             )))
-        } else None
+    } else None
 }
 
 @additionalScripts = {
     <script src='@controllers.routes.Assets.versioned("javascripts/application.min.js")'></script>
 }
 
-@backLink = @{
-    if(showBackLink) {
-        Some("#")
-    } else None
-}
-
 @content = {
-    @contentBlock
+@contentBlock
 
     <div class="govuk-!-margin-top-8">
-        @hmrcReportTechnicalIssueHelper()
+    @hmrcReportTechnicalIssueHelper()
     </div>
 }
 
@@ -71,6 +66,6 @@
     isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
     additionalScriptsBlock = Some(additionalScripts),
     additionalHeadBlock = head,
-    backLinkUrl = backLink,
-    phaseBanner = Some(alphaBanner(appConfig.feedbackUrl))
+    backLink = if(showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None,
+    phaseBanner = Some(betaBanner(appConfig.feedbackUrl))
 )(content)

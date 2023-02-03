@@ -14,33 +14,30 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.controllers
+package uk.gov.hmrc.economiccrimelevyreturns.testonly.controllers
 
-import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
-import uk.gov.hmrc.economiccrimelevyreturns.services.EnrolmentStoreProxyService
-import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.StartView
+import uk.gov.hmrc.economiccrimelevyreturns.testonly.connectors.TestOnlyConnector
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class StartController @Inject() (
+class TestOnlyController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
-  enrolmentStoreProxyService: EnrolmentStoreProxyService,
-  view: StartView
-)(implicit ec: ExecutionContext)
-    extends FrontendBaseController
-    with I18nSupport {
+  testOnlyConnector: TestOnlyConnector
+)(implicit val ec: ExecutionContext)
+    extends FrontendBaseController {
 
-  def onPageLoad: Action[AnyContent] = authorise.async { implicit request =>
-    enrolmentStoreProxyService.getEclRegistrationDate(request.eclRegistrationReference).map { registrationDate =>
-      Ok(view(request.eclRegistrationReference, ViewUtils.formatLocalDate(registrationDate)))
-    }
+  def clearAllData(): Action[AnyContent] = Action.async { implicit request =>
+    testOnlyConnector.clearAllData().map(httpResponse => Ok(httpResponse.body))
+  }
+
+  def clearCurrentData(): Action[AnyContent] = authorise.async { implicit request =>
+    testOnlyConnector.clearCurrentData().map(httpResponse => Ok(httpResponse.body))
   }
 
 }

@@ -27,7 +27,7 @@ class FakeAuthorisedAction @Inject() (bodyParsers: PlayBodyParsers) extends Auth
   override def parser: BodyParser[AnyContent] = bodyParsers.defaultBodyParser
 
   override def invokeBlock[A](request: Request[A], block: AuthorisedRequest[A] => Future[Result]): Future[Result] =
-    block(AuthorisedRequest(request, "test-internal-id", "test-ecl-registration-number"))
+    block(AuthorisedRequest(request, "test-internal-id", "test-ecl-registration-reference"))
 
   override protected def executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 

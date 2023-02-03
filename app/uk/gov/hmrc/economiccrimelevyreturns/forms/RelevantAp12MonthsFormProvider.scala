@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.models
+package uk.gov.hmrc.economiccrimelevyreturns.forms
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.data.Form
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.Mappings
 
-final case class EclReturn(
-  internalId: String,
-  relevantAp12Months: Option[Boolean]
-)
-
-object EclReturn {
-  def empty(internalId: String): EclReturn = EclReturn(
-    internalId = internalId,
-    relevantAp12Months = None
+class RelevantAp12MonthsFormProvider extends Mappings {
+  def apply(): Form[Boolean] = Form(
+    ("value", boolean("relevantAp12Months.error.required"))
   )
-
-  implicit val format: OFormat[EclReturn] = Json.format[EclReturn]
 }

@@ -18,26 +18,17 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.Call
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.pages.Page
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 
-import javax.inject.{Inject, Singleton}
+class RelevantAp12MonthsPageNavigator extends PageNavigator {
 
-@Singleton
-class Navigator @Inject() () {
+  override protected def navigateInNormalMode(eclReturn: EclReturn): Call =
+    eclReturn.relevantAp12Months match {
+      case Some(true)  => ???
+      case Some(false) => ???
+      case _           => routes.JourneyRecoveryController.onPageLoad()
+    }
 
-  private val normalRoutes: Page => EclReturn => Call = { case _ =>
-    _ => routes.StartController.onPageLoad()
-  }
+  override protected def navigateInCheckMode(eclReturn: EclReturn): Call = ???
 
-  private val checkRouteMap: Page => EclReturn => Call = { case _ =>
-    _ => routes.CheckYourAnswersController.onPageLoad()
-  }
-
-  def nextPage(page: Page, mode: Mode, eclReturn: EclReturn): Call = mode match {
-    case NormalMode =>
-      normalRoutes(page)(eclReturn)
-    case CheckMode  =>
-      checkRouteMap(page)(eclReturn)
-  }
 }

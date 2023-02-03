@@ -4,7 +4,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.$className$FormProvider
 import javax.inject.Inject
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.Navigator
 import uk.gov.hmrc.economiccrimelevyreturns.pages.$className$Page
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}

@@ -15,17 +15,54 @@
  *@
 
 @this(
-    layout: templates.Layout
+        layout: templates.Layout,
+        summaryList: GovukSummaryList,
+        button: GovukButton
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(eclRegistrationReference: String, eclRegistrationDate: String)(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle    = title(messages("start.title")),
+    pageTitle = title(messages("start.title")),
     showBackLink = false
 ) {
 
-    <h1 class="govuk-heading-xl">@messages("start.heading")</h1>
+    <h1 class="govuk-heading-l">@messages("start.heading")</h1>
 
-    <p class="govuk-body">@messages("start.guidance")</p>
+    <h1 class="govuk-heading-m">@messages("start.h2")</h1>
+
+    @summaryList(SummaryListViewModel(
+        Seq(
+            SummaryListRowViewModel(
+                key = Key("start.eclReferenceNumber"),
+                value = ValueViewModel(HtmlContent(HtmlFormat.escape(messages(eclRegistrationReference))))
+            ),
+            SummaryListRowViewModel(
+                key = Key("start.eclRegistrationDate"),
+                value = ValueViewModel(HtmlContent(HtmlFormat.escape(messages(eclRegistrationDate))))
+            )
+        )
+    ))
+
+    <p class="govuk-body">@messages("start.p1")</p>
+    <p class="govuk-body">@messages("start.p2")</p>
+
+    @button(
+        ButtonViewModel(messages("site.start"))
+                .asLink(RelevantAp12MonthsController.onPageLoad().url)
+                .asStartButton()
+                .withAttribute("id" -> "start")
+    )
+
+    <h2 class="govuk-heading-m">@messages("start.beforeYouStart")</h2>
+
+    <p class="govuk-body">@messages("start.tellUsAbout")</p>
+
+    <ul class="govuk-list govuk-list--bullet">
+        <li>@messages("start.tellUsAbout.b1")</li>
+        <li>@messages("start.tellUsAbout.b2")</li>
+        <li>@messages("start.tellUsAbout.b3")</li>
+        <li>@messages("start.tellUsAbout.b4")</li>
+    </ul>
+
 }

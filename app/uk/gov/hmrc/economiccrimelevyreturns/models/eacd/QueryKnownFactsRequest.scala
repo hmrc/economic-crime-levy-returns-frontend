@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.models
+package uk.gov.hmrc.economiccrimelevyreturns.models.eacd
 
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.economiccrimelevyreturns.models.KeyValue
 
-final case class EclReturn(
-  internalId: String,
-  relevantAp12Months: Option[Boolean]
-)
+final case class QueryKnownFactsRequest(service: String, knownFacts: Seq[KeyValue])
 
-object EclReturn {
-  def empty(internalId: String): EclReturn = EclReturn(
-    internalId = internalId,
-    relevantAp12Months = None
-  )
-
-  implicit val format: OFormat[EclReturn] = Json.format[EclReturn]
+object QueryKnownFactsRequest {
+  implicit val format: OFormat[QueryKnownFactsRequest] = Json.format[QueryKnownFactsRequest]
 }

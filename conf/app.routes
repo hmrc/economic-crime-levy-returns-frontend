@@ -1,13 +1,18 @@
 # microservice specific routes
 
-->         /hmrc-frontend                  hmrcfrontend.Routes
+->          /hmrc-frontend                            hmrcfrontend.Routes
 
-GET        /                               uk.gov.hmrc.economiccrimelevyreturns.controllers.StartController.onPageLoad()
+GET         /                                         uk.gov.hmrc.economiccrimelevyreturns.controllers.StartController.onPageLoad()
 
-GET        /assets/*file                   controllers.Assets.versioned(path = "/public", file: Asset)
+GET         /relevant-accounting-period-length        uk.gov.hmrc.economiccrimelevyreturns.controllers.RelevantAp12MonthsController.onPageLoad()
+POST        /relevant-accounting-period-length        uk.gov.hmrc.economiccrimelevyreturns.controllers.RelevantAp12MonthsController.onSubmit()
 
-GET        /check-your-answers             uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onPageLoad()
+GET         /answers-are-not-valid                    uk.gov.hmrc.economiccrimelevyreturns.controllers.JourneyRecoveryController.onPageLoad()
 
-GET        /account/sign-out-survey        uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOut()
-GET        /account/sign-out               uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOutNoSurvey()
-GET        /account/signed-out             uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signedOut()
+GET         /assets/*file                             controllers.Assets.versioned(path = "/public", file: Asset)
+
+GET         /check-your-answers                       uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onPageLoad()
+
+GET         /account/sign-out-survey                  uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOut()
+GET         /account/sign-out                         uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOutNoSurvey()
+GET         /account/signed-out                       uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signedOut()

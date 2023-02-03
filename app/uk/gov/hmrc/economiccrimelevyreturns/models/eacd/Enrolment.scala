@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.navigation
+package uk.gov.hmrc.economiccrimelevyreturns.models.eacd
 
-import play.api.mvc.Call
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.pages.Page
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.economiccrimelevyreturns.models.KeyValue
 
-class FakeNavigator(desiredRoute: Call) extends Navigator {
+final case class Enrolment(
+  identifiers: Seq[KeyValue],
+  verifiers: Seq[KeyValue]
+)
 
-  override def nextPage(page: Page, mode: Mode, eclReturn: EclReturn): Call =
-    desiredRoute
+object Enrolment {
+  implicit val format: OFormat[Enrolment] = Json.format[Enrolment]
 }

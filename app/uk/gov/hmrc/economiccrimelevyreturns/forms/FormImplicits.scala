@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.models
+package uk.gov.hmrc.economiccrimelevyreturns.forms
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.data.Form
 
-final case class EclReturn(
-  internalId: String,
-  relevantAp12Months: Option[Boolean]
-)
+object FormImplicits {
 
-object EclReturn {
-  def empty(internalId: String): EclReturn = EclReturn(
-    internalId = internalId,
-    relevantAp12Months = None
-  )
+  implicit class FormOps[T](f: Form[T]) {
+    def prepare(data: Option[T]): Form[T] = data match {
+      case Some(value) => f.fill(value)
+      case None        => f
+    }
+  }
 
-  implicit val format: OFormat[EclReturn] = Json.format[EclReturn]
 }

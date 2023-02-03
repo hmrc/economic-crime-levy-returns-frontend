@@ -18,16 +18,8 @@ package uk.gov.hmrc.economiccrimelevyreturns.models
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class EclReturn(
-  internalId: String,
-  relevantAp12Months: Option[Boolean]
-)
+final case class KeyValue(key: String, value: String)
 
-object EclReturn {
-  def empty(internalId: String): EclReturn = EclReturn(
-    internalId = internalId,
-    relevantAp12Months = None
-  )
-
-  implicit val format: OFormat[EclReturn] = Json.format[EclReturn]
+object KeyValue {
+  implicit val format: OFormat[KeyValue] = Json.format[KeyValue]
 }
