@@ -33,7 +33,8 @@ class EnrolmentStoreProxyConnectorImpl @Inject() (appConfig: AppConfig, httpClie
   ec: ExecutionContext
 ) extends EnrolmentStoreProxyConnector {
 
-  private val enrolmentStoreUrl: String = s"${appConfig.enrolmentStoreProxyBaseUrl}/enrolment-store"
+  private val enrolmentStoreUrl: String =
+    s"${appConfig.enrolmentStoreProxyBaseUrl}/enrolment-store-proxy/enrolment-store"
 
   def queryKnownFacts(eclRegistrationReference: String)(implicit hc: HeaderCarrier): Future[QueryKnownFactsResponse] =
     httpClient.POST[QueryKnownFactsRequest, QueryKnownFactsResponse](
