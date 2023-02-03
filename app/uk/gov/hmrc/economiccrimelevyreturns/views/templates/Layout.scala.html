@@ -25,7 +25,7 @@
         hmrcHead: HmrcHead,
         hmrcTimeoutDialog: HmrcTimeoutDialog,
         hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
-        alphaBanner: StandardAlphaBanner
+        betaBanner: StandardBetaBanner
 )
 
 @(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
@@ -67,5 +67,5 @@
     additionalScriptsBlock = Some(additionalScripts),
     additionalHeadBlock = head,
     backLink = if(showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None,
-    phaseBanner = Some(alphaBanner(appConfig.feedbackUrl))
+    phaseBanner = Some(betaBanner(appConfig.feedbackUrl))
 )(content)
