@@ -102,4 +102,19 @@ trait Constraints {
       case _                   =>
         Invalid(errorKey)
     }
+
+  protected def telephoneNumber(max: Int, maxLengthKey: String, invalidKey: String): Constraint[String] = Constraint {
+    s =>
+      maxLength(max, maxLengthKey)(s) match {
+        case Valid   => regexp(Regex.telephoneNumberRegex, invalidKey)(s)
+        case invalid => invalid
+      }
+  }
+
+  protected def emailAddress(max: Int, maxLengthKey: String, invalidKey: String): Constraint[String] = Constraint { s =>
+    maxLength(max, maxLengthKey)(s) match {
+      case Valid   => regexp(Regex.emailRegex, invalidKey)(s)
+      case invalid => invalid
+    }
+  }
 }

@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.navigation
+package uk.gov.hmrc.economiccrimelevyreturns.forms
 
-import play.api.mvc.Call
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import play.api.data.Form
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.Mappings
 
-class RelevantAp12MonthsPageNavigator extends PageNavigator {
+import javax.inject.Inject
 
-  override protected def navigateInNormalMode(eclReturn: EclReturn): Call =
-    eclReturn.relevantAp12Months match {
-      case Some(true)  => ???
-      case Some(false) => ???
-      case _           => routes.NotableErrorController.answersAreInvalid()
-    }
+class ContactRoleFormProvider @Inject() extends Mappings {
 
-  override protected def navigateInCheckMode(eclReturn: EclReturn): Call = ???
+  private val maxLength = 160
 
+  def apply(): Form[String] =
+    Form(
+      "value" -> text("contactRole.error.required")
+        .verifying(maxLength(maxLength, "contactRole.error.length"))
+    )
 }

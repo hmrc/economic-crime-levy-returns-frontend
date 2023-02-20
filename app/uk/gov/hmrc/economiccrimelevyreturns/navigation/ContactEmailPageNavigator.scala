@@ -18,17 +18,20 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.Call
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 
-class RelevantAp12MonthsPageNavigator extends PageNavigator {
+class ContactEmailPageNavigator extends PageNavigator {
 
   override protected def navigateInNormalMode(eclReturn: EclReturn): Call =
-    eclReturn.relevantAp12Months match {
-      case Some(true)  => ???
-      case Some(false) => ???
-      case _           => routes.NotableErrorController.answersAreInvalid()
+    eclReturn.contactEmailAddress match {
+      case Some(_) => routes.ContactNumberController.onPageLoad(NormalMode)
+      case _       => routes.NotableErrorController.answersAreInvalid()
     }
 
-  override protected def navigateInCheckMode(eclReturn: EclReturn): Call = ???
+  override protected def navigateInCheckMode(eclReturn: EclReturn): Call =
+    eclReturn.contactEmailAddress match {
+      case Some(_) => routes.CheckYourAnswersController.onPageLoad()
+      case _       => routes.NotableErrorController.answersAreInvalid()
+    }
 
 }

@@ -7,7 +7,27 @@ GET         /                                         uk.gov.hmrc.economiccrimel
 GET         /relevant-accounting-period-length        uk.gov.hmrc.economiccrimelevyreturns.controllers.RelevantAp12MonthsController.onPageLoad()
 POST        /relevant-accounting-period-length        uk.gov.hmrc.economiccrimelevyreturns.controllers.RelevantAp12MonthsController.onSubmit()
 
-GET         /answers-are-not-valid                    uk.gov.hmrc.economiccrimelevyreturns.controllers.JourneyRecoveryController.onPageLoad()
+GET         /contact-name                             uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNameController.onPageLoad(mode: Mode = NormalMode)
+POST        /contact-name                             uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNameController.onSubmit(mode: Mode = NormalMode)
+GET         /change-answer/contact-name               uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNameController.onPageLoad(mode: Mode = CheckMode)
+POST        /change-answer/contact-name               uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNameController.onSubmit(mode: Mode = CheckMode)
+
+GET         /contact-role                             uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactRoleController.onPageLoad(mode: Mode = NormalMode)
+POST        /contact-role                             uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactRoleController.onSubmit(mode: Mode = NormalMode)
+GET         /change-answer/contact-role               uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactRoleController.onPageLoad(mode: Mode = CheckMode)
+POST        /change-answer/contact-role               uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactRoleController.onSubmit(mode: Mode = CheckMode)
+
+GET         /contact-email-address                    uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactEmailController.onPageLoad(mode: Mode = NormalMode)
+POST        /contact-email-address                    uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactEmailController.onSubmit(mode: Mode = NormalMode)
+GET         /change-answer/contact-email-address      uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactEmailController.onPageLoad(mode: Mode = CheckMode)
+POST        /change-answer/contact-email-address      uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactEmailController.onSubmit(mode: Mode = CheckMode)
+
+GET         /contact-telephone                        uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNumberController.onPageLoad(mode: Mode = NormalMode)
+POST        /contact-telephone                        uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNumberController.onSubmit(mode: Mode = NormalMode)
+GET         /change-answer/contact-telephone          uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNumberController.onPageLoad(mode: Mode = CheckMode)
+POST        /change-answer/contact-telephone          uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNumberController.onSubmit(mode: Mode = CheckMode)
+
+GET         /answers-are-not-valid                    uk.gov.hmrc.economiccrimelevyreturns.controllers.NotableErrorController.answersAreInvalid()
 
 GET         /assets/*file                             controllers.Assets.versioned(path = "/public", file: Asset)
 

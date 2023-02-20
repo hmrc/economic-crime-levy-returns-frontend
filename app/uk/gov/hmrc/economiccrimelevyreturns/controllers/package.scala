@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.navigation
+package uk.gov.hmrc.economiccrimelevyreturns
 
-import play.api.mvc.Call
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 
-class RelevantAp12MonthsPageNavigator extends PageNavigator {
-
-  override protected def navigateInNormalMode(eclReturn: EclReturn): Call =
-    eclReturn.relevantAp12Months match {
-      case Some(true)  => ???
-      case Some(false) => ???
-      case _           => routes.NotableErrorController.answersAreInvalid()
-    }
-
-  override protected def navigateInCheckMode(eclReturn: EclReturn): Call = ???
-
+package object controllers {
+  val contactName: ReturnDataRequest[_] => String = request =>
+    request.eclReturn.contactName
+      .getOrElse(throw new IllegalStateException("No contact name found in returns data"))
 }
