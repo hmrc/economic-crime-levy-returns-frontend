@@ -87,6 +87,7 @@ contactEmail.error.invalid = Enter an email address in the correct format, like 
 contactNumber.title = What is {0}''s telephone number?
 contactNumber.heading = What is {0}''s telephone number?
 contactNumber.legend = This is the telephone number of your named contact.
+contactNumber.hint = For international numbers include the country code.
 contactNumber.error.required = Enter a telephone number
 contactNumber.error.length = Telephone number must be {0} characters or less
 contactNumber.error.invalid = Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 808 157 0192

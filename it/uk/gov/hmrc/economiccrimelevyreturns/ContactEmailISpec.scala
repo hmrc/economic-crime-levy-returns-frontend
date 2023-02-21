@@ -8,7 +8,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 
-class FirstContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
+class ContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
 
   val emailMaxLength: Int = 160
 

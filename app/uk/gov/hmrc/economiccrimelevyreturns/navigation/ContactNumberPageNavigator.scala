@@ -22,13 +22,11 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 
 class ContactNumberPageNavigator extends PageNavigator {
 
-  override protected def navigateInNormalMode(eclReturn: EclReturn): Call =
-    eclReturn.contactTelephoneNumber match {
-      case Some(_) => ???
-      case _       => routes.NotableErrorController.answersAreInvalid()
-    }
+  override protected def navigateInNormalMode(eclReturn: EclReturn): Call = navigate(eclReturn)
 
-  override protected def navigateInCheckMode(eclReturn: EclReturn): Call =
+  override protected def navigateInCheckMode(eclReturn: EclReturn): Call = navigate(eclReturn)
+
+  private def navigate(eclReturn: EclReturn): Call =
     eclReturn.contactTelephoneNumber match {
       case Some(_) => routes.CheckYourAnswersController.onPageLoad()
       case _       => routes.NotableErrorController.answersAreInvalid()

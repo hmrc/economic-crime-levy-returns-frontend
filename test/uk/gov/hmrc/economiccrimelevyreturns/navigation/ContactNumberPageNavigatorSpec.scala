@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 class ContactNumberPageNavigatorSpec extends SpecBase {
@@ -26,10 +26,10 @@ class ContactNumberPageNavigatorSpec extends SpecBase {
   val pageNavigator = new ContactNumberPageNavigator()
 
   "nextPage" should {
-    "return a Call to the ??? page in NormalMode" in forAll { (eclReturn: EclReturn, number: String) =>
+    "return a Call to the check your answers page in NormalMode" in forAll { (eclReturn: EclReturn, number: String) =>
       val updatedReturn: EclReturn = eclReturn.copy(contactTelephoneNumber = Some(number))
 
-    //TODO Implement call and assertion when building the next page
+      pageNavigator.nextPage(NormalMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad()
     }
 
     "return a Call to the check your answers page in CheckMode" in forAll { (eclReturn: EclReturn, number: String) =>
