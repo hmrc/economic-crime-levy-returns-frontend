@@ -36,12 +36,12 @@ error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
 
-journeyRecovery.title = The answers you provided are not valid
-journeyRecovery.heading = The answers you provided are not valid
-journeyRecovery.p1 = The answers you provided are not valid or are incomplete.
-journeyRecovery.p2 = This might have happened because you bookmarked a URL in the journey and tried to come back to it after 30 days.
-journeyRecovery.p3 = You will need to submit your answers again.
-journeyRecovery.button = Submit an Economic Crime Levy return
+answersAreInvalid.title = The answers you provided are not valid
+answersAreInvalid.heading = The answers you provided are not valid
+answersAreInvalid.p1 = The answers you provided are not valid or are incomplete.
+answersAreInvalid.p2 = This might have happened because you bookmarked a URL in the journey and tried to come back to it after 30 days.
+answersAreInvalid.p3 = You will need to submit your answers again.
+answersAreInvalid.button = Submit an Economic Crime Levy return
 
 start.title = Submit your Economic Crime Levy return
 start.heading = Submit your Economic Crime Levy return
@@ -62,6 +62,35 @@ relevantAp12Months.heading = Is your relevant accounting period 12 months?
 relevantAp12Months.p1 = Your relevant accounting period is the one that ends in the financial year. It is based on the accounting period you use for your Company Tax return.
 relevantAp12Months.p2 = For the purposes of the Economic Crime Levy (ECL), the financial year starts on 1 April and ends on 31 March of the following year.
 relevantAp12Months.error.required = Select an answer
+
+contactName.title = Who is completing this return?
+contactName.heading = Who is completing this return?
+contactName.legend.p1 = Enter the name of the person who is completing this return.
+contactName.hint = For example, ''John Jones'' or ''Laura Smith''.
+contactName.error.required = Enter a full name
+contactName.error.length = Full name must be {0} characters or less
+
+contactRole.title = What is {0}''s role in your organisation?
+contactRole.heading = What is {0}''s role in your organisation?
+contactRole.legend = Tell us about their role in your organisation.
+contactRole.hint = For example, ''Compliance officer''.
+contactRole.error.required = Enter a role
+contactRole.error.length = Role must be {0} characters or less
+
+contactEmail.title = What is {0}''s email address?
+contactEmail.heading = What is {0}''s email address?
+contactEmail.legend = This is the email address of your named contact.
+contactEmail.error.required = Enter an email address
+contactEmail.error.length = Email address must be {0} characters or less
+contactEmail.error.invalid = Enter an email address in the correct format, like name@example.com
+
+contactNumber.title = What is {0}''s telephone number?
+contactNumber.heading = What is {0}''s telephone number?
+contactNumber.legend = This is the telephone number of your named contact.
+contactNumber.hint = For international numbers include the country code.
+contactNumber.error.required = Enter a telephone number
+contactNumber.error.length = Telephone number must be {0} characters or less
+contactNumber.error.invalid = Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 808 157 0192
 
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers

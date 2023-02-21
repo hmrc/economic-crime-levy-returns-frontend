@@ -18,23 +18,25 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.JourneyRecoveryView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.AnswersAreInvalidView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class JourneyRecoveryController @Inject() (
+class NotableErrorController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  view: JourneyRecoveryView
+  appConfig: AppConfig,
+  answersAreInvalidView: AnswersAreInvalidView
 ) extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view())
+  def answersAreInvalid: Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
+    Ok(answersAreInvalidView())
   }
 
 }

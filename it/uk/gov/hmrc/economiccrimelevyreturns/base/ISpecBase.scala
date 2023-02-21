@@ -18,6 +18,7 @@ import play.api.mvc.{Result, Results}
 import play.api.test._
 import play.api.{Application, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
+import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,7 +38,8 @@ abstract class ISpecBase
     with MimeTypes
     with ResultExtractors
     with WireMockHelper
-    with WireMockStubs {
+    with WireMockStubs
+    with Generators {
 
   implicit lazy val system: ActorSystem        = ActorSystem()
   implicit lazy val materializer: Materializer = Materializer(system)

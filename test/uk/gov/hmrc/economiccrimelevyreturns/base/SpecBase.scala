@@ -29,6 +29,7 @@ import play.api.test.Helpers.{stubBodyParser, stubControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.EclTestData
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{FakeAuthorisedAction, FakeDataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -46,7 +47,8 @@ trait SpecBase
     with MockitoSugar
     with BeforeAndAfterEach
     with ScalaCheckPropertyChecks
-    with EclTestData {
+    with EclTestData
+    with Generators {
 
   val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val appConfig: AppConfig                             = app.injector.instanceOf[AppConfig]

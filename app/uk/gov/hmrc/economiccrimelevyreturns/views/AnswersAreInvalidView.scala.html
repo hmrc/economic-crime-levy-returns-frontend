@@ -14,27 +14,29 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+
 @this(
         layout: templates.Layout,
+        appConfig: AppConfig,
         button: GovukButton
 )
 
 @()(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle = title(messages("journeyRecovery.title")),
+    pageTitle = title(messages("answersAreInvalid.title")),
     showBackLink = false
 ) {
 
-    <h1 class="govuk-heading-l">@messages("journeyRecovery.heading")</h1>
+    <h1 class="govuk-heading-l">@messages("answersAreInvalid.heading")</h1>
 
-    <p class="govuk-body">@messages("journeyRecovery.p1")</p>
-    <p class="govuk-body">@messages("journeyRecovery.p2")</p>
-    <p class="govuk-body">@messages("journeyRecovery.p3")</p>
+    <p class="govuk-body">@messages("answersAreInvalid.p1")</p>
+    <p class="govuk-body">@messages("answersAreInvalid.p2")</p>
+    <p class="govuk-body">@messages("answersAreInvalid.p3")</p>
 
     @button(
-        ButtonViewModel(messages("journeyRecovery.button"))
-                .asLink(RelevantAp12MonthsController.onPageLoad().url)
+        ButtonViewModel(messages("answersAreInvalid.button")).asLink(RelevantAp12MonthsController.onPageLoad().url)
     )
 
 }

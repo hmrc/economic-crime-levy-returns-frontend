@@ -20,32 +20,33 @@ import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.JourneyRecoveryView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.AnswersAreInvalidView
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 import scala.concurrent.Future
 
-class JourneyRecoveryControllerSpec extends SpecBase {
+class NotableErrorControllerSpec extends SpecBase {
 
-  val view: JourneyRecoveryView = app.injector.instanceOf[JourneyRecoveryView]
+  val answersAreInvalidView: AnswersAreInvalidView = app.injector.instanceOf[AnswersAreInvalidView]
 
-  class TestContext(returnData: EclReturn) {
-    val controller = new JourneyRecoveryController(
+  class TestContext(eclReturnData: EclReturn) {
+    val controller = new NotableErrorController(
       mcc,
       fakeAuthorisedAction,
-      fakeDataRetrievalAction(returnData),
-      view
+      fakeDataRetrievalAction(eclReturnData),
+      appConfig,
+      answersAreInvalidView
     )
   }
 
-  "onPageLoad" should {
+  "answerAreInvalid" should {
     "return OK and the correct view" in forAll { eclReturn: EclReturn =>
       new TestContext(eclReturn) {
-        val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+        val result: Future[Result] = controller.answersAreInvalid()(fakeRequest)
 
         status(result) shouldBe OK
 
-        contentAsString(result) shouldBe view()(fakeRequest, messages).toString
+        contentAsString(result) shouldBe answersAreInvalidView()(fakeRequest, messages).toString
       }
     }
   }
