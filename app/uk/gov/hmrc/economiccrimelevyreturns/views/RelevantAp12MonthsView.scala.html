@@ -24,22 +24,20 @@
 
 @(form: Form[Boolean])(implicit request: Request[_], messages: Messages)
 
-@legendHtml = {
+@layout(pageTitle = titleWithForm(form, messages("relevantAp12Months.title"))) {
+    @if(form.errors.nonEmpty) {
+        @errorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "yes")))
+    }
+
     <h1 class="govuk-heading-l">@messages("relevantAp12Months.heading")</h1>
     <p class="govuk-body">@messages("relevantAp12Months.p1")</p>
     <p class="govuk-body">@messages("relevantAp12Months.p2")</p>
-}
 
-@layout(pageTitle = titleWithForm(form, messages("relevantAp12Months.title"))) {
     @formHelper(action = RelevantAp12MonthsController.onSubmit()) {
-        @if(form.errors.nonEmpty) {
-            @errorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "yes")))
-        }
-
         @radios(
             RadiosViewModel(
                 field = form("value"),
-                legend = LegendViewModel(HtmlContent(legendHtml)),
+                legend = LegendViewModel(Text(messages("relevantAp12Months.heading"))).asHiddenPageHeading(),
                 items = Seq(
                     RadioItem(
                         id = Some("yes"),
