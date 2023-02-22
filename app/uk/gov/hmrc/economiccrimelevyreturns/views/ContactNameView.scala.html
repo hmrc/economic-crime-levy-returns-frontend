@@ -15,7 +15,6 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.InputWidth._
-@import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.LabelSize
 
 @this(
         layout: templates.Layout,
@@ -27,26 +26,24 @@
 
 @(form: Form[String], mode: Mode)(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = titleWithForm(form, messages("contactName.title"))) {
-        <h1 class="govuk-heading-l">@messages("contactName.heading")</h1>
-        <p class="govuk-body">@messages("contactName.legend.p1")</p>
-
-        @formHelper(action = ContactNameController.onSubmit(mode)) {
-            @if(form.errors.nonEmpty) {
-                @govukErrorSummary(ErrorSummaryViewModel(form))
-            }
-
-            @govukInput(
-                InputViewModel(
-                    field = form("value"),
-                    label = LabelViewModel(Text(messages("contactName.heading")))
-                           .asPageHeading(LabelSize.Large)
-                           .withCssClass("govuk-visually-hidden")
-                ).withWidth(Fixed20).withHint(Hint(content = Text(messages("contactName.hint"))))
-            )
-
-            @govukButton(
-                ButtonViewModel(messages("site.saveAndContinue"))
-            )
-        }
+@layout(pageTitle = titleWithForm(form, messages("contactName.title"))) {
+    @if(form.errors.nonEmpty) {
+        @govukErrorSummary(ErrorSummaryViewModel(form))
     }
+
+    <h1 class="govuk-heading-l">@messages("contactName.heading")</h1>
+    <p class="govuk-body">@messages("contactName.legend.p1")</p>
+
+    @formHelper(action = ContactNameController.onSubmit(mode)) {
+        @govukInput(
+            InputViewModel(
+                field = form("value"),
+                label = LabelViewModel(Text(messages("contactName.heading"))).asHiddenPageHeading()
+            ).withWidth(Fixed20).withHint(Hint(content = Text(messages("contactName.hint"))))
+        )
+
+        @govukButton(
+            ButtonViewModel(messages("site.saveAndContinue"))
+        )
+    }
+}

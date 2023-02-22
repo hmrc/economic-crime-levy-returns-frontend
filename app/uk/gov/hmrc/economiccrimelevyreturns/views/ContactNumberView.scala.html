@@ -15,7 +15,6 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.InputWidth._
-@import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.LabelSize
 
 @this(
         layout: templates.Layout,
@@ -28,20 +27,19 @@
 @(form: Form[String], name: String, mode: Mode)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleWithForm(form, messages("contactNumber.title", name))) {
+    @if(form.errors.nonEmpty) {
+        @govukErrorSummary(ErrorSummaryViewModel(form))
+    }
+
     <h1 class="govuk-heading-l">@HtmlFormat.escape(messages("contactNumber.heading", name))</h1>
     <p class="govuk-body">@messages("contactNumber.legend")</p>
 
     @formHelper(action = ContactNumberController.onSubmit(mode)) {
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
-
         @govukInput(
             InputViewModel(
                 field = form("value"),
                 label = LabelViewModel(HtmlContent(HtmlFormat.escape(messages("contactNumber.heading", name))))
-                       .asPageHeading(LabelSize.Large)
-                       .withCssClass("govuk-visually-hidden")
+                       .asHiddenPageHeading()
             ).withWidth(Fixed20).withHint(Hint(content = Text(messages("contactNumber.hint"))))
         )
 
