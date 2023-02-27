@@ -21,6 +21,10 @@ import play.api.libs.json.{Json, OFormat}
 final case class EclReturn(
   internalId: String,
   relevantAp12Months: Option[Boolean],
+  relevantApLength: Option[Int],
+  relevantApRevenue: Option[Long],
+  carriedOutAmlRegulatedActivityForFullFy: Option[Boolean],
+  amlRegulatedActivityLength: Option[Int],
   contactName: Option[String],
   contactRole: Option[String],
   contactEmailAddress: Option[String],
@@ -31,6 +35,10 @@ object EclReturn {
   def empty(internalId: String): EclReturn = EclReturn(
     internalId = internalId,
     relevantAp12Months = None,
+    relevantApLength = None,
+    relevantApRevenue = None,
+    carriedOutAmlRegulatedActivityForFullFy = None,
+    amlRegulatedActivityLength = None,
     contactName = None,
     contactRole = None,
     contactEmailAddress = None,

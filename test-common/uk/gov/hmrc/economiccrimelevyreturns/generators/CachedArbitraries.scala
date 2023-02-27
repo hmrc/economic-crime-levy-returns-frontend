@@ -21,7 +21,7 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.derive.MkArbitrary
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.EclTestData
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.QueryKnownFactsResponse
 
 object CachedArbitraries extends EclTestData {
@@ -32,5 +32,5 @@ object CachedArbitraries extends EclTestData {
   implicit lazy val arbEnrolments: Arbitrary[Enrolments]                           = mkArb
   implicit lazy val arbEclReturn: Arbitrary[EclReturn]                             = mkArb
   implicit lazy val arbQueryKnownFactsResponse: Arbitrary[QueryKnownFactsResponse] = mkArb
-
+  implicit lazy val arbMode: Arbitrary[Mode]                                       = mkArb
 }

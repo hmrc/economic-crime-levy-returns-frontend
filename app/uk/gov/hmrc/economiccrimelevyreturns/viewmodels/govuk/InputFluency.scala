@@ -31,14 +31,16 @@ trait InputFluency {
 
     def apply(
       field: Field,
-      label: Label
+      label: Label,
+      prefix: Option[PrefixOrSuffix] = None
     )(implicit messages: Messages): Input =
       Input(
         id = field.id,
         name = field.name,
         value = field.value,
         label = label,
-        errorMessage = errorMessage(field)
+        errorMessage = errorMessage(field),
+        prefix = prefix
       )
   }
 
