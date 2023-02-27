@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
@@ -27,24 +27,36 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext) {
 
-  private val eclReturnsUrl: String = s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns/returns"
+  private val eclReturnsUrl: String = s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns"
 
   def getReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Option[EclReturn]] =
     httpClient.GET[Option[EclReturn]](
-      s"$eclReturnsUrl/$internalId"
+      s"$eclReturnsUrl/returns/$internalId"
     )
 
   def upsertReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): Future[EclReturn] =
     httpClient.PUT[EclReturn, EclReturn](
-      eclReturnsUrl,
+      s"$eclReturnsUrl/returns",
       eclReturn
     )
 
   def deleteReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] =
     httpClient
       .DELETE[HttpResponse](
-        s"$eclReturnsUrl/$internalId"
+        s"$eclReturnsUrl/returns/$internalId"
       )
       .map(_ => ())
+
+  def calculateLiability(amlRegulatedActivityLength: Int, relevantApLength: Int, relevantApRevenue: Long)(implicit
+    hc: HeaderCarrier
+  ): Future[CalculatedLiability] =
+    httpClient.POST[CalculateLiabilityRequest, CalculatedLiability](
+      s"$eclReturnsUrl/calculate-liability",
+      CalculateLiabilityRequest(
+        amlRegulatedActivityLength = amlRegulatedActivityLength,
+        relevantApLength = relevantApLength,
+        ukRevenue = relevantApRevenue
+      )
+    )
 
 }

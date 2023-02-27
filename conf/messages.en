@@ -74,6 +74,10 @@ ukRevenue.error.wholeNumber = UK revenue must be a number rounded down to the ne
 ukRevenue.error.nonNumeric = UK revenue must be a number rounded down to the nearest pound
 ukRevenue.error.outOfRange = UK revenue must be between {0} and {1}
 
+amlRegulatedActivity.title = Did you carry out AML-regulated activity for the full financial year?
+amlRegulatedActivity.heading = Did you carry out AML-regulated activity for the full financial year?
+amlRegulatedActivity.p1 = For the purposes of the Economic Crime Levy (ECL), the UK financial year starts on 1 April and ends on 31 March of the following year.
+amlRegulatedActivity.error.required = Select if you carried out AML-regulated activity in the financial year
 
 contactName.title = Who is completing this return?
 contactName.heading = Who is completing this return?
