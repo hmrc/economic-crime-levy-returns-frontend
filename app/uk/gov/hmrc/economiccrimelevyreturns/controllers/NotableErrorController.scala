@@ -40,7 +40,6 @@ class NotableErrorController @Inject() (
     Ok(answersAreInvalidView())
   }
 
-
   def notRegistered: Action[AnyContent] = Action { implicit request =>
     Ok(notRegisteredView())
   }

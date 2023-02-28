@@ -29,9 +29,6 @@ class EnrolmentStoreProxyService @Inject() (enrolmentStoreProxyConnector: Enrolm
   ec: ExecutionContext
 ) {
 
-  // TODO This method could return a "maybe" registration date (in the future).
-  //      No registration date would mean the user is not yet registered
-  //
   def getEclRegistrationDate(eclRegistrationReference: String)(implicit hc: HeaderCarrier): Future[LocalDate] =
     enrolmentStoreProxyConnector.queryKnownFacts(eclRegistrationReference).map { queryKnownFactsResponse =>
       val enrolment: Option[Enrolment] =
