@@ -60,8 +60,8 @@ class AmlRegulatedActivityController @Inject() (
             .upsertReturn(
               request.eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(amlRegulatedActivity))
             )
-            .flatMap { updatedRegistration =>
-              pageNavigator.nextPage(mode, updatedRegistration).map(Redirect)
+            .flatMap { updatedReturn =>
+              pageNavigator.nextPage(mode, updatedReturn).map(Redirect)
             }
       )
   }

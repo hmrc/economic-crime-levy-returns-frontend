@@ -22,7 +22,7 @@
         button: GovukButton
 )
 
-@(form: Form[Boolean])(implicit request: Request[_], messages: Messages)
+@(form: Form[Boolean], mode: Mode)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleWithForm(form, messages("relevantAp12Months.title"))) {
     @if(form.errors.nonEmpty) {
@@ -33,7 +33,7 @@
     <p class="govuk-body">@messages("relevantAp12Months.p1")</p>
     <p class="govuk-body">@messages("relevantAp12Months.p2")</p>
 
-    @formHelper(action = RelevantAp12MonthsController.onSubmit()) {
+    @formHelper(action = RelevantAp12MonthsController.onSubmit(mode)) {
         @radios(
             RadiosViewModel(
                 field = form("value"),

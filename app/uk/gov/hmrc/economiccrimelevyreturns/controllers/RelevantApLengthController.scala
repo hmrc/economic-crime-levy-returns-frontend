@@ -21,33 +21,33 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
-import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
-import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
+import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
+import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.RelevantAp12MonthsPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
+import uk.gov.hmrc.economiccrimelevyreturns.navigation.RelevantApLengthPageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantApLengthView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RelevantAp12MonthsController @Inject() (
+class RelevantApLengthController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
   eclReturnsConnector: EclReturnsConnector,
-  formProvider: RelevantAp12MonthsFormProvider,
-  pageNavigator: RelevantAp12MonthsPageNavigator,
-  view: RelevantAp12MonthsView
+  formProvider: RelevantApLengthFormProvider,
+  pageNavigator: RelevantApLengthPageNavigator,
+  view: RelevantApLengthView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
 
-  val form: Form[Boolean] = formProvider()
+  val form: Form[Int] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.relevantAp12Months), mode))
+    Ok(view(form.prepare(request.eclReturn.relevantApLength), mode))
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
@@ -55,14 +55,15 @@ class RelevantAp12MonthsController @Inject() (
       .bindFromRequest()
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode))),
-        relevantAp12Months =>
+        relevantApLength =>
           eclReturnsConnector
             .upsertReturn(
-              request.eclReturn.copy(relevantAp12Months = Some(relevantAp12Months))
+              request.eclReturn.copy(relevantApLength = Some(relevantApLength))
             )
             .map { updatedReturn =>
               Redirect(pageNavigator.nextPage(mode, updatedReturn))
             }
       )
   }
+
 }

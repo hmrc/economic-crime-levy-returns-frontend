@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 class UkRevenuePageNavigatorSpec extends SpecBase {
@@ -26,8 +26,13 @@ class UkRevenuePageNavigatorSpec extends SpecBase {
   val pageNavigator = new UkRevenuePageNavigator
 
   "nextPage" should {
-    "return a Call to the ??? page in NormalMode" in forAll { (eclReturn: EclReturn, ukRevenue: Long) =>
-      //TODO Implement call and assertion when building the next page
+    "return a Call to the Aml regulated activity for full financial year page in NormalMode" in forAll {
+      (eclReturn: EclReturn, ukRevenue: Long) =>
+        val updatedReturn = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
+
+        pageNavigator.nextPage(NormalMode, updatedReturn) shouldBe routes.AmlRegulatedActivityController.onPageLoad(
+          NormalMode
+        )
     }
 
     "return a Call to the check your answers page in CheckMode" in forAll { (eclReturn: EclReturn, ukRevenue: Long) =>

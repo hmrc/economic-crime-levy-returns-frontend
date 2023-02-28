@@ -63,6 +63,16 @@ relevantAp12Months.p1 = Your relevant accounting period is the one that ends in 
 relevantAp12Months.p2 = For the purposes of the Economic Crime Levy (ECL), the financial year starts on 1 April and ends on 31 March of the following year.
 relevantAp12Months.error.required = Select an answer
 
+relevantApLength.title = How long is your relevant accounting period?
+relevantApLength.heading = How long is your relevant accounting period?
+relevantApLength.p1 = Your relevant accounting period is any accounting period that ends in the financial year.
+relevantApLength.p2 = For the purposes of the ECL, the financial year starts on 1 April and ends on 31 March of the following year.
+relevantApLength.hint = Enter the number in days
+relevantApLength.error.required = Enter the length
+relevantApLength.error.wholeNumber = Length must be a whole number
+relevantApLength.error.nonNumeric = Length must be a whole number
+relevantApLength.error.outOfRange = Length must be between {0} and {1} days
+
 ukRevenue.title = What was your UK revenue for the relevant accounting period?
 ukRevenue.heading = What was your UK revenue for the relevant accounting period?
 ukRevenue.p1 = For the purposes of the Economic Crime Levy (ECL), your UK revenue is defined as:
@@ -78,6 +88,37 @@ amlRegulatedActivity.title = Did you carry out AML-regulated activity for the fu
 amlRegulatedActivity.heading = Did you carry out AML-regulated activity for the full financial year?
 amlRegulatedActivity.p1 = For the purposes of the Economic Crime Levy (ECL), the UK financial year starts on 1 April and ends on 31 March of the following year.
 amlRegulatedActivity.error.required = Select if you carried out AML-regulated activity in the financial year
+
+amlRegulatedActivityLength.title = How many days of the financial year did you carry out AML-regulated activity?
+amlRegulatedActivityLength.heading = How many days of the financial year did you carry out AML-regulated activity?
+amlRegulatedActivityLength.p1 = Enter the total number of days you carried out AML-regulated activity during the financial year.
+amlRegulatedActivityLength.error.required = Enter the number of days you carried out AML-regulated activity
+amlRegulatedActivityLength.error.wholeNumber = Length must be a whole number
+amlRegulatedActivityLength.error.nonNumeric = Length must be a whole number
+amlRegulatedActivityLength.error.outOfRange = Length must be between {0} and {1} days
+
+estimatedEclAmount.title = Amount of ECL you need to pay
+estimatedEclAmount.heading = Amount of ECL you need to pay
+estimatedEclAmount.p1 = The estimated amount of levy you need to pay for this financial year is £{0}.
+estimatedEclAmount.p2 = For the purposes of the Economic Crime Levy (ECL), your band size is {0}.
+estimatedEclAmount.howWeWorkedThisOut = How we worked this out
+estimatedEclAmount.howWeWorkedThisOut.p1 = We calculated this amount based on what you told us:
+estimatedEclAmount.howWeWorkedThisOut.b1 = about your relevant accounting period
+estimatedEclAmount.howWeWorkedThisOut.b2 = about your UK revenue for the accounting period
+estimatedEclAmount.howWeWorkedThisOut.b3 = if you carried out AML-regulated activity for the full financial year
+estimatedEclAmount.bands = How the size bands affect what you need to pay
+estimatedEclAmount.bands.p1 = There are four size bands:
+estimatedEclAmount.bands.b1 = small: under £{0} million in revenue
+estimatedEclAmount.bands.b2 = medium: between £{0} million and £{1} million in revenue
+estimatedEclAmount.bands.b3 = large: between £{0} million and £{1} billion in revenue
+estimatedEclAmount.bands.b4 = very large: over £{0} billion in revenue
+estimatedEclAmount.bands.p2 = These bands are based on the amount of UK revenue you earned in your relevant accounting period. They are adjusted if your relevant accounting period is not 12 months.
+estimatedEclAmount.nextSteps = What you need to do next
+estimatedEclAmount.nextSteps.p1 = You will need to tell us:
+estimatedEclAmount.nextSteps.b1 = the name of the person completing this return
+estimatedEclAmount.nextSteps.b2 = their role in your organisation
+estimatedEclAmount.nextSteps.b3 = their email address and phone number
+estimatedEclAmount.nextSteps.p2 = You can then check your answers and submit this return.
 
 contactName.title = Who is completing this return?
 contactName.heading = Who is completing this return?
@@ -110,6 +151,13 @@ contactNumber.error.invalid = Enter a telephone number, like 01632 960 001, 0770
 
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers
+checkYourAnswers.relevantAp12Months.label = Relevant accounting period is 12 months
+checkYourAnswers.relevantApLength.label = Relevant accounting period
+checkYourAnswers.relevantApLength.days = days
+checkYourAnswers.ukRevenue.label = Relevant UK revenue
+checkYourAnswers.amlRegulatedActivity.label = Carried out AML-regulated activity for the full financial year
+checkYourAnswers.amlRegulatedActivityLength.label = AML-regulated activity period
+checkYourAnswers.amlRegulatedActivityLength.days = days
 
 signedOut.title = For your security, we signed you out
 signedOut.heading = For your security, we signed you out
@@ -127,3 +175,8 @@ date.month.9 = September
 date.month.10 = October
 date.month.11 = November
 date.month.12 = December
+
+band.Small = small
+band.Medium = medium
+band.Large = large
+band.VeryLarge = very large

@@ -16,16 +16,21 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
+import play.api.Logging
+import play.api.http.Status.{NO_CONTENT, OK}
+import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext) {
+class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext)
+    extends Logging {
 
   private val eclReturnsUrl: String = s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns"
 
@@ -58,5 +63,24 @@ class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClien
         ukRevenue = relevantApRevenue
       )
     )
+
+  def getReturnValidationErrors(
+    internalId: String
+  )(implicit hc: HeaderCarrier): Future[Option[DataValidationErrors]] =
+    httpClient
+      .GET[Either[UpstreamErrorResponse, HttpResponse]](
+        s"$eclReturnsUrl/returns/$internalId/validation-errors"
+      )
+      .map {
+        case Right(httpResponse) =>
+          httpResponse.status match {
+            case NO_CONTENT => None
+            case OK         =>
+              logger.warn(s"Data validation errors:\n${Json.prettyPrint(httpResponse.json)}")
+              Some(httpResponse.json.as[DataValidationErrors])
+            case s          => throw new HttpException(s"Unexpected response with HTTP status $s", s)
+          }
+        case Left(e)             => throw e
+      }
 
 }

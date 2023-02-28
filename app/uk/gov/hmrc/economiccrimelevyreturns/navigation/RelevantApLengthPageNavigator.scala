@@ -20,17 +20,18 @@ import play.api.mvc.Call
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 
-class UkRevenuePageNavigator extends PageNavigator {
+class RelevantApLengthPageNavigator extends PageNavigator {
+
   override protected def navigateInNormalMode(eclReturn: EclReturn): Call =
-    eclReturn.relevantApRevenue match {
-      case Some(_) => routes.AmlRegulatedActivityController.onPageLoad(NormalMode)
+    eclReturn.relevantApLength match {
+      case Some(_) => routes.UkRevenueController.onPageLoad(NormalMode)
       case _       => routes.NotableErrorController.answersAreInvalid()
     }
 
   override protected def navigateInCheckMode(eclReturn: EclReturn): Call =
-    eclReturn.relevantApRevenue match {
+    eclReturn.relevantApLength match {
       case Some(_) => routes.EstimatedEclAmountController.onPageLoad()
       case _       => routes.NotableErrorController.answersAreInvalid()
-
     }
+
 }

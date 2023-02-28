@@ -49,7 +49,7 @@
 
     @button(
         ButtonViewModel(messages("site.start"))
-                .asLink(RelevantAp12MonthsController.onPageLoad().url)
+                .asLink(RelevantAp12MonthsController.onPageLoad(NormalMode).url)
                 .asStartButton()
                 .withAttribute("id" -> "start")
     )
