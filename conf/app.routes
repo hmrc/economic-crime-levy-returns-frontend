@@ -28,6 +28,7 @@ GET         /change-answer/contact-telephone          uk.gov.hmrc.economiccrimel
 POST        /change-answer/contact-telephone          uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNumberController.onSubmit(mode: Mode = CheckMode)
 
 GET         /answers-are-not-valid                    uk.gov.hmrc.economiccrimelevyreturns.controllers.NotableErrorController.answersAreInvalid()
+GET         /not-registered                           uk.gov.hmrc.economiccrimelevyreturns.controllers.NotableErrorController.notRegistered()
 
 GET         /assets/*file                             controllers.Assets.versioned(path = "/public", file: Asset)
 

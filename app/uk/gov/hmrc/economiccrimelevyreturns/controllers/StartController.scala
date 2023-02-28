@@ -38,6 +38,8 @@ class StartController @Inject() (
     with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = authorise.async { implicit request =>
+    // TODO If the getEclRegistrationDate could return a "maybe date" (Scala Option)
+    //      then upon resulting Scala None we could make this action redirect to "/not-registered"
     enrolmentStoreProxyService.getEclRegistrationDate(request.eclRegistrationReference).map { registrationDate =>
       Ok(view(request.eclRegistrationReference, ViewUtils.formatLocalDate(registrationDate)))
     }
