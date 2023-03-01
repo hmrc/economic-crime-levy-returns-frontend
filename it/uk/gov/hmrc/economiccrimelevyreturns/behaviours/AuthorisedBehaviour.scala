@@ -2,6 +2,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.behaviours
 
 import play.api.mvc.{Call, Result}
 import play.api.test.FakeRequest
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 
 import scala.concurrent.Future
@@ -16,8 +17,8 @@ trait AuthorisedBehaviour {
 
         val result: Future[Result] = callRoute(FakeRequest(call))
 
-        status(result)          shouldBe OK
-        contentAsString(result) shouldBe "User does not have an ECL enrolment"
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result).value shouldBe routes.NotableErrorController.notRegistered().url
       }
 
       "go to the agent not supported page if the user has an agent affinity group" in {

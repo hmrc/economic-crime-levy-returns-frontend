@@ -29,6 +29,7 @@ abstract class ISpecBase
     with BeforeAndAfterEach
     with BeforeAndAfterAll
     with Matchers
+    with OptionValues
     with DefaultAwaitTimeout
     with Writeables
     with RouteInvokers

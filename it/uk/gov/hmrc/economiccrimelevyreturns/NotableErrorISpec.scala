@@ -43,4 +43,12 @@ class NotableErrorISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
+  s"GET ${routes.NotableErrorController.notRegistered().url}" should {
+
+    "respond with 200 status and the 'not registered' HTML view" in {
+      val result = callRoute(FakeRequest(routes.NotableErrorController.notRegistered()))
+      status(result) shouldBe OK
+      html(result) should include("You need to register for the Economic Crime Levy")
+    }
+  }
 }
