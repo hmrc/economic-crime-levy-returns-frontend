@@ -62,8 +62,8 @@ class RelevantApLengthController @Inject() (
             .upsertReturn(
               dataCleanup.cleanup(request.eclReturn.copy(relevantApLength = Some(relevantApLength)))
             )
-            .map { updatedReturn =>
-              Redirect(pageNavigator.nextPage(mode, updatedReturn))
+            .flatMap { updatedReturn =>
+              pageNavigator.nextPage(mode, updatedReturn).map(Redirect)
             }
       )
   }

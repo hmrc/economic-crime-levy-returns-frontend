@@ -17,16 +17,15 @@
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.{Call, RequestHeader}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class AmlRegulatedActivityLengthPageNavigator @Inject() (eclReturnsConnector: EclReturnsConnector)(implicit
+class AmlRegulatedActivityLengthPageNavigator @Inject() (eclLiabilityService: EclLiabilityService)(implicit
   ec: ExecutionContext
 ) extends AsyncPageNavigator
     with FrontendHeaderCarrierProvider {
@@ -40,33 +39,5 @@ class AmlRegulatedActivityLengthPageNavigator @Inject() (eclReturnsConnector: Ec
   )(implicit request: RequestHeader): Future[Call] = navigate(eclReturn)
 
   private def navigate(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-    (
-      eclReturn.relevantAp12Months,
-      eclReturn.relevantApLength,
-      eclReturn.relevantApRevenue,
-      eclReturn.amlRegulatedActivityLength
-    ) match {
-      case (Some(true), _, Some(relevantApRevenue), Some(amlRegulatedActivityLength))                       =>
-        calculateLiability(amlRegulatedActivityLength, EclTaxYear.YearInDays, relevantApRevenue, eclReturn)
-          .map(_ => routes.EstimatedEclAmountController.onPageLoad())
-      case (Some(false), Some(relevantApLength), Some(relevantApRevenue), Some(amlRegulatedActivityLength)) =>
-        calculateLiability(amlRegulatedActivityLength, relevantApLength, relevantApRevenue, eclReturn)
-          .map(_ => routes.EstimatedEclAmountController.onPageLoad())
-      case _                                                                                                =>
-        Future.successful(routes.NotableErrorController.answersAreInvalid())
-    }
-
-  private def calculateLiability(
-    amlRegulatedActivityLength: Int,
-    relevantApLength: Int,
-    relevantApRevenue: Long,
-    eclReturn: EclReturn
-  )(implicit request: RequestHeader): Future[Unit] =
-    eclReturnsConnector.calculateLiability(amlRegulatedActivityLength, relevantApLength, relevantApRevenue).map {
-      calculatedLiability =>
-        eclReturnsConnector
-          .upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
-          .map(_ => ())
-    }
-
+    eclLiabilityService.calculateLiability(eclReturn).map(_ => routes.EstimatedEclAmountController.onPageLoad())
 }

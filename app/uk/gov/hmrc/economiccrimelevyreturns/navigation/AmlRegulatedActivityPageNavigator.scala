@@ -17,60 +17,33 @@
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.{Call, RequestHeader}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class AmlRegulatedActivityPageNavigator @Inject() (eclReturnsConnector: EclReturnsConnector)(implicit
+class AmlRegulatedActivityPageNavigator @Inject() (eclLiabilityService: EclLiabilityService)(implicit
   ec: ExecutionContext
 ) extends AsyncPageNavigator
     with FrontendHeaderCarrierProvider {
 
   override protected def navigateInNormalMode(
     eclReturn: EclReturn
-  )(implicit request: RequestHeader): Future[Call] =
-    eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
-      case Some(true)  => navigate(eclReturn)
-      case Some(false) => Future.successful(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode))
-      case _           => Future.successful(routes.NotableErrorController.answersAreInvalid())
-    }
+  )(implicit request: RequestHeader): Future[Call] = navigate(NormalMode, eclReturn)
 
   override protected def navigateInCheckMode(
     eclReturn: EclReturn
-  )(implicit request: RequestHeader): Future[Call] =
+  )(implicit request: RequestHeader): Future[Call] = navigate(CheckMode, eclReturn)
+
+  private def navigate(mode: Mode, eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
     eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
-      case Some(true)  => navigate(eclReturn)
-      case Some(false) => Future.successful(routes.AmlRegulatedActivityLengthController.onPageLoad(CheckMode))
+      case Some(true)  =>
+        eclLiabilityService.calculateLiability(eclReturn).map(_ => routes.EstimatedEclAmountController.onPageLoad())
+      case Some(false) => Future.successful(routes.AmlRegulatedActivityLengthController.onPageLoad(mode))
       case _           => Future.successful(routes.NotableErrorController.answersAreInvalid())
-    }
-
-  private def navigate(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-    (eclReturn.relevantAp12Months, eclReturn.relevantApLength, eclReturn.relevantApRevenue) match {
-      case (Some(true), _, Some(relevantApRevenue))                       =>
-        calculateLiability(EclTaxYear.YearInDays, EclTaxYear.YearInDays, relevantApRevenue, eclReturn)
-          .map(_ => routes.EstimatedEclAmountController.onPageLoad())
-      case (Some(false), Some(relevantApLength), Some(relevantApRevenue)) =>
-        calculateLiability(EclTaxYear.YearInDays, relevantApLength, relevantApRevenue, eclReturn)
-          .map(_ => routes.EstimatedEclAmountController.onPageLoad())
-      case _                                                              => Future.successful(routes.NotableErrorController.answersAreInvalid())
-    }
-
-  private def calculateLiability(
-    amlRegulatedActivityLength: Int,
-    relevantApLength: Int,
-    relevantApRevenue: Long,
-    eclReturn: EclReturn
-  )(implicit request: RequestHeader): Future[Unit] =
-    eclReturnsConnector.calculateLiability(amlRegulatedActivityLength, relevantApLength, relevantApRevenue).map {
-      calculatedLiability =>
-        eclReturnsConnector
-          .upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
-          .map(_ => ())
     }
 
 }

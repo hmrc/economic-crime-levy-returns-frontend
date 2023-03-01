@@ -62,8 +62,8 @@ class RelevantAp12MonthsController @Inject() (
             .upsertReturn(
               dataCleanup.cleanup(request.eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
             )
-            .map { updatedReturn =>
-              Redirect(pageNavigator.nextPage(mode, updatedReturn))
+            .flatMap { updatedReturn =>
+              pageNavigator.nextPage(mode, updatedReturn).map(Redirect)
             }
       )
   }

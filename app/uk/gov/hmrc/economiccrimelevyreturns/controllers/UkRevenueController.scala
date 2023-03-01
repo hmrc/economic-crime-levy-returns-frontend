@@ -62,8 +62,8 @@ class UkRevenueController @Inject() (
             .upsertReturn(
               dataCleanup.cleanup(request.eclReturn.copy(relevantApRevenue = Some(revenue)))
             )
-            .map { updatedReturn =>
-              Redirect(pageNavigator.nextPage(mode, updatedReturn))
+            .flatMap { updatedReturn =>
+              pageNavigator.nextPage(mode, updatedReturn).map(Redirect)
             }
       )
   }

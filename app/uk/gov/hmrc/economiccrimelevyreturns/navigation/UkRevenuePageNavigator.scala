@@ -16,21 +16,31 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
-import play.api.mvc.Call
+import play.api.mvc.{Call, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
-class UkRevenuePageNavigator extends PageNavigator {
-  override protected def navigateInNormalMode(eclReturn: EclReturn): Call =
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
+
+class UkRevenuePageNavigator @Inject() (eclLiabilityService: EclLiabilityService)(implicit
+  ec: ExecutionContext
+) extends AsyncPageNavigator
+    with FrontendHeaderCarrierProvider {
+
+  override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
     eclReturn.relevantApRevenue match {
-      case Some(_) => routes.AmlRegulatedActivityController.onPageLoad(NormalMode)
-      case _       => routes.NotableErrorController.answersAreInvalid()
+      case Some(_) => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(NormalMode))
+      case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
     }
 
-  override protected def navigateInCheckMode(eclReturn: EclReturn): Call =
+  override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
     eclReturn.relevantApRevenue match {
-      case Some(_) => routes.EstimatedEclAmountController.onPageLoad()
-      case _       => routes.NotableErrorController.answersAreInvalid()
+      case Some(_) =>
+        eclLiabilityService.calculateLiability(eclReturn).map(_ => routes.EstimatedEclAmountController.onPageLoad())
+      case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
 
     }
 }

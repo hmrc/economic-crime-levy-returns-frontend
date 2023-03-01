@@ -16,24 +16,33 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
-import play.api.mvc.Call
+import play.api.mvc.{Call, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
-class RelevantAp12MonthsPageNavigator extends PageNavigator {
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
-  override protected def navigateInNormalMode(eclReturn: EclReturn): Call =
+class RelevantAp12MonthsPageNavigator @Inject() (eclLiabilityService: EclLiabilityService)(implicit
+  ec: ExecutionContext
+) extends AsyncPageNavigator
+    with FrontendHeaderCarrierProvider {
+
+  override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
     eclReturn.relevantAp12Months match {
-      case Some(true)  => routes.UkRevenueController.onPageLoad(NormalMode)
-      case Some(false) => routes.RelevantApLengthController.onPageLoad(NormalMode)
-      case _           => routes.NotableErrorController.answersAreInvalid()
+      case Some(true)  => Future.successful(routes.UkRevenueController.onPageLoad(NormalMode))
+      case Some(false) => Future.successful(routes.RelevantApLengthController.onPageLoad(NormalMode))
+      case _           => Future.successful(routes.NotableErrorController.answersAreInvalid())
     }
 
-  override protected def navigateInCheckMode(eclReturn: EclReturn): Call =
+  override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
     eclReturn.relevantAp12Months match {
-      case Some(true)  => routes.EstimatedEclAmountController.onPageLoad()
-      case Some(false) => routes.RelevantApLengthController.onPageLoad(CheckMode)
-      case _           => routes.NotableErrorController.answersAreInvalid()
+      case Some(true)  =>
+        eclLiabilityService.calculateLiability(eclReturn).map(_ => routes.EstimatedEclAmountController.onPageLoad())
+      case Some(false) => Future.successful(routes.RelevantApLengthController.onPageLoad(CheckMode))
+      case _           => Future.successful(routes.NotableErrorController.answersAreInvalid())
     }
 
 }
