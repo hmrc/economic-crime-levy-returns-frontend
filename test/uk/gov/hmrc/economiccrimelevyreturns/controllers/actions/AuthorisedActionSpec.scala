@@ -26,6 +26,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.auth.core.syntax.retrieved.authSyntaxForRetrieved
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.{EnrolmentsWithEcl, EnrolmentsWithoutEcl}
 
@@ -79,8 +80,8 @@ class AuthorisedActionSpec extends SpecBase {
 
       val result: Future[Result] = authorisedAction.invokeBlock(fakeRequest, testAction)
 
-      status(result)          shouldBe OK
-      contentAsString(result) shouldBe "User does not have an ECL enrolment"
+      status(result)                 shouldBe SEE_OTHER
+      redirectLocation(result).value shouldBe routes.NotableErrorController.notRegistered().url
     }
 
     "redirect the user to the agent not supported page if they have an agent affinity group" in forAll {
