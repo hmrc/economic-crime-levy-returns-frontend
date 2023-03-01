@@ -16,43 +16,42 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
+import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
 
 import scala.concurrent.Future
 
 class AmlRegulatedActivityPageNavigatorSpec extends SpecBase {
 
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
 
-  val pageNavigator = new AmlRegulatedActivityPageNavigator(mockEclReturnsConnector)
+  val pageNavigator = new AmlRegulatedActivityPageNavigator(mockEclLiabilityService)
 
   "nextPage" should {
-    "return a Call to the amount of ECL you need to pay page from the AML regulated activity page in NormalMode when the 'Yes' option is selected" in forAll {
-      eclReturn: EclReturn =>
+    "return a Call to the amount of ECL you need to pay page from the AML regulated activity page in either mode when the 'Yes' option is selected" in forAll {
+      (eclReturn: EclReturn, mode: Mode, calculatedLiability: CalculatedLiability) =>
         val updatedReturn = eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(true))
 
-      //TODO: Add routing call when next page is implemented
-    }
-
-    "return a Call to the check your answers page from the AML regulated activity page in CheckMode when the 'Yes' option is selected" in forAll {
-      eclReturn: EclReturn =>
-        val updatedReturn = eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(true))
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability))))
 
         await(
-          pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)
-        ) shouldBe routes.CheckYourAnswersController.onPageLoad()
+          pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)
+        ) shouldBe routes.EstimatedEclAmountController.onPageLoad()
     }
 
     "return a Call to the Aml regulated activity length page from the AML regulated activity page in either mode when the 'No' option is selected" in forAll {
       (eclReturn: EclReturn, mode: Mode) =>
         val updatedReturn = eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(false))
 
-      //TODO: Add routing call when next page is implemented
+        await(
+          pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)
+        ) shouldBe routes.AmlRegulatedActivityLengthController.onPageLoad(mode)
     }
   }
 

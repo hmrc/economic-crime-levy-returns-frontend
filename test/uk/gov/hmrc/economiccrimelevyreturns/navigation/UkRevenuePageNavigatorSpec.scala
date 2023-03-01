@@ -16,36 +16,52 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
+
+import scala.concurrent.Future
 
 class UkRevenuePageNavigatorSpec extends SpecBase {
 
-  val pageNavigator = new UkRevenuePageNavigator
+  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
+
+  val pageNavigator = new UkRevenuePageNavigator(mockEclLiabilityService)
 
   "nextPage" should {
     "return a Call to the Aml regulated activity for full financial year page in NormalMode" in forAll {
       (eclReturn: EclReturn, ukRevenue: Long) =>
         val updatedReturn = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
 
-        pageNavigator.nextPage(NormalMode, updatedReturn) shouldBe routes.AmlRegulatedActivityController.onPageLoad(
+        await(
+          pageNavigator.nextPage(NormalMode, updatedReturn)(fakeRequest)
+        ) shouldBe routes.AmlRegulatedActivityController.onPageLoad(
           NormalMode
         )
     }
+    "return a Call to the ECL amount due page in CheckMode" in forAll {
+      (eclReturn: EclReturn, ukRevenue: Long, calculatedLiability: CalculatedLiability) =>
+        val updatedReturn = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
 
-    "return a Call to the check your answers page in CheckMode" in forAll { (eclReturn: EclReturn, ukRevenue: Long) =>
-      val updatedReturn = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability))))
 
-      pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad()
+        await(
+          pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)
+        ) shouldBe routes.EstimatedEclAmountController
+          .onPageLoad()
     }
 
     "return a Call to the answers are invalid page in either mode when the ECL return does not contain an answer for UK revenue" in forAll {
       (eclReturn: EclReturn, mode: Mode) =>
         val updatedReturn = eclReturn.copy(relevantApRevenue = None)
 
-        pageNavigator.nextPage(mode, updatedReturn) shouldBe routes.NotableErrorController.answersAreInvalid()
+        await(pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)) shouldBe routes.NotableErrorController
+          .answersAreInvalid()
     }
 
   }

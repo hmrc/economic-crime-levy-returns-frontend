@@ -16,26 +16,49 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
+
+import scala.concurrent.Future
 
 class RelevantAp12MonthsPageNavigatorSpec extends SpecBase {
 
-  val pageNavigator = new RelevantAp12MonthsPageNavigator
+  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
+
+  val pageNavigator = new RelevantAp12MonthsPageNavigator(mockEclLiabilityService)
 
   "nextPage" should {
     "return a Call to the UK revenue page from the relevant AP 12 months page in NormalMode when the 'Yes' option is selected" in forAll {
       eclReturn: EclReturn =>
         val updatedReturn = eclReturn.copy(relevantAp12Months = Some(true))
 
-        pageNavigator.nextPage(NormalMode, updatedReturn) shouldBe routes.UkRevenueController.onPageLoad(NormalMode)
+        await(pageNavigator.nextPage(NormalMode, updatedReturn)(fakeRequest)) shouldBe routes.UkRevenueController
+          .onPageLoad(NormalMode)
     }
 
-    "return a Call to the relevant AP length page from the relevant AP 12 months page in NormalMode when the 'No' option is selected" in forAll {
-      eclReturn: EclReturn =>
-        //TODO Implement call and assertion when building the next page
+    "return a Call to the ECL amount due page from the relevant AP 12 months page in CheckMode when the 'Yes' option is selected" in forAll {
+      (eclReturn: EclReturn, calculatedLiability: CalculatedLiability) =>
+        val updatedReturn = eclReturn.copy(relevantAp12Months = Some(true))
+
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability))))
+
+        await(
+          pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)
+        ) shouldBe routes.EstimatedEclAmountController.onPageLoad()
+    }
+
+    "return a Call to the relevant AP length page from the relevant AP 12 months page in either mode when the 'No' option is selected" in forAll {
+      (eclReturn: EclReturn, mode: Mode) =>
+        val updatedReturn = eclReturn.copy(relevantAp12Months = Some(false))
+
+        await(pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)) shouldBe routes.RelevantApLengthController
+          .onPageLoad(mode)
     }
   }
 

@@ -10,8 +10,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
 
-  s"GET ${routes.RelevantAp12MonthsController.onPageLoad().url}" should {
-    behave like authorisedActionRoute(routes.RelevantAp12MonthsController.onPageLoad())
+  s"GET ${routes.RelevantAp12MonthsController.onPageLoad(NormalMode).url}" should {
+    behave like authorisedActionRoute(routes.RelevantAp12MonthsController.onPageLoad(NormalMode))
 
     "respond with 200 status and the relevant AP 12 months view" in {
       stubAuthorised()
@@ -20,7 +20,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
 
-      val result = callRoute(FakeRequest(routes.RelevantAp12MonthsController.onPageLoad()))
+      val result = callRoute(FakeRequest(routes.RelevantAp12MonthsController.onPageLoad(NormalMode)))
 
       status(result) shouldBe OK
 
@@ -28,8 +28,8 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"POST ${routes.RelevantAp12MonthsController.onSubmit().url}"  should {
-    behave like authorisedActionRoute(routes.RelevantAp12MonthsController.onSubmit())
+  s"POST ${routes.RelevantAp12MonthsController.onSubmit(NormalMode).url}"  should {
+    behave like authorisedActionRoute(routes.RelevantAp12MonthsController.onSubmit(NormalMode))
 
     "save the selected option then redirect to the UK revenue page when the Yes option is selected" in {
       stubAuthorised()
@@ -38,12 +38,13 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
 
-      val updatedReturn = eclReturn.copy(relevantAp12Months = Some(true))
+      val updatedReturn =
+        eclReturn.copy(relevantAp12Months = Some(true), relevantApLength = None, calculatedLiability = None)
 
       stubUpsertReturn(updatedReturn)
 
       val result = callRoute(
-        FakeRequest(routes.RelevantAp12MonthsController.onSubmit())
+        FakeRequest(routes.RelevantAp12MonthsController.onSubmit(NormalMode))
           .withFormUrlEncodedBody(("value", "true"))
       )
 
@@ -59,11 +60,18 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
 
-      val updatedReturn = eclReturn.copy(relevantAp12Months = Some(false))
+      val updatedReturn = eclReturn.copy(relevantAp12Months = Some(false), calculatedLiability = None)
 
       stubUpsertReturn(updatedReturn)
 
-      //TODO Implement call and assertion when building the next page
+      val result = callRoute(
+        FakeRequest(routes.RelevantAp12MonthsController.onSubmit(NormalMode))
+          .withFormUrlEncodedBody(("value", "false"))
+      )
+
+      status(result) shouldBe SEE_OTHER
+
+      redirectLocation(result) shouldBe Some(routes.RelevantApLengthController.onPageLoad(NormalMode).url)
     }
   }
 }

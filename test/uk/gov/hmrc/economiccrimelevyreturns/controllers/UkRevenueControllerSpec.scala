@@ -21,14 +21,16 @@ import org.mockito.ArgumentMatchers.any
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.data.Form
 import play.api.http.Status.OK
-import play.api.mvc.{Call, Result}
+import play.api.mvc.{Call, RequestHeader, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.cleanup.UkRevenueDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.UkRevenuePageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
 
 import scala.concurrent.Future
@@ -40,11 +42,20 @@ class UkRevenueControllerSpec extends SpecBase {
   val form: Form[Long]                    = formProvider()
 
   val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
 
   val pageNavigator: UkRevenuePageNavigator =
-    new UkRevenuePageNavigator {
-      override protected def navigateInNormalMode(eclReturn: EclReturn): Call = onwardRoute
+    new UkRevenuePageNavigator(mockEclLiabilityService) {
+      override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
+        Future.successful(onwardRoute)
+
+      override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
+        Future.successful(onwardRoute)
     }
+
+  val dataCleanup: UkRevenueDataCleanup = new UkRevenueDataCleanup {
+    override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
+  }
 
   val minRevenue = 0L
   val maxRevenue = 99999999999L
@@ -57,31 +68,33 @@ class UkRevenueControllerSpec extends SpecBase {
       mockEclReturnsConnector,
       formProvider,
       pageNavigator,
+      dataCleanup,
       view
     )
   }
 
   "onPageLoad" should {
-    "return OK and the correct view when no answer has already been provided" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn.copy(relevantApRevenue = None)) {
-        val result: Future[Result] = controller.onPageLoad(NormalMode)(fakeRequest)
-
-        status(result) shouldBe OK
-
-        contentAsString(result) shouldBe view(form, NormalMode)(fakeRequest, messages).toString
-      }
-    }
-
-    "populate the view correctly when the question has previously been answered" in forAll {
-      (eclReturn: EclReturn, ukRevenue: Long) =>
-        new TestContext(
-          eclReturn.copy(relevantApRevenue = Some(ukRevenue))
-        ) {
-          val result: Future[Result] = controller.onPageLoad(NormalMode)(fakeRequest)
+    "return OK and the correct view when no answer has already been provided" in forAll {
+      (eclReturn: EclReturn, mode: Mode) =>
+        new TestContext(eclReturn.copy(relevantApRevenue = None)) {
+          val result: Future[Result] = controller.onPageLoad(mode)(fakeRequest)
 
           status(result) shouldBe OK
 
-          contentAsString(result) shouldBe view(form.fill(ukRevenue), NormalMode)(
+          contentAsString(result) shouldBe view(form, mode)(fakeRequest, messages).toString
+        }
+    }
+
+    "populate the view correctly when the question has previously been answered" in forAll {
+      (eclReturn: EclReturn, ukRevenue: Long, mode: Mode) =>
+        new TestContext(
+          eclReturn.copy(relevantApRevenue = Some(ukRevenue))
+        ) {
+          val result: Future[Result] = controller.onPageLoad(mode)(fakeRequest)
+
+          status(result) shouldBe OK
+
+          contentAsString(result) shouldBe view(form.fill(ukRevenue), mode)(
             fakeRequest,
             messages
           ).toString
@@ -92,8 +105,9 @@ class UkRevenueControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided UK revenue then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Long](minRevenue, maxRevenue)
-    ) { (eclReturn: EclReturn, ukRevenue: Long) =>
+      Gen.chooseNum[Long](minRevenue, maxRevenue),
+      Arbitrary.arbitrary[Mode]
+    ) { (eclReturn: EclReturn, ukRevenue: Long, mode: Mode) =>
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
 
@@ -101,7 +115,7 @@ class UkRevenueControllerSpec extends SpecBase {
           .thenReturn(Future.successful(updatedReturn))
 
         val result: Future[Result] =
-          controller.onSubmit(NormalMode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString)))
+          controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString)))
 
         status(result) shouldBe SEE_OTHER
 
@@ -111,16 +125,17 @@ class UkRevenueControllerSpec extends SpecBase {
 
     "return a Bad Request with form errors when invalid data is submitted" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.alphaStr
-    ) { (eclReturn: EclReturn, invalidRevenue: String) =>
+      Gen.alphaStr,
+      Arbitrary.arbitrary[Mode]
+    ) { (eclReturn: EclReturn, invalidRevenue: String, mode: Mode) =>
       new TestContext(eclReturn) {
         val result: Future[Result]     =
-          controller.onSubmit(NormalMode)(fakeRequest.withFormUrlEncodedBody(("value", invalidRevenue)))
+          controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", invalidRevenue)))
         val formWithErrors: Form[Long] = form.bind(Map("value" -> invalidRevenue))
 
         status(result) shouldBe BAD_REQUEST
 
-        contentAsString(result) shouldBe view(formWithErrors, NormalMode)(fakeRequest, messages).toString
+        contentAsString(result) shouldBe view(formWithErrors, mode)(fakeRequest, messages).toString
       }
     }
   }

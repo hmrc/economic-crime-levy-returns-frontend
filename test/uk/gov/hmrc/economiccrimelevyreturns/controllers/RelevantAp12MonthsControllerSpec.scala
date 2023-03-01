@@ -20,14 +20,16 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.data.Form
 import play.api.http.Status.OK
-import play.api.mvc.{Call, Result}
+import play.api.mvc.{Call, RequestHeader, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.RelevantAp12MonthsPageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
 
 import scala.concurrent.Future
@@ -39,9 +41,18 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
   val form: Form[Boolean]                          = formProvider()
 
   val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
 
-  val pageNavigator: RelevantAp12MonthsPageNavigator = new RelevantAp12MonthsPageNavigator {
-    override protected def navigateInNormalMode(eclReturn: EclReturn): Call = onwardRoute
+  val pageNavigator: RelevantAp12MonthsPageNavigator = new RelevantAp12MonthsPageNavigator(mockEclLiabilityService) {
+    override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
+      Future.successful(onwardRoute)
+
+    override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
+      Future.successful(onwardRoute)
+  }
+
+  val dataCleanup: RelevantAp12MonthsDataCleanup = new RelevantAp12MonthsDataCleanup {
+    override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
   }
 
   class TestContext(returnData: EclReturn) {
@@ -52,30 +63,32 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
       mockEclReturnsConnector,
       formProvider,
       pageNavigator,
+      dataCleanup,
       view
     )
   }
 
   "onPageLoad" should {
-    "return OK and the correct view when no answer has already been provided" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn.copy(relevantAp12Months = None)) {
-        val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+    "return OK and the correct view when no answer has already been provided" in forAll {
+      (eclReturn: EclReturn, mode: Mode) =>
+        new TestContext(eclReturn.copy(relevantAp12Months = None)) {
+          val result: Future[Result] = controller.onPageLoad(mode)(fakeRequest)
 
-        status(result) shouldBe OK
+          status(result) shouldBe OK
 
-        contentAsString(result) shouldBe view(form)(fakeRequest, messages).toString
-      }
+          contentAsString(result) shouldBe view(form, mode)(fakeRequest, messages).toString
+        }
     }
 
     "populate the view correctly when the question has previously been answered" in forAll {
-      (eclReturn: EclReturn, relevantAp12Months: Boolean) =>
+      (eclReturn: EclReturn, relevantAp12Months: Boolean, mode: Mode) =>
         new TestContext(
           eclReturn.copy(relevantAp12Months = Some(relevantAp12Months))
         ) {
-          val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+          val result: Future[Result] = controller.onPageLoad(mode)(fakeRequest)
 
           status(result)          shouldBe OK
-          contentAsString(result) shouldBe view(form.fill(relevantAp12Months))(
+          contentAsString(result) shouldBe view(form.fill(relevantAp12Months), mode)(
             fakeRequest,
             messages
           ).toString
@@ -85,7 +98,7 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
 
   "onSubmit" should {
     "save the selected answer then redirect to the next page" in forAll {
-      (eclReturn: EclReturn, relevantAp12Months: Boolean) =>
+      (eclReturn: EclReturn, relevantAp12Months: Boolean, mode: Mode) =>
         new TestContext(eclReturn) {
           val updatedReturn: EclReturn =
             eclReturn.copy(relevantAp12Months = Some(relevantAp12Months))
@@ -94,7 +107,7 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
             .thenReturn(Future.successful(updatedReturn))
 
           val result: Future[Result] =
-            controller.onSubmit()(
+            controller.onSubmit(mode)(
               fakeRequest.withFormUrlEncodedBody(("value", relevantAp12Months.toString))
             )
 
@@ -104,15 +117,16 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
         }
     }
 
-    "return a Bad Request with form errors when invalid data is submitted" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
-        val result: Future[Result]        = controller.onSubmit()(fakeRequest.withFormUrlEncodedBody(("value", "")))
-        val formWithErrors: Form[Boolean] = form.bind(Map("value" -> ""))
+    "return a Bad Request with form errors when invalid data is submitted" in forAll {
+      (eclReturn: EclReturn, mode: Mode) =>
+        new TestContext(eclReturn) {
+          val result: Future[Result]        = controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", "")))
+          val formWithErrors: Form[Boolean] = form.bind(Map("value" -> ""))
 
-        status(result) shouldBe BAD_REQUEST
+          status(result) shouldBe BAD_REQUEST
 
-        contentAsString(result) shouldBe view(formWithErrors)(fakeRequest, messages).toString
-      }
+          contentAsString(result) shouldBe view(formWithErrors, mode)(fakeRequest, messages).toString
+        }
     }
   }
 }
