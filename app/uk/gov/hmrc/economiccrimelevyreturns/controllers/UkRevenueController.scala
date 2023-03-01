@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.economiccrimelevyreturns.cleanup.UkRevenueDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
@@ -39,6 +40,7 @@ class UkRevenueController @Inject() (
   eclReturnsConnector: EclReturnsConnector,
   formProvider: UkRevenueFormProvider,
   pageNavigator: UkRevenuePageNavigator,
+  dataCleanup: UkRevenueDataCleanup,
   view: UkRevenueView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -57,7 +59,9 @@ class UkRevenueController @Inject() (
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode))),
         revenue =>
           eclReturnsConnector
-            .upsertReturn(request.eclReturn.copy(relevantApRevenue = Some(revenue)))
+            .upsertReturn(
+              dataCleanup.cleanup(request.eclReturn.copy(relevantApRevenue = Some(revenue)))
+            )
             .map { updatedReturn =>
               Redirect(pageNavigator.nextPage(mode, updatedReturn))
             }

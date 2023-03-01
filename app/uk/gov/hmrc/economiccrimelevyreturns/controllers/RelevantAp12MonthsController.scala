@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
@@ -39,6 +40,7 @@ class RelevantAp12MonthsController @Inject() (
   eclReturnsConnector: EclReturnsConnector,
   formProvider: RelevantAp12MonthsFormProvider,
   pageNavigator: RelevantAp12MonthsPageNavigator,
+  dataCleanup: RelevantAp12MonthsDataCleanup,
   view: RelevantAp12MonthsView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -58,7 +60,7 @@ class RelevantAp12MonthsController @Inject() (
         relevantAp12Months =>
           eclReturnsConnector
             .upsertReturn(
-              request.eclReturn.copy(relevantAp12Months = Some(relevantAp12Months))
+              dataCleanup.cleanup(request.eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
             )
             .map { updatedReturn =>
               Redirect(pageNavigator.nextPage(mode, updatedReturn))

@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.economiccrimelevyreturns.cleanup.AmlRegulatedActivityLengthDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
@@ -39,6 +40,7 @@ class AmlRegulatedActivityLengthController @Inject() (
   eclReturnsConnector: EclReturnsConnector,
   formProvider: AmlRegulatedActivityLengthFormProvider,
   pageNavigator: AmlRegulatedActivityLengthPageNavigator,
+  dataCleanup: AmlRegulatedActivityLengthDataCleanup,
   view: AmlRegulatedActivityLengthView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -58,7 +60,7 @@ class AmlRegulatedActivityLengthController @Inject() (
         amlRegulatedActivityLength =>
           eclReturnsConnector
             .upsertReturn(
-              request.eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength))
+              dataCleanup.cleanup(request.eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength)))
             )
             .flatMap { updatedReturn =>
               pageNavigator.nextPage(mode, updatedReturn).map(Redirect)
