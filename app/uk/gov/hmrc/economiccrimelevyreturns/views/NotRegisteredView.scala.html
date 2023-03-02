@@ -14,8 +14,11 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+
 @this(
-        layout: templates.Layout
+        layout: templates.Layout,
+        appConfig: AppConfig,
 )
 
 @()(implicit request: Request[_], messages: Messages)
@@ -23,5 +26,5 @@
 @layout(pageTitle = title(messages("notRegistered.title"))) {
  <h1 class="govuk-heading-xl">@messages("notRegistered.heading")</h1>
 
- <p class="govuk-body">@Html(messages("notRegistered.body"))</p>
+ <p class="govuk-body">@Html(messages("notRegistered.body", appConfig.registrationUrl))</p>
 }
