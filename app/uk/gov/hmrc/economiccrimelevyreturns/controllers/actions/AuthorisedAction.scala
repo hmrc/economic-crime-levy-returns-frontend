@@ -26,6 +26,7 @@ import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -66,7 +67,7 @@ class BaseAuthorisedAction @Inject() (
       case _: NoActiveSession        =>
         Redirect(config.signInUrl, Map("continue" -> Seq(s"${config.host}${request.uri}")))
       case _: InsufficientEnrolments =>
-        Ok("User does not have an ECL enrolment")
+        Redirect(routes.NotableErrorController.notRegistered().url)
     }
 
   implicit class OptionOps[T](o: Option[T]) {

@@ -20,14 +20,15 @@ import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.AnswersAreInvalidView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AnswersAreInvalidView, NotRegisteredView}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 import scala.concurrent.Future
 
 class NotableErrorControllerSpec extends SpecBase {
 
-  val answersAreInvalidView: AnswersAreInvalidView = app.injector.instanceOf[AnswersAreInvalidView]
+  val answersAreInvalidView = app.injector.instanceOf[AnswersAreInvalidView]
+  val notRegisteredView     = app.injector.instanceOf[NotRegisteredView]
 
   class TestContext(eclReturnData: EclReturn) {
     val controller = new NotableErrorController(
@@ -35,7 +36,8 @@ class NotableErrorControllerSpec extends SpecBase {
       fakeAuthorisedAction,
       fakeDataRetrievalAction(eclReturnData),
       appConfig,
-      answersAreInvalidView
+      answersAreInvalidView,
+      notRegisteredView
     )
   }
 
@@ -47,6 +49,18 @@ class NotableErrorControllerSpec extends SpecBase {
         status(result) shouldBe OK
 
         contentAsString(result) shouldBe answersAreInvalidView()(fakeRequest, messages).toString
+      }
+    }
+  }
+
+  "notRegisteredView" should {
+    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
+      new TestContext(eclReturn) {
+        val result: Future[Result] = controller.notRegistered()(fakeRequest)
+
+        status(result) shouldBe OK
+
+        contentAsString(result) shouldBe notRegisteredView()(fakeRequest, messages).toString
       }
     }
   }
