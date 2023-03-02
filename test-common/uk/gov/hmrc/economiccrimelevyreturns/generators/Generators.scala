@@ -48,8 +48,11 @@ trait Generators {
     genIntersperseString(numberGen, ",")
   }
 
+  def longsInRange(min: Long, max: Long): Gen[Long] =
+    Gen.chooseNum[Long](min, max)
+
   def longsInRangeWithCommas(min: Long, max: Long): Gen[String] = {
-    val numberGen = choose[Long](min, max).map(_.toString)
+    val numberGen = longsInRange(min, max).map(_.toString)
     genIntersperseString(numberGen, ",")
   }
 

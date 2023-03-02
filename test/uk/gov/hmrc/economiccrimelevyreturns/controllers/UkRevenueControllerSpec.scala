@@ -57,9 +57,6 @@ class UkRevenueControllerSpec extends SpecBase {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
   }
 
-  val minRevenue = 0L
-  val maxRevenue = 99999999999L
-
   class TestContext(eclReturnData: EclReturn) {
     val controller = new UkRevenueController(
       mcc,

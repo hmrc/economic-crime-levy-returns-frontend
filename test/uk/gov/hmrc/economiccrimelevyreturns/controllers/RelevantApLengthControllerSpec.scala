@@ -58,9 +58,6 @@ class RelevantApLengthControllerSpec extends SpecBase {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
   }
 
-  val minDays = 1
-  val maxDays = 999
-
   class TestContext(eclReturnData: EclReturn) {
     val controller = new RelevantApLengthController(
       mcc,

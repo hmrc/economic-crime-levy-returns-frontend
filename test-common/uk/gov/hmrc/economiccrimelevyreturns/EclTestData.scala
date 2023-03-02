@@ -69,10 +69,10 @@ trait EclTestData { self: Generators =>
   implicit val arbValidEclReturn: Arbitrary[ValidEclReturn] = Arbitrary {
     for {
       relevantAp12Months                      <- Arbitrary.arbitrary[Boolean]
-      relevantApLength                        <- Gen.chooseNum[Int](1, 999)
-      relevantApRevenue                       <- Arbitrary.arbitrary[Long]
+      relevantApLength                        <- Gen.chooseNum[Int](minDays, maxDays)
+      relevantApRevenue                       <- Gen.chooseNum[Long](minRevenue, maxRevenue)
       carriedOutAmlRegulatedActivityForFullFy <- Arbitrary.arbitrary[Boolean]
-      amlRegulatedActivityLength              <- Gen.chooseNum[Int](1, 999)
+      amlRegulatedActivityLength              <- Gen.chooseNum[Int](minDays, maxDays)
       calculatedLiability                     <- Arbitrary.arbitrary[CalculatedLiability]
       contactName                             <- stringsWithMaxLength(160)
       contactRole                             <- stringsWithMaxLength(160)
@@ -108,5 +108,10 @@ trait EclTestData { self: Generators =>
 
   val testInternalId: String               = alphaNumericString
   val testEclRegistrationReference: String = alphaNumericString
+
+  val minRevenue: Long = 0L
+  val maxRevenue: Long = 99999999999L
+  val minDays: Int     = 1
+  val maxDays: Int     = 999
 
 }

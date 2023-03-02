@@ -1,52 +1,53 @@
-package uk.gov.hmrc.economiccrimelevyregistration
+package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.test.FakeRequest
-import uk.gov.hmrc.economiccrimelevyregistration.base.ISpecBase
-import uk.gov.hmrc.economiccrimelevyregistration.behaviours.AuthorisedBehaviour
-import uk.gov.hmrc.economiccrimelevyregistration.controllers.routes
-import uk.gov.hmrc.economiccrimelevyregistration.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyregistration.models._
-import uk.gov.hmrc.economiccrimelevyregistration.utils.EclTaxYear
+import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 
 class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
 
   s"GET ${routes.AmlRegulatedActivityController.onPageLoad(NormalMode).url}" should {
-    behave like authorisedActionWithEnrolmentCheckRoute(routes.AmlRegulatedActivityController.onPageLoad(NormalMode))
+    behave like authorisedActionRoute(routes.AmlRegulatedActivityController.onPageLoad(NormalMode))
 
     "respond with 200 status and the Aml regulated HTML view" in {
-      stubAuthorisedWithNoGroupEnrolment()
+      stubAuthorised()
 
-      val expectedTaxYearStart = EclTaxYear.currentFyStartYear
-      val expectedTaxYearEnd   = EclTaxYear.currentFyEndYear
+      val eclReturn = random[EclReturn]
 
-      val registration = random[Registration]
-
-      stubGetRegistration(registration)
+      stubGetReturn(eclReturn)
 
       val result = callRoute(FakeRequest(routes.AmlRegulatedActivityController.onPageLoad(NormalMode)))
 
       status(result) shouldBe OK
 
-      html(result) should include(
-        s"Did you carry out AML-regulated activity between 1 April $expectedTaxYearStart and 31 March $expectedTaxYearEnd?"
-      )
+      html(result) should include("Did you carry out AML-regulated activity for the full financial year?")
     }
   }
 
   s"POST ${routes.AmlRegulatedActivityController.onSubmit(NormalMode).url}"  should {
-    behave like authorisedActionWithEnrolmentCheckRoute(routes.AmlRegulatedActivityController.onSubmit(NormalMode))
+    behave like authorisedActionRoute(routes.AmlRegulatedActivityController.onSubmit(NormalMode))
 
-    "save the selected AML regulated activity option then redirect to the AML supervisor page when the Yes option is selected" in {
-      stubAuthorisedWithNoGroupEnrolment()
+    "save the selected AML regulated activity option then redirect to the ECL amount due page when the Yes option is selected" in {
+      stubAuthorised()
 
-      val registration = random[Registration]
+      val ukRevenue = longsInRange(minRevenue, maxRevenue).sample.get
+      val eclReturn = random[EclReturn].copy(relevantAp12Months = Some(true), relevantApRevenue = Some(ukRevenue))
 
-      stubGetRegistration(registration)
+      stubGetReturn(eclReturn)
 
-      val updatedRegistration = registration.copy(carriedOutAmlRegulatedActivityInCurrentFy = Some(true))
+      val updatedReturn = eclReturn.copy(
+        carriedOutAmlRegulatedActivityForFullFy = Some(true),
+        amlRegulatedActivityLength = None,
+        calculatedLiability = None
+      )
 
-      stubUpsertRegistration(updatedRegistration)
+      stubUpsertReturn(updatedReturn)
+      stubCalculateLiability(CalculateLiabilityRequest(EclTaxYear.YearInDays, EclTaxYear.YearInDays, ukRevenue))
 
       val result = callRoute(
         FakeRequest(routes.AmlRegulatedActivityController.onSubmit(NormalMode))
@@ -55,22 +56,23 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
 
       status(result) shouldBe SEE_OTHER
 
-      redirectLocation(result) shouldBe Some(routes.AmlSupervisorController.onPageLoad(NormalMode).url)
+      redirectLocation(result) shouldBe Some(routes.EstimatedEclAmountController.onPageLoad().url)
     }
 
-    "save the selected AML regulated activity option then redirect to the not liable page when the No option is selected" in {
-      stubAuthorisedWithNoGroupEnrolment()
+    "save the selected AML regulated activity option then redirect to the AML regulated activity length page when the No option is selected" in {
+      stubAuthorised()
 
-      val registration = random[Registration].copy(internalId = testInternalId)
+      val eclReturn = random[EclReturn].copy(internalId = testInternalId)
 
-      stubGetRegistration(registration)
+      stubGetReturn(eclReturn)
 
-      val updatedRegistration =
-        Registration
-          .empty(testInternalId)
-          .copy(carriedOutAmlRegulatedActivityInCurrentFy = Some(false))
+      val updatedReturn = eclReturn.copy(
+        carriedOutAmlRegulatedActivityForFullFy = Some(false),
+        amlRegulatedActivityLength = None,
+        calculatedLiability = None
+      )
 
-      stubUpsertRegistration(updatedRegistration)
+      stubUpsertReturn(updatedReturn)
 
       val result = callRoute(
         FakeRequest(routes.AmlRegulatedActivityController.onSubmit(NormalMode))
@@ -79,7 +81,7 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
 
       status(result) shouldBe SEE_OTHER
 
-      redirectLocation(result) shouldBe Some(routes.NotLiableController.onPageLoad().url)
+      redirectLocation(result) shouldBe Some(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode).url)
     }
   }
 }

@@ -1,28 +1,25 @@
-package uk.gov.hmrc.economiccrimelevyregistration
+package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.scalacheck.Gen
 import play.api.test.FakeRequest
-import uk.gov.hmrc.economiccrimelevyregistration.base.ISpecBase
-import uk.gov.hmrc.economiccrimelevyregistration.behaviours.AuthorisedBehaviour
-import uk.gov.hmrc.economiccrimelevyregistration.controllers.routes
-import uk.gov.hmrc.economiccrimelevyregistration.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyregistration.models._
+import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 
 class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
-  val minDays = 1
-  val maxDays = 999
-
   s"GET ${routes.RelevantApLengthController.onPageLoad(NormalMode).url}" should {
-    behave like authorisedActionWithEnrolmentCheckRoute(routes.RelevantApLengthController.onPageLoad(NormalMode))
+    behave like authorisedActionRoute(routes.RelevantApLengthController.onPageLoad(NormalMode))
 
     "respond with 200 status and the relevant AP length view" in {
-      stubAuthorisedWithNoGroupEnrolment()
+      stubAuthorised()
 
-      val registration = random[Registration]
+      val eclReturn = random[EclReturn]
 
-      stubGetRegistration(registration)
+      stubGetReturn(eclReturn)
 
       val result = callRoute(FakeRequest(routes.RelevantApLengthController.onPageLoad(NormalMode)))
 
@@ -32,21 +29,21 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"POST ${routes.RelevantApLengthController.onSubmit(NormalMode).url}"  should {
-    behave like authorisedActionWithEnrolmentCheckRoute(routes.RelevantApLengthController.onSubmit(NormalMode))
+  s"POST ${routes.RelevantApLengthController.onSubmit(NormalMode).url}" should {
+    behave like authorisedActionRoute(routes.RelevantApLengthController.onSubmit(NormalMode))
 
     "save the relevant AP length then redirect to the UK revenue page" in {
-      stubAuthorisedWithNoGroupEnrolment()
+      stubAuthorised()
 
-      val registration     = random[Registration]
+      val eclReturn = random[EclReturn]
       val relevantApLength = Gen.chooseNum[Int](minDays, maxDays).sample.get
 
-      stubGetRegistration(registration)
+      stubGetReturn(eclReturn)
 
-      val updatedRegistration =
-        registration.copy(relevantApLength = Some(relevantApLength), revenueMeetsThreshold = None)
+      val updatedReturn =
+        eclReturn.copy(relevantApLength = Some(relevantApLength), calculatedLiability = None)
 
-      stubUpsertRegistration(updatedRegistration)
+      stubUpsertReturn(updatedReturn)
 
       val result = callRoute(
         FakeRequest(routes.RelevantApLengthController.onSubmit(NormalMode))

@@ -1,7 +1,6 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
-import org.scalacheck.Gen
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
@@ -10,11 +9,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
-
-  val minRevenue = 0L
-  val maxRevenue = 99999999999L
-
-  val revenueGen: Gen[Long] = Gen.chooseNum[Long](minRevenue, maxRevenue)
 
   s"GET ${routes.UkRevenueController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.UkRevenueController.onPageLoad(NormalMode))
@@ -37,22 +31,30 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
   s"POST ${routes.UkRevenueController.onSubmit(NormalMode).url}"  should {
     behave like authorisedActionRoute(routes.UkRevenueController.onSubmit(NormalMode))
 
-    "save the UK revenue then redirect to the ??? page" in {
+    "save the UK revenue then redirect to the AML regulated activity page" in {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val ukRevenue    = revenueGen.sample.get
+      val ukRevenue = longsInRange(minRevenue, maxRevenue).sample.get
 
-      stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true)))
+      stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true), calculatedLiability = None))
 
       val updatedReturn = eclReturn.copy(
         relevantAp12Months = Some(true),
-        relevantApRevenue = Some(ukRevenue)
+        relevantApRevenue = Some(ukRevenue),
+        calculatedLiability = None
       )
 
       stubUpsertReturn(updatedReturn)
 
-      //TODO Implement call and assertion when building the next page
+      val result = callRoute(
+        FakeRequest(routes.UkRevenueController.onSubmit(NormalMode))
+          .withFormUrlEncodedBody(("value", ukRevenue.toString))
+      )
+
+      status(result) shouldBe SEE_OTHER
+
+      redirectLocation(result) shouldBe Some(routes.AmlRegulatedActivityController.onPageLoad(NormalMode).url)
     }
   }
 

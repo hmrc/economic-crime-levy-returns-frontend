@@ -3,54 +3,63 @@ package uk.gov.hmrc.economiccrimelevyreturns
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.scalacheck.Gen
 import play.api.test.FakeRequest
+import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 
-class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
+class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
-  val minDays = 1
-  val maxDays = 999
+  s"GET ${routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode).url}" should {
+    behave like authorisedActionRoute(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode))
 
-  s"GET ${routes.RelevantApLengthController.onPageLoad(NormalMode).url}" should {
-    behave like authorisedActionWithEnrolmentCheckRoute(routes.RelevantApLengthController.onPageLoad(NormalMode))
+    "respond with 200 status and the AML regulated activity length view" in {
+      stubAuthorised()
 
-    "respond with 200 status and the relevant AP length view" in {
-      stubAuthorisedWithNoGroupEnrolment()
+      val eclReturn = random[EclReturn]
 
-      val registration = random[Registration]
+      stubGetReturn(eclReturn)
 
-      stubGetRegistration(registration)
-
-      val result = callRoute(FakeRequest(routes.RelevantApLengthController.onPageLoad(NormalMode)))
+      val result = callRoute(FakeRequest(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode)))
 
       status(result) shouldBe OK
 
-      html(result) should include("How long is your relevant accounting period?")
+      html(result) should include("How many days of the financial year did you carry out AML-regulated activity?")
     }
   }
 
-  s"POST ${routes.RelevantApLengthController.onSubmit(NormalMode).url}"  should {
-    behave like authorisedActionWithEnrolmentCheckRoute(routes.RelevantApLengthController.onSubmit(NormalMode))
+  s"POST ${routes.AmlRegulatedActivityLengthController.onSubmit(NormalMode).url}" should {
+    behave like authorisedActionRoute(routes.AmlRegulatedActivityLengthController.onSubmit(NormalMode))
 
-    "save the relevant AP length then redirect to the UK revenue page" in {
-      stubAuthorisedWithNoGroupEnrolment()
+    "save the relevant AML regulated activity length then redirect to the ECL amount due page" in {
+      stubAuthorised()
 
-      val registration     = random[Registration]
-      val relevantApLength = Gen.chooseNum[Int](minDays, maxDays).sample.get
+      val ukRevenue = longsInRange(minRevenue, maxRevenue).sample.get
+      val amlRegulatedActivityLength = Gen.chooseNum[Int](minDays, maxDays).sample.get
+      val eclReturn = random[EclReturn].copy(
+        relevantAp12Months = Some(true),
+        relevantApRevenue = Some(ukRevenue),
+        carriedOutAmlRegulatedActivityForFullFy = Some(false)
+      )
 
-      stubGetRegistration(registration)
+      stubGetReturn(eclReturn)
 
-      val updatedRegistration =
-        registration.copy(relevantApLength = Some(relevantApLength), revenueMeetsThreshold = None)
+      val updatedReturn =
+        eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength), calculatedLiability = None)
 
-      stubUpsertRegistration(updatedRegistration)
+      stubUpsertReturn(updatedReturn)
+      stubCalculateLiability(CalculateLiabilityRequest(amlRegulatedActivityLength, EclTaxYear.YearInDays, ukRevenue))
 
       val result = callRoute(
-        FakeRequest(routes.RelevantApLengthController.onSubmit(NormalMode))
-          .withFormUrlEncodedBody(("value", relevantApLength.toString))
+        FakeRequest(routes.AmlRegulatedActivityLengthController.onSubmit(NormalMode))
+          .withFormUrlEncodedBody(("value", amlRegulatedActivityLength.toString))
       )
 
       status(result) shouldBe SEE_OTHER
 
-      redirectLocation(result) shouldBe Some(routes.UkRevenueController.onPageLoad(NormalMode).url)
+      redirectLocation(result) shouldBe Some(routes.EstimatedEclAmountController.onPageLoad().url)
     }
   }
 }
