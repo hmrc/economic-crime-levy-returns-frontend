@@ -39,7 +39,10 @@ class UkRevenuePageNavigator @Inject() (eclLiabilityService: EclLiabilityService
   override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
     eclReturn.relevantApRevenue match {
       case Some(_) =>
-        eclLiabilityService.calculateLiability(eclReturn).map(_ => routes.EstimatedEclAmountController.onPageLoad())
+        eclLiabilityService.calculateLiability(eclReturn) match {
+          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad())
+          case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
+        }
       case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
 
     }

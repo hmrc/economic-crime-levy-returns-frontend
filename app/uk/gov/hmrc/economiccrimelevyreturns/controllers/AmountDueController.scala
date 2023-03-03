@@ -18,10 +18,10 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, ValidatedReturnAction}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.NormalMode
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.EstimatedEclAmountView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmountDueView
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -30,32 +30,30 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class EstimatedEclAmountController @Inject() (
+class AmountDueController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
-  validateReturnData: ValidatedReturnAction,
   getReturnData: DataRetrievalAction,
-  view: EstimatedEclAmountView
+  view: AmountDueView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData andThen validateReturnData) {
-    implicit request =>
-      val accountingDetails: SummaryList = SummaryListViewModel(
-        rows = Seq(
-          RelevantAp12MonthsSummary.row(),
-          RelevantApLengthSummary.row(),
-          UkRevenueSummary.row(),
-          AmlRegulatedActivitySummary.row(),
-          AmlRegulatedActivityLengthSummary.row()
-        ).flatten
-      ).withCssClass("govuk-!-margin-bottom-9")
+  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
+    val accountingDetails: SummaryList = SummaryListViewModel(
+      rows = Seq(
+        RelevantAp12MonthsSummary.row(),
+        RelevantApLengthSummary.row(),
+        UkRevenueSummary.row(),
+        AmlRegulatedActivitySummary.row(),
+        AmlRegulatedActivityLengthSummary.row()
+      ).flatten
+    ).withCssClass("govuk-!-margin-bottom-9")
 
-      request.eclReturn.calculatedLiability match {
-        case Some(calculatedLiability) => Ok(view(calculatedLiability, accountingDetails))
-        case _                         => Redirect(routes.NotableErrorController.answersAreInvalid())
-      }
+    request.eclReturn.calculatedLiability match {
+      case Some(calculatedLiability) => Ok(view(calculatedLiability, accountingDetails))
+      case _                         => Redirect(routes.NotableErrorController.answersAreInvalid())
+    }
   }
 
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>

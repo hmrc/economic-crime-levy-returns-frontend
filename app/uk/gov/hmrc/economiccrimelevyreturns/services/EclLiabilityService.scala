@@ -30,33 +30,24 @@ class EclLiabilityService @Inject() (eclReturnsConnector: EclReturnsConnector)(i
   ec: ExecutionContext
 ) extends FrontendHeaderCarrierProvider {
 
-  def calculateLiability(eclReturn: EclReturn)(implicit request: RequestHeader): Future[EclReturn] =
-    (
-      eclReturn.relevantAp12Months,
-      eclReturn.relevantApLength,
-      eclReturn.relevantApRevenue,
-      eclReturn.carriedOutAmlRegulatedActivityForFullFy,
-      eclReturn.amlRegulatedActivityLength
-    ) match {
-      case (Some(true), _, Some(relevantApRevenue), Some(true), _)                                 =>
-        calculateLiabilityImpl(EclTaxYear.YearInDays, relevantApRevenue, EclTaxYear.YearInDays, eclReturn)
-      case (Some(false), Some(relevantApLength), Some(relevantApRevenue), Some(true), _)           =>
-        calculateLiabilityImpl(relevantApLength, relevantApRevenue, EclTaxYear.YearInDays, eclReturn)
-      case (Some(true), _, Some(relevantApRevenue), Some(false), Some(amlRegulatedActivityLength)) =>
-        calculateLiabilityImpl(EclTaxYear.YearInDays, relevantApRevenue, amlRegulatedActivityLength, eclReturn)
-      case (
-            Some(false),
-            Some(relevantApLength),
-            Some(relevantApRevenue),
-            Some(false),
-            Some(amlRegulatedActivityLength)
-          ) =>
-        calculateLiabilityImpl(relevantApLength, relevantApRevenue, amlRegulatedActivityLength, eclReturn)
-      case _                                                                                       =>
-        throw new IllegalStateException("AP and/or AML data not found in ECL return")
-    }
+  private val defaultLength: Option[Int] = Some(EclTaxYear.YearInDays)
 
-  private def calculateLiabilityImpl(
+  def calculateLiability(eclReturn: EclReturn)(implicit request: RequestHeader): Option[Future[EclReturn]] =
+    for {
+      relevantAp12Months                      <- eclReturn.relevantAp12Months
+      relevantApLength                        <- if (relevantAp12Months) defaultLength else eclReturn.relevantApLength
+      relevantApRevenue                       <- eclReturn.relevantApRevenue
+      carriedOutAmlRegulatedActivityForFullFy <- eclReturn.carriedOutAmlRegulatedActivityForFullFy
+      amlRegulatedActivityLength              <-
+        if (carriedOutAmlRegulatedActivityForFullFy) defaultLength else eclReturn.amlRegulatedActivityLength
+    } yield calculateLiabilityAndUpsertReturn(
+      relevantApLength = relevantApLength,
+      relevantApRevenue = relevantApRevenue,
+      amlRegulatedActivityLength = amlRegulatedActivityLength,
+      eclReturn = eclReturn
+    )
+
+  private def calculateLiabilityAndUpsertReturn(
     relevantApLength: Int,
     relevantApRevenue: Long,
     amlRegulatedActivityLength: Int,

@@ -59,7 +59,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
 
       status(result) shouldBe SEE_OTHER
 
-      redirectLocation(result) shouldBe Some(routes.EstimatedEclAmountController.onPageLoad().url)
+      redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad().url)
     }
   }
 }

@@ -29,8 +29,8 @@ POST        /aml-regulated-activity-days                                     uk.
 GET         /change-answer/aml-regulated-activity-days                       uk.gov.hmrc.economiccrimelevyreturns.controllers.AmlRegulatedActivityLengthController.onPageLoad(mode: Mode = CheckMode)
 POST        /change-answer/aml-regulated-activity-days                       uk.gov.hmrc.economiccrimelevyreturns.controllers.AmlRegulatedActivityLengthController.onSubmit(mode: Mode = CheckMode)
 
-GET         /estimated-ecl-payment-amount                                    uk.gov.hmrc.economiccrimelevyreturns.controllers.EstimatedEclAmountController.onPageLoad()
-POST        /estimated-ecl-payment-amount                                    uk.gov.hmrc.economiccrimelevyreturns.controllers.EstimatedEclAmountController.onSubmit()
+GET         /amount-due                                                      uk.gov.hmrc.economiccrimelevyreturns.controllers.AmountDueController.onPageLoad()
+POST        /amount-due                                                      uk.gov.hmrc.economiccrimelevyreturns.controllers.AmountDueController.onSubmit()
 
 GET         /contact-name                                                    uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNameController.onPageLoad(mode: Mode = NormalMode)
 POST        /contact-name                                                    uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNameController.onSubmit(mode: Mode = NormalMode)

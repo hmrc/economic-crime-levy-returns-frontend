@@ -43,17 +43,27 @@ class UkRevenuePageNavigatorSpec extends SpecBase {
           NormalMode
         )
     }
-    "return a Call to the ECL amount due page in CheckMode" in forAll {
+    "return a Call to the ECL amount due page in CheckMode and the ECL return data is valid" in forAll {
       (eclReturn: EclReturn, ukRevenue: Long, calculatedLiability: CalculatedLiability) =>
         val updatedReturn = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
 
         when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability))))
+          .thenReturn(Some(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))))
 
         await(
           pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)
-        ) shouldBe routes.EstimatedEclAmountController
-          .onPageLoad()
+        ) shouldBe routes.AmountDueController.onPageLoad()
+    }
+
+    "return a Call to the answers are invalid page in CheckMode when the ECL return data is invalid" in forAll {
+      (eclReturn: EclReturn) =>
+        val updatedReturn = eclReturn.copy(relevantAp12Months = None)
+
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(None)
+
+        await(pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)) shouldBe routes.NotableErrorController
+          .answersAreInvalid()
     }
 
     "return a Call to the answers are invalid page in either mode when the ECL return does not contain an answer for UK revenue" in forAll {

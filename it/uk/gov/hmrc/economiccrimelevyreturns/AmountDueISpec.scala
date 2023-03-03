@@ -7,23 +7,20 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
 
-class EstimatedEclAmountISpec extends ISpecBase with AuthorisedBehaviour {
+class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
-  s"GET ${routes.EstimatedEclAmountController.onPageLoad().url}" should {
-    behave like authorisedActionRoute(routes.EstimatedEclAmountController.onPageLoad())
+  s"GET ${routes.AmountDueController.onPageLoad().url}" should {
+    behave like authorisedActionRoute(routes.AmountDueController.onPageLoad())
 
     "respond with 200 status and the ECL amount due view when the ECL return data is valid" in {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val errors    = random[DataValidationErrors]
 
       stubGetReturn(eclReturn)
-      stubGetReturnValidationErrors(valid = true, errors)
 
-      val result = callRoute(FakeRequest(routes.EstimatedEclAmountController.onPageLoad()))
+      val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad()))
 
       status(result) shouldBe OK
 
@@ -33,13 +30,11 @@ class EstimatedEclAmountISpec extends ISpecBase with AuthorisedBehaviour {
     "redirect to the invalid data page when the ECL return data is invalid" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
-      val errors    = random[DataValidationErrors]
+      val eclReturn = random[EclReturn].copy(calculatedLiability = None)
 
       stubGetReturn(eclReturn)
-      stubGetReturnValidationErrors(valid = false, errors)
 
-      val result = callRoute(FakeRequest(routes.EstimatedEclAmountController.onPageLoad()))
+      val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad()))
 
       status(result) shouldBe SEE_OTHER
 
@@ -47,8 +42,8 @@ class EstimatedEclAmountISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"POST ${routes.EstimatedEclAmountController.onSubmit().url}"  should {
-    behave like authorisedActionRoute(routes.EstimatedEclAmountController.onSubmit())
+  s"POST ${routes.AmountDueController.onSubmit().url}"  should {
+    behave like authorisedActionRoute(routes.AmountDueController.onSubmit())
 
     "redirect to the who is completing this return page" in {
       stubAuthorised()
@@ -57,7 +52,7 @@ class EstimatedEclAmountISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
 
-      val result = callRoute(FakeRequest(routes.EstimatedEclAmountController.onSubmit()))
+      val result = callRoute(FakeRequest(routes.AmountDueController.onSubmit()))
 
       status(result) shouldBe SEE_OTHER
 

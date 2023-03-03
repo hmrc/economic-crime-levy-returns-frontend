@@ -41,7 +41,10 @@ class AmlRegulatedActivityPageNavigator @Inject() (eclLiabilityService: EclLiabi
   private def navigate(mode: Mode, eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
     eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
       case Some(true)  =>
-        eclLiabilityService.calculateLiability(eclReturn).map(_ => routes.EstimatedEclAmountController.onPageLoad())
+        eclLiabilityService.calculateLiability(eclReturn) match {
+          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad())
+          case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
+        }
       case Some(false) => Future.successful(routes.AmlRegulatedActivityLengthController.onPageLoad(mode))
       case _           => Future.successful(routes.NotableErrorController.answersAreInvalid())
     }

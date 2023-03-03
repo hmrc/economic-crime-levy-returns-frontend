@@ -40,16 +40,27 @@ class RelevantApLengthPageNavigatorSpec extends SpecBase {
         .onPageLoad(NormalMode)
     }
 
-    "return a Call to the ECL amount due page in CheckMode" in forAll {
+    "return a Call to the ECL amount due page in CheckMode when the ECL return data is valid" in forAll {
       (eclReturn: EclReturn, length: Int, calculatedLiability: CalculatedLiability) =>
         val updatedReturn = eclReturn.copy(relevantApLength = Some(length))
 
         when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability))))
+          .thenReturn(Some(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))))
 
         await(
           pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)
-        ) shouldBe routes.EstimatedEclAmountController.onPageLoad()
+        ) shouldBe routes.AmountDueController.onPageLoad()
+    }
+
+    "return a Call to the answers are invalid page in CheckMode when the ECL return data is invalid" in forAll {
+      (eclReturn: EclReturn) =>
+        val updatedReturn = eclReturn.copy(relevantAp12Months = None)
+
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(None)
+
+        await(pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)) shouldBe routes.NotableErrorController
+          .answersAreInvalid()
     }
   }
 

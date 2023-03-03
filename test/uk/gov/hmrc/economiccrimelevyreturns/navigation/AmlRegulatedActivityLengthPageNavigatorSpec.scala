@@ -33,15 +33,26 @@ class AmlRegulatedActivityLengthPageNavigatorSpec extends SpecBase {
   val pageNavigator = new AmlRegulatedActivityLengthPageNavigator(mockEclLiabilityService)
 
   "nextPage" should {
-    "return a Call to the ECL amount due page in either mode" in forAll {
+    "return a Call to the ECL amount due page in either mode when the ECL return data is valid" in forAll {
       (eclReturn: EclReturn, length: Int, calculatedLiability: CalculatedLiability, mode: Mode) =>
         val updatedReturn = eclReturn.copy(amlRegulatedActivityLength = Some(length))
 
         when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability))))
+          .thenReturn(Some(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))))
 
-        await(pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)) shouldBe routes.EstimatedEclAmountController
+        await(pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)) shouldBe routes.AmountDueController
           .onPageLoad()
+    }
+
+    "return a Call to the answers are invalid page in either mode when the ECL return data is invalid" in forAll {
+      (eclReturn: EclReturn, mode: Mode) =>
+        val updatedReturn = eclReturn.copy(relevantAp12Months = None)
+
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(None)
+
+        await(pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)) shouldBe routes.NotableErrorController
+          .answersAreInvalid()
     }
   }
 

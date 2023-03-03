@@ -40,7 +40,10 @@ class RelevantAp12MonthsPageNavigator @Inject() (eclLiabilityService: EclLiabili
   override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
     eclReturn.relevantAp12Months match {
       case Some(true)  =>
-        eclLiabilityService.calculateLiability(eclReturn).map(_ => routes.EstimatedEclAmountController.onPageLoad())
+        eclLiabilityService.calculateLiability(eclReturn) match {
+          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad())
+          case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
+        }
       case Some(false) => Future.successful(routes.RelevantApLengthController.onPageLoad(CheckMode))
       case _           => Future.successful(routes.NotableErrorController.answersAreInvalid())
     }

@@ -41,16 +41,28 @@ class RelevantAp12MonthsPageNavigatorSpec extends SpecBase {
           .onPageLoad(NormalMode)
     }
 
-    "return a Call to the ECL amount due page from the relevant AP 12 months page in CheckMode when the 'Yes' option is selected" in forAll {
+    "return a Call to the ECL amount due page from the relevant AP 12 months page in CheckMode when the 'Yes' option is selected and the ECL return data is valid" in forAll {
       (eclReturn: EclReturn, calculatedLiability: CalculatedLiability) =>
         val updatedReturn = eclReturn.copy(relevantAp12Months = Some(true))
 
         when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability))))
+          .thenReturn(Some(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))))
 
         await(
           pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)
-        ) shouldBe routes.EstimatedEclAmountController.onPageLoad()
+        ) shouldBe routes.AmountDueController.onPageLoad()
+    }
+
+    "return a Call to the answers are invalid page in CheckMode when the 'Yes' option is selected and the ECL return data is invalid" in forAll {
+      (eclReturn: EclReturn) =>
+        val updatedReturn =
+          eclReturn.copy(relevantAp12Months = Some(true), carriedOutAmlRegulatedActivityForFullFy = None)
+
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(None)
+
+        await(pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)) shouldBe routes.NotableErrorController
+          .answersAreInvalid()
     }
 
     "return a Call to the relevant AP length page from the relevant AP 12 months page in either mode when the 'No' option is selected" in forAll {

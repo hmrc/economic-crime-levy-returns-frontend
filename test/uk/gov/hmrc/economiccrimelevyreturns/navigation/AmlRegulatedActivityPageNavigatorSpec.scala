@@ -33,16 +33,28 @@ class AmlRegulatedActivityPageNavigatorSpec extends SpecBase {
   val pageNavigator = new AmlRegulatedActivityPageNavigator(mockEclLiabilityService)
 
   "nextPage" should {
-    "return a Call to the amount of ECL you need to pay page from the AML regulated activity page in either mode when the 'Yes' option is selected" in forAll {
+    "return a Call to the amount of ECL you need to pay page from the AML regulated activity page in either mode when the 'Yes' option is selected and the ECL return data is valid" in forAll {
       (eclReturn: EclReturn, mode: Mode, calculatedLiability: CalculatedLiability) =>
         val updatedReturn = eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(true))
 
         when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability))))
+          .thenReturn(Some(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))))
 
         await(
           pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)
-        ) shouldBe routes.EstimatedEclAmountController.onPageLoad()
+        ) shouldBe routes.AmountDueController.onPageLoad()
+    }
+
+    "return a Call to the answers are invalid page in either mode when the 'Yes' option is selected and the ECL return data is invalid" in forAll {
+      (eclReturn: EclReturn, mode: Mode) =>
+        val updatedReturn =
+          eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(true), relevantAp12Months = None)
+
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(None)
+
+        await(pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)) shouldBe routes.NotableErrorController
+          .answersAreInvalid()
     }
 
     "return a Call to the Aml regulated activity length page from the AML regulated activity page in either mode when the 'No' option is selected" in forAll {

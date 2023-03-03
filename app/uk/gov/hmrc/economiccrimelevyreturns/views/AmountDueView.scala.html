@@ -1,0 +1,74 @@
+@*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@this(
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        summaryList: GovukSummaryList,
+        button: GovukButton
+)
+
+@(calculatedLiability: CalculatedLiability, accountingDetails: SummaryList)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = title(messages("amountDue.title"))) {
+    @formHelper(action = AmountDueController.onSubmit()) {
+        <h1 class="govuk-heading-l">@messages("amountDue.heading")</h1>
+
+        <p class="govuk-body">@messages("amountDue.p1", calculatedLiability.amountDue)</p>
+        <p class="govuk-body">@messages("amountDue.p2", messages(s"band.${calculatedLiability.calculatedBand}"))</p>
+
+        <h2 class="govuk-heading-m">@messages("amountDue.howWeWorkedThisOut")</h2>
+
+        <p class="govuk-body">@messages("amountDue.howWeWorkedThisOut.p1")</p>
+
+        <ul class="govuk-list govuk-list--bullet">
+            <li>@messages("amountDue.howWeWorkedThisOut.b1")</li>
+            <li>@messages("amountDue.howWeWorkedThisOut.b2")</li>
+            <li>@messages("amountDue.howWeWorkedThisOut.b3")</li>
+        </ul>
+
+        @summaryList(accountingDetails)
+
+        <h2 class="govuk-heading-m">@messages("amountDue.bands")</h2>
+
+        <p class="govuk-body">@messages("amountDue.bands.p1")</p>
+
+        <ul class="govuk-list govuk-list--bullet">
+            <li>@messages("amountDue.bands.b1", calculatedLiability.bands.small.to)</li>
+            <li>@messages("amountDue.bands.b2", calculatedLiability.bands.medium.from, calculatedLiability.bands.medium.to)</li>
+            <li>@messages("amountDue.bands.b3", calculatedLiability.bands.large.from, calculatedLiability.bands.large.to)</li>
+            <li>@messages("amountDue.bands.b4", calculatedLiability.bands.veryLarge.from)</li>
+        </ul>
+
+        <p class="govuk-body">@messages("amountDue.bands.p2")</p>
+
+        <h2 class="govuk-heading-m">@messages("amountDue.nextSteps")</h2>
+
+        <p class="govuk-body">@messages("amountDue.nextSteps.p1")</p>
+
+        <ul class="govuk-list govuk-list--bullet">
+            <li>@messages("amountDue.nextSteps.b1")</li>
+            <li>@messages("amountDue.nextSteps.b2")</li>
+            <li>@messages("amountDue.nextSteps.b3")</li>
+        </ul>
+
+        <p class="govuk-body">@messages("amountDue.nextSteps.p2")</p>
+
+        @button(
+            ButtonViewModel(messages("site.saveAndContinue"))
+        )
+    }
+}

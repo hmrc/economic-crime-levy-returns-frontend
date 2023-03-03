@@ -46,12 +46,12 @@ class EclLiabilityServiceSpec extends SpecBase {
         when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(Future.successful(updatedReturn))
 
-        val result = await(service.calculateLiability(validEclReturn.eclReturn)(fakeRequest))
+        val result = await(service.calculateLiability(validEclReturn.eclReturn)(fakeRequest).value)
 
         result shouldBe updatedReturn
     }
 
-    "throw an IllegalStateException when the ECL return does not contain any of the required AP and/or AML answers" in forAll {
+    "return None when the ECL return does not contain any of the required AP and/or AML answers" in forAll {
       eclReturn: EclReturn =>
         val updatedReturn = eclReturn.copy(
           relevantAp12Months = None,
@@ -61,11 +61,9 @@ class EclLiabilityServiceSpec extends SpecBase {
           amlRegulatedActivityLength = None
         )
 
-        val result = intercept[IllegalStateException] {
-          await(service.calculateLiability(updatedReturn)(fakeRequest))
-        }
+        val result = service.calculateLiability(updatedReturn)(fakeRequest)
 
-        result.getMessage shouldBe "AP and/or AML data not found in ECL return"
+        result shouldBe None
     }
   }
 
