@@ -163,6 +163,10 @@ signedOut.title = For your security, we signed you out
 signedOut.heading = For your security, we signed you out
 signedOut.guidance = We did not save your answers.
 
+notRegistered.title = You need to register for the Economic Crime Levy
+notRegistered.heading = You need to register for the Economic Crime Levy
+notRegistered.body = You need to <a href="{0}" class="govuk-link">register for the Economic Crime Levy (ECL)</a> before you can submit a return.
+
 date.month.1 = January
 date.month.2 = February
 date.month.3 = March

@@ -54,6 +54,8 @@ POST        /change-answer/contact-telephone                                 uk.
 
 GET         /answers-are-not-valid                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.NotableErrorController.answersAreInvalid()
 
+GET         /not-registered                                                  uk.gov.hmrc.economiccrimelevyreturns.controllers.NotableErrorController.notRegistered()
+
 GET         /assets/*file                                                    controllers.Assets.versioned(path = "/public", file: Asset)
 
 GET         /check-your-answers                                              uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onPageLoad()
