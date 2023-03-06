@@ -43,14 +43,29 @@ class NotableErrorISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"GET ${routes.NotableErrorController.notRegistered().url}" should {
+  s"GET ${routes.NotableErrorController.notRegistered().url}"     should {
+    behave like authorisedActionRoute(routes.NotableErrorController.notRegistered())
 
-    "respond with 200 status and the 'not registered' HTML view" in {
+    "respond with 200 status and the not registered HTML view" in {
+      stubAuthorised()
+
       val result = callRoute(FakeRequest(routes.NotableErrorController.notRegistered()))
 
       status(result) shouldBe OK
-      html(result) should include("You need to register for the Economic Crime Levy")
-      html(result) should include("/register-for-the-economic-crime-levy")
+      html(result)     should include("You need to register for the Economic Crime Levy")
+    }
+  }
+
+  s"GET ${routes.NotableErrorController.agentCannotSubmitReturn().url}"     should {
+    behave like authorisedActionRoute(routes.NotableErrorController.agentCannotSubmitReturn())
+
+    "respond with 200 status and the agent cannot submit return HTML view" in {
+      stubAuthorised()
+
+      val result = callRoute(FakeRequest(routes.NotableErrorController.agentCannotSubmitReturn()))
+
+      status(result) shouldBe OK
+      html(result)     should include("You cannot use this service to submit an Economic Crime Levy return")
     }
   }
 }

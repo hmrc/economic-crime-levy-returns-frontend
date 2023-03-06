@@ -18,9 +18,8 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AnswersAreInvalidView, NotRegisteredView}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AgentCannotSubmitReturnView, AnswersAreInvalidView, NotRegisteredView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -30,9 +29,9 @@ class NotableErrorController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  appConfig: AppConfig,
   answersAreInvalidView: AnswersAreInvalidView,
-  notRegisteredView: NotRegisteredView
+  notRegisteredView: NotRegisteredView,
+  agentCannotSubmitReturnView: AgentCannotSubmitReturnView
 ) extends FrontendBaseController
     with I18nSupport {
 
@@ -40,7 +39,11 @@ class NotableErrorController @Inject() (
     Ok(answersAreInvalidView())
   }
 
-  def notRegistered: Action[AnyContent] = Action { implicit request =>
+  def notRegistered: Action[AnyContent] = authorise { implicit request =>
     Ok(notRegisteredView())
+  }
+
+  def agentCannotSubmitReturn: Action[AnyContent] = authorise { implicit request =>
+    Ok(agentCannotSubmitReturnView())
   }
 }

@@ -19,25 +19,26 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AnswersAreInvalidView, NotRegisteredView}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AgentCannotSubmitReturnView, AnswersAreInvalidView, NotRegisteredView}
 
 import scala.concurrent.Future
 
 class NotableErrorControllerSpec extends SpecBase {
 
-  val answersAreInvalidView = app.injector.instanceOf[AnswersAreInvalidView]
-  val notRegisteredView     = app.injector.instanceOf[NotRegisteredView]
+  val answersAreInvalidView: AnswersAreInvalidView             = app.injector.instanceOf[AnswersAreInvalidView]
+  val notRegisteredView: NotRegisteredView                     = app.injector.instanceOf[NotRegisteredView]
+  val agentCannotSubmitReturnView: AgentCannotSubmitReturnView = app.injector.instanceOf[AgentCannotSubmitReturnView]
 
   class TestContext(eclReturnData: EclReturn) {
     val controller = new NotableErrorController(
       mcc,
       fakeAuthorisedAction,
       fakeDataRetrievalAction(eclReturnData),
-      appConfig,
       answersAreInvalidView,
-      notRegisteredView
+      notRegisteredView,
+      agentCannotSubmitReturnView
     )
   }
 
@@ -53,7 +54,7 @@ class NotableErrorControllerSpec extends SpecBase {
     }
   }
 
-  "notRegisteredView" should {
+  "notRegistered" should {
     "return OK and the correct view" in forAll { eclReturn: EclReturn =>
       new TestContext(eclReturn) {
         val result: Future[Result] = controller.notRegistered()(fakeRequest)
@@ -61,6 +62,18 @@ class NotableErrorControllerSpec extends SpecBase {
         status(result) shouldBe OK
 
         contentAsString(result) shouldBe notRegisteredView()(fakeRequest, messages).toString
+      }
+    }
+  }
+
+  "agentCannotSubmitReturn" should {
+    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
+      new TestContext(eclReturn) {
+        val result: Future[Result] = controller.agentCannotSubmitReturn()(fakeRequest)
+
+        status(result) shouldBe OK
+
+        contentAsString(result) shouldBe agentCannotSubmitReturnView()(fakeRequest, messages).toString
       }
     }
   }

@@ -167,6 +167,13 @@ notRegistered.title = You need to register for the Economic Crime Levy
 notRegistered.heading = You need to register for the Economic Crime Levy
 notRegistered.body = You need to <a href="{0}" class="govuk-link">register for the Economic Crime Levy (ECL)</a> before you can submit a return.
 
+agentCannotSubmitReturn.title = You cannot use this service to submit an Economic Crime Levy return
+agentCannotSubmitReturn.heading = You cannot use this service to submit an Economic Crime Levy return
+agentCannotSubmitReturn.p1 = Agents cannot submit an Economic Crime Levy (ECL) return on behalf of a client.
+agentCannotSubmitReturn.p2 = Your client must submit a return using their own Government Gateway ID.
+agentCannotSubmitReturn.p3 = Go to your {0}.
+agentCannotSubmitReturn.p3.link = <a href="https://www.gov.uk/guidance/sign-in-to-your-agent-services-account" class="govuk-link">agent services account</a>
+
 date.month.1 = January
 date.month.2 = February
 date.month.3 = March

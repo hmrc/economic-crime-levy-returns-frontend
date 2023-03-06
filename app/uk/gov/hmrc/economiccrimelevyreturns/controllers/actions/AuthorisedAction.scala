@@ -24,9 +24,9 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -60,7 +60,7 @@ class BaseAuthorisedAction @Inject() (
         val affinityGroup: AffinityGroup = optAffinityGroup.getOrElseFail("Unable to retrieve affinityGroup")
 
         affinityGroup match {
-          case Agent => Future.successful(Ok("Agent account not supported - must be an organisation or individual"))
+          case Agent => Future.successful(Redirect(routes.NotableErrorController.agentCannotSubmitReturn()))
           case _     => block(AuthorisedRequest(request, internalId, eclRegistrationReference))
         }
     }(hc(request), executionContext) recover {
