@@ -96,8 +96,10 @@ class AuthorisedActionSpec extends SpecBase {
 
         val result: Future[Result] = authorisedAction.invokeBlock(fakeRequest, testAction)
 
-        status(result)          shouldBe OK
-        contentAsString(result) shouldBe "Agent account not supported - must be an organisation or individual"
+        status(result)                 shouldBe SEE_OTHER
+        redirectLocation(result).value shouldBe routes.NotableErrorController
+          .agentCannotSubmitReturn()
+          .url
     }
 
     "throw an IllegalStateException if there is no internal id" in {

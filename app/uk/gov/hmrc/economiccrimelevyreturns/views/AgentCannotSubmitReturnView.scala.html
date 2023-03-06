@@ -14,17 +14,21 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-
 @this(
-        layout: templates.Layout,
-        appConfig: AppConfig,
+        layout: templates.Layout
 )
 
 @()(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(messages("notRegistered.title"))) {
- <h1 class="govuk-heading-l">@messages("notRegistered.heading")</h1>
+@layout(
+    pageTitle = title(messages("agentCannotSubmitReturn.title")),
+    showBackLink = false
+) {
 
- <p class="govuk-body">@Html(messages("notRegistered.body", appConfig.registrationUrl))</p>
+    <h1 class="govuk-heading-l">@messages("agentCannotSubmitReturn.heading")</h1>
+
+    <p class="govuk-body">@messages("agentCannotSubmitReturn.p1")</p>
+    <p class="govuk-body">@messages("agentCannotSubmitReturn.p2")</p>
+    <p class="govuk-body">@Html(messages("agentCannotSubmitReturn.p3", messages("agentCannotSubmitReturn.p3.link")))</p>
+
 }
