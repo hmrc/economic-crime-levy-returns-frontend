@@ -151,6 +151,7 @@ contactNumber.error.invalid = Enter a telephone number, like 01632 960 001, 0770
 
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers
+checkYourAnswers.eclDetails = ECL details
 checkYourAnswers.relevantAp12Months.label = Relevant accounting period is 12 months
 checkYourAnswers.relevantApLength.label = Relevant accounting period
 checkYourAnswers.relevantApLength.days = days
@@ -158,6 +159,14 @@ checkYourAnswers.ukRevenue.label = Relevant UK revenue
 checkYourAnswers.amlRegulatedActivity.label = Carried out AML-regulated activity for the full financial year
 checkYourAnswers.amlRegulatedActivityLength.label = AML-regulated activity period
 checkYourAnswers.amlRegulatedActivityLength.days = days
+checkYourAnswers.contactDetails = Contact details
+checkYourAnswers.contactName.label = Return completed by
+checkYourAnswers.contactRole.label = Role
+checkYourAnswers.contactEmail.label = Email address
+checkYourAnswers.contactNumber.label = Telephone number
+checkYourAnswers.nowSend = Now submit your return
+checkYourAnswers.bySubmitting = By submitting this return, you are confirming that, to the best of your knowledge, the details you are providing are correct.
+checkYourAnswers.confirmAndSend = Confirm and send
 
 signedOut.title = For your security, we signed you out
 signedOut.heading = For your security, we signed you out

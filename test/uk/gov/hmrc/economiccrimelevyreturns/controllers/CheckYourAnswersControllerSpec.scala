@@ -16,11 +16,16 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
-import play.api.mvc.Result
+import play.api.i18n.Messages
+import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.FakeValidatedReturnAction
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
+import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
+import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 
@@ -35,6 +40,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       messagesApi,
       fakeAuthorisedAction,
       fakeDataRetrievalAction(eclReturn),
+      new FakeValidatedReturnAction(eclReturn),
       mcc,
       view
     )
@@ -43,13 +49,37 @@ class CheckYourAnswersControllerSpec extends SpecBase {
   "onPageLoad" should {
     "return OK and the correct view" in forAll { eclReturn: EclReturn =>
       new TestContext(eclReturn) {
-        val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+        implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+          ReturnDataRequest(fakeRequest, eclReturn.internalId, eclReturn)
+        implicit val messages: Messages                                           = messagesApi.preferred(returnDataRequest)
 
-        val list: SummaryList = SummaryList(Seq.empty)
+        val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
+
+        val eclDetails: SummaryList = SummaryListViewModel(
+          rows = Seq(
+            UkRevenueSummary.row()
+          ).flatten
+        ).withCssClass("govuk-!-margin-bottom-9")
+
+        val contactDetails: SummaryList = SummaryListViewModel(
+          rows = Seq(
+            ContactNameSummary.row(),
+            ContactRoleSummary.row(),
+            ContactEmailSummary.row(),
+            ContactNumberSummary.row()
+          ).flatten
+        ).withCssClass("govuk-!-margin-bottom-9")
 
         status(result)          shouldBe OK
-        contentAsString(result) shouldBe view(list)(fakeRequest, messages).toString
+        contentAsString(result) shouldBe view(eclDetails, contactDetails)(fakeRequest, messages).toString
       }
+    }
+  }
+
+  "onSubmit" should {
+    "submit the ECL return" in {
+      // TODO: Add the test as part of ECL-204
+      pending
     }
   }
 

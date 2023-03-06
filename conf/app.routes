@@ -59,6 +59,7 @@ GET         /not-registered                                                  uk.
 GET         /assets/*file                                                    controllers.Assets.versioned(path = "/public", file: Asset)
 
 GET         /check-your-answers                                              uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onPageLoad()
+POST        /check-your-answers                                              uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onSubmit()
 
 GET         /account/sign-out-survey                                         uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOut()
 GET         /account/sign-out                                                uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOutNoSurvey()

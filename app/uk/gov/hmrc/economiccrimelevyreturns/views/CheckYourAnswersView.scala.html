@@ -16,14 +16,32 @@
 
 @this(
     layout: templates.Layout,
-    govukSummaryList: GovukSummaryList
+    formHelper: FormWithCSRF,
+    govukSummaryList: GovukSummaryList,
+    govukButton: GovukButton
 )
 
-@(list: SummaryList)(implicit request: Request[_], messages: Messages)
+@(eclDetails: SummaryList, contactDetails: SummaryList)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(messages("checkYourAnswers.title"))) {
+    @formHelper(action = CheckYourAnswersController.onSubmit()) {
 
-    <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
+        <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
 
-    @govukSummaryList(list)
+        <h1 class="govuk-heading-m">@messages("checkYourAnswers.eclDetails")</h1>
+
+        @govukSummaryList(eclDetails)
+
+        <h1 class="govuk-heading-m">@messages("checkYourAnswers.contactDetails")</h1>
+
+        @govukSummaryList(contactDetails)
+
+        <h1 class="govuk-heading-m">@messages("checkYourAnswers.nowSend")</h1>
+
+        <div class="govuk-body">@messages("checkYourAnswers.bySubmitting")</div>
+
+        @govukButton(
+            ButtonViewModel(messages("checkYourAnswers.confirmAndSend"))
+        )
+    }
 }
