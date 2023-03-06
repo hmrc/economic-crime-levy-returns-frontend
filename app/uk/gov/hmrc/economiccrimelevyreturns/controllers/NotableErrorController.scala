@@ -39,11 +39,11 @@ class NotableErrorController @Inject() (
     Ok(answersAreInvalidView())
   }
 
-  def notRegistered: Action[AnyContent] = authorise { implicit request =>
+  def notRegistered: Action[AnyContent] = Action { implicit request =>
     Ok(notRegisteredView())
   }
 
-  def agentCannotSubmitReturn: Action[AnyContent] = authorise { implicit request =>
+  def agentCannotSubmitReturn: Action[AnyContent] = Action { implicit request =>
     Ok(agentCannotSubmitReturnView())
   }
 }

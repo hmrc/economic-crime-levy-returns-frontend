@@ -44,8 +44,6 @@ class NotableErrorISpec extends ISpecBase with AuthorisedBehaviour {
   }
 
   s"GET ${routes.NotableErrorController.notRegistered().url}"     should {
-    behave like authorisedActionRoute(routes.NotableErrorController.notRegistered())
-
     "respond with 200 status and the not registered HTML view" in {
       stubAuthorised()
 
@@ -57,8 +55,6 @@ class NotableErrorISpec extends ISpecBase with AuthorisedBehaviour {
   }
 
   s"GET ${routes.NotableErrorController.agentCannotSubmitReturn().url}"     should {
-    behave like authorisedActionRoute(routes.NotableErrorController.agentCannotSubmitReturn())
-
     "respond with 200 status and the agent cannot submit return HTML view" in {
       stubAuthorised()
 
