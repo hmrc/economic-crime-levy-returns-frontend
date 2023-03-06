@@ -42,7 +42,7 @@ class AmlRegulatedActivityPageNavigator @Inject() (eclLiabilityService: EclLiabi
     eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
       case Some(true)  =>
         eclLiabilityService.calculateLiability(eclReturn) match {
-          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad())
+          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad(mode))
           case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
         }
       case Some(false) => Future.successful(routes.AmlRegulatedActivityLengthController.onPageLoad(mode))

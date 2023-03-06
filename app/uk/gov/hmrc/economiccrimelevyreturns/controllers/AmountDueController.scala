@@ -19,7 +19,8 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
-import uk.gov.hmrc.economiccrimelevyreturns.models.NormalMode
+import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
+import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmountDuePageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmountDueView
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
@@ -34,12 +35,13 @@ class AmountDueController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
+  pageNavigator: AmountDuePageNavigator,
   view: AmountDueView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
     val accountingDetails: SummaryList = SummaryListViewModel(
       rows = Seq(
         RelevantAp12MonthsSummary.row(),
@@ -51,13 +53,13 @@ class AmountDueController @Inject() (
     ).withCssClass("govuk-!-margin-bottom-9")
 
     request.eclReturn.calculatedLiability match {
-      case Some(calculatedLiability) => Ok(view(calculatedLiability, accountingDetails))
+      case Some(calculatedLiability) => Ok(view(calculatedLiability, accountingDetails, mode))
       case _                         => Redirect(routes.NotableErrorController.answersAreInvalid())
     }
   }
 
-  def onSubmit: Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Redirect(routes.ContactNameController.onPageLoad(NormalMode))
+  def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
+    Redirect(pageNavigator.nextPage(mode, request.eclReturn))
   }
 
 }

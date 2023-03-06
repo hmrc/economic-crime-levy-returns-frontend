@@ -41,7 +41,7 @@ class RelevantAp12MonthsPageNavigator @Inject() (eclLiabilityService: EclLiabili
     eclReturn.relevantAp12Months match {
       case Some(true)  =>
         eclLiabilityService.calculateLiability(eclReturn) match {
-          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad())
+          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad(CheckMode))
           case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
         }
       case Some(false) => Future.successful(routes.RelevantApLengthController.onPageLoad(CheckMode))

@@ -42,7 +42,7 @@ class AmlRegulatedActivityPageNavigatorSpec extends SpecBase {
 
         await(
           pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)
-        ) shouldBe routes.AmountDueController.onPageLoad()
+        ) shouldBe routes.AmountDueController.onPageLoad(mode)
     }
 
     "return a Call to the answers are invalid page in either mode when the 'Yes' option is selected and the ECL return data is invalid" in forAll {

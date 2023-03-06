@@ -41,7 +41,7 @@ class AmlRegulatedActivityLengthPageNavigatorSpec extends SpecBase {
           .thenReturn(Some(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))))
 
         await(pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)) shouldBe routes.AmountDueController
-          .onPageLoad()
+          .onPageLoad(mode)
     }
 
     "return a Call to the answers are invalid page in either mode when the ECL return data is invalid" in forAll {
