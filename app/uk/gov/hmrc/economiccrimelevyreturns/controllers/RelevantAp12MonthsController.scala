@@ -19,11 +19,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
-import uk.gov.hmrc.economiccrimelevyreturns.models.NormalMode
+import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.RelevantAp12MonthsPageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -39,6 +40,7 @@ class RelevantAp12MonthsController @Inject() (
   eclReturnsConnector: EclReturnsConnector,
   formProvider: RelevantAp12MonthsFormProvider,
   pageNavigator: RelevantAp12MonthsPageNavigator,
+  dataCleanup: RelevantAp12MonthsDataCleanup,
   view: RelevantAp12MonthsView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -46,22 +48,22 @@ class RelevantAp12MonthsController @Inject() (
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.relevantAp12Months)))
+  def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
+    Ok(view(form.prepare(request.eclReturn.relevantAp12Months), mode))
   }
 
-  def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     form
       .bindFromRequest()
       .fold(
-        formWithErrors => Future.successful(BadRequest(view(formWithErrors))),
+        formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode))),
         relevantAp12Months =>
           eclReturnsConnector
             .upsertReturn(
-              request.eclReturn.copy(relevantAp12Months = Some(relevantAp12Months))
+              dataCleanup.cleanup(request.eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
             )
-            .map { updatedReturn =>
-              Redirect(pageNavigator.nextPage(NormalMode, updatedReturn))
+            .flatMap { updatedReturn =>
+              pageNavigator.nextPage(mode, updatedReturn).map(Redirect)
             }
       )
   }

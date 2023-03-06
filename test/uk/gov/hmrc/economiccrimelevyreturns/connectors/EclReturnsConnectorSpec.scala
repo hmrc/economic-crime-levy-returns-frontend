@@ -18,23 +18,25 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import play.api.http.Status.NO_CONTENT
+import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
+import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
-import uk.gov.hmrc.http.{HttpClient, HttpResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn}
+import uk.gov.hmrc.http.{HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.Future
 
 class EclReturnsConnectorSpec extends SpecBase {
   val mockHttpClient: HttpClient = mock[HttpClient]
   val connector                  = new EclReturnsConnector(appConfig, mockHttpClient)
-  val eclReturnsUrl              = "http://localhost:14003/economic-crime-levy-returns/returns"
+  val eclReturnsUrl              = "http://localhost:14003/economic-crime-levy-returns"
 
   "getReturn" should {
     "return an ecl return when the http client returns an ecl return" in forAll {
       (internalId: String, eclReturn: EclReturn) =>
-        val expectedUrl = s"$eclReturnsUrl/$internalId"
+        val expectedUrl = s"$eclReturnsUrl/returns/$internalId"
 
         when(mockHttpClient.GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any()))
           .thenReturn(Future.successful(Some(eclReturn)))
@@ -49,7 +51,7 @@ class EclReturnsConnectorSpec extends SpecBase {
     }
 
     "return none when the http client returns none" in forAll { internalId: String =>
-      val expectedUrl = s"$eclReturnsUrl/$internalId"
+      val expectedUrl = s"$eclReturnsUrl/returns/$internalId"
 
       when(mockHttpClient.GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(None))
@@ -67,7 +69,7 @@ class EclReturnsConnectorSpec extends SpecBase {
   "deleteReturn" should {
     "return unit when the http client successfully returns a http response" in forAll { internalId: String =>
       val response    = HttpResponse(NO_CONTENT, "", Map.empty)
-      val expectedUrl = s"$eclReturnsUrl/$internalId"
+      val expectedUrl = s"$eclReturnsUrl/returns/$internalId"
 
       when(mockHttpClient.DELETE[HttpResponse](ArgumentMatchers.eq(expectedUrl), any())(any(), any(), any()))
         .thenReturn(Future.successful(response))
@@ -84,7 +86,7 @@ class EclReturnsConnectorSpec extends SpecBase {
 
   "upsertReturn" should {
     "return the new or updated ecl return" in forAll { eclReturn: EclReturn =>
-      val expectedUrl = eclReturnsUrl
+      val expectedUrl = s"$eclReturnsUrl/returns"
 
       when(
         mockHttpClient
@@ -101,4 +103,129 @@ class EclReturnsConnectorSpec extends SpecBase {
       reset(mockHttpClient)
     }
   }
+
+  "calculateLiability" should {
+    "return the calculated liability when the http client returns the calculated liability" in forAll {
+      (
+        calculateLiabilityRequest: CalculateLiabilityRequest,
+        calculatedLiability: CalculatedLiability
+      ) =>
+        val expectedUrl = s"$eclReturnsUrl/calculate-liability"
+
+        when(
+          mockHttpClient.POST[CalculateLiabilityRequest, CalculatedLiability](
+            ArgumentMatchers.eq(expectedUrl),
+            ArgumentMatchers.eq(calculateLiabilityRequest),
+            any()
+          )(any(), any(), any(), any())
+        )
+          .thenReturn(Future.successful(calculatedLiability))
+
+        val result = await(
+          connector.calculateLiability(
+            calculateLiabilityRequest.amlRegulatedActivityLength,
+            calculateLiabilityRequest.relevantApLength,
+            calculateLiabilityRequest.ukRevenue
+          )
+        )
+
+        result shouldBe calculatedLiability
+
+        verify(mockHttpClient, times(1))
+          .POST[CalculateLiabilityRequest, CalculatedLiability](
+            ArgumentMatchers.eq(expectedUrl),
+            ArgumentMatchers.eq(calculateLiabilityRequest),
+            any()
+          )(any(), any(), any(), any())
+
+        reset(mockHttpClient)
+    }
+  }
+
+  "getReturnValidationErrors" should {
+    "return None when the http client returns 204 no content with no validation errors" in forAll {
+      internalId: String =>
+        val expectedUrl = s"$eclReturnsUrl/returns/$internalId/validation-errors"
+
+        val response = HttpResponse(NO_CONTENT, "")
+
+        when(
+          mockHttpClient
+            .GET[Either[UpstreamErrorResponse, HttpResponse]](ArgumentMatchers.eq(expectedUrl), any(), any())(
+              any(),
+              any(),
+              any()
+            )
+        ).thenReturn(Future.successful(Right(response)))
+
+        val result = await(connector.getReturnValidationErrors(internalId))
+
+        result shouldBe None
+    }
+
+    "return validation errors when the http client return 200 ok with validation errors" in forAll {
+      (internalId: String, dataValidationErrors: DataValidationErrors) =>
+        val expectedUrl = s"$eclReturnsUrl/returns/$internalId/validation-errors"
+
+        val response = HttpResponse(OK, Json.toJson(dataValidationErrors), Map.empty)
+
+        when(
+          mockHttpClient
+            .GET[Either[UpstreamErrorResponse, HttpResponse]](ArgumentMatchers.eq(expectedUrl), any(), any())(
+              any(),
+              any(),
+              any()
+            )
+        ).thenReturn(Future.successful(Right(response)))
+
+        val result = await(connector.getReturnValidationErrors(internalId))
+
+        result shouldBe Some(dataValidationErrors)
+    }
+
+    "throw a HttpException when an unexpected http status is returned by the http client" in forAll {
+      internalId: String =>
+        val expectedUrl = s"$eclReturnsUrl/returns/$internalId/validation-errors"
+
+        val response = HttpResponse(ACCEPTED, "")
+
+        when(
+          mockHttpClient
+            .GET[Either[UpstreamErrorResponse, HttpResponse]](ArgumentMatchers.eq(expectedUrl), any(), any())(
+              any(),
+              any(),
+              any()
+            )
+        ).thenReturn(Future.successful(Right(response)))
+
+        val result: HttpException = intercept[HttpException] {
+          await(connector.getReturnValidationErrors(internalId))
+        }
+
+        result.getMessage shouldBe s"Unexpected response with HTTP status $ACCEPTED"
+    }
+
+    "throw an UpstreamErrorResponse exception when the http client returns a error response" in forAll {
+      internalId: String =>
+        val expectedUrl = s"$eclReturnsUrl/returns/$internalId/validation-errors"
+
+        val response = UpstreamErrorResponse("Internal server error", INTERNAL_SERVER_ERROR)
+
+        when(
+          mockHttpClient
+            .GET[Either[UpstreamErrorResponse, HttpResponse]](ArgumentMatchers.eq(expectedUrl), any(), any())(
+              any(),
+              any(),
+              any()
+            )
+        ).thenReturn(Future.successful(Left(response)))
+
+        val result: UpstreamErrorResponse = intercept[UpstreamErrorResponse] {
+          await(connector.getReturnValidationErrors(internalId))
+        }
+
+        result.getMessage shouldBe "Internal server error"
+    }
+  }
+
 }

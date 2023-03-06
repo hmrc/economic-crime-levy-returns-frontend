@@ -36,7 +36,7 @@
     <p class="govuk-body">@messages("answersAreInvalid.p3")</p>
 
     @button(
-        ButtonViewModel(messages("answersAreInvalid.button")).asLink(RelevantAp12MonthsController.onPageLoad().url)
+        ButtonViewModel(messages("answersAreInvalid.button")).asLink(RelevantAp12MonthsController.onPageLoad(NormalMode).url)
     )
 
 }

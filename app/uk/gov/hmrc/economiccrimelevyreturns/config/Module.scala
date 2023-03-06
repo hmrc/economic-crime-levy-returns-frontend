@@ -31,6 +31,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       .to(classOf[ReturnDataRetrievalAction])
       .asEagerSingleton()
     bind(classOf[AuthorisedAction]).to(classOf[BaseAuthorisedAction]).asEagerSingleton()
+    bind(classOf[ValidatedReturnAction]).to(classOf[ValidatedReturnActionImpl]).asEagerSingleton()
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
 
     val enrolmentStoreProxyStubEnabled: Boolean = configuration.get[Boolean]("features.enrolmentStoreProxyStubEnabled")

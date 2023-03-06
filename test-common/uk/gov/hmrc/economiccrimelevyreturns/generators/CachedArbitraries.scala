@@ -21,16 +21,21 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.derive.MkArbitrary
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.EclTestData
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.QueryKnownFactsResponse
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
 
-object CachedArbitraries extends EclTestData {
+object CachedArbitraries extends EclTestData with Generators {
 
   private def mkArb[T](implicit mkArb: MkArbitrary[T]): Arbitrary[T] = MkArbitrary[T].arbitrary
 
-  implicit lazy val arbEnrolment: Arbitrary[Enrolment]                             = mkArb
-  implicit lazy val arbEnrolments: Arbitrary[Enrolments]                           = mkArb
-  implicit lazy val arbEclReturn: Arbitrary[EclReturn]                             = mkArb
-  implicit lazy val arbQueryKnownFactsResponse: Arbitrary[QueryKnownFactsResponse] = mkArb
+  implicit lazy val arbEnrolment: Arbitrary[Enrolment]                                 = mkArb
+  implicit lazy val arbEnrolments: Arbitrary[Enrolments]                               = mkArb
+  implicit lazy val arbEclReturn: Arbitrary[EclReturn]                                 = mkArb
+  implicit lazy val arbQueryKnownFactsResponse: Arbitrary[QueryKnownFactsResponse]     = mkArb
+  implicit lazy val arbMode: Arbitrary[Mode]                                           = mkArb
+  implicit lazy val arbCalculateLiabilityRequest: Arbitrary[CalculateLiabilityRequest] = mkArb
+  implicit lazy val arbCalculatedLiability: Arbitrary[CalculatedLiability]             = mkArb
+  implicit lazy val arbDataValidationErrors: Arbitrary[DataValidationErrors]           = mkArb
 
 }
