@@ -56,6 +56,7 @@ trait SpecBase
   val messages: Messages                               = messagesApi.preferred(fakeRequest)
   val bodyParsers: PlayBodyParsers                     = app.injector.instanceOf[PlayBodyParsers]
   val fakeAuthorisedAction                             = new FakeAuthorisedAction(bodyParsers)
+  val eclRegistrationReference: String                 = "test-ecl-registration-reference"
 
   def fakeDataRetrievalAction(data: EclReturn) = new FakeDataRetrievalAction(data)
 

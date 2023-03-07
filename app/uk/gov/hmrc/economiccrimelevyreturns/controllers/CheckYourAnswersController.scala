@@ -39,11 +39,18 @@ class CheckYourAnswersController @Inject() (
 ) extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad(): Action[AnyContent] = (authorise andThen getReturnData andThen validateReturnData) {
+  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData andThen validateReturnData) {
     implicit request =>
       val eclDetails: SummaryList = SummaryListViewModel(
         rows = Seq(
-          UkRevenueSummary.row()
+          EclReferenceNumberSummary.row(),
+          RelevantAp12MonthsSummary.row(),
+          RelevantApLengthSummary.row(),
+          UkRevenueSummary.row(),
+          AmlRegulatedActivitySummary.row(),
+          AmlRegulatedActivityLengthSummary.row(),
+          CalculatedBandSummary.row(),
+          AmountDueSummary.row()
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
@@ -59,7 +66,7 @@ class CheckYourAnswersController @Inject() (
       Ok(view(eclDetails, contactDetails))
   }
 
-  def onSubmit(): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+  def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     ???
   }
 

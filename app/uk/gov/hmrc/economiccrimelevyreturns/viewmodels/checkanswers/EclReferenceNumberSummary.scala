@@ -18,29 +18,20 @@ package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers
 
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.CheckMode
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.implicits._
-import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
 
-object UkRevenueSummary {
+object EclReferenceNumberSummary {
 
   def row()(implicit messages: Messages, request: ReturnDataRequest[_]): Option[SummaryListRow] =
-    request.eclReturn.relevantApRevenue.map { answer =>
+    Some(
       SummaryListRowViewModel(
-        key = Key("checkYourAnswers.ukRevenue.label"),
-        value = ValueViewModel(HtmlContent(HtmlFormat.escape(s"£${ViewUtils.formatNumber(answer)}"))),
-        actions = Seq(
-          ActionItemViewModel("site.change", routes.UkRevenueController.onPageLoad(CheckMode).url)
-            .withVisuallyHiddenText(
-              messages("checkYourAnswers.ukRevenue.label")
-            )
-        )
+        key = Key("checkYourAnswers.eclReferenceNumber.label"),
+        value = ValueViewModel(HtmlContent(HtmlFormat.escape(request.eclRegistrationReference)))
       )
-    }
+    )
 
 }

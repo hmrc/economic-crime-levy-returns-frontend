@@ -50,14 +50,21 @@ class CheckYourAnswersControllerSpec extends SpecBase {
     "return OK and the correct view" in forAll { eclReturn: EclReturn =>
       new TestContext(eclReturn) {
         implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
-          ReturnDataRequest(fakeRequest, eclReturn.internalId, eclReturn)
+          ReturnDataRequest(fakeRequest, eclReturn.internalId, eclReturn, eclRegistrationReference)
         implicit val messages: Messages                                           = messagesApi.preferred(returnDataRequest)
 
         val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
 
         val eclDetails: SummaryList = SummaryListViewModel(
           rows = Seq(
-            UkRevenueSummary.row()
+            EclReferenceNumberSummary.row(),
+            RelevantAp12MonthsSummary.row(),
+            RelevantApLengthSummary.row(),
+            UkRevenueSummary.row(),
+            AmlRegulatedActivitySummary.row(),
+            AmlRegulatedActivityLengthSummary.row(),
+            CalculatedBandSummary.row(),
+            AmountDueSummary.row()
           ).flatten
         ).withCssClass("govuk-!-margin-bottom-9")
 
