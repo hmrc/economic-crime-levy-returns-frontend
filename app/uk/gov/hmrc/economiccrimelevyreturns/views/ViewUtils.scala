@@ -53,6 +53,11 @@ object ViewUtils {
     }
 
   def formatMoney(amount: Number): String = {
+    val formatter = NumberFormat.getCurrencyInstance
+    formatter.format(amount)
+  }
+
+  def formatNumber(amount: Number): String = {
     val formatter = NumberFormat.getNumberInstance
     formatter.format(amount)
   }

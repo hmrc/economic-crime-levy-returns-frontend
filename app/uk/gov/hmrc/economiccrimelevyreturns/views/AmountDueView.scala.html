@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
+
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -21,13 +23,13 @@
         button: GovukButton
 )
 
-@(calculatedLiability: CalculatedLiability, accountingDetails: SummaryList)(implicit request: Request[_], messages: Messages)
+@(calculatedLiability: CalculatedLiability, accountingDetails: SummaryList, mode: Mode)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(messages("amountDue.title"))) {
-    @formHelper(action = AmountDueController.onSubmit()) {
+    @formHelper(action = AmountDueController.onSubmit(mode)) {
         <h1 class="govuk-heading-l">@messages("amountDue.heading")</h1>
 
-        <p class="govuk-body">@messages("amountDue.p1", calculatedLiability.amountDue)</p>
+        <p class="govuk-body">@messages("amountDue.p1", ViewUtils.formatMoney(calculatedLiability.amountDue))</p>
         <p class="govuk-body">@messages("amountDue.p2", messages(s"band.${calculatedLiability.calculatedBand}"))</p>
 
         <h2 class="govuk-heading-m">@messages("amountDue.howWeWorkedThisOut")</h2>

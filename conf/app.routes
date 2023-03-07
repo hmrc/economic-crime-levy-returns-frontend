@@ -29,8 +29,10 @@ POST        /aml-regulated-activity-days                                  uk.gov
 GET         /change-answer/aml-regulated-activity-days                    uk.gov.hmrc.economiccrimelevyreturns.controllers.AmlRegulatedActivityLengthController.onPageLoad(mode: Mode = CheckMode)
 POST        /change-answer/aml-regulated-activity-days                    uk.gov.hmrc.economiccrimelevyreturns.controllers.AmlRegulatedActivityLengthController.onSubmit(mode: Mode = CheckMode)
 
-GET         /amount-due                                                   uk.gov.hmrc.economiccrimelevyreturns.controllers.AmountDueController.onPageLoad()
-POST        /amount-due                                                   uk.gov.hmrc.economiccrimelevyreturns.controllers.AmountDueController.onSubmit()
+GET         /amount-due                                                   uk.gov.hmrc.economiccrimelevyreturns.controllers.AmountDueController.onPageLoad(mode: Mode = NormalMode)
+POST        /amount-due                                                   uk.gov.hmrc.economiccrimelevyreturns.controllers.AmountDueController.onSubmit(mode: Mode = NormalMode)
+GET         /change-answers/amount-due                                    uk.gov.hmrc.economiccrimelevyreturns.controllers.AmountDueController.onPageLoad(mode: Mode = CheckMode)
+POST        /change-answers/amount-due                                    uk.gov.hmrc.economiccrimelevyreturns.controllers.AmountDueController.onSubmit(mode: Mode = CheckMode)
 
 GET         /contact-name                                                 uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNameController.onPageLoad(mode: Mode = NormalMode)
 POST        /contact-name                                                 uk.gov.hmrc.economiccrimelevyreturns.controllers.ContactNameController.onSubmit(mode: Mode = NormalMode)
@@ -55,11 +57,13 @@ POST        /change-answer/contact-telephone                              uk.gov
 GET         /answers-are-not-valid                                        uk.gov.hmrc.economiccrimelevyreturns.controllers.NotableErrorController.answersAreInvalid()
 
 GET         /not-registered                                               uk.gov.hmrc.economiccrimelevyreturns.controllers.NotableErrorController.notRegistered()
+
 GET         /agent-cannot-submit-return                                   uk.gov.hmrc.economiccrimelevyreturns.controllers.NotableErrorController.agentCannotSubmitReturn()
 
 GET         /assets/*file                                                 controllers.Assets.versioned(path = "/public", file: Asset)
 
 GET         /check-your-answers                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onPageLoad()
+POST        /check-your-answers                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onSubmit()
 
 GET         /account/sign-out-survey                                      uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOut()
 GET         /account/sign-out                                             uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOutNoSurvey()

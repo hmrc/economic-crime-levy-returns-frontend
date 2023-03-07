@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.{Call, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
@@ -40,7 +40,7 @@ class UkRevenuePageNavigator @Inject() (eclLiabilityService: EclLiabilityService
     eclReturn.relevantApRevenue match {
       case Some(_) =>
         eclLiabilityService.calculateLiability(eclReturn) match {
-          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad())
+          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad(CheckMode))
           case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
         }
       case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())

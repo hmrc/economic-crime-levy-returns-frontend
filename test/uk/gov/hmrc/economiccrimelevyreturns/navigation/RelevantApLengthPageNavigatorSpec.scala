@@ -49,7 +49,7 @@ class RelevantApLengthPageNavigatorSpec extends SpecBase {
 
         await(
           pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)
-        ) shouldBe routes.AmountDueController.onPageLoad()
+        ) shouldBe routes.AmountDueController.onPageLoad(CheckMode)
     }
 
     "return a Call to the answers are invalid page in CheckMode when the ECL return data is invalid" in forAll {

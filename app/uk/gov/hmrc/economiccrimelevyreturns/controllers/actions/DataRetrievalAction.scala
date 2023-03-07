@@ -32,7 +32,7 @@ class ReturnDataRetrievalAction @Inject() (
 
   override protected def transform[A](request: AuthorisedRequest[A]): Future[ReturnDataRequest[A]] =
     eclReturnService.getOrCreateReturn(request.internalId)(hc(request)).map {
-      ReturnDataRequest(request.request, request.internalId, _)
+      ReturnDataRequest(request.request, request.internalId, _, request.eclRegistrationReference)
     }
 }
 

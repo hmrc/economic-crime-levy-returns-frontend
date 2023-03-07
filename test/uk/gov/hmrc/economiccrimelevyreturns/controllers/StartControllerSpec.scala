@@ -43,8 +43,6 @@ class StartControllerSpec extends SpecBase {
 
   "onPageLoad" should {
     "return OK and the correct view" in forAll { eclRegistrationDate: LocalDate =>
-      val eclRegistrationReference = "test-ecl-registration-reference"
-
       when(mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any()))
         .thenReturn(Future.successful(eclRegistrationDate))
 

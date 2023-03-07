@@ -10,8 +10,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 
 class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
-  s"GET ${routes.AmountDueController.onPageLoad().url}" should {
-    behave like authorisedActionRoute(routes.AmountDueController.onPageLoad())
+  s"GET ${routes.AmountDueController.onPageLoad(NormalMode).url}" should {
+    behave like authorisedActionRoute(routes.AmountDueController.onPageLoad(NormalMode))
 
     "respond with 200 status and the ECL amount due view when the ECL return data is valid" in {
       stubAuthorised()
@@ -20,7 +20,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
 
-      val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad()))
+      val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad(NormalMode)))
 
       status(result) shouldBe OK
 
@@ -34,7 +34,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
 
-      val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad()))
+      val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad(NormalMode)))
 
       status(result) shouldBe SEE_OTHER
 
@@ -42,8 +42,8 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"POST ${routes.AmountDueController.onSubmit().url}"  should {
-    behave like authorisedActionRoute(routes.AmountDueController.onSubmit())
+  s"POST ${routes.AmountDueController.onSubmit(NormalMode).url}"  should {
+    behave like authorisedActionRoute(routes.AmountDueController.onSubmit(NormalMode))
 
     "redirect to the who is completing this return page" in {
       stubAuthorised()
@@ -52,7 +52,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
 
-      val result = callRoute(FakeRequest(routes.AmountDueController.onSubmit()))
+      val result = callRoute(FakeRequest(routes.AmountDueController.onSubmit(NormalMode)))
 
       status(result) shouldBe SEE_OTHER
 
