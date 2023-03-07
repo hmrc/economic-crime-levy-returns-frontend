@@ -65,6 +65,8 @@ GET         /assets/*file                                                 contro
 GET         /check-your-answers                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onPageLoad()
 POST        /check-your-answers                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onSubmit()
 
+GET         /confirmation                                                 uk.gov.hmrc.economiccrimelevyreturns.controllers.ReturnSubmittedController.onPageLoad()
+
 GET         /account/sign-out-survey                                      uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOut()
 GET         /account/sign-out                                             uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOutNoSurvey()
 GET         /account/signed-out                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signedOut()

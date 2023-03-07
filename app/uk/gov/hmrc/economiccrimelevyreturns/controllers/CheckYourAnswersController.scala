@@ -19,7 +19,9 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, ValidatedReturnAction}
+import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
@@ -27,6 +29,7 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Singleton
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class CheckYourAnswersController @Inject() (
@@ -34,9 +37,11 @@ class CheckYourAnswersController @Inject() (
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
   validateReturnData: ValidatedReturnAction,
+  eclReturnsConnector: EclReturnsConnector,
   val controllerComponents: MessagesControllerComponents,
   view: CheckYourAnswersView
-) extends FrontendBaseController
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
     with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData andThen validateReturnData) {
@@ -67,7 +72,11 @@ class CheckYourAnswersController @Inject() (
   }
 
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
-    ???
+    eclReturnsConnector.submitReturn(request.internalId).map { response =>
+      Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
+        request.session + (SessionKeys.EclReference -> response.eclReference)
+      )
+    }
   }
 
 }
