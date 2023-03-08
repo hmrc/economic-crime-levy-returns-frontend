@@ -20,7 +20,6 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.mvc.{BodyParsers, Request, Result}
 import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Organisation}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
@@ -44,14 +43,14 @@ class AuthorisedActionSpec extends SpecBase {
     Future(Ok("Test"))
   }
 
-  val expectedRetrievals: Retrieval[Option[String] ~ Enrolments ~ Option[AffinityGroup]] =
-    Retrievals.internalId and Retrievals.authorisedEnrolments and Retrievals.affinityGroup
+  val expectedRetrievals: Retrieval[Option[String] ~ Enrolments] =
+    Retrievals.internalId and Retrievals.authorisedEnrolments
 
   "invokeBlock" should {
     "execute the block and return the result if authorised" in forAll {
       (internalId: String, enrolmentsWithEcl: EnrolmentsWithEcl) =>
         when(mockAuthConnector.authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any()))
-          .thenReturn(Future(Some(internalId) and enrolmentsWithEcl.enrolments and Some(Organisation)))
+          .thenReturn(Future(Some(internalId) and enrolmentsWithEcl.enrolments))
 
         val result: Future[Result] = authorisedAction.invokeBlock(fakeRequest, testAction)
 
@@ -71,7 +70,7 @@ class AuthorisedActionSpec extends SpecBase {
       }
     }
 
-    "redirect the user to the not enrolled page if they don't have the ECL enrolment" in {
+    "redirect the user to the not enrolled page if they have insufficient enrolments" in {
       when(
         mockAuthConnector
           .authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any())
@@ -84,27 +83,26 @@ class AuthorisedActionSpec extends SpecBase {
       redirectLocation(result).value shouldBe routes.NotableErrorController.notRegistered().url
     }
 
-    "redirect the user to the agent not supported page if they have an agent affinity group" in forAll {
-      (internalId: String, enrolmentsWithEcl: EnrolmentsWithEcl) =>
-        when(
-          mockAuthConnector
-            .authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any())
+    "redirect the user to the agent not supported page if they have an unsupported affinity group" in {
+      when(
+        mockAuthConnector
+          .authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any())
+      )
+        .thenReturn(
+          Future.failed(UnsupportedAffinityGroup())
         )
-          .thenReturn(
-            Future(Some(internalId) and enrolmentsWithEcl.enrolments and Some(Agent))
-          )
 
-        val result: Future[Result] = authorisedAction.invokeBlock(fakeRequest, testAction)
+      val result: Future[Result] = authorisedAction.invokeBlock(fakeRequest, testAction)
 
-        status(result)                 shouldBe SEE_OTHER
-        redirectLocation(result).value shouldBe routes.NotableErrorController
-          .agentCannotSubmitReturn()
-          .url
+      status(result)                 shouldBe SEE_OTHER
+      redirectLocation(result).value shouldBe routes.NotableErrorController
+        .agentCannotSubmitReturn()
+        .url
     }
 
     "throw an IllegalStateException if there is no internal id" in {
       when(mockAuthConnector.authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any()))
-        .thenReturn(Future(None and Enrolments(Set.empty) and Some(Organisation)))
+        .thenReturn(Future(None and Enrolments(Set.empty)))
 
       val result = intercept[IllegalStateException] {
         await(authorisedAction.invokeBlock(fakeRequest, testAction))
@@ -116,25 +114,13 @@ class AuthorisedActionSpec extends SpecBase {
     "throw an IllegalStateException if there is no ECL enrolment in the set of authorised enrolments" in forAll {
       (internalId: String, enrolmentsWithoutEcl: EnrolmentsWithoutEcl) =>
         when(mockAuthConnector.authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any()))
-          .thenReturn(Future(Some(internalId) and enrolmentsWithoutEcl.enrolments and Some(Organisation)))
+          .thenReturn(Future(Some(internalId) and enrolmentsWithoutEcl.enrolments))
 
         val result = intercept[IllegalStateException] {
           await(authorisedAction.invokeBlock(fakeRequest, testAction))
         }
 
         result.getMessage shouldBe s"Unable to retrieve enrolment with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
-    }
-
-    "throw an IllegalStateException if there is no affinity group" in forAll {
-      (internalId: String, enrolmentsWithEcl: EnrolmentsWithEcl) =>
-        when(mockAuthConnector.authorise(any(), ArgumentMatchers.eq(expectedRetrievals))(any(), any()))
-          .thenReturn(Future(Some(internalId) and enrolmentsWithEcl.enrolments and None))
-
-        val result = intercept[IllegalStateException] {
-          await(authorisedAction.invokeBlock(fakeRequest, testAction))
-        }
-
-        result.getMessage shouldBe "Unable to retrieve affinityGroup"
     }
   }
 

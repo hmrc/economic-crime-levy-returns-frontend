@@ -19,7 +19,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 import com.google.inject.Inject
 import play.api.mvc.Results._
 import play.api.mvc._
-import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
@@ -46,10 +45,10 @@ class BaseAuthorisedAction @Inject() (
     with AuthorisedFunctions {
 
   override def invokeBlock[A](request: Request[A], block: AuthorisedRequest[A] => Future[Result]): Future[Result] =
-    authorised(Enrolment(EclEnrolment.ServiceName)).retrieve(internalId and authorisedEnrolments and affinityGroup) {
-      case optInternalId ~ enrolments ~ optAffinityGroup =>
-        val internalId                   = optInternalId.getOrElseFail("Unable to retrieve internalId")
-        val eclRegistrationReference     =
+    authorised(AffinityGroup.Organisation or AffinityGroup.Individual and Enrolment(EclEnrolment.ServiceName))
+      .retrieve(internalId and authorisedEnrolments) { case optInternalId ~ enrolments =>
+        val internalId               = optInternalId.getOrElseFail("Unable to retrieve internalId")
+        val eclRegistrationReference =
           enrolments
             .getEnrolment(EclEnrolment.ServiceName)
             .flatMap(_.getIdentifier(EclEnrolment.IdentifierKey))
@@ -57,17 +56,13 @@ class BaseAuthorisedAction @Inject() (
               s"Unable to retrieve enrolment with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
             )
             .value
-        val affinityGroup: AffinityGroup = optAffinityGroup.getOrElseFail("Unable to retrieve affinityGroup")
 
-        affinityGroup match {
-          case Agent => Future.successful(Redirect(routes.NotableErrorController.agentCannotSubmitReturn()))
-          case _     => block(AuthorisedRequest(request, internalId, eclRegistrationReference))
-        }
-    }(hc(request), executionContext) recover {
-      case _: NoActiveSession        =>
+        block(AuthorisedRequest(request, internalId, eclRegistrationReference))
+      }(hc(request), executionContext) recover {
+      case _: NoActiveSession          =>
         Redirect(config.signInUrl, Map("continue" -> Seq(s"${config.host}${request.uri}")))
-      case _: InsufficientEnrolments =>
-        Redirect(routes.NotableErrorController.notRegistered().url)
+      case _: UnsupportedAffinityGroup => Redirect(routes.NotableErrorController.agentCannotSubmitReturn())
+      case _: InsufficientEnrolments   => Redirect(routes.NotableErrorController.notRegistered().url)
     }
 
   implicit class OptionOps[T](o: Option[T]) {
