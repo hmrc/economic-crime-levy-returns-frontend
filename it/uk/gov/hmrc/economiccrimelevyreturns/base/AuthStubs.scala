@@ -20,7 +20,7 @@ trait AuthStubs { self: WireMockStubs =>
                |    "identifiers": [],
                |    "state": "Activated"
                |  } ],
-               |  "retrieve": [ "internalId", "authorisedEnrolments", "affinityGroup" ]
+               |  "retrieve": [ "internalId", "authorisedEnrolments" ]
                |}
            """.stripMargin,
             true,
@@ -32,7 +32,6 @@ trait AuthStubs { self: WireMockStubs =>
         .withBody(s"""
              |{
              |  "internalId": "$testInternalId",
-             |  "affinityGroup": "Organisation",
              |  "authorisedEnrolments": [ {
              |    "key": "${EclEnrolment.ServiceName}",
              |    "identifiers": [{ "key":"${EclEnrolment.IdentifierKey}", "value": "$testEclRegistrationReference" }],
@@ -54,7 +53,7 @@ trait AuthStubs { self: WireMockStubs =>
                |    "identifiers": [],
                |    "state": "Activated"
                |  } ],
-               |  "retrieve": [ "internalId", "authorisedEnrolments", "affinityGroup" ]
+               |  "retrieve": [ "internalId", "authorisedEnrolments" ]
                |}
            """.stripMargin,
             true,
@@ -66,7 +65,7 @@ trait AuthStubs { self: WireMockStubs =>
         .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")
     )
 
-  def stubAuthorisedWithAgentAffinityGroup(): StubMapping =
+  def stubUnsupportedAffinityGroup(): StubMapping =
     stub(
       post(urlEqualTo("/auth/authorise"))
         .withRequestBody(
@@ -78,7 +77,7 @@ trait AuthStubs { self: WireMockStubs =>
                |    "identifiers": [],
                |    "state": "Activated"
                |  } ],
-               |  "retrieve": [ "internalId", "authorisedEnrolments", "affinityGroup" ]
+               |  "retrieve": [ "internalId", "authorisedEnrolments" ]
                |}
            """.stripMargin,
             true,
@@ -86,18 +85,8 @@ trait AuthStubs { self: WireMockStubs =>
           )
         ),
       aResponse()
-        .withStatus(OK)
-        .withBody(s"""
-             |{
-             |  "internalId": "$testInternalId",
-             |  "affinityGroup": "Agent",
-             |  "authorisedEnrolments": [ {
-             |    "key": "${EclEnrolment.ServiceName}",
-             |    "identifiers": [{ "key":"${EclEnrolment.IdentifierKey}", "value": "$testEclRegistrationReference" }],
-             |    "state": "activated"
-             |  } ]
-             |}
-         """.stripMargin)
+        .withStatus(UNAUTHORIZED)
+        .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAffinityGroup\"")
     )
 
 }

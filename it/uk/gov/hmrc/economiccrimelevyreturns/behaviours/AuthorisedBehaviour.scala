@@ -12,7 +12,7 @@ trait AuthorisedBehaviour {
 
   def authorisedActionRoute(call: Call): Unit =
     "authorisedAction" should {
-      "go to the not enrolled page if the user doesn't have an ECL enrolment" in {
+      "go to the not enrolled page if the user has insufficient enrolments" in {
         stubInsufficientEnrolments()
 
         val result: Future[Result] = callRoute(FakeRequest(call))
@@ -21,8 +21,8 @@ trait AuthorisedBehaviour {
         redirectLocation(result).value shouldBe routes.NotableErrorController.notRegistered().url
       }
 
-      "go to the agent not supported page if the user has an agent affinity group" in {
-        stubAuthorisedWithAgentAffinityGroup()
+      "go to the agent not supported page if the user has an unsupported affinity group" in {
+        stubUnsupportedAffinityGroup()
 
         val result: Future[Result] = callRoute(FakeRequest(call))
 
