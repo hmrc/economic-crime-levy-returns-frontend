@@ -37,7 +37,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
       stubAuthorised()
 
       val ukRevenue = longsInRange(minRevenue, maxRevenue).sample.get
-      val amlRegulatedActivityLength = Gen.chooseNum[Int](minDays, maxDays).sample.get
+      val amlRegulatedActivityLength = Gen.chooseNum[Int](minAmlDays, maxAmlDays).sample.get
       val eclReturn = random[EclReturn].copy(
         relevantAp12Months = Some(true),
         relevantApRevenue = Some(ukRevenue),
