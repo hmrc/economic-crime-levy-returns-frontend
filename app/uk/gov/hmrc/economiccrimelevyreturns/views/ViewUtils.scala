@@ -21,7 +21,7 @@ import play.api.i18n.Messages
 
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
-import java.time.{LocalDate, ZoneId}
+import java.time.{Instant, LocalDate, ZoneId}
 import java.util.Date
 
 object ViewUtils {
@@ -51,6 +51,9 @@ object ViewUtils {
       val formatter = new SimpleDateFormat("d MMMM yyyy")
       formatter.format(Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant))
     }
+
+  def formatInstantAsLocalDate(instant: Instant, translate: Boolean = true)(implicit messages: Messages): String =
+    formatLocalDate(LocalDate.ofInstant(instant, ZoneId.systemDefault()), translate)
 
   def formatMoney(amount: Number): String = {
     val formatter = NumberFormat.getCurrencyInstance

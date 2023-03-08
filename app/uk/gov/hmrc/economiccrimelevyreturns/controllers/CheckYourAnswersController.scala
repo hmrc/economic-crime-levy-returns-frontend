@@ -25,6 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
+import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils._
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -74,7 +75,9 @@ class CheckYourAnswersController @Inject() (
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     eclReturnsConnector.submitReturn(request.internalId).map { response =>
       Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
-        request.session + (SessionKeys.EclReference -> response.eclReference)
+        request.session
+          + (SessionKeys.EclReference  -> response.eclReference)
+          + (SessionKeys.SubmittedWhen -> formatInstantAsLocalDate(response.processingDate))
       )
     }
   }

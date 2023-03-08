@@ -23,7 +23,7 @@
         appConfig: AppConfig
 )
 
-@(eclReference: String)(implicit request: Request[_], messages: Messages)
+@(eclReference: String, submittedWhen: String)(implicit request: Request[_], messages: Messages)
 
 @panelContentHtml = {
     <p class="govuk-label--m">@messages("submitted.reference", eclReference)</p>
@@ -41,11 +41,11 @@
 
     <h2 class="govuk-heading-m">@messages("submitted.subHeading")</h2>
 
-    <p class="govuk-body">@messages("submitted.p1")</p>
+    <p class="govuk-body">@messages("submitted.p1", submittedWhen, EclTaxYear.currentFyStartYear, EclTaxYear.currentFyEndYear)</p>
 
     <p class="govuk-body">@messages("submitted.p2")</p>
 
-    <p class="govuk-body">@messages("submitted.p3", formatLocalDate(EclTaxYear.dueDate))</p>
+    <p class="govuk-body">@messages("submitted.p3", EclTaxYear.currentFyStartYear, EclTaxYear.currentFyEndYear, formatLocalDate(EclTaxYear.dueDate))</p>
 
     <p class="govuk-body">@messages("submitted.p4")</p>
 

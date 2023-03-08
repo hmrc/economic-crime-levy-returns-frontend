@@ -38,7 +38,11 @@ class ReturnSubmittedController @Inject() (
       .get(SessionKeys.EclReference)
       .getOrElse(throw new IllegalStateException("ECL reference number not found in session"))
 
-    Ok(view(eclReference))
+    val submittedWhen: String = request.session
+      .get(SessionKeys.SubmittedWhen)
+      .getOrElse(throw new IllegalStateException("ECL return submission date not found in session"))
+
+    Ok(view(eclReference, submittedWhen))
   }
 
 }
