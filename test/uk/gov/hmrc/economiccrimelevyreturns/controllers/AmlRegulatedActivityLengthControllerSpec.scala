@@ -61,7 +61,7 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
   class TestContext(eclReturnData: EclReturn) {
     val controller = new AmlRegulatedActivityLengthController(
       mcc,
-      fakeAuthorisedAction,
+      fakeAuthorisedAction(eclReturnData.internalId),
       fakeDataRetrievalAction(eclReturnData),
       mockEclReturnsConnector,
       formProvider,
@@ -103,7 +103,7 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided AML regulated activity length then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](minDays, maxDays),
+      Gen.chooseNum[Int](minAmlDays, maxAmlDays),
       Arbitrary.arbitrary[Mode]
     ) { (eclReturn: EclReturn, amlRegulatedActivityLength: Int, mode: Mode) =>
       new TestContext(eclReturn) {

@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclRetu
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 
 case class EnrolmentsWithEcl(enrolments: Enrolments)
 
@@ -39,6 +39,10 @@ final case class EclLiabilityCalculationData(
 final case class ValidEclReturn(eclReturn: EclReturn, eclLiabilityCalculationData: EclLiabilityCalculationData)
 
 trait EclTestData { self: Generators =>
+
+  implicit val arbInstant: Arbitrary[Instant] = Arbitrary {
+    Instant.now()
+  }
 
   implicit val arbLocalDate: Arbitrary[LocalDate] = Arbitrary {
     LocalDate.now()
@@ -69,10 +73,10 @@ trait EclTestData { self: Generators =>
   implicit val arbValidEclReturn: Arbitrary[ValidEclReturn] = Arbitrary {
     for {
       relevantAp12Months                      <- Arbitrary.arbitrary[Boolean]
-      relevantApLength                        <- Gen.chooseNum[Int](minDays, maxDays)
+      relevantApLength                        <- Gen.chooseNum[Int](minApDays, maxApDays)
       relevantApRevenue                       <- Gen.chooseNum[Long](minRevenue, maxRevenue)
       carriedOutAmlRegulatedActivityForFullFy <- Arbitrary.arbitrary[Boolean]
-      amlRegulatedActivityLength              <- Gen.chooseNum[Int](minDays, maxDays)
+      amlRegulatedActivityLength              <- Gen.chooseNum[Int](minAmlDays, maxAmlDays)
       calculatedLiability                     <- Arbitrary.arbitrary[CalculatedLiability]
       contactName                             <- stringsWithMaxLength(160)
       contactRole                             <- stringsWithMaxLength(160)
@@ -111,7 +115,9 @@ trait EclTestData { self: Generators =>
 
   val minRevenue: Long = 0L
   val maxRevenue: Long = 99999999999L
-  val minDays: Int     = 1
-  val maxDays: Int     = 999
+  val minApDays: Int   = 1
+  val maxApDays: Int   = 999
+  val minAmlDays: Int  = 1
+  val maxAmlDays: Int  = 365
 
 }

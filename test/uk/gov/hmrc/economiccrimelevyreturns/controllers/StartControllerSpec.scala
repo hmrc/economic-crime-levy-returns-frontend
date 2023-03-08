@@ -36,7 +36,7 @@ class StartControllerSpec extends SpecBase {
 
   val controller = new StartController(
     mcc,
-    fakeAuthorisedAction,
+    fakeAuthorisedAction(internalId),
     mockEnrolmentStoreProxyService,
     view
   )

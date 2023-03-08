@@ -53,7 +53,7 @@ object ViewUtils {
     }
 
   def formatInstantAsLocalDate(instant: Instant, translate: Boolean = true)(implicit messages: Messages): String =
-    formatLocalDate(LocalDate.ofInstant(instant, ZoneId.systemDefault()), translate)
+    formatLocalDate(LocalDate.ofInstant(instant, ZoneId.systemDefault), translate)
 
   def formatMoney(amount: Number): String = {
     val formatter = NumberFormat.getCurrencyInstance

@@ -48,7 +48,7 @@ class AmountDueControllerSpec extends SpecBase {
   class TestContext(eclReturnData: EclReturn) {
     val controller = new AmountDueController(
       mcc,
-      fakeAuthorisedAction,
+      fakeAuthorisedAction(eclReturnData.internalId),
       fakeDataRetrievalAction(eclReturnData),
       pageNavigator,
       view

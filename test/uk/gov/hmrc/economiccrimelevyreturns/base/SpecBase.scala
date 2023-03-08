@@ -50,13 +50,15 @@ trait SpecBase
     with EclTestData
     with Generators {
 
+  val internalId: String                               = "test-internal-id"
   val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val appConfig: AppConfig                             = app.injector.instanceOf[AppConfig]
   val messagesApi: MessagesApi                         = app.injector.instanceOf[MessagesApi]
   val messages: Messages                               = messagesApi.preferred(fakeRequest)
   val bodyParsers: PlayBodyParsers                     = app.injector.instanceOf[PlayBodyParsers]
-  val fakeAuthorisedAction                             = new FakeAuthorisedAction(bodyParsers)
   val eclRegistrationReference: String                 = "test-ecl-registration-reference"
+
+  def fakeAuthorisedAction(internalId: String) = new FakeAuthorisedAction(internalId, bodyParsers)
 
   def fakeDataRetrievalAction(data: EclReturn) = new FakeDataRetrievalAction(data)
 

@@ -34,7 +34,7 @@ class NotableErrorControllerSpec extends SpecBase {
   class TestContext(eclReturnData: EclReturn) {
     val controller = new NotableErrorController(
       mcc,
-      fakeAuthorisedAction,
+      fakeAuthorisedAction(eclReturnData.internalId),
       fakeDataRetrievalAction(eclReturnData),
       answersAreInvalidView,
       notRegisteredView,
