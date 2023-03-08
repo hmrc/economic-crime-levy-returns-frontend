@@ -24,7 +24,7 @@ import javax.inject.Inject
 class AmlRegulatedActivityLengthFormProvider @Inject() extends Mappings {
 
   val minDays = 1
-  val maxDays = 999
+  val maxDays = 365
 
   def apply(): Form[Int] =
     Form(

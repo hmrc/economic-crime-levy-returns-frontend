@@ -28,7 +28,7 @@ class AmlRegulatedActivityLengthFormProviderSpec extends IntFieldBehaviours {
     val fieldName = "value"
 
     val minimum = 1
-    val maximum = 999
+    val maximum = 365
 
     val validDataGenerator = longsInRangeWithCommas(minimum, maximum)
 
