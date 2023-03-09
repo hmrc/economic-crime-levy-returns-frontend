@@ -20,6 +20,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
+import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ReturnSubmittedView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -34,15 +35,11 @@ class ReturnSubmittedController @Inject() (
     with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = authorise { implicit request =>
-    val eclReference: String = request.session
-      .get(SessionKeys.EclReference)
-      .getOrElse(throw new IllegalStateException("ECL reference number not found in session"))
+    val chargeReference: String = request.session
+      .get(SessionKeys.ChargeReference)
+      .getOrElse(throw new IllegalStateException("Charge reference number not found in session"))
 
-    val submittedWhen: String = request.session
-      .get(SessionKeys.SubmittedWhen)
-      .getOrElse(throw new IllegalStateException("ECL return submission date not found in session"))
-
-    Ok(view(eclReference, submittedWhen))
+    Ok(view(chargeReference, ViewUtils.formatToday()))
   }
 
 }

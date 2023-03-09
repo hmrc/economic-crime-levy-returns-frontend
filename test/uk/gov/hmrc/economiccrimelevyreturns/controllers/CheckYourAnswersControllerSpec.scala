@@ -21,6 +21,7 @@ import org.mockito.ArgumentMatchers.any
 import play.api.i18n.Messages
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
+import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.FakeValidatedReturnAction
@@ -29,7 +30,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SessionKeys, Subm
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
-import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 
@@ -54,11 +54,17 @@ class CheckYourAnswersControllerSpec extends SpecBase {
   }
 
   "onPageLoad" should {
-    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
+    "return OK and the correct view" in forAll { validEclReturn: ValidEclReturn =>
+      new TestContext(validEclReturn.eclReturn) {
         implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
-          ReturnDataRequest(fakeRequest, eclReturn.internalId, eclReturn, eclRegistrationReference)
-        implicit val messages: Messages                                           = messagesApi.preferred(returnDataRequest)
+          ReturnDataRequest(
+            fakeRequest,
+            validEclReturn.eclReturn.internalId,
+            validEclReturn.eclReturn,
+            eclRegistrationReference
+          )
+
+        implicit val messages: Messages = messagesApi.preferred(returnDataRequest)
 
         val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
 
@@ -92,23 +98,16 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
   "onSubmit" should {
     "redirect to the ECL return submitted page after submitting the ECL return successfully" in forAll {
-      (submitEclReturnResponse: SubmitEclReturnResponse, eclReturn: EclReturn) =>
-        new TestContext(eclReturn) {
-          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
-            ReturnDataRequest(fakeRequest, eclReturn.internalId, eclReturn, eclRegistrationReference)
-          implicit val messages: Messages                                           = messagesApi.preferred(returnDataRequest)
-
-          when(mockEclReturnsConnector.submitReturn(ArgumentMatchers.eq(eclReturn.internalId))(any()))
+      (submitEclReturnResponse: SubmitEclReturnResponse, validEclReturn: ValidEclReturn) =>
+        new TestContext(validEclReturn.eclReturn) {
+          when(mockEclReturnsConnector.submitReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
             .thenReturn(Future.successful(submitEclReturnResponse))
 
-          val result: Future[Result] = controller.onSubmit()(returnDataRequest)
+          val result: Future[Result] = controller.onSubmit()(fakeRequest)
 
-          status(result)                                 shouldBe SEE_OTHER
-          session(result).get(SessionKeys.EclReference)  shouldBe Some(submitEclReturnResponse.eclReference)
-          session(result).get(SessionKeys.SubmittedWhen) shouldBe Some(
-            ViewUtils.formatInstantAsLocalDate(submitEclReturnResponse.processingDate)
-          )
-          redirectLocation(result)                       shouldBe Some(routes.ReturnSubmittedController.onPageLoad().url)
+          status(result)                                   shouldBe SEE_OTHER
+          session(result).get(SessionKeys.ChargeReference) shouldBe Some(submitEclReturnResponse.chargeReference)
+          redirectLocation(result)                         shouldBe Some(routes.ReturnSubmittedController.onPageLoad().url)
         }
     }
   }

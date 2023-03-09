@@ -60,12 +60,12 @@ trait EclReturnsStubs { self: WireMockStubs =>
       }
     )
 
-  def stubSubmitReturn(eclReference: String): StubMapping =
+  def stubSubmitReturn(chargeReference: String): StubMapping =
     stub(
       post(urlEqualTo(s"/economic-crime-levy-returns/submit-return/$testInternalId")),
       aResponse()
         .withStatus(OK)
-        .withBody(Json.toJson(SubmitEclReturnResponse(Instant.now, eclReference)).toString())
+        .withBody(Json.toJson(SubmitEclReturnResponse(Instant.now, chargeReference)).toString())
     )
 
 }

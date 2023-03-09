@@ -18,7 +18,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.models
 
 object SessionKeys {
 
-  val EclReference: String  = "eclReference"
-  val SubmittedWhen: String = "submittedWhen"
+  val ChargeReference: String = "chargeReference"
 
 }

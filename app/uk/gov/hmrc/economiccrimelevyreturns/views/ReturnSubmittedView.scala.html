@@ -23,10 +23,10 @@
         appConfig: AppConfig
 )
 
-@(eclReference: String, submittedWhen: String)(implicit request: Request[_], messages: Messages)
+@(chargeReference: String, submittedWhen: String)(implicit request: Request[_], messages: Messages)
 
 @panelContentHtml = {
-    <p class="govuk-label--m">@messages("submitted.reference", eclReference)</p>
+    <p class="govuk-label--m">@messages("submitted.reference", chargeReference)</p>
 }
 
 @layout(

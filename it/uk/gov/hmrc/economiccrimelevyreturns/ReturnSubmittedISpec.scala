@@ -31,12 +31,11 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the return submitted HTML view" in {
       stubAuthorised()
 
-      val eclReference = random[String]
-      val submittedWhen = random[String]
+      val chargeReference = random[String]
 
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())
-          .withSession((SessionKeys.EclReference, eclReference), (SessionKeys.SubmittedWhen, submittedWhen))
+          .withSession((SessionKeys.ChargeReference, chargeReference))
       )
 
       status(result) shouldBe OK
