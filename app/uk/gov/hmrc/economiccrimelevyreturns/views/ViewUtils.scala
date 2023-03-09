@@ -26,6 +26,8 @@ import java.util.{Date, Locale}
 
 object ViewUtils {
 
+  private val ukZoneId = "Europe/London"
+
   def titleWithForm(form: Form[_], pageTitle: String, section: Option[String] = None)(implicit
     messages: Messages
   ): String =
@@ -49,11 +51,11 @@ object ViewUtils {
       s"$day $month $year"
     } else {
       val formatter = new SimpleDateFormat("d MMMM yyyy")
-      formatter.format(Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant))
+      formatter.format(Date.from(localDate.atStartOfDay(ZoneId.of(ukZoneId)).toInstant))
     }
 
   def formatInstantAsLocalDate(instant: Instant, translate: Boolean = true)(implicit messages: Messages): String =
-    formatLocalDate(LocalDate.ofInstant(instant, ZoneId.systemDefault), translate)
+    formatLocalDate(LocalDate.ofInstant(instant, ZoneId.of(ukZoneId)), translate)
 
   def formatMoney(amount: Number): String = {
     val formatter = NumberFormat.getCurrencyInstance(Locale.UK)
@@ -61,7 +63,7 @@ object ViewUtils {
   }
 
   def formatNumber(amount: Number): String = {
-    val formatter = NumberFormat.getNumberInstance
+    val formatter = NumberFormat.getNumberInstance(Locale.UK)
     formatter.format(amount)
   }
 
