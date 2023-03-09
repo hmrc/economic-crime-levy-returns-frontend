@@ -58,7 +58,7 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
   class TestContext(returnData: EclReturn) {
     val controller = new RelevantAp12MonthsController(
       mcc,
-      fakeAuthorisedAction,
+      fakeAuthorisedAction(returnData.internalId),
       fakeDataRetrievalAction(returnData),
       mockEclReturnsConnector,
       formProvider,

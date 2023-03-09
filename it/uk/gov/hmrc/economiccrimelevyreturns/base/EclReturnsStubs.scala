@@ -8,7 +8,9 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, SubmitEclReturnResponse}
+
+import java.time.Instant
 
 trait EclReturnsStubs { self: WireMockStubs =>
 
@@ -56,6 +58,14 @@ trait EclReturnsStubs { self: WireMockStubs =>
           .withStatus(OK)
           .withBody(Json.toJson(errors).toString())
       }
+    )
+
+  def stubSubmitReturn(chargeReference: String): StubMapping =
+    stub(
+      post(urlEqualTo(s"/economic-crime-levy-returns/submit-return/$testInternalId")),
+      aResponse()
+        .withStatus(OK)
+        .withBody(Json.toJson(SubmitEclReturnResponse(Instant.now, chargeReference)).toString())
     )
 
 }

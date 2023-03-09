@@ -21,7 +21,7 @@ import play.api.http.Status.{NO_CONTENT, OK}
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, SubmitEclReturnResponse}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
@@ -82,5 +82,8 @@ class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClien
           }
         case Left(e)             => throw e
       }
+
+  def submitReturn(internalId: String)(implicit hc: HeaderCarrier): Future[SubmitEclReturnResponse] =
+    httpClient.POSTEmpty[SubmitEclReturnResponse](s"$eclReturnsUrl/submit-return/$internalId")
 
 }

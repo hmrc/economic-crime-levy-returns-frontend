@@ -61,7 +61,7 @@ class RelevantApLengthControllerSpec extends SpecBase {
   class TestContext(eclReturnData: EclReturn) {
     val controller = new RelevantApLengthController(
       mcc,
-      fakeAuthorisedAction,
+      fakeAuthorisedAction(eclReturnData.internalId),
       fakeDataRetrievalAction(eclReturnData),
       mockEclReturnsConnector,
       formProvider,
@@ -103,7 +103,7 @@ class RelevantApLengthControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided relevant AP length then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](minDays, maxDays),
+      Gen.chooseNum[Int](minApDays, maxApDays),
       Arbitrary.arbitrary[Mode]
     ) { (eclReturn: EclReturn, relevantApLength: Int, mode: Mode) =>
       new TestContext(eclReturn) {

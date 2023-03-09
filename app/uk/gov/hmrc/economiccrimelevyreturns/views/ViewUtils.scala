@@ -21,10 +21,12 @@ import play.api.i18n.Messages
 
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
-import java.time.{LocalDate, ZoneId}
-import java.util.Date
+import java.time.{Instant, LocalDate, ZoneId}
+import java.util.{Date, Locale}
 
 object ViewUtils {
+
+  private val UkZoneId = ZoneId.of("Europe/London")
 
   def titleWithForm(form: Form[_], pageTitle: String, section: Option[String] = None)(implicit
     messages: Messages
@@ -49,16 +51,22 @@ object ViewUtils {
       s"$day $month $year"
     } else {
       val formatter = new SimpleDateFormat("d MMMM yyyy")
-      formatter.format(Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant))
+      formatter.format(Date.from(localDate.atStartOfDay(UkZoneId).toInstant))
     }
 
+  def formatInstantAsLocalDate(instant: Instant, translate: Boolean = true)(implicit messages: Messages): String =
+    formatLocalDate(LocalDate.ofInstant(instant, UkZoneId), translate)
+
+  def formatToday(translate: Boolean = true)(implicit messages: Messages): String =
+    formatLocalDate(LocalDate.now(UkZoneId), translate)
+
   def formatMoney(amount: Number): String = {
-    val formatter = NumberFormat.getCurrencyInstance
+    val formatter = NumberFormat.getCurrencyInstance(Locale.UK)
     formatter.format(amount)
   }
 
   def formatNumber(amount: Number): String = {
-    val formatter = NumberFormat.getNumberInstance
+    val formatter = NumberFormat.getNumberInstance(Locale.UK)
     formatter.format(amount)
   }
 

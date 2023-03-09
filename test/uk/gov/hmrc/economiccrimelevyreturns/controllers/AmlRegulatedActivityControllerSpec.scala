@@ -60,7 +60,7 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
   class TestContext(eclReturnData: EclReturn) {
     val controller = new AmlRegulatedActivityController(
       mcc,
-      fakeAuthorisedAction,
+      fakeAuthorisedAction(eclReturnData.internalId),
       fakeDataRetrievalAction(eclReturnData),
       mockEclReturnsConnector,
       formProvider,

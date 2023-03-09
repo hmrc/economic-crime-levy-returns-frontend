@@ -23,7 +23,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, SubmitEclReturnResponse}
 import uk.gov.hmrc.http.{HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.Future
@@ -225,6 +225,30 @@ class EclReturnsConnectorSpec extends SpecBase {
         }
 
         result.getMessage shouldBe "Internal server error"
+    }
+  }
+
+  "submitReturn" should {
+    "return an ECL return submission response when the http client returns an ECL return submission response" in forAll {
+      (internalId: String, eclReturnResponse: SubmitEclReturnResponse) =>
+        val expectedUrl = s"$eclReturnsUrl/submit-return/$internalId"
+
+        when(
+          mockHttpClient
+            .POSTEmpty[SubmitEclReturnResponse](ArgumentMatchers.eq(expectedUrl), any())(any(), any(), any())
+        ).thenReturn(Future.successful(eclReturnResponse))
+
+        val result = await(connector.submitReturn(internalId))
+
+        result shouldBe eclReturnResponse
+
+        verify(mockHttpClient, times(1))
+          .POSTEmpty[SubmitEclReturnResponse](
+            ArgumentMatchers.eq(expectedUrl),
+            any()
+          )(any(), any(), any())
+
+        reset(mockHttpClient)
     }
   }
 

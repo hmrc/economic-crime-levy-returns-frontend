@@ -20,7 +20,7 @@ import play.api.data.Form
 import play.api.data.Forms.{single, text}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 
 class ViewUtilsSpec extends SpecBase {
 
@@ -69,6 +69,20 @@ class ViewUtilsSpec extends SpecBase {
       val localDate = LocalDate.parse("2007-12-03")
 
       ViewUtils.formatLocalDate(localDate, translate = false)(messages) shouldBe "3 December 2007"
+    }
+  }
+
+  "formatInstantAsLocalDate" should {
+    "correctly format a translated instant" in {
+      val instant = Instant.parse("2007-12-03T10:04:39.528Z")
+
+      ViewUtils.formatInstantAsLocalDate(instant)(messages) shouldBe "3 December 2007"
+    }
+
+    "correctly format a non-translated instant" in {
+      val instant = Instant.parse("2007-12-03T10:04:39.528Z")
+
+      ViewUtils.formatInstantAsLocalDate(instant, translate = false)(messages) shouldBe "3 December 2007"
     }
   }
 

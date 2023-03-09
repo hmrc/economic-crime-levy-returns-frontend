@@ -17,10 +17,10 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the Check your answers HTML view when the ECL return data is valid" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
-      val errors    = random[DataValidationErrors]
+      val validEclReturn = random[ValidEclReturn]
+      val errors         = random[DataValidationErrors]
 
-      stubGetReturn(eclReturn)
+      stubGetReturn(validEclReturn.eclReturn)
       stubGetReturnValidationErrors(valid = true, errors)
 
       val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onPageLoad()))
@@ -53,11 +53,17 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
     "redirect to the ECL return submitted page after submitting the ECL return successfully" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
+      val validEclReturn  = random[ValidEclReturn]
+      val chargeReference = random[String]
 
-      stubGetReturn(eclReturn)
+      stubGetReturn(validEclReturn.eclReturn)
 
-      // TODO: Complete test as part of ECL-204
+      stubSubmitReturn(chargeReference)
+
+      val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onSubmit()))
+
+      status(result)           shouldBe SEE_OTHER
+      redirectLocation(result) shouldBe Some(routes.ReturnSubmittedController.onPageLoad().url)
     }
   }
 

@@ -16,13 +16,17 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import play.api.i18n.Messages
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
+import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.FakeValidatedReturnAction
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SessionKeys, SubmitEclReturnResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
@@ -35,23 +39,32 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
   val view: CheckYourAnswersView = app.injector.instanceOf[CheckYourAnswersView]
 
-  class TestContext(eclReturn: EclReturn) {
+  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+
+  class TestContext(eclReturnData: EclReturn) {
     val controller = new CheckYourAnswersController(
       messagesApi,
-      fakeAuthorisedAction,
-      fakeDataRetrievalAction(eclReturn),
-      new FakeValidatedReturnAction(eclReturn),
+      fakeAuthorisedAction(eclReturnData.internalId),
+      fakeDataRetrievalAction(eclReturnData),
+      new FakeValidatedReturnAction(eclReturnData),
+      mockEclReturnsConnector,
       mcc,
       view
     )
   }
 
   "onPageLoad" should {
-    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
+    "return OK and the correct view" in forAll { validEclReturn: ValidEclReturn =>
+      new TestContext(validEclReturn.eclReturn) {
         implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
-          ReturnDataRequest(fakeRequest, eclReturn.internalId, eclReturn, eclRegistrationReference)
-        implicit val messages: Messages                                           = messagesApi.preferred(returnDataRequest)
+          ReturnDataRequest(
+            fakeRequest,
+            validEclReturn.eclReturn.internalId,
+            validEclReturn.eclReturn,
+            eclRegistrationReference
+          )
+
+        implicit val messages: Messages = messagesApi.preferred(returnDataRequest)
 
         val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
 
@@ -84,9 +97,18 @@ class CheckYourAnswersControllerSpec extends SpecBase {
   }
 
   "onSubmit" should {
-    "submit the ECL return" in {
-      // TODO: Add the test as part of ECL-204
-      pending
+    "redirect to the ECL return submitted page after submitting the ECL return successfully" in forAll {
+      (submitEclReturnResponse: SubmitEclReturnResponse, validEclReturn: ValidEclReturn) =>
+        new TestContext(validEclReturn.eclReturn) {
+          when(mockEclReturnsConnector.submitReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
+            .thenReturn(Future.successful(submitEclReturnResponse))
+
+          val result: Future[Result] = controller.onSubmit()(fakeRequest)
+
+          status(result)                                   shouldBe SEE_OTHER
+          session(result).get(SessionKeys.ChargeReference) shouldBe Some(submitEclReturnResponse.chargeReference)
+          redirectLocation(result)                         shouldBe Some(routes.ReturnSubmittedController.onPageLoad().url)
+        }
     }
   }
 

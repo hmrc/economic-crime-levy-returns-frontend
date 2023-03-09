@@ -50,7 +50,7 @@ class ContactEmailControllerSpec extends SpecBase {
   class TestContext(returnsData: EclReturn) {
     val controller = new ContactEmailController(
       mcc,
-      fakeAuthorisedAction,
+      fakeAuthorisedAction(returnsData.internalId),
       fakeDataRetrievalAction(returnsData),
       mockEclReturnsConnector,
       formProvider,

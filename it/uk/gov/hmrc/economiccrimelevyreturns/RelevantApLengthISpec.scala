@@ -36,7 +36,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val relevantApLength = Gen.chooseNum[Int](minDays, maxDays).sample.get
+      val relevantApLength = Gen.chooseNum[Int](minApDays, maxApDays).sample.get
 
       stubGetReturn(eclReturn)
 
