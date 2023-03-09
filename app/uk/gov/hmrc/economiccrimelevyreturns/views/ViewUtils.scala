@@ -22,7 +22,7 @@ import play.api.i18n.Messages
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.time.{Instant, LocalDate, ZoneId}
-import java.util.Date
+import java.util.{Date, Locale}
 
 object ViewUtils {
 
@@ -56,7 +56,7 @@ object ViewUtils {
     formatLocalDate(LocalDate.ofInstant(instant, ZoneId.systemDefault), translate)
 
   def formatMoney(amount: Number): String = {
-    val formatter = NumberFormat.getCurrencyInstance
+    val formatter = NumberFormat.getCurrencyInstance(Locale.UK)
     formatter.format(amount)
   }
 
