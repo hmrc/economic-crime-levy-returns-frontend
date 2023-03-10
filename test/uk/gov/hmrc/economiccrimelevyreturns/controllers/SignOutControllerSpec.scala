@@ -29,7 +29,6 @@ class SignOutControllerSpec extends SpecBase {
   val controller = new SignOutController(
     mcc,
     appConfig,
-    fakeAuthorisedAction(internalId),
     view
   )
 
