@@ -53,4 +53,6 @@ class AppConfig @Inject() (configuration: Configuration, servicesConfig: Service
 
   val enrolmentStoreProxyBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
 
+  val emailBaseUrl: String = servicesConfig.baseUrl("email")
+
 }

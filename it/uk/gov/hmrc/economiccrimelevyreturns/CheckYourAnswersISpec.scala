@@ -6,8 +6,11 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.email.{ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Languages}
+import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
+import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -59,6 +62,36 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetReturn(validEclReturn.eclReturn)
 
       stubSubmitReturn(chargeReference)
+
+      val eclDueDate      =
+        ViewUtils.formatLocalDate(EclTaxYear.dueDate, translate = false)(messagesApi.preferred(Seq(Languages.english)))
+      val dateSubmitted   = ViewUtils.formatToday(translate = false)(messagesApi.preferred(Seq(Languages.english)))
+      val periodStartDate =
+        ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearStartDate, translate = false)(
+          messagesApi.preferred(Seq(Languages.english))
+        )
+      val periodEndDate   =
+        ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearEndDate, translate = false)(
+          messagesApi.preferred(Seq(Languages.english))
+        )
+
+      val emailParams = ReturnSubmittedEmailParameters(
+        name = validEclReturn.eclReturn.contactName.get,
+        dateSubmitted = dateSubmitted,
+        periodStartDate = periodStartDate,
+        periodEndDate = periodEndDate,
+        chargeReference = chargeReference,
+        fyStartYear = EclTaxYear.currentFyStartYear,
+        fyEndYear = EclTaxYear.currentFyEndYear,
+        datePaymentDue = eclDueDate
+      )
+
+      stubSendReturnSubmittedEmail(
+        ReturnSubmittedEmailRequest(
+          to = Seq(validEclReturn.eclReturn.contactEmailAddress.get),
+          parameters = emailParams
+        )
+      )
 
       val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onSubmit()))
 

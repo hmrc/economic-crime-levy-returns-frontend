@@ -26,8 +26,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.FakeValidatedReturnAction
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SessionKeys, SubmitEclReturnResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SessionKeys, SubmitEclReturnResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.services.EmailService
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
@@ -40,6 +41,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
   val view: CheckYourAnswersView = app.injector.instanceOf[CheckYourAnswersView]
 
   val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEmailService: EmailService               = mock[EmailService]
 
   class TestContext(eclReturnData: EclReturn) {
     val controller = new CheckYourAnswersController(
@@ -48,6 +50,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       fakeDataRetrievalAction(eclReturnData),
       new FakeValidatedReturnAction(eclReturnData),
       mockEclReturnsConnector,
+      mockEmailService,
       mcc,
       view
     )
@@ -102,6 +105,14 @@ class CheckYourAnswersControllerSpec extends SpecBase {
         new TestContext(validEclReturn.eclReturn) {
           when(mockEclReturnsConnector.submitReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
             .thenReturn(Future.successful(submitEclReturnResponse))
+
+          when(
+            mockEmailService.sendReturnSubmittedEmail(
+              ArgumentMatchers.eq(validEclReturn.eclReturn),
+              ArgumentMatchers.eq(submitEclReturnResponse.chargeReference)
+            )(any(), any())
+          )
+            .thenReturn(Future.successful(()))
 
           val result: Future[Result] = controller.onSubmit()(fakeRequest)
 

@@ -22,9 +22,10 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, ValidatedReturnAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
+import uk.gov.hmrc.economiccrimelevyreturns.services.EmailService
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -38,6 +39,7 @@ class CheckYourAnswersController @Inject() (
   getReturnData: DataRetrievalAction,
   validateReturnData: ValidatedReturnAction,
   eclReturnsConnector: EclReturnsConnector,
+  emailService: EmailService,
   val controllerComponents: MessagesControllerComponents,
   view: CheckYourAnswersView
 )(implicit ec: ExecutionContext)
@@ -72,11 +74,12 @@ class CheckYourAnswersController @Inject() (
   }
 
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
-    eclReturnsConnector.submitReturn(request.internalId).map { response =>
-      Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
-        request.session + (SessionKeys.ChargeReference -> response.chargeReference)
-      )
-    }
+    for {
+      response <- eclReturnsConnector.submitReturn(request.internalId)
+      _        <- emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
+    } yield Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
+      request.session + (SessionKeys.ChargeReference -> response.chargeReference)
+    )
   }
 
 }
