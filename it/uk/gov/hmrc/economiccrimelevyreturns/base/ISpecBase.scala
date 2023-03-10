@@ -13,6 +13,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{Status => _, _}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http._
+import play.api.i18n.MessagesApi
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Result, Results}
 import play.api.test._
@@ -51,7 +52,8 @@ abstract class ISpecBase
     "auditing.enabled" -> false
   ) ++ setWireMockPort(
     "auth",
-    "economic-crime-levy-returns"
+    "economic-crime-levy-returns",
+    "email"
   )
 
   val contextPath: String = "submit-economic-crime-levy-return"
@@ -62,6 +64,8 @@ abstract class ISpecBase
       .configure(additionalAppConfig)
       .in(Mode.Test)
       .build()
+
+  implicit val messagesApi: MessagesApi        = app.injector.instanceOf[MessagesApi]
 
   /*
   This is to initialise the app before running any tests, as it is lazy by default in org.scalatestplus.play.BaseOneAppPerSuite.

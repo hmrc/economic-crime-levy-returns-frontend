@@ -22,13 +22,12 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedActio
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmountDuePageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmountDueView
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmountDueView
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
 
 @Singleton
 class AmountDueController @Inject() (
@@ -37,8 +36,7 @@ class AmountDueController @Inject() (
   getReturnData: DataRetrievalAction,
   pageNavigator: AmountDuePageNavigator,
   view: AmountDueView
-)(implicit ec: ExecutionContext)
-    extends FrontendBaseController
+) extends FrontendBaseController
     with I18nSupport {
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
