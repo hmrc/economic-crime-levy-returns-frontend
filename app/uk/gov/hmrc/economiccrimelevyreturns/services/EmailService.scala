@@ -45,21 +45,19 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit
       eclReturn.contactEmailAddress
     ) match {
       case (Some(name), Some(emailAddress)) =>
-        for {
-          _ <- emailConnector.sendReturnSubmittedEmail(
-                 emailAddress,
-                 ReturnSubmittedEmailParameters(
-                   name = name,
-                   dateSubmitted = dateSubmitted,
-                   periodStartDate = periodStartDate,
-                   periodEndDate = periodEndDate,
-                   chargeReference = chargeReference,
-                   fyStartYear = EclTaxYear.currentFyStartYear,
-                   fyEndYear = EclTaxYear.currentFyEndYear,
-                   datePaymentDue = eclDueDate
-                 )
-               )
-        } yield ()
+        emailConnector.sendReturnSubmittedEmail(
+          emailAddress,
+          ReturnSubmittedEmailParameters(
+            name = name,
+            dateSubmitted = dateSubmitted,
+            periodStartDate = periodStartDate,
+            periodEndDate = periodEndDate,
+            chargeReference = chargeReference,
+            fyStartYear = EclTaxYear.currentFyStartYear,
+            fyEndYear = EclTaxYear.currentFyEndYear,
+            datePaymentDue = eclDueDate
+          )
+        )
       case _                                => throw new IllegalStateException("Invalid contact details")
     }
   }
