@@ -52,7 +52,8 @@ abstract class ISpecBase
     "auditing.enabled" -> false
   ) ++ setWireMockPort(
     "auth",
-    "economic-crime-levy-returns"
+    "economic-crime-levy-returns",
+    "email"
   )
 
   val contextPath: String = "submit-economic-crime-levy-return"
