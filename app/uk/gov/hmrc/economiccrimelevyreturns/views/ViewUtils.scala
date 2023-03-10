@@ -20,9 +20,9 @@ import play.api.data.Form
 import play.api.i18n.Messages
 
 import java.text.NumberFormat
-import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 import java.time.{Instant, LocalDate, ZoneId}
-import java.util.{Date, Locale}
+import java.util.Locale
 
 object ViewUtils {
 
@@ -50,8 +50,8 @@ object ViewUtils {
 
       s"$day $month $year"
     } else {
-      val formatter = new SimpleDateFormat("d MMMM yyyy")
-      formatter.format(Date.from(localDate.atStartOfDay(UkZoneId).toInstant))
+      val formatter = new DateTimeFormatter("d MMMM yyyy")
+      localDate.format(formatter)
     }
 
   def formatInstantAsLocalDate(instant: Instant, translate: Boolean = true)(implicit messages: Messages): String =
