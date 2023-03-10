@@ -40,31 +40,27 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit
     val periodStartDate = ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearStartDate, translate = false)
     val periodEndDate   = ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearEndDate, translate = false)
 
-    def sendEmail(name: String, email: String): Future[Unit] =
-      emailConnector.sendReturnSubmittedEmail(
-        email,
-        ReturnSubmittedEmailParameters(
-          name = name,
-          dateSubmitted = dateSubmitted,
-          periodStartDate = periodStartDate,
-          periodEndDate = periodEndDate,
-          chargeReference = chargeReference,
-          fyStartYear = EclTaxYear.currentFyStartYear,
-          fyEndYear = EclTaxYear.currentFyEndYear,
-          datePaymentDue = eclDueDate
-        )
-      )
-
     (
       eclReturn.contactName,
       eclReturn.contactEmailAddress
     ) match {
-      case (Some(name), Some(email)) =>
+      case (Some(name), Some(emailAddress)) =>
         for {
-          _ <- sendEmail(name, email)
+          _ <- emailConnector.sendReturnSubmittedEmail(
+                 emailAddress,
+                 ReturnSubmittedEmailParameters(
+                   name = name,
+                   dateSubmitted = dateSubmitted,
+                   periodStartDate = periodStartDate,
+                   periodEndDate = periodEndDate,
+                   chargeReference = chargeReference,
+                   fyStartYear = EclTaxYear.currentFyStartYear,
+                   fyEndYear = EclTaxYear.currentFyEndYear,
+                   datePaymentDue = eclDueDate
+                 )
+               )
         } yield ()
-      case _                         => throw new IllegalStateException("Invalid contact details")
+      case _                                => throw new IllegalStateException("Invalid contact details")
     }
-
   }
 }
