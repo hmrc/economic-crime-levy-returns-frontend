@@ -25,11 +25,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class EmailService @Inject() (emailConnector: EmailConnector)(implicit
-  ec: ExecutionContext
-) {
+class EmailService @Inject() (emailConnector: EmailConnector) {
 
   def sendReturnSubmittedEmail(eclReturn: EclReturn, chargeReference: String)(implicit
     hc: HeaderCarrier,

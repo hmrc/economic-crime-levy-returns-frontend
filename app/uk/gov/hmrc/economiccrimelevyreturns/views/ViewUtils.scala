@@ -50,7 +50,7 @@ object ViewUtils {
 
       s"$day $month $year"
     } else {
-      val formatter = new DateTimeFormatter("d MMMM yyyy")
+      val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
       localDate.format(formatter)
     }
 
