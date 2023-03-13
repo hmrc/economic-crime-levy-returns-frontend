@@ -114,6 +114,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           )
             .thenReturn(Future.successful(()))
 
+          when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
+            .thenReturn(Future.successful(()))
+
           val result: Future[Result] = controller.onSubmit()(fakeRequest)
 
           status(result)                                   shouldBe SEE_OTHER

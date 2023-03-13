@@ -93,6 +93,8 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
         )
       )
 
+      stubDeleteReturn()
+
       val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onSubmit()))
 
       status(result)           shouldBe SEE_OTHER
