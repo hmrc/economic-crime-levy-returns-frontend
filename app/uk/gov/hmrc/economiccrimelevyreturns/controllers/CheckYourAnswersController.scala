@@ -77,6 +77,7 @@ class CheckYourAnswersController @Inject() (
     for {
       response <- eclReturnsConnector.submitReturn(request.internalId)
       _        <- emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
+      _        <- eclReturnsConnector.deleteReturn(request.internalId)
     } yield Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
       request.session + (SessionKeys.ChargeReference -> response.chargeReference)
     )

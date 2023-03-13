@@ -68,4 +68,11 @@ trait EclReturnsStubs { self: WireMockStubs =>
         .withBody(Json.toJson(SubmitEclReturnResponse(Instant.now, chargeReference)).toString())
     )
 
+  def stubDeleteReturn(): StubMapping =
+    stub(
+      delete(urlEqualTo(s"/economic-crime-levy-returns/returns/$testInternalId")),
+      aResponse()
+        .withStatus(OK)
+    )
+
 }
