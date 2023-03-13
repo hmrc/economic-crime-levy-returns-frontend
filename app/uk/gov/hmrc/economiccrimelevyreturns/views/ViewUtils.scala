@@ -60,10 +60,8 @@ object ViewUtils {
   def formatToday(translate: Boolean = true)(implicit messages: Messages): String =
     formatLocalDate(LocalDate.now(UkZoneId), translate)
 
-  def formatMoney(amount: Number): String = {
-    val formatter = NumberFormat.getCurrencyInstance(Locale.UK)
-    formatter.format(amount)
-  }
+  def formatMoney(amount: BigDecimal): String =
+    if (amount.isWhole) f"£$amount%,.0f" else f"£$amount%,.2f"
 
   def formatNumber(amount: Number): String = {
     val formatter = NumberFormat.getNumberInstance(Locale.UK)

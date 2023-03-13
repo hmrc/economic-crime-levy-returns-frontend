@@ -86,4 +86,14 @@ class ViewUtilsSpec extends SpecBase {
     }
   }
 
+  "formatMoney" should {
+    "correctly format a monetary amount that includes pence" in {
+      ViewUtils.formatMoney(123456789.5) shouldBe "£123,456,789.50"
+    }
+
+    "correctly format a monetary amount that does not include pence" in {
+      ViewUtils.formatMoney(123456789.0) shouldBe "£123,456,789"
+    }
+  }
+
 }
