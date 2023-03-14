@@ -1,2 +1,3 @@
 GET        /clear-all            uk.gov.hmrc.economiccrimelevyreturns.testonly.controllers.TestOnlyController.clearAllData
 GET        /clear-current        uk.gov.hmrc.economiccrimelevyreturns.testonly.controllers.TestOnlyController.clearCurrentData
+GET        /return-data          uk.gov.hmrc.economiccrimelevyreturns.testonly.controllers.TestOnlyController.getReturnData()

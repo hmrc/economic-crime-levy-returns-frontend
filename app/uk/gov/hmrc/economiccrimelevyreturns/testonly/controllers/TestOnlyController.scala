@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.testonly.controllers
 
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.testonly.connectors.TestOnlyConnector
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -28,6 +29,7 @@ import scala.concurrent.ExecutionContext
 class TestOnlyController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
+  getReturnData: DataRetrievalAction,
   testOnlyConnector: TestOnlyConnector
 )(implicit val ec: ExecutionContext)
     extends FrontendBaseController {
@@ -38,6 +40,10 @@ class TestOnlyController @Inject() (
 
   def clearCurrentData(): Action[AnyContent] = authorise.async { implicit request =>
     testOnlyConnector.clearCurrentData().map(httpResponse => Ok(httpResponse.body))
+  }
+
+  def getReturnData(): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
+    Ok(Json.toJson(request.eclReturn))
   }
 
 }
