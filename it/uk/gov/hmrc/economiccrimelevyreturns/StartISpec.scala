@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 
 class StartISpec extends ISpecBase with AuthorisedBehaviour {
 
-  s"GET /$contextPath/" should {
+  s"GET ${routes.StartController.onPageLoad().url}" should {
     behave like authorisedActionRoute(routes.StartController.onPageLoad())
 
     "respond with 200 status and the start HTML view" in {

@@ -55,10 +55,9 @@ abstract class ISpecBase
   ) ++ setWireMockPort(
     "auth",
     "economic-crime-levy-returns",
-    "email"
+    "email",
+    "enrolment-store-proxy"
   )
-
-  val contextPath: String = "submit-economic-crime-levy-return"
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
@@ -67,7 +66,7 @@ abstract class ISpecBase
       .in(Mode.Test)
       .build()
 
-  implicit val messagesApi: MessagesApi        = app.injector.instanceOf[MessagesApi]
+  implicit val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
 
   /*
   This is to initialise the app before running any tests, as it is lazy by default in org.scalatestplus.play.BaseOneAppPerSuite.
