@@ -51,6 +51,8 @@ class AppConfig @Inject() (configuration: Configuration, servicesConfig: Service
 
   val eclReturnsBaseUrl: String = servicesConfig.baseUrl("economic-crime-levy-returns")
 
+  val eclCalculatorBaseUrl: String = servicesConfig.baseUrl("economic-crime-levy-calculator")
+
   val enrolmentStoreProxyBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
 
   val emailBaseUrl: String = servicesConfig.baseUrl("email")

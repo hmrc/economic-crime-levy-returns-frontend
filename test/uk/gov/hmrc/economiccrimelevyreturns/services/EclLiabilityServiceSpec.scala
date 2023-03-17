@@ -20,15 +20,16 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
 
 import scala.concurrent.Future
 
 class EclLiabilityServiceSpec extends SpecBase {
-  private val mockEclReturnsConnector = mock[EclReturnsConnector]
-  private val service                 = new EclLiabilityService(mockEclReturnsConnector)
+  private val mockEclReturnsConnector    = mock[EclReturnsConnector]
+  private val mockEclCalculatorConnector = mock[EclCalculatorConnector]
+  private val service                    = new EclLiabilityService(mockEclReturnsConnector, mockEclCalculatorConnector)
 
   "calculateLiability" should {
     "return an updated ECL return containing the calculated liability" in forAll {
@@ -36,7 +37,7 @@ class EclLiabilityServiceSpec extends SpecBase {
         val updatedReturn = validEclReturn.eclReturn.copy(calculatedLiability = Some(calculatedLiability))
 
         when(
-          mockEclReturnsConnector.calculateLiability(
+          mockEclCalculatorConnector.calculateLiability(
             ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength),
             ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApLength),
             ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue)
