@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
@@ -26,7 +26,10 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EclLiabilityService @Inject() (eclReturnsConnector: EclReturnsConnector)(implicit
+class EclLiabilityService @Inject() (
+  eclReturnsConnector: EclReturnsConnector,
+  eclCalculatorConnector: EclCalculatorConnector
+)(implicit
   ec: ExecutionContext
 ) extends FrontendHeaderCarrierProvider {
 
@@ -53,7 +56,7 @@ class EclLiabilityService @Inject() (eclReturnsConnector: EclReturnsConnector)(i
     amlRegulatedActivityLength: Int,
     eclReturn: EclReturn
   )(implicit request: RequestHeader): Future[EclReturn] =
-    eclReturnsConnector.calculateLiability(amlRegulatedActivityLength, relevantApLength, relevantApRevenue).flatMap {
+    eclCalculatorConnector.calculateLiability(amlRegulatedActivityLength, relevantApLength, relevantApRevenue).flatMap {
       calculatedLiability =>
         eclReturnsConnector.upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
     }

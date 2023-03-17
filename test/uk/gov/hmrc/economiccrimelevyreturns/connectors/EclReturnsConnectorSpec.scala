@@ -23,7 +23,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, SubmitEclReturnResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SubmitEclReturnResponse}
 import uk.gov.hmrc.http.{HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.Future
@@ -101,44 +101,6 @@ class EclReturnsConnectorSpec extends SpecBase {
         .PUT[EclReturn, EclReturn](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any(), any())
 
       reset(mockHttpClient)
-    }
-  }
-
-  "calculateLiability" should {
-    "return the calculated liability when the http client returns the calculated liability" in forAll {
-      (
-        calculateLiabilityRequest: CalculateLiabilityRequest,
-        calculatedLiability: CalculatedLiability
-      ) =>
-        val expectedUrl = s"$eclReturnsUrl/calculate-liability"
-
-        when(
-          mockHttpClient.POST[CalculateLiabilityRequest, CalculatedLiability](
-            ArgumentMatchers.eq(expectedUrl),
-            ArgumentMatchers.eq(calculateLiabilityRequest),
-            any()
-          )(any(), any(), any(), any())
-        )
-          .thenReturn(Future.successful(calculatedLiability))
-
-        val result = await(
-          connector.calculateLiability(
-            calculateLiabilityRequest.amlRegulatedActivityLength,
-            calculateLiabilityRequest.relevantApLength,
-            calculateLiabilityRequest.ukRevenue
-          )
-        )
-
-        result shouldBe calculatedLiability
-
-        verify(mockHttpClient, times(1))
-          .POST[CalculateLiabilityRequest, CalculatedLiability](
-            ArgumentMatchers.eq(expectedUrl),
-            ArgumentMatchers.eq(calculateLiabilityRequest),
-            any()
-          )(any(), any(), any(), any())
-
-        reset(mockHttpClient)
     }
   }
 
