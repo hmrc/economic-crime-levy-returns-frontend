@@ -18,13 +18,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.forms
 
 import play.api.data.{Form, FormError}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours.StringFieldBehaviours
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.Regex
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 
 class ContactNumberFormProviderSpec extends StringFieldBehaviours {
 
   val requiredKey = "contactNumber.error.required"
   val lengthKey   = "contactNumber.error.length"
-  val maxLength   = 24
 
   val form = new ContactNumberFormProvider()()
 
@@ -35,14 +34,14 @@ class ContactNumberFormProviderSpec extends StringFieldBehaviours {
     behave like fieldThatBindsValidData(
       form,
       fieldName,
-      telephoneNumber(maxLength)
+      telephoneNumber(MinMaxValues.TelephoneNumberMaxLength)
     )
 
     behave like fieldWithMaxLength(
       form,
       fieldName,
-      maxLength = maxLength,
-      lengthError = FormError(fieldName, lengthKey, Seq(maxLength))
+      maxLength = MinMaxValues.TelephoneNumberMaxLength,
+      lengthError = FormError(fieldName, lengthKey, Seq(MinMaxValues.TelephoneNumberMaxLength))
     )
 
     behave like mandatoryField(
@@ -52,7 +51,7 @@ class ContactNumberFormProviderSpec extends StringFieldBehaviours {
     )
 
     "fail to bind an invalid telephone number" in forAll(
-      stringsWithMaxLength(maxLength).retryUntil(!_.matches(Regex.telephoneNumberRegex))
+      stringsWithMaxLength(MinMaxValues.TelephoneNumberMaxLength).retryUntil(!_.matches(Regex.TelephoneNumberRegex))
     ) { invalidNumber: String =>
       val result: Form[String] = form.bind(Map("value" -> invalidNumber))
 

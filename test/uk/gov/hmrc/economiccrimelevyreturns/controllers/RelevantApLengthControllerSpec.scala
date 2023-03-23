@@ -27,6 +27,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantApLengthDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.RelevantApLengthPageNavigator
@@ -103,7 +104,7 @@ class RelevantApLengthControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided relevant AP length then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](minApDays, maxApDays),
+      Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax),
       Arbitrary.arbitrary[Mode]
     ) { (eclReturn: EclReturn, relevantApLength: Int, mode: Mode) =>
       new TestContext(eclReturn) {

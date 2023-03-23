@@ -17,18 +17,22 @@
 package uk.gov.hmrc.economiccrimelevyreturns.forms
 
 import play.api.data.Form
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.Mappings
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{Mappings, MinMaxValues}
 
 import javax.inject.Inject
 
 class ContactNumberFormProvider @Inject() extends Mappings {
 
-  private val maxLength = 24
-
   def apply(): Form[String] =
     Form(
       "value" -> text("contactNumber.error.required")
-        .verifying(telephoneNumber(maxLength, "contactNumber.error.length", "contactNumber.error.invalid"))
+        .verifying(
+          telephoneNumber(
+            MinMaxValues.TelephoneNumberMaxLength,
+            "contactNumber.error.length",
+            "contactNumber.error.invalid"
+          )
+        )
     )
 
 }

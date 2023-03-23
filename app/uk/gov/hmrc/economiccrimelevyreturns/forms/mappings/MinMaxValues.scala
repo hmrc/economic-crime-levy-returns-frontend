@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.forms
+package uk.gov.hmrc.economiccrimelevyreturns.forms.mappings
 
-import play.api.data.Form
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{Mappings, MinMaxValues}
+object MinMaxValues {
 
-import javax.inject.Inject
-
-class RelevantApLengthFormProvider @Inject() extends Mappings {
-
-  def apply(): Form[Int] =
-    Form(
-      "value" -> int(
-        "relevantApLength.error.required",
-        "relevantApLength.error.wholeNumber",
-        "relevantApLength.error.nonNumeric"
-      )
-        .verifying(inRange(MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax, "relevantApLength.error.outOfRange"))
-    )
+  val ApDaysMin                = 1
+  val ApDaysMax                = 999
+  val RevenueMin               = 0L
+  val RevenueMax               = 99999999999L
+  val AmlDaysMin               = 0
+  val AmlDaysMax               = 365
+  val EmailMaxLength           = 132
+  val NameMaxLength            = 160
+  val TelephoneNumberMaxLength = 24
+  val RoleMaxLength            = 160
 
 }

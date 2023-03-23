@@ -5,6 +5,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
@@ -35,7 +36,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val ukRevenue = longsInRange(minRevenue, maxRevenue).sample.get
+      val ukRevenue = longsInRange(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax).sample.get
 
       stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true), calculatedLiability = None))
 

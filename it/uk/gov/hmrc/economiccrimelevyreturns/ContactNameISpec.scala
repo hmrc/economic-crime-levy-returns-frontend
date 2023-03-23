@@ -6,11 +6,10 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 
 class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
-
-  val nameMaxLength: Int = 160
 
   s"GET ${routes.ContactNameController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.ContactNameController.onPageLoad(NormalMode))
@@ -37,7 +36,7 @@ class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val name         = stringsWithMaxLength(nameMaxLength).sample.get
+      val name         = stringsWithMaxLength(MinMaxValues.NameMaxLength).sample.get
 
       stubGetReturn(eclReturn)
 
