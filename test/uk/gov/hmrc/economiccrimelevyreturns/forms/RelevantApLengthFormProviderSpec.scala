@@ -18,6 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.forms
 
 import play.api.data.FormError
 import uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours.IntFieldBehaviours
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 
 class RelevantApLengthFormProviderSpec extends IntFieldBehaviours {
 
@@ -27,10 +28,7 @@ class RelevantApLengthFormProviderSpec extends IntFieldBehaviours {
 
     val fieldName = "value"
 
-    val minimum = 1
-    val maximum = 999
-
-    val validDataGenerator = longsInRangeWithCommas(minimum, maximum)
+    val validDataGenerator = longsInRangeWithCommas(MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
 
     behave like fieldThatBindsValidData(
       form,
@@ -48,9 +46,10 @@ class RelevantApLengthFormProviderSpec extends IntFieldBehaviours {
     behave like intFieldWithRange(
       form,
       fieldName,
-      minimum = minimum,
-      maximum = maximum,
-      expectedError = FormError(fieldName, "relevantApLength.error.outOfRange", Seq(minimum, maximum))
+      minimum = MinMaxValues.ApDaysMin,
+      maximum = MinMaxValues.ApDaysMax,
+      expectedError =
+        FormError(fieldName, "relevantApLength.error.outOfRange", Seq(MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax))
     )
 
     behave like mandatoryField(

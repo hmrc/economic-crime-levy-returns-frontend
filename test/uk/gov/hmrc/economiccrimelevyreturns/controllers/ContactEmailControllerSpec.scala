@@ -26,6 +26,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactEmailFormProvider
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactEmailPageNavigator
@@ -44,8 +45,6 @@ class ContactEmailControllerSpec extends SpecBase {
   }
 
   val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
-
-  val emailMaxLength: Int = 160
 
   class TestContext(returnsData: EclReturn) {
     val controller = new ContactEmailController(
@@ -99,7 +98,7 @@ class ContactEmailControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided contact email then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      emailAddress(emailMaxLength)
+      emailAddress(MinMaxValues.EmailMaxLength)
     ) { (eclReturn: EclReturn, email: String) =>
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(contactEmailAddress = Some(email.toLowerCase))

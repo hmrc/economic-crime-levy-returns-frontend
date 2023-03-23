@@ -27,6 +27,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.AmlRegulatedActivityLengthDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthFormProvider
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmlRegulatedActivityLengthPageNavigator
@@ -103,7 +104,7 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided AML regulated activity length then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](minAmlDays, maxAmlDays),
+      Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax),
       Arbitrary.arbitrary[Mode]
     ) { (eclReturn: EclReturn, amlRegulatedActivityLength: Int, mode: Mode) =>
       new TestContext(eclReturn) {

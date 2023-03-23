@@ -6,6 +6,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
@@ -30,15 +31,15 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
     }
   }
 
-  s"POST ${routes.AmlRegulatedActivityLengthController.onSubmit(NormalMode).url}" should {
+  s"POST ${routes.AmlRegulatedActivityLengthController.onSubmit(NormalMode).url}"  should {
     behave like authorisedActionRoute(routes.AmlRegulatedActivityLengthController.onSubmit(NormalMode))
 
     "save the relevant AML regulated activity length then redirect to the ECL amount due page" in {
       stubAuthorised()
 
-      val ukRevenue = longsInRange(minRevenue, maxRevenue).sample.get
-      val amlRegulatedActivityLength = Gen.chooseNum[Int](minAmlDays, maxAmlDays).sample.get
-      val eclReturn = random[EclReturn].copy(
+      val ukRevenue                  = longsInRange(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax).sample.get
+      val amlRegulatedActivityLength = Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax).sample.get
+      val eclReturn                  = random[EclReturn].copy(
         relevantAp12Months = Some(true),
         relevantApRevenue = Some(ukRevenue),
         carriedOutAmlRegulatedActivityForFullFy = Some(false)

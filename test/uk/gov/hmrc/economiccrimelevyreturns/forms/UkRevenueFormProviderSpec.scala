@@ -18,6 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.forms
 
 import play.api.data.FormError
 import uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours.LongFieldBehaviours
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 
 class UkRevenueFormProviderSpec extends LongFieldBehaviours {
 
@@ -27,10 +28,7 @@ class UkRevenueFormProviderSpec extends LongFieldBehaviours {
 
     val fieldName = "value"
 
-    val minimum = 0L
-    val maximum = 99999999999L
-
-    val validDataGenerator = longsInRangeWithCommas(minimum, maximum)
+    val validDataGenerator = longsInRangeWithCommas(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax)
 
     behave like fieldThatBindsValidData(
       form,
@@ -48,9 +46,10 @@ class UkRevenueFormProviderSpec extends LongFieldBehaviours {
     behave like longFieldWithRange(
       form,
       fieldName,
-      minimum = minimum,
-      maximum = maximum,
-      expectedError = FormError(fieldName, "ukRevenue.error.outOfRange", Seq(minimum, maximum))
+      minimum = MinMaxValues.RevenueMin,
+      maximum = MinMaxValues.RevenueMax,
+      expectedError =
+        FormError(fieldName, "ukRevenue.error.outOfRange", Seq(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax))
     )
 
     behave like mandatoryField(

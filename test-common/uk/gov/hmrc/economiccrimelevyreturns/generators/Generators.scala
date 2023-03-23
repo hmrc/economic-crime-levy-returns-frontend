@@ -132,7 +132,7 @@ trait Generators {
   }
 
   def telephoneNumber(maxLength: Int): Gen[String] =
-    RegexpGen.from(s"${Regex.telephoneNumberRegex}").retryUntil(s => s.length <= maxLength && s.trim.nonEmpty)
+    RegexpGen.from(s"${Regex.TelephoneNumberRegex}").retryUntil(s => s.length <= maxLength && s.trim.nonEmpty)
 
   def emailAddress(maxLength: Int): Gen[String] = {
     val emailPartsLength = maxLength / 5

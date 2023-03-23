@@ -18,10 +18,11 @@ package uk.gov.hmrc.economiccrimelevyreturns
 
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 
 import java.time.{Instant, LocalDate}
@@ -73,15 +74,15 @@ trait EclTestData { self: Generators =>
   implicit val arbValidEclReturn: Arbitrary[ValidEclReturn] = Arbitrary {
     for {
       relevantAp12Months                      <- Arbitrary.arbitrary[Boolean]
-      relevantApLength                        <- Gen.chooseNum[Int](minApDays, maxApDays)
-      relevantApRevenue                       <- Gen.chooseNum[Long](minRevenue, maxRevenue)
+      relevantApLength                        <- Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
+      relevantApRevenue                       <- Gen.chooseNum[Long](MinMaxValues.RevenueMin, MinMaxValues.RevenueMax)
       carriedOutAmlRegulatedActivityForFullFy <- Arbitrary.arbitrary[Boolean]
-      amlRegulatedActivityLength              <- Gen.chooseNum[Int](minAmlDays, maxAmlDays)
+      amlRegulatedActivityLength              <- Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax)
       calculatedLiability                     <- Arbitrary.arbitrary[CalculatedLiability]
-      contactName                             <- stringsWithMaxLength(160)
-      contactRole                             <- stringsWithMaxLength(160)
-      contactEmailAddress                     <- emailAddress(160)
-      contactTelephoneNumber                  <- telephoneNumber(24)
+      contactName                             <- stringsWithMaxLength(MinMaxValues.NameMaxLength)
+      contactRole                             <- stringsWithMaxLength(MinMaxValues.RoleMaxLength)
+      contactEmailAddress                     <- emailAddress(MinMaxValues.EmailMaxLength)
+      contactTelephoneNumber                  <- telephoneNumber(MinMaxValues.TelephoneNumberMaxLength)
       internalId                               = alphaNumericString
     } yield ValidEclReturn(
       EclReturn
@@ -112,12 +113,5 @@ trait EclTestData { self: Generators =>
 
   val testInternalId: String               = alphaNumericString
   val testEclRegistrationReference: String = alphaNumericString
-
-  val minRevenue: Long = 0L
-  val maxRevenue: Long = 99999999999L
-  val minApDays: Int   = 1
-  val maxApDays: Int   = 999
-  val minAmlDays: Int  = 1
-  val maxAmlDays: Int  = 365
 
 }

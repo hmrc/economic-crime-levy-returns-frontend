@@ -27,6 +27,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.UkRevenueDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.UkRevenuePageNavigator
@@ -102,7 +103,7 @@ class UkRevenueControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided UK revenue then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Long](minRevenue, maxRevenue),
+      Gen.chooseNum[Long](MinMaxValues.RevenueMin, MinMaxValues.RevenueMax),
       Arbitrary.arbitrary[Mode]
     ) { (eclReturn: EclReturn, ukRevenue: Long, mode: Mode) =>
       new TestContext(eclReturn) {

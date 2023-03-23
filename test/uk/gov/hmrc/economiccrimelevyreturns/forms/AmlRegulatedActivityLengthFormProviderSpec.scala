@@ -18,6 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.forms
 
 import play.api.data.FormError
 import uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours.IntFieldBehaviours
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 
 class AmlRegulatedActivityLengthFormProviderSpec extends IntFieldBehaviours {
 
@@ -27,10 +28,7 @@ class AmlRegulatedActivityLengthFormProviderSpec extends IntFieldBehaviours {
 
     val fieldName = "value"
 
-    val minimum = 1
-    val maximum = 365
-
-    val validDataGenerator = longsInRangeWithCommas(minimum, maximum)
+    val validDataGenerator = longsInRangeWithCommas(MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax)
 
     behave like fieldThatBindsValidData(
       form,
@@ -48,9 +46,13 @@ class AmlRegulatedActivityLengthFormProviderSpec extends IntFieldBehaviours {
     behave like intFieldWithRange(
       form,
       fieldName,
-      minimum = minimum,
-      maximum = maximum,
-      expectedError = FormError(fieldName, "amlRegulatedActivityLength.error.outOfRange", Seq(minimum, maximum))
+      minimum = MinMaxValues.AmlDaysMin,
+      maximum = MinMaxValues.AmlDaysMax,
+      expectedError = FormError(
+        fieldName,
+        "amlRegulatedActivityLength.error.outOfRange",
+        Seq(MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax)
+      )
     )
 
     behave like mandatoryField(

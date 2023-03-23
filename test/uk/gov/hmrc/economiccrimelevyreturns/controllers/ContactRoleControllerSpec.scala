@@ -26,6 +26,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactRoleFormProvider
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactRolePageNavigator
@@ -44,8 +45,6 @@ class ContactRoleControllerSpec extends SpecBase {
   }
 
   val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
-
-  val roleMaxLength: Int = 160
 
   class TestContext(returnData: EclReturn) {
     val controller = new ContactRoleController(
@@ -99,7 +98,7 @@ class ContactRoleControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided contact role then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      stringsWithMaxLength(roleMaxLength)
+      stringsWithMaxLength(MinMaxValues.RoleMaxLength)
     ) { (eclReturn: EclReturn, role: String) =>
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(contactRole = Some(role))

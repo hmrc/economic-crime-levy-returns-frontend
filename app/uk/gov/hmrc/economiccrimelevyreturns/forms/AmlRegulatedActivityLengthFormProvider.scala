@@ -17,14 +17,11 @@
 package uk.gov.hmrc.economiccrimelevyreturns.forms
 
 import play.api.data.Form
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.Mappings
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{Mappings, MinMaxValues}
 
 import javax.inject.Inject
 
 class AmlRegulatedActivityLengthFormProvider @Inject() extends Mappings {
-
-  val minDays = 1
-  val maxDays = 365
 
   def apply(): Form[Int] =
     Form(
@@ -33,7 +30,9 @@ class AmlRegulatedActivityLengthFormProvider @Inject() extends Mappings {
         "amlRegulatedActivityLength.error.wholeNumber",
         "amlRegulatedActivityLength.error.nonNumeric"
       )
-        .verifying(inRange(minDays, maxDays, "amlRegulatedActivityLength.error.outOfRange"))
+        .verifying(
+          inRange(MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax, "amlRegulatedActivityLength.error.outOfRange")
+        )
     )
 
 }
