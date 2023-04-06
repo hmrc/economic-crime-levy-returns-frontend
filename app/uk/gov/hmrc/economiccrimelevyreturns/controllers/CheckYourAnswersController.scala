@@ -76,7 +76,7 @@ class CheckYourAnswersController @Inject() (
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     for {
       response <- eclReturnsConnector.submitReturn(request.internalId)
-      _        <- emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
+      _         = emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
       _        <- eclReturnsConnector.deleteReturn(request.internalId)
     } yield Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
       request.session + (SessionKeys.ChargeReference -> response.chargeReference)
