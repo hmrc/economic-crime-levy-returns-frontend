@@ -1,6 +1,8 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
+import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo, verify}
+import org.scalatest.concurrent.Eventually.eventually
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
@@ -99,6 +101,10 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
 
       status(result)           shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ReturnSubmittedController.onPageLoad().url)
+
+      eventually {
+        verify(1, postRequestedFor(urlEqualTo("/hmrc/email")))
+      }
     }
   }
 

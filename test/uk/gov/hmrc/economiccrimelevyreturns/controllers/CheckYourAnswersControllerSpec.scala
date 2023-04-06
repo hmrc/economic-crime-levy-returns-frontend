@@ -106,14 +106,6 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           when(mockEclReturnsConnector.submitReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
             .thenReturn(Future.successful(submitEclReturnResponse))
 
-          when(
-            mockEmailService.sendReturnSubmittedEmail(
-              ArgumentMatchers.eq(validEclReturn.eclReturn),
-              ArgumentMatchers.eq(submitEclReturnResponse.chargeReference)
-            )(any(), any())
-          )
-            .thenReturn(Future.successful(()))
-
           when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
             .thenReturn(Future.successful(()))
 
@@ -122,6 +114,13 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           status(result)                                   shouldBe SEE_OTHER
           session(result).get(SessionKeys.ChargeReference) shouldBe Some(submitEclReturnResponse.chargeReference)
           redirectLocation(result)                         shouldBe Some(routes.ReturnSubmittedController.onPageLoad().url)
+
+          verify(mockEmailService, times(1)).sendReturnSubmittedEmail(
+            ArgumentMatchers.eq(validEclReturn.eclReturn),
+            ArgumentMatchers.eq(submitEclReturnResponse.chargeReference)
+          )(any(), any())
+
+          reset(mockEmailService)
         }
     }
   }

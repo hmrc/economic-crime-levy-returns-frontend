@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
+import play.api.Logging
 import play.api.i18n.Messages
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
@@ -25,9 +26,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class EmailService @Inject() (emailConnector: EmailConnector) {
+class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: ExecutionContext) extends Logging {
 
   def sendReturnSubmittedEmail(eclReturn: EclReturn, chargeReference: String)(implicit
     hc: HeaderCarrier,
@@ -38,7 +39,7 @@ class EmailService @Inject() (emailConnector: EmailConnector) {
     val periodStartDate = ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearStartDate, translate = false)
     val periodEndDate   = ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearEndDate, translate = false)
 
-    (
+    ((
       eclReturn.contactName,
       eclReturn.contactEmailAddress
     ) match {
@@ -57,6 +58,9 @@ class EmailService @Inject() (emailConnector: EmailConnector) {
           )
         )
       case _                                => throw new IllegalStateException("Invalid contact details")
+    }).recover { case e: Throwable =>
+      logger.error(s"Failed to send email: ${e.getMessage}")
+      throw e
     }
   }
 }
