@@ -18,6 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.{Call, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
@@ -32,7 +33,19 @@ class UkRevenuePageNavigator @Inject() (eclLiabilityService: EclLiabilityService
 
   override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
     eclReturn.relevantApRevenue match {
-      case Some(_) => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(NormalMode))
+      case Some(_) =>
+        eclLiabilityService.calculateLiability(eclReturn) match {
+          case Some(f) =>
+            f.map { updatedReturn =>
+              updatedReturn.calculatedLiability match {
+                case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
+                  routes.AmountDueController.onPageLoad(NormalMode)
+                case Some(_)                                                                  => routes.AmlRegulatedActivityController.onPageLoad(NormalMode)
+                case _                                                                        => routes.NotableErrorController.answersAreInvalid()
+              }
+            }
+          case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
+        }
       case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
     }
 
@@ -44,6 +57,6 @@ class UkRevenuePageNavigator @Inject() (eclLiabilityService: EclLiabilityService
           case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
         }
       case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
-
     }
+
 }

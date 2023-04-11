@@ -6,8 +6,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 
 class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -36,7 +37,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val ukRevenue = longsInRange(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax).sample.get
+      val ukRevenue = longsInRange(UkRevenueThreshold, MinMaxValues.RevenueMax).sample.get
 
       stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true), calculatedLiability = None))
 
@@ -47,6 +48,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       )
 
       stubUpsertReturn(updatedReturn)
+      stubCalculateLiability(CalculateLiabilityRequest(0, EclTaxYear.YearInDays, ukRevenue))
 
       val result = callRoute(
         FakeRequest(routes.UkRevenueController.onSubmit(NormalMode))
