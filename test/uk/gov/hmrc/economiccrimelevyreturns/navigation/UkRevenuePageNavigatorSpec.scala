@@ -36,7 +36,7 @@ class UkRevenuePageNavigatorSpec extends SpecBase {
   val pageNavigator = new UkRevenuePageNavigator(mockEclLiabilityService)
 
   "nextPage" should {
-    "return a Call to the Aml regulated activity for full financial year page in NormalMode when the calculated band is not Small" in forAll(
+    "return a Call to the Aml regulated activity for full financial year page in NormalMode when the calculated band size is not Small" in forAll(
       arbEclReturn.arbitrary,
       Gen.chooseNum[Long](UkRevenueThreshold, MinMaxValues.RevenueMax),
       arbCalculatedLiability.arbitrary,
@@ -60,7 +60,7 @@ class UkRevenuePageNavigatorSpec extends SpecBase {
       )
     }
 
-    "return a Call to the ECL amount due page in NormalMode when the calculated band is Small (Nil return)" in forAll(
+    "return a Call to the ECL amount due page in NormalMode when the calculated band size is Small (nil return)" in forAll(
       arbEclReturn.arbitrary,
       Gen.chooseNum[Long](MinMaxValues.RevenueMin, UkRevenueThreshold),
       arbCalculatedLiability.arbitrary
