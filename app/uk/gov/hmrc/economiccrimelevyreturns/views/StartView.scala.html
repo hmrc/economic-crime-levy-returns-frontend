@@ -20,14 +20,14 @@
         button: GovukButton
 )
 
-@(eclRegistrationReference: String, eclRegistrationDate: String)(implicit request: Request[_], messages: Messages)
+@(eclRegistrationReference: String, eclRegistrationDate: String, period: String)(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle = title(messages("start.title")),
+    pageTitle = title(messages("start.title", period)),
     showBackLink = false
 ) {
 
-    <h1 class="govuk-heading-l">@messages("start.heading")</h1>
+    <h1 class="govuk-heading-l">@messages("start.heading", period)</h1>
 
     <h1 class="govuk-heading-m">@messages("start.h2")</h1>
 
@@ -47,13 +47,6 @@
     <p class="govuk-body">@messages("start.p1")</p>
     <p class="govuk-body">@messages("start.p2")</p>
 
-    @button(
-        ButtonViewModel(messages("site.start"))
-                .asLink(RelevantAp12MonthsController.onPageLoad(NormalMode).url)
-                .asStartButton()
-                .withAttribute("id" -> "start")
-    )
-
     <h2 class="govuk-heading-m">@messages("start.beforeYouStart")</h2>
 
     <p class="govuk-body">@messages("start.tellUsAbout")</p>
@@ -64,5 +57,12 @@
         <li>@messages("start.tellUsAbout.b3")</li>
         <li>@messages("start.tellUsAbout.b4")</li>
     </ul>
+
+    @button(
+        ButtonViewModel(messages("site.start"))
+                .asLink(RelevantAp12MonthsController.onPageLoad(NormalMode).url)
+                .asStartButton()
+                .withAttribute("id" -> "start")
+    )
 
 }
