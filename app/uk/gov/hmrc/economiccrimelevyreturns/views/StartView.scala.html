@@ -23,8 +23,7 @@
 @(eclRegistrationReference: String, eclRegistrationDate: String, period: String)(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle = title(messages("start.title", period)),
-    showBackLink = false
+    pageTitle = title(messages("start.title", period))
 ) {
 
     <h1 class="govuk-heading-l">@messages("start.heading", period)</h1>
