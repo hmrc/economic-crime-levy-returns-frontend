@@ -200,6 +200,16 @@ agentCannotSubmitReturn.p2 = Your client must submit a return using their own Go
 agentCannotSubmitReturn.p3 = Go to your {0}.
 agentCannotSubmitReturn.p3.link = <a href="https://www.gov.uk/guidance/sign-in-to-your-agent-services-account" class="govuk-link">agent services account</a>
 
+alreadySubmittedReturn.title = You have already submitted a return for the {0}-{1} financial year
+alreadySubmittedReturn.heading = You have already submitted a return for the {0}-{1} financial year
+alreadySubmittedReturn.p1 = You submitted a return for the {0}-{1} financial year on {2}.
+alreadySubmittedReturn.p2 = You can <a href="{0}" class="govuk-link">amend this return</a>
+alreadySubmittedReturn.p3 = Go to your <a href="{0}" class="govuk-link">returns history</a> in your Economic Crime Levy account if you want to submit a return for another financial year.
+
+noObligationForPeriod.title = You cannot submit a return for this financial year.
+noObligationForPeriod.heading = You cannot submit a return for this financial year.
+noObligationForPeriod.p1 = You cannot submit a return for the this financial year right now.
+
 date.month.1 = January
 date.month.2 = February
 date.month.3 = March

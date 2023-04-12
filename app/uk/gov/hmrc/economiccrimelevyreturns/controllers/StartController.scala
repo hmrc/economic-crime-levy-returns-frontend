@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models.{Fulfilled, ObligationData, ObligationDetails, Open}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, EnrolmentStoreProxyService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.StartView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, NoObligationForPeriodView, StartView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -38,6 +38,8 @@ class StartController @Inject() (
   eclAccountConnector: EclAccountConnector,
   eclReturnsService: EclReturnsService,
   eclReturnsConnector: EclReturnsConnector,
+  alreadySubmittedReturnView: AlreadySubmittedReturnView,
+  noObligationForPeriodView: NoObligationForPeriodView,
   view: StartView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -70,13 +72,25 @@ class StartController @Inject() (
         .flatMap(_.headOption)
 
     obligationDetails match {
-      case None                    => Future.successful(Left(Ok("No obligation details found for period"))) //TODO handle this properly
+      case None                    => Future.successful(Left(Ok(noObligationForPeriodView())))
       case Some(obligationDetails) =>
         obligationDetails.status match {
           case Fulfilled =>
+            val dateReceived = obligationDetails.inboundCorrespondenceDateReceived.getOrElse(
+              throw new IllegalStateException("Fulfilled obligation does not have an inboundCorrespondenceDateReceived")
+            )
+
             Future.successful(
-              Left(Ok(s"Obligation for period $periodKey already fulfilled"))
-            ) //TODO handle this properly
+              Left(
+                Ok(
+                  alreadySubmittedReturnView(
+                    obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
+                    obligationDetails.inboundCorrespondenceToDate.getYear.toString,
+                    ViewUtils.formatLocalDate(dateReceived)
+                  )
+                )
+              )
+            )
           case Open      =>
             for {
               eclReturn <- eclReturnsService.getOrCreateReturn(request.internalId)
