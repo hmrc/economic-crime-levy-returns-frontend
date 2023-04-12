@@ -23,7 +23,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 
 import java.time.{Instant, LocalDate}
 

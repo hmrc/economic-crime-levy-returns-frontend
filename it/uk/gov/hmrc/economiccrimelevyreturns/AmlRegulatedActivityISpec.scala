@@ -8,7 +8,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 
 class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
 

@@ -23,7 +23,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailParameters
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 import scala.concurrent.Future

@@ -11,7 +11,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Languages}
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {

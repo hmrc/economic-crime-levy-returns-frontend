@@ -21,7 +21,6 @@ import play.api.i18n.Messages
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailParameters
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -34,10 +33,16 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
     hc: HeaderCarrier,
     messages: Messages
   ): Future[Unit] = {
-    val eclDueDate      = ViewUtils.formatLocalDate(EclTaxYear.dueDate, translate = false)
+    val obligationDetails = eclReturn.obligationDetails.getOrElse(
+      throw new IllegalStateException("No obligation details found in return data")
+    )
+
+    val eclDueDate      = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate, translate = false)
     val dateSubmitted   = ViewUtils.formatToday(translate = false)
-    val periodStartDate = ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearStartDate, translate = false)
-    val periodEndDate   = ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearEndDate, translate = false)
+    val periodStartDate = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate, translate = false)
+    val periodEndDate   = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)
+    val fyStartYear     = obligationDetails.inboundCorrespondenceFromDate.getYear.toString
+    val fyEndYear       = obligationDetails.inboundCorrespondenceToDate.getYear.toString
 
     ((
       eclReturn.contactName,
@@ -52,8 +57,8 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
             periodStartDate = periodStartDate,
             periodEndDate = periodEndDate,
             chargeReference = chargeReference,
-            fyStartYear = EclTaxYear.currentFyStartYear,
-            fyEndYear = EclTaxYear.currentFyEndYear,
+            fyStartYear = fyStartYear,
+            fyEndYear = fyEndYear,
             datePaymentDue = eclDueDate
           )
         )
