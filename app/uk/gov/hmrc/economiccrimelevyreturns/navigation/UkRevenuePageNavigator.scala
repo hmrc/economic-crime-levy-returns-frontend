@@ -17,31 +17,41 @@
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.{Call, RequestHeader}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class UkRevenuePageNavigator @Inject() (eclLiabilityService: EclLiabilityService)(implicit
+class UkRevenuePageNavigator @Inject() (
+  eclLiabilityService: EclLiabilityService,
+  eclReturnsConnector: EclReturnsConnector
+)(implicit
   ec: ExecutionContext
 ) extends AsyncPageNavigator
     with FrontendHeaderCarrierProvider {
 
   override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
+    navigate(eclReturn, NormalMode)
+
+  override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
+    navigate(eclReturn, CheckMode)
+
+  private def navigate(eclReturn: EclReturn, mode: Mode)(implicit request: RequestHeader): Future[Call] =
     eclReturn.relevantApRevenue match {
       case Some(_) =>
         eclLiabilityService.calculateLiability(eclReturn) match {
           case Some(f) =>
-            f.map { updatedReturn =>
+            f.flatMap { updatedReturn =>
               updatedReturn.calculatedLiability match {
                 case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
-                  routes.AmountDueController.onPageLoad(NormalMode)
-                case Some(_)                                                                  => routes.AmlRegulatedActivityController.onPageLoad(NormalMode)
-                case _                                                                        => routes.NotableErrorController.answersAreInvalid()
+                  clearAmlActivityAnswers(updatedReturn, mode)
+                case Some(_)                                                                  => navigateLiable(updatedReturn, mode)
+                case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
               }
             }
           case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
@@ -49,14 +59,19 @@ class UkRevenuePageNavigator @Inject() (eclLiabilityService: EclLiabilityService
       case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
     }
 
-  override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-    eclReturn.relevantApRevenue match {
-      case Some(_) =>
-        eclLiabilityService.calculateLiability(eclReturn) match {
-          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad(CheckMode))
-          case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
+  private def clearAmlActivityAnswers(eclReturn: EclReturn, mode: Mode)(implicit request: RequestHeader): Future[Call] =
+    eclReturnsConnector
+      .upsertReturn(eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None))
+      .map(_ => routes.AmountDueController.onPageLoad(mode))
+
+  private def navigateLiable(eclReturn: EclReturn, mode: Mode): Future[Call] =
+    mode match {
+      case NormalMode => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(mode))
+      case CheckMode  =>
+        eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
+          case Some(_) => Future.successful(routes.AmountDueController.onPageLoad(mode))
+          case None    => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(mode))
         }
-      case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
     }
 
 }

@@ -18,10 +18,10 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import org.scalacheck.Gen
+import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, CalculatedLiability, CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band._
@@ -32,13 +32,14 @@ import scala.concurrent.Future
 class UkRevenuePageNavigatorSpec extends SpecBase {
 
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
+  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
 
-  val pageNavigator = new UkRevenuePageNavigator(mockEclLiabilityService)
+  val pageNavigator = new UkRevenuePageNavigator(mockEclLiabilityService, mockEclReturnsConnector)
 
   "nextPage" should {
     "return a Call to the Aml regulated activity for full financial year page in NormalMode when the calculated band size is not Small" in forAll(
       arbEclReturn.arbitrary,
-      Gen.chooseNum[Long](UkRevenueThreshold, MinMaxValues.RevenueMax),
+      Arbitrary.arbitrary[Long],
       arbCalculatedLiability.arbitrary,
       Gen.oneOf[Band](Medium, Large, VeryLarge)
     ) { (eclReturn: EclReturn, ukRevenue: Long, calculatedLiability: CalculatedLiability, calculatedBand: Band) =>
@@ -62,7 +63,7 @@ class UkRevenuePageNavigatorSpec extends SpecBase {
 
     "return a Call to the ECL amount due page in NormalMode when the calculated band size is Small (nil return)" in forAll(
       arbEclReturn.arbitrary,
-      Gen.chooseNum[Long](MinMaxValues.RevenueMin, UkRevenueThreshold),
+      Arbitrary.arbitrary[Long],
       arbCalculatedLiability.arbitrary
     ) { (eclReturn: EclReturn, ukRevenue: Long, calculatedLiability: CalculatedLiability) =>
       val updatedReturn = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
