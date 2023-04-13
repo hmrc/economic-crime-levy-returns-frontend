@@ -57,12 +57,37 @@ class StartControllerSpec extends SpecBase {
   )
 
   "start" should {
-    "redirect to the start page if the return data contains obligation details" in {
-      pending
+    "redirect to the start page if the return data contains obligation details" in forAll {
+      (internalId: String, obligationDetails: ObligationDetails) =>
+        val openObligation = obligationDetails.copy(status = Open)
+
+        val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
+
+        when(mockEclAccountConnector.getObligations()(any())).thenReturn(Future.successful(Some(obligationData)))
+
+        val returnWithObligationDetails = EclReturn.empty(internalId).copy(obligationDetails = Some(openObligation))
+
+        when(mockEclReturnsService.getOrCreateReturn(any())(any()))
+          .thenReturn(Future.successful(returnWithObligationDetails))
+
+        val result: Future[Result] = controller.start()(fakeRequest)
+
+        status(result) shouldBe SEE_OTHER
+
+        redirectLocation(result) shouldBe Some(routes.StartController.onPageLoad(obligationDetails.periodKey).url)
     }
 
     "show the choose return period view if the return data does not contain any obligation details" in {
-      pending
+      val returnWithoutObligationDetails = EclReturn.empty(internalId)
+
+      when(mockEclReturnsService.getOrCreateReturn(any())(any()))
+        .thenReturn(Future.successful(returnWithoutObligationDetails))
+
+      val result: Future[Result] = controller.start()(fakeRequest)
+
+      status(result) shouldBe OK
+
+      contentAsString(result) shouldBe chooseReturnPeriodView()(fakeRequest, messages).toString
     }
   }
 
