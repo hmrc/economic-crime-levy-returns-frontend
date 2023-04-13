@@ -77,6 +77,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
         relevantAp12Months = Some(true),
         relevantApRevenue = Some(ukRevenue),
         carriedOutAmlRegulatedActivityForFullFy = None,
+        amlRegulatedActivityLength = None,
         calculatedLiability = None
       )
 
