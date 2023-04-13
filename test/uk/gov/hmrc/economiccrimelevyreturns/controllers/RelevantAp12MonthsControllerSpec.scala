@@ -43,13 +43,14 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
   val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
 
-  val pageNavigator: RelevantAp12MonthsPageNavigator = new RelevantAp12MonthsPageNavigator(mockEclLiabilityService) {
-    override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-      Future.successful(onwardRoute)
+  val pageNavigator: RelevantAp12MonthsPageNavigator =
+    new RelevantAp12MonthsPageNavigator(mockEclLiabilityService, mockEclReturnsConnector) {
+      override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
+        Future.successful(onwardRoute)
 
-    override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-      Future.successful(onwardRoute)
-  }
+      override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
+        Future.successful(onwardRoute)
+    }
 
   val dataCleanup: RelevantAp12MonthsDataCleanup = new RelevantAp12MonthsDataCleanup {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
