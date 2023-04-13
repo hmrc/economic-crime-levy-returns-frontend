@@ -21,8 +21,9 @@ import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailParameters
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, ObligationDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 import scala.concurrent.Future
@@ -75,10 +76,24 @@ class EmailServiceSpec extends SpecBase {
         reset(mockEmailConnector)
     }
 
-    "throw an IllegalStateException when the contact details are missing" in forAll {
+    "throw an IllegalStateException when there are no obligation details in the return data" in forAll {
       (internalId: String, chargeReference: String) =>
         val result = intercept[IllegalStateException] {
           await(service.sendReturnSubmittedEmail(EclReturn.empty(internalId), chargeReference)(hc, messages))
+        }
+
+        result.getMessage shouldBe "No obligation details found in return data"
+    }
+
+    "throw an IllegalStateException when the contact details are missing" in forAll {
+      (internalId: String, chargeReference: String, obligationDetails: ObligationDetails) =>
+        val result = intercept[IllegalStateException] {
+          await(
+            service.sendReturnSubmittedEmail(
+              EclReturn.empty(internalId).copy(obligationDetails = Some(obligationDetails)),
+              chargeReference
+            )(hc, messages)
+          )
         }
 
         result.getMessage shouldBe "Invalid contact details"
