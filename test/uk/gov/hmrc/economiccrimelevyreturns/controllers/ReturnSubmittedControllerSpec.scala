@@ -17,14 +17,15 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.i18n.Messages
+import play.api.libs.json.Json
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
+import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ReturnSubmittedView
-import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 import scala.concurrent.Future
 
@@ -45,7 +46,12 @@ class ReturnSubmittedControllerSpec extends SpecBase {
       implicit val messages: Messages                                     = messagesApi.preferred(authRequest)
 
       val result: Future[Result] =
-        controller.onPageLoad()(fakeRequest.withSession((SessionKeys.ChargeReference, chargeReference)))
+        controller.onPageLoad()(
+          fakeRequest.withSession(
+            (SessionKeys.ChargeReference, chargeReference),
+            (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString())
+          )
+        )
 
       status(result) shouldBe OK
 
@@ -64,6 +70,14 @@ class ReturnSubmittedControllerSpec extends SpecBase {
       }
 
       result.getMessage shouldBe "Charge reference number not found in session"
+    }
+
+    "throw an IllegalStateException when the obligation details are not found in the session" in {
+      val result: IllegalStateException = intercept[IllegalStateException] {
+        await(controller.onPageLoad()(fakeRequest.withSession((SessionKeys.ChargeReference, "test-charge-reference"))))
+      }
+
+      result.getMessage shouldBe "Obligation details not found in session"
     }
   }
 
