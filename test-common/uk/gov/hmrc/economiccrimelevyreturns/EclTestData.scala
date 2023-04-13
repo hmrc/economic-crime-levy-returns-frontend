@@ -40,7 +40,7 @@ final case class ValidEclReturn(eclReturn: EclReturn, eclLiabilityCalculationDat
 
 trait EclTestData { self: Generators =>
 
-  val YearInDays: Int = 365
+  val FullYear: Int = 365
 
   implicit val arbInstant: Arbitrary[Instant] = Arbitrary {
     Instant.now()
@@ -104,10 +104,10 @@ trait EclTestData { self: Generators =>
           obligationDetails = Some(obligationDetails)
         ),
       EclLiabilityCalculationData(
-        relevantApLength = if (relevantAp12Months) YearInDays else relevantApLength,
+        relevantApLength = if (relevantAp12Months) FullYear else relevantApLength,
         relevantApRevenue = relevantApRevenue,
         amlRegulatedActivityLength =
-          if (carriedOutAmlRegulatedActivityForFullFy) YearInDays else amlRegulatedActivityLength
+          if (carriedOutAmlRegulatedActivityForFullFy) FullYear else amlRegulatedActivityLength
       )
     )
   }

@@ -24,18 +24,19 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 
 class StartISpec extends ISpecBase with AuthorisedBehaviour {
 
-  s"GET ${routes.StartController.onPageLoad().url}" should {
-    behave like authorisedActionRoute(routes.StartController.onPageLoad())
+  s"GET ${routes.StartController.onPageLoad(":periodKey").url}" should {
+    behave like authorisedActionRoute(routes.StartController.onPageLoad(random[String]))
 
-    "respond with 200 status and the start HTML view" in {
+    "respond with 200 status and the start HTML view if the period key is for an open obligation" in {
       stubAuthorised()
 
+      val periodKey                = random[String]
       val eclRegistrationReference = random[String]
       val eclRegistrationDate      = "20230901"
 
       stubQueryKnownFacts(eclRegistrationReference, eclRegistrationDate)
 
-      val result = callRoute(FakeRequest(routes.StartController.onPageLoad()))
+      val result = callRoute(FakeRequest(routes.StartController.onPageLoad(periodKey)))
 
       status(result) shouldBe OK
       html(result)     should include("Submit your Economic Crime Levy return")
