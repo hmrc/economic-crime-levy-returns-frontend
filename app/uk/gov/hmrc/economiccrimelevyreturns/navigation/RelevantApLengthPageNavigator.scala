@@ -17,7 +17,9 @@
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.{Call, RequestHeader}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
@@ -25,7 +27,10 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvi
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RelevantApLengthPageNavigator @Inject() (eclLiabilityService: EclLiabilityService)(implicit
+class RelevantApLengthPageNavigator @Inject() (
+  eclLiabilityService: EclLiabilityService,
+  eclReturnsConnector: EclReturnsConnector
+)(implicit
   ec: ExecutionContext
 ) extends AsyncPageNavigator
     with FrontendHeaderCarrierProvider {
@@ -40,10 +45,29 @@ class RelevantApLengthPageNavigator @Inject() (eclLiabilityService: EclLiability
     eclReturn.relevantApLength match {
       case Some(_) =>
         eclLiabilityService.calculateLiability(eclReturn) match {
-          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad(CheckMode))
+          case Some(f) =>
+            f.flatMap { updatedReturn =>
+              updatedReturn.calculatedLiability match {
+                case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
+                  clearAmlActivityAnswers(updatedReturn)
+                case Some(_)                                                                  => navigateLiable(updatedReturn)
+                case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
+              }
+            }
           case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
         }
       case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
+    }
+
+  private def clearAmlActivityAnswers(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
+    eclReturnsConnector
+      .upsertReturn(eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None))
+      .map(_ => routes.AmountDueController.onPageLoad(CheckMode))
+
+  private def navigateLiable(eclReturn: EclReturn): Future[Call] =
+    eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
+      case Some(_) => Future.successful(routes.AmountDueController.onPageLoad(CheckMode))
+      case None    => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(CheckMode))
     }
 
 }
