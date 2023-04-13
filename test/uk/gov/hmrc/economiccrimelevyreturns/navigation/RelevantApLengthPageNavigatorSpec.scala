@@ -18,10 +18,13 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
+import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, CalculatedLiability, CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, CheckMode, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band._
 import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
 
 import scala.concurrent.Future
@@ -29,8 +32,9 @@ import scala.concurrent.Future
 class RelevantApLengthPageNavigatorSpec extends SpecBase {
 
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
+  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
 
-  val pageNavigator = new RelevantApLengthPageNavigator(mockEclLiabilityService)
+  val pageNavigator = new RelevantApLengthPageNavigator(mockEclLiabilityService, mockEclReturnsConnector)
 
   "nextPage" should {
     "return a Call to the UK revenue page in NormalMode" in forAll { (eclReturn: EclReturn, length: Int) =>
@@ -40,26 +44,95 @@ class RelevantApLengthPageNavigatorSpec extends SpecBase {
         .onPageLoad(NormalMode)
     }
 
-    "return a Call to the ECL amount due page in CheckMode when the ECL return data is valid" in forAll {
+    "return a Call to the ECL amount due page in CheckMode when the calculated band size is Small (nil return)" in forAll {
       (eclReturn: EclReturn, length: Int, calculatedLiability: CalculatedLiability) =>
-        val updatedReturn = eclReturn.copy(relevantApLength = Some(length))
+        val updatedReturn    = eclReturn.copy(relevantAp12Months = Some(false), relevantApLength = Some(length))
+        val calculatedReturn =
+          updatedReturn.copy(calculatedLiability = Some(calculatedLiability.copy(calculatedBand = Small)))
+        val nilReturn        =
+          calculatedReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
 
         when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Some(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))))
+          .thenReturn(Some(Future.successful(calculatedReturn)))
+
+        when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(nilReturn))(any()))
+          .thenReturn(Future.successful(nilReturn))
 
         await(
           pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)
         ) shouldBe routes.AmountDueController.onPageLoad(CheckMode)
     }
 
+    "return a Call to the ECL amount due page in CheckMode when the calculated band size is not Small and the AML activity question has been answered" in forAll(
+      arbEclReturn.arbitrary,
+      Arbitrary.arbitrary[Int],
+      arbCalculatedLiability.arbitrary,
+      Gen.oneOf[Band](Medium, Large, VeryLarge)
+    ) { (eclReturn: EclReturn, length: Int, calculatedLiability: CalculatedLiability, calculatedBand: Band) =>
+      val updatedReturn = eclReturn.copy(
+        relevantAp12Months = Some(false),
+        relevantApLength = Some(length),
+        carriedOutAmlRegulatedActivityForFullFy = Some(true),
+        amlRegulatedActivityLength = None
+      )
+
+      when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+        .thenReturn(
+          Some(
+            Future.successful(
+              updatedReturn.copy(calculatedLiability = Some(calculatedLiability.copy(calculatedBand = calculatedBand)))
+            )
+          )
+        )
+
+      await(
+        pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)
+      ) shouldBe routes.AmountDueController.onPageLoad(CheckMode)
+    }
+
+    "return a Call to the AML activity for full FY page in CheckMode when the calculated band size is not Small and the AML activity question has not been answered" in forAll(
+      arbEclReturn.arbitrary,
+      Arbitrary.arbitrary[Int],
+      arbCalculatedLiability.arbitrary,
+      Gen.oneOf[Band](Medium, Large, VeryLarge)
+    ) { (eclReturn: EclReturn, length: Int, calculatedLiability: CalculatedLiability, calculatedBand: Band) =>
+      val updatedReturn = eclReturn.copy(
+        relevantAp12Months = Some(false),
+        relevantApLength = Some(length),
+        carriedOutAmlRegulatedActivityForFullFy = None,
+        amlRegulatedActivityLength = None
+      )
+
+      when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+        .thenReturn(
+          Some(
+            Future.successful(
+              updatedReturn.copy(calculatedLiability = Some(calculatedLiability.copy(calculatedBand = calculatedBand)))
+            )
+          )
+        )
+
+      await(
+        pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)
+      ) shouldBe routes.AmlRegulatedActivityController.onPageLoad(CheckMode)
+    }
+
     "return a Call to the answers are invalid page in CheckMode when the ECL return data is invalid" in forAll {
-      (eclReturn: EclReturn) =>
-        val updatedReturn = eclReturn.copy(relevantAp12Months = None)
+      (eclReturn: EclReturn, relevantApLength: Int) =>
+        val updatedReturn = eclReturn.copy(relevantAp12Months = Some(false), relevantApLength = Some(relevantApLength))
 
         when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(None)
 
         await(pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)) shouldBe routes.NotableErrorController
+          .answersAreInvalid()
+    }
+
+    "return a Call to the answers are invalid page in either mode when the relevant AP is 12 months answer is No and the ECL return does not contain an answer for relevant AP length" in forAll {
+      (eclReturn: EclReturn, mode: Mode) =>
+        val updatedReturn = eclReturn.copy(relevantAp12Months = Some(false), relevantApLength = None)
+
+        await(pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)) shouldBe routes.NotableErrorController
           .answersAreInvalid()
     }
   }

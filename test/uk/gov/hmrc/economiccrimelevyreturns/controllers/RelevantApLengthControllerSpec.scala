@@ -46,7 +46,8 @@ class RelevantApLengthControllerSpec extends SpecBase {
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
 
   val pageNavigator: RelevantApLengthPageNavigator = new RelevantApLengthPageNavigator(
-    mockEclLiabilityService
+    mockEclLiabilityService,
+    mockEclReturnsConnector
   ) {
     override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
       Future.successful(onwardRoute)

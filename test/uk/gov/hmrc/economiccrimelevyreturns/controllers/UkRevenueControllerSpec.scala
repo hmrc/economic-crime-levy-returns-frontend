@@ -46,7 +46,7 @@ class UkRevenueControllerSpec extends SpecBase {
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
 
   val pageNavigator: UkRevenuePageNavigator =
-    new UkRevenuePageNavigator(mockEclLiabilityService) {
+    new UkRevenuePageNavigator(mockEclLiabilityService, mockEclReturnsConnector) {
       override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
         Future.successful(onwardRoute)
 

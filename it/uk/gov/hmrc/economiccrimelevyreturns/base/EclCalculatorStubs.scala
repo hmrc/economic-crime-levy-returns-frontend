@@ -1,19 +1,15 @@
 package uk.gov.hmrc.economiccrimelevyreturns.base
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status.OK
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
-import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability}
 
 trait EclCalculatorStubs { self: WireMockStubs =>
 
-  def stubCalculateLiability(calculateLiabilityRequest: CalculateLiabilityRequest): StubMapping = {
-    val calculatedLiability = random[CalculatedLiability]
-
+  def stubCalculateLiability(calculateLiabilityRequest: CalculateLiabilityRequest, calculatedLiability: CalculatedLiability): StubMapping = {
     stub(
       post(urlEqualTo("/economic-crime-levy-calculator/calculate-liability"))
         .withRequestBody(

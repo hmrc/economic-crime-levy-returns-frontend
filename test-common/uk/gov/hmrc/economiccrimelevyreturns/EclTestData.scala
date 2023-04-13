@@ -116,5 +116,6 @@ trait EclTestData { self: Generators =>
 
   val testInternalId: String               = alphaNumericString
   val testEclRegistrationReference: String = alphaNumericString
+  val UkRevenueThreshold: Long             = 10200000L
 
 }

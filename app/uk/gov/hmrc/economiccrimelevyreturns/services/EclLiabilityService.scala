@@ -36,11 +36,11 @@ class EclLiabilityService @Inject() (
 
   def calculateLiability(eclReturn: EclReturn)(implicit request: RequestHeader): Option[Future[EclReturn]] =
     for {
-      relevantAp12Months                      <- eclReturn.relevantAp12Months
-      relevantApLength                        <- if (relevantAp12Months) FullYear else eclReturn.relevantApLength
-      relevantApRevenue                       <- eclReturn.relevantApRevenue
-      carriedOutAmlRegulatedActivityForFullFy <- eclReturn.carriedOutAmlRegulatedActivityForFullFy
-      amlRegulatedActivityLength              <-
+      relevantAp12Months                     <- eclReturn.relevantAp12Months
+      relevantApLength                       <- if (relevantAp12Months) FullYear else eclReturn.relevantApLength
+      relevantApRevenue                      <- eclReturn.relevantApRevenue
+      carriedOutAmlRegulatedActivityForFullFy = eclReturn.carriedOutAmlRegulatedActivityForFullFy.getOrElse(true)
+      amlRegulatedActivityLength             <-
         if (carriedOutAmlRegulatedActivityForFullFy) FullYear else eclReturn.amlRegulatedActivityLength
     } yield calculateLiabilityAndUpsertReturn(
       relevantApLength = relevantApLength,
