@@ -210,6 +210,11 @@ noObligationForPeriod.title = You cannot submit a return for this financial year
 noObligationForPeriod.heading = You cannot submit a return for this financial year
 noObligationForPeriod.p1 = You cannot submit a return for the this financial year right now.
 
+choosePeriod.title = You need to choose a financial year before you submit a return
+choosePeriod.heading = You need to choose a financial year before you submit a return
+choosePeriod.p1 = You need to select which financial year you want to submit a return for.
+choosePeriod.p2 = Go to your <a href="{0}" class="govuk-link">returns history</a> in your Economic Crime Levy account to submit a return for a financial year.
+
 date.month.1 = January
 date.month.2 = February
 date.month.3 = March

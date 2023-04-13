@@ -18,13 +18,14 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, EnrolmentStoreProxyService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, NoObligationForPeriodView, StartView}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, NoObligationForPeriodView, StartView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -40,10 +41,20 @@ class StartController @Inject() (
   eclReturnsConnector: EclReturnsConnector,
   alreadySubmittedReturnView: AlreadySubmittedReturnView,
   noObligationForPeriodView: NoObligationForPeriodView,
+  chooseReturnPeriodView: ChooseReturnPeriodView,
   view: StartView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
+
+  def start(): Action[AnyContent] = authorise.async { implicit request =>
+    eclReturnsService.getOrCreateReturn(request.internalId).map { eclReturn =>
+      eclReturn.obligationDetails match {
+        case Some(obligationDetails) => Redirect(routes.StartController.onPageLoad(obligationDetails.periodKey))
+        case None                    => Ok(chooseReturnPeriodView())
+      }
+    }
+  }
 
   def onPageLoad(periodKey: String): Action[AnyContent] = authorise.async { implicit request =>
     for {

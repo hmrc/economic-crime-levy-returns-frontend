@@ -61,7 +61,7 @@
     pageTitle = Some(pageTitle),
     nonce = CSPNonce.get,
     signOutUrl = Some(SignOutController.signOut.url),
-    serviceUrl = Some("#TODO"), //TODO where should this go now?
+    serviceUrl = Some(StartController.start.url),
     isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
     additionalScriptsBlock = Some(additionalScripts),
     additionalHeadBlock = head,
