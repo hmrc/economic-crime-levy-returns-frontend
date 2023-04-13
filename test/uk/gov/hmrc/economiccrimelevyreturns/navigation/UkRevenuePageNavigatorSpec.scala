@@ -111,27 +111,23 @@ class UkRevenuePageNavigatorSpec extends SpecBase {
       ) shouldBe routes.AmountDueController.onPageLoad(CheckMode)
     }
 
-    "return a Call to the ECL amount due page in either mode when the calculated band size is Small (nil return)" in forAll(
-      arbEclReturn.arbitrary,
-      Arbitrary.arbitrary[Long],
-      arbCalculatedLiability.arbitrary,
-      arbMode.arbitrary
-    ) { (eclReturn: EclReturn, ukRevenue: Long, calculatedLiability: CalculatedLiability, mode: Mode) =>
-      val updatedReturn    = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
-      val calculatedReturn =
-        updatedReturn.copy(calculatedLiability = Some(calculatedLiability.copy(calculatedBand = Small)))
-      val nilReturn        =
-        calculatedReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
+    "return a Call to the ECL amount due page in either mode when the calculated band size is Small (nil return)" in forAll {
+      (eclReturn: EclReturn, ukRevenue: Long, calculatedLiability: CalculatedLiability, mode: Mode) =>
+        val updatedReturn    = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
+        val calculatedReturn =
+          updatedReturn.copy(calculatedLiability = Some(calculatedLiability.copy(calculatedBand = Small)))
+        val nilReturn        =
+          calculatedReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
 
-      when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
-        .thenReturn(Some(Future.successful(calculatedReturn)))
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(Some(Future.successful(calculatedReturn)))
 
-      when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(nilReturn))(any()))
-        .thenReturn(Future.successful(nilReturn))
+        when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(nilReturn))(any()))
+          .thenReturn(Future.successful(nilReturn))
 
-      await(
-        pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)
-      ) shouldBe routes.AmountDueController.onPageLoad(mode)
+        await(
+          pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)
+        ) shouldBe routes.AmountDueController.onPageLoad(mode)
     }
 
     "return a Call to the answers are invalid page in either mode when the ECL return data is invalid" in forAll {
