@@ -35,12 +35,14 @@ class EmailServiceSpec extends SpecBase {
   "sendReturnSubmittedEmail" should {
     "send an email to the contact in the return" in forAll {
       (validEclReturn: ValidEclReturn, chargeReference: String) =>
-        val eclDueDate      = ViewUtils.formatLocalDate(EclTaxYear.dueDate, translate = false)(messages)
-        val dateSubmitted   = ViewUtils.formatToday(translate = false)(messages)
-        val periodStartDate =
-          ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearStartDate, translate = false)(messages)
-        val periodEndDate   =
-          ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearEndDate, translate = false)(messages)
+        val obligationDetails = validEclReturn.eclReturn.obligationDetails.get
+        val eclDueDate        =
+          ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate, translate = false)(messages)
+        val dateSubmitted     = ViewUtils.formatToday(translate = false)(messages)
+        val periodStartDate   =
+          ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate, translate = false)(messages)
+        val periodEndDate     =
+          ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)(messages)
 
         val expectedParams = ReturnSubmittedEmailParameters(
           name = validEclReturn.eclReturn.contactName.get,
@@ -48,8 +50,8 @@ class EmailServiceSpec extends SpecBase {
           periodStartDate = periodStartDate,
           periodEndDate = periodEndDate,
           chargeReference = chargeReference,
-          fyStartYear = EclTaxYear.currentFyStartYear,
-          fyEndYear = EclTaxYear.currentFyEndYear,
+          fyStartYear = obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
+          fyEndYear = obligationDetails.inboundCorrespondenceToDate.getYear.toString,
           datePaymentDue = eclDueDate
         )
 

@@ -22,7 +22,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, ObligationDetails}
 
 import java.time.{Instant, LocalDate}
 
@@ -39,6 +39,8 @@ final case class EclLiabilityCalculationData(
 final case class ValidEclReturn(eclReturn: EclReturn, eclLiabilityCalculationData: EclLiabilityCalculationData)
 
 trait EclTestData { self: Generators =>
+
+  val YearInDays: Int = 365
 
   implicit val arbInstant: Arbitrary[Instant] = Arbitrary {
     Instant.now()
@@ -82,6 +84,7 @@ trait EclTestData { self: Generators =>
       contactRole                             <- stringsWithMaxLength(MinMaxValues.RoleMaxLength)
       contactEmailAddress                     <- emailAddress(MinMaxValues.EmailMaxLength)
       contactTelephoneNumber                  <- telephoneNumber(MinMaxValues.TelephoneNumberMaxLength)
+      obligationDetails                       <- Arbitrary.arbitrary[ObligationDetails]
       internalId                               = alphaNumericString
     } yield ValidEclReturn(
       EclReturn
@@ -97,13 +100,14 @@ trait EclTestData { self: Generators =>
           contactName = Some(contactName),
           contactRole = Some(contactRole),
           contactEmailAddress = Some(contactEmailAddress),
-          contactTelephoneNumber = Some(contactTelephoneNumber)
+          contactTelephoneNumber = Some(contactTelephoneNumber),
+          obligationDetails = Some(obligationDetails)
         ),
       EclLiabilityCalculationData(
-        relevantApLength = if (relevantAp12Months) EclTaxYear.YearInDays else relevantApLength,
+        relevantApLength = if (relevantAp12Months) YearInDays else relevantApLength,
         relevantApRevenue = relevantApRevenue,
         amlRegulatedActivityLength =
-          if (carriedOutAmlRegulatedActivityForFullFy) EclTaxYear.YearInDays else amlRegulatedActivityLength
+          if (carriedOutAmlRegulatedActivityForFullFy) YearInDays else amlRegulatedActivityLength
       )
     )
   }

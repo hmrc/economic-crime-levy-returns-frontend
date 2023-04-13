@@ -21,9 +21,12 @@ import org.mockito.ArgumentMatchers.any
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.services.EnrolmentStoreProxyService
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, EclReturnsConnector}
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.ObligationDetails
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, EnrolmentStoreProxyService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.StartView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, NoObligationForPeriodView, StartView}
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -31,29 +34,45 @@ import scala.concurrent.Future
 class StartControllerSpec extends SpecBase {
 
   val mockEnrolmentStoreProxyService: EnrolmentStoreProxyService = mock[EnrolmentStoreProxyService]
+  val mockEclAccountConnector: EclAccountConnector               = mock[EclAccountConnector]
+  val mockEclReturnsService: EclReturnsService                   = mock[EclReturnsService]
+  val mockEclReturnsConnector: EclReturnsConnector               = mock[EclReturnsConnector]
 
-  val view: StartView = app.injector.instanceOf[StartView]
+  val view: StartView                                        = app.injector.instanceOf[StartView]
+  val alreadySubmittedReturnView: AlreadySubmittedReturnView = app.injector.instanceOf[AlreadySubmittedReturnView]
+  val noObligationForPeriodView: NoObligationForPeriodView   = app.injector.instanceOf[NoObligationForPeriodView]
+  val chooseReturnPeriodView: ChooseReturnPeriodView         = app.injector.instanceOf[ChooseReturnPeriodView]
 
   val controller = new StartController(
     mcc,
     fakeAuthorisedAction(internalId),
     mockEnrolmentStoreProxyService,
+    mockEclAccountConnector,
+    mockEclReturnsService,
+    mockEclReturnsConnector,
+    alreadySubmittedReturnView,
+    noObligationForPeriodView,
+    chooseReturnPeriodView,
     view
   )
 
   "onPageLoad" should {
-    "return OK and the correct view" in forAll { eclRegistrationDate: LocalDate =>
-      when(mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any()))
-        .thenReturn(Future.successful(eclRegistrationDate))
+    "return OK and the start view when the period key is for an open obligation" in forAll {
+      (periodKey: String, obligationDetails: ObligationDetails, eclRegistrationDate: LocalDate) =>
+        when(
+          mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any())
+        )
+          .thenReturn(Future.successful(eclRegistrationDate))
 
-      val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+        val result: Future[Result] = controller.onPageLoad(periodKey)(fakeRequest)
 
-      status(result) shouldBe OK
+        status(result) shouldBe OK
 
-      contentAsString(result) shouldBe view(
-        eclRegistrationReference,
-        ViewUtils.formatLocalDate(eclRegistrationDate)(messages)
-      )(fakeRequest, messages).toString
+        contentAsString(result) shouldBe view(
+          eclRegistrationReference,
+          ViewUtils.formatLocalDate(eclRegistrationDate)(messages),
+          ViewUtils.formatObligationPeriodYears(obligationDetails)
+        )(fakeRequest, messages).toString
     }
   }
 
