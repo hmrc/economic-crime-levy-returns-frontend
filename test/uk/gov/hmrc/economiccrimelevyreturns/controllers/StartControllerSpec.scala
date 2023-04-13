@@ -23,7 +23,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.ObligationDetails
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, EnrolmentStoreProxyService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, NoObligationForPeriodView, StartView}
@@ -56,23 +56,158 @@ class StartControllerSpec extends SpecBase {
     view
   )
 
+  "start" should {
+    "redirect to the start page if the return data contains obligation details" in {
+      pending
+    }
+
+    "show the choose return period view if the return data does not contain any obligation details" in {
+      pending
+    }
+  }
+
   "onPageLoad" should {
-    "return OK and the start view when the period key is for an open obligation" in forAll {
-      (periodKey: String, obligationDetails: ObligationDetails, eclRegistrationDate: LocalDate) =>
+    "upsert the return data to contain the obligation details if the same period key is already held or no obligation details exist" +
+      "and return OK with the start view when the period key is for an open obligation" in forAll {
+        (internalId: String, obligationDetails: ObligationDetails, eclRegistrationDate: LocalDate) =>
+          when(
+            mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any())
+          )
+            .thenReturn(Future.successful(eclRegistrationDate))
+
+          val openObligation = obligationDetails.copy(status = Open)
+
+          val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
+
+          when(mockEclAccountConnector.getObligations()(any())).thenReturn(Future.successful(Some(obligationData)))
+
+          when(mockEclReturnsService.getOrCreateReturn(any())(any()))
+            .thenReturn(Future.successful(EclReturn.empty(internalId)))
+
+          val updatedReturn = EclReturn.empty(internalId).copy(obligationDetails = Some(openObligation))
+
+          when(
+            mockEclReturnsConnector.upsertReturn(
+              ArgumentMatchers.eq(updatedReturn)
+            )(any())
+          )
+            .thenReturn(Future.successful(updatedReturn))
+
+          val result: Future[Result] = controller.onPageLoad(openObligation.periodKey)(fakeRequest)
+
+          status(result) shouldBe OK
+
+          contentAsString(result) shouldBe view(
+            eclRegistrationReference,
+            ViewUtils.formatLocalDate(eclRegistrationDate)(messages),
+            ViewUtils.formatObligationPeriodYears(obligationDetails)
+          )(fakeRequest, messages).toString
+      }
+
+    "upsert the return data to contain the obligation details, clearing any existing return data if the period key does not match one already held " +
+      "and return OK with the start view when the period key is for an open obligation" in forAll {
+        (internalId: String, obligationDetails: ObligationDetails, eclRegistrationDate: LocalDate) =>
+          when(
+            mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any())
+          )
+            .thenReturn(Future.successful(eclRegistrationDate))
+
+          val openObligation = obligationDetails.copy(status = Open, periodKey = "P1")
+
+          val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
+
+          when(mockEclAccountConnector.getObligations()(any())).thenReturn(Future.successful(Some(obligationData)))
+
+          val existingReturnWithDifferentPeriodKey =
+            EclReturn.empty(internalId).copy(obligationDetails = Some(openObligation.copy(periodKey = "P2")))
+
+          when(mockEclReturnsService.getOrCreateReturn(any())(any()))
+            .thenReturn(Future.successful(existingReturnWithDifferentPeriodKey))
+
+          val updatedReturn = EclReturn.empty(internalId).copy(obligationDetails = Some(openObligation))
+
+          when(mockEclReturnsConnector.deleteReturn(any())(any())).thenReturn(Future.successful(()))
+
+          when(
+            mockEclReturnsConnector.upsertReturn(
+              ArgumentMatchers.eq(updatedReturn)
+            )(any())
+          )
+            .thenReturn(Future.successful(updatedReturn))
+
+          val result: Future[Result] = controller.onPageLoad(openObligation.periodKey)(fakeRequest)
+
+          status(result) shouldBe OK
+
+          contentAsString(result) shouldBe view(
+            eclRegistrationReference,
+            ViewUtils.formatLocalDate(eclRegistrationDate)(messages),
+            ViewUtils.formatObligationPeriodYears(obligationDetails)
+          )(fakeRequest, messages).toString
+      }
+
+    "return OK and the no obligation for period view when a period key is specified where there is no obligation" in forAll {
+      (eclRegistrationDate: LocalDate, periodKey: String) =>
         when(
           mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any())
         )
           .thenReturn(Future.successful(eclRegistrationDate))
 
+        when(mockEclAccountConnector.getObligations()(any())).thenReturn(Future.successful(None))
+
         val result: Future[Result] = controller.onPageLoad(periodKey)(fakeRequest)
 
         status(result) shouldBe OK
 
-        contentAsString(result) shouldBe view(
-          eclRegistrationReference,
-          ViewUtils.formatLocalDate(eclRegistrationDate)(messages),
-          ViewUtils.formatObligationPeriodYears(obligationDetails)
+        contentAsString(result) shouldBe noObligationForPeriodView()(fakeRequest, messages).toString
+    }
+
+    "return OK and the already submitted return view when a period key is specified for an obligation that is already fulfilled" in forAll {
+      (obligationDetails: ObligationDetails, eclRegistrationDate: LocalDate) =>
+        when(
+          mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any())
+        )
+          .thenReturn(Future.successful(eclRegistrationDate))
+
+        val today = LocalDate.now()
+
+        val fulfilledObligation =
+          obligationDetails.copy(status = Fulfilled, inboundCorrespondenceDateReceived = Some(today))
+
+        val obligationData = ObligationData(obligations = Seq(Obligation(Seq(fulfilledObligation))))
+
+        when(mockEclAccountConnector.getObligations()(any())).thenReturn(Future.successful(Some(obligationData)))
+
+        val result: Future[Result] = controller.onPageLoad(fulfilledObligation.periodKey)(fakeRequest)
+
+        status(result) shouldBe OK
+
+        contentAsString(result) shouldBe alreadySubmittedReturnView(
+          obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
+          obligationDetails.inboundCorrespondenceToDate.getYear.toString,
+          ViewUtils.formatLocalDate(today)(messages)
         )(fakeRequest, messages).toString
+    }
+
+    "throw an IllegalStateException when a fulfilled obligation does not contain an inboundCorrespondenceDateReceived" in forAll {
+      (obligationDetails: ObligationDetails, eclRegistrationDate: LocalDate) =>
+        when(
+          mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any())
+        )
+          .thenReturn(Future.successful(eclRegistrationDate))
+
+        val fulfilledObligation =
+          obligationDetails.copy(status = Fulfilled, inboundCorrespondenceDateReceived = None)
+
+        val obligationData = ObligationData(obligations = Seq(Obligation(Seq(fulfilledObligation))))
+
+        when(mockEclAccountConnector.getObligations()(any())).thenReturn(Future.successful(Some(obligationData)))
+
+        val result = intercept[IllegalStateException] {
+          await(controller.onPageLoad(fulfilledObligation.periodKey)(fakeRequest))
+        }
+
+        result.getMessage shouldBe "Fulfilled obligation does not have an inboundCorrespondenceDateReceived"
     }
   }
 

@@ -55,7 +55,6 @@ object ObligationData {
 }
 
 final case class Obligation(
-  identification: Option[Identification],
   obligationDetails: Seq[ObligationDetails]
 )
 

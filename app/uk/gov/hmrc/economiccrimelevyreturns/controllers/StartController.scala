@@ -104,17 +104,21 @@ class StartController @Inject() (
           case Open      =>
             for {
               eclReturn <- eclReturnsService.getOrCreateReturn(request.internalId)
-              _         <- if (eclReturn.obligationDetails.map(_.periodKey).contains(periodKey)) {
-                             eclReturnsConnector.upsertReturn(eclReturn.copy(obligationDetails = Some(obligationDetails)))
-                           } else {
-                             eclReturnsConnector
-                               .deleteReturn(request.internalId)
-                               .map(_ =>
-                                 eclReturnsConnector.upsertReturn(
-                                   EclReturn.empty(request.internalId).copy(obligationDetails = Some(obligationDetails))
-                                 )
-                               )
-                           }
+              _         <- {
+                val optPeriodKey = eclReturn.obligationDetails.map(_.periodKey)
+                if (optPeriodKey.contains(periodKey) || optPeriodKey.isEmpty) {
+                  eclReturnsConnector.upsertReturn(eclReturn.copy(obligationDetails = Some(obligationDetails)))
+                } else {
+                  eclReturnsConnector
+                    .deleteReturn(request.internalId)
+                    .map(_ =>
+                      eclReturnsConnector.upsertReturn(
+                        EclReturn.empty(request.internalId).copy(obligationDetails = Some(obligationDetails))
+                      )
+                    )
+                }
+              }
+
             } yield Right(obligationDetails)
         }
     }
