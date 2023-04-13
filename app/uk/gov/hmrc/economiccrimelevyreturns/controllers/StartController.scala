@@ -20,8 +20,8 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
-import uk.gov.hmrc.economiccrimelevyreturns.models.{Fulfilled, ObligationData, ObligationDetails, Open}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, EnrolmentStoreProxyService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, NoObligationForPeriodView, StartView}
@@ -94,8 +94,17 @@ class StartController @Inject() (
           case Open      =>
             for {
               eclReturn <- eclReturnsService.getOrCreateReturn(request.internalId)
-              _         <-
-                eclReturnsConnector.upsertReturn(eclReturn.copy(obligationDetails = Some(obligationDetails)))
+              _         <- if (eclReturn.obligationDetails.map(_.periodKey).contains(periodKey)) {
+                             eclReturnsConnector.upsertReturn(eclReturn.copy(obligationDetails = Some(obligationDetails)))
+                           } else {
+                             eclReturnsConnector
+                               .deleteReturn(request.internalId)
+                               .map(_ =>
+                                 eclReturnsConnector.upsertReturn(
+                                   EclReturn.empty(request.internalId).copy(obligationDetails = Some(obligationDetails))
+                                 )
+                               )
+                           }
             } yield Right(obligationDetails)
         }
     }
