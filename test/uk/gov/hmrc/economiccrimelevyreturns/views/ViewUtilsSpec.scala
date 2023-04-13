@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.views
 import play.api.data.Form
 import play.api.data.Forms.{single, text}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, Open}
 
 import java.time.{Instant, LocalDate}
 
@@ -94,6 +95,22 @@ class ViewUtilsSpec extends SpecBase {
     "correctly format a monetary amount that does not include pence" in {
       ViewUtils.formatMoney(123456789.0) shouldBe "£123,456,789"
     }
+  }
+
+  "formatObligationPeriodYears" should {
+    "correctly format the start and end year of an obligation period" in {
+      ViewUtils.formatObligationPeriodYears(
+        ObligationDetails(
+          status = Open,
+          inboundCorrespondenceFromDate = LocalDate.parse("2022-04-01"),
+          inboundCorrespondenceToDate = LocalDate.parse("2023-03-31"),
+          inboundCorrespondenceDateReceived = None,
+          inboundCorrespondenceDueDate = LocalDate.parse("2023-09-30"),
+          periodKey = "22XY"
+        )
+      ) shouldBe "2022-2023"
+    }
+
   }
 
 }
