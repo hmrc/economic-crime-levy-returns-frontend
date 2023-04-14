@@ -19,7 +19,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import javax.inject.{Inject, Singleton}
@@ -33,16 +32,16 @@ class EclLiabilityService @Inject() (
   ec: ExecutionContext
 ) extends FrontendHeaderCarrierProvider {
 
-  private val defaultLength: Option[Int] = Some(EclTaxYear.YearInDays)
+  private val FullYear: Option[Int] = Some(365)
 
   def calculateLiability(eclReturn: EclReturn)(implicit request: RequestHeader): Option[Future[EclReturn]] =
     for {
       relevantAp12Months                     <- eclReturn.relevantAp12Months
-      relevantApLength                       <- if (relevantAp12Months) defaultLength else eclReturn.relevantApLength
+      relevantApLength                       <- if (relevantAp12Months) FullYear else eclReturn.relevantApLength
       relevantApRevenue                      <- eclReturn.relevantApRevenue
       carriedOutAmlRegulatedActivityForFullFy = eclReturn.carriedOutAmlRegulatedActivityForFullFy.getOrElse(true)
       amlRegulatedActivityLength             <-
-        if (carriedOutAmlRegulatedActivityForFullFy) defaultLength else eclReturn.amlRegulatedActivityLength
+        if (carriedOutAmlRegulatedActivityForFullFy) FullYear else eclReturn.amlRegulatedActivityLength
     } yield calculateLiabilityAndUpsertReturn(
       relevantApLength = relevantApLength,
       relevantApRevenue = relevantApRevenue,

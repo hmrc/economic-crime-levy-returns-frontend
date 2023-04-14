@@ -14,5 +14,6 @@ trait WireMockStubs
     with AuthStubs
     with EclReturnsStubs
     with EclCalculatorStubs
+    with EclAccountStubs
     with EnrolmentStoreProxyStubs
     with EmailStubs

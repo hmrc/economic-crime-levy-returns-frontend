@@ -17,9 +17,10 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.i18n.I18nSupport
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
-import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
+import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ReturnSubmittedView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -39,7 +40,23 @@ class ReturnSubmittedController @Inject() (
       .get(SessionKeys.ChargeReference)
       .getOrElse(throw new IllegalStateException("Charge reference number not found in session"))
 
-    Ok(view(chargeReference, ViewUtils.formatToday()))
+    val obligationDetails: ObligationDetails = Json
+      .parse(
+        request.session
+          .get(SessionKeys.ObligationDetails)
+          .getOrElse(throw new IllegalStateException("Obligation details not found in session"))
+      )
+      .as[ObligationDetails]
+
+    Ok(
+      view(
+        chargeReference,
+        ViewUtils.formatToday(),
+        ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate),
+        obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
+        obligationDetails.inboundCorrespondenceToDate.getYear.toString
+      )
+    )
   }
 
 }

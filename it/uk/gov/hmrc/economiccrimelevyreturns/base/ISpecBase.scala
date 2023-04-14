@@ -56,6 +56,7 @@ abstract class ISpecBase
     "auth",
     "economic-crime-levy-returns",
     "economic-crime-levy-calculator",
+    "economic-crime-levy-account",
     "email",
     "enrolment-store-proxy"
   )
