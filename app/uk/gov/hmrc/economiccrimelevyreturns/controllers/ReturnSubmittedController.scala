@@ -51,7 +51,7 @@ class ReturnSubmittedController @Inject() (
     val amountDue: BigDecimal = BigDecimal(
       request.session
         .get(SessionKeys.AmountDue)
-        .getOrElse(throw new IllegalStateException("Amount due not found in session"))
+        .getOrElse(throw new IllegalStateException("Amount due not found in return data"))
     )
 
     Ok(

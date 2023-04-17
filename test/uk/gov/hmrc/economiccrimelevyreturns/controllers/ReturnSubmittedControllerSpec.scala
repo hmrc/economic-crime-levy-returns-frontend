@@ -23,10 +23,11 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
-import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, Open, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ReturnSubmittedView
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class ReturnSubmittedControllerSpec extends SpecBase {
@@ -73,6 +74,29 @@ class ReturnSubmittedControllerSpec extends SpecBase {
       }
 
       result.getMessage shouldBe "Charge reference number not found in session"
+    }
+
+    "throw an IllegalStateException when the amount due is not found in session" in {
+      val obligationDetails             = ObligationDetails(
+        status = Open,
+        inboundCorrespondenceFromDate = LocalDate.now(),
+        inboundCorrespondenceToDate = LocalDate.now(),
+        inboundCorrespondenceDateReceived = None,
+        inboundCorrespondenceDueDate = LocalDate.now(),
+        periodKey = "22XY"
+      )
+      val result: IllegalStateException = intercept[IllegalStateException] {
+        await(
+          controller.onPageLoad()(
+            fakeRequest.withSession(
+              (SessionKeys.ChargeReference, "test-charge-reference"),
+              (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString())
+            )
+          )
+        )
+      }
+
+      result.getMessage shouldBe "Amount due not found in return data"
     }
 
     "throw an IllegalStateException when the obligation details are not found in the session" in {
