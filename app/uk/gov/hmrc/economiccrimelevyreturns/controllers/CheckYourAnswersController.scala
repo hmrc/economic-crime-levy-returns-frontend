@@ -87,7 +87,7 @@ class CheckYourAnswersController @Inject() (
           SessionKeys.AmountDue         ->
             request.eclReturn.calculatedLiability
               .getOrElse(
-                throw new IllegalStateException("Amount due was not found.")
+                throw new IllegalStateException("Amount due not found in return data")
               )
               .amountDue
               .toString()
