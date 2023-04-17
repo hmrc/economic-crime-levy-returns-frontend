@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.i18n.Messages
+import play.api.libs.json.Json
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
@@ -111,9 +112,12 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
           val result: Future[Result] = controller.onSubmit()(fakeRequest)
 
-          status(result)                                   shouldBe SEE_OTHER
-          session(result).get(SessionKeys.ChargeReference) shouldBe Some(submitEclReturnResponse.chargeReference)
-          redirectLocation(result)                         shouldBe Some(routes.ReturnSubmittedController.onPageLoad().url)
+          status(result)                                     shouldBe SEE_OTHER
+          session(result).get(SessionKeys.ChargeReference)   shouldBe Some(submitEclReturnResponse.chargeReference)
+          session(result).get(SessionKeys.ObligationDetails) shouldBe Some(
+            Json.toJson(validEclReturn.eclReturn.obligationDetails.get).toString()
+          )
+          redirectLocation(result)                           shouldBe Some(routes.ReturnSubmittedController.onPageLoad().url)
 
           verify(mockEmailService, times(1)).sendReturnSubmittedEmail(
             ArgumentMatchers.eq(validEclReturn.eclReturn),

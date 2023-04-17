@@ -40,5 +40,7 @@ object CachedArbitraries extends EclTestData with Generators {
   implicit lazy val arbDataValidationErrors: Arbitrary[DataValidationErrors]                     = mkArb
   implicit lazy val arbSubmitEclReturnResponse: Arbitrary[SubmitEclReturnResponse]               = mkArb
   implicit lazy val arbReturnSubmittedEmailParameters: Arbitrary[ReturnSubmittedEmailParameters] = mkArb
+  implicit lazy val arbObligationData: Arbitrary[ObligationData]                                 = mkArb
+  implicit lazy val arbObligationDetails: Arbitrary[ObligationDetails]                           = mkArb
 
 }

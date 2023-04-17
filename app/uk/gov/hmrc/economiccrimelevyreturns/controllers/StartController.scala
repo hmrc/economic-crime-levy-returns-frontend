@@ -17,29 +17,110 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
-import uk.gov.hmrc.economiccrimelevyreturns.services.EnrolmentStoreProxyService
+import uk.gov.hmrc.economiccrimelevyreturns.models._
+import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, EnrolmentStoreProxyService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.StartView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, NoObligationForPeriodView, StartView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class StartController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   enrolmentStoreProxyService: EnrolmentStoreProxyService,
+  eclAccountConnector: EclAccountConnector,
+  eclReturnsService: EclReturnsService,
+  eclReturnsConnector: EclReturnsConnector,
+  alreadySubmittedReturnView: AlreadySubmittedReturnView,
+  noObligationForPeriodView: NoObligationForPeriodView,
+  chooseReturnPeriodView: ChooseReturnPeriodView,
   view: StartView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = authorise.async { implicit request =>
-    enrolmentStoreProxyService.getEclRegistrationDate(request.eclRegistrationReference).map { registrationDate =>
-      Ok(view(request.eclRegistrationReference, ViewUtils.formatLocalDate(registrationDate)))
+  def start(): Action[AnyContent] = authorise.async { implicit request =>
+    eclReturnsService.getOrCreateReturn(request.internalId).map { eclReturn =>
+      eclReturn.obligationDetails match {
+        case Some(obligationDetails) => Redirect(routes.StartController.onPageLoad(obligationDetails.periodKey))
+        case None                    => Ok(chooseReturnPeriodView())
+      }
+    }
+  }
+
+  def onPageLoad(periodKey: String): Action[AnyContent] = authorise.async { implicit request =>
+    for {
+      registrationDate        <- enrolmentStoreProxyService.getEclRegistrationDate(request.eclRegistrationReference)
+      obligationData          <- eclAccountConnector.getObligations()
+      eitherObligationDetails <- validatePeriodKey(obligationData, periodKey)
+    } yield eitherObligationDetails match {
+      case Right(obligationDetails) =>
+        Ok(
+          view(
+            request.eclRegistrationReference,
+            ViewUtils.formatLocalDate(registrationDate),
+            ViewUtils.formatObligationPeriodYears(obligationDetails)
+          )
+        )
+      case Left(result)             => result
+    }
+  }
+
+  private def validatePeriodKey(obligationData: Option[ObligationData], periodKey: String)(implicit
+    request: AuthorisedRequest[_]
+  ): Future[Either[Result, ObligationDetails]] = {
+    val obligationDetails =
+      obligationData
+        .map(_.obligations.flatMap(_.obligationDetails.find(_.periodKey == periodKey)))
+        .flatMap(_.headOption)
+
+    obligationDetails match {
+      case None                    => Future.successful(Left(Ok(noObligationForPeriodView())))
+      case Some(obligationDetails) =>
+        obligationDetails.status match {
+          case Fulfilled =>
+            val dateReceived = obligationDetails.inboundCorrespondenceDateReceived.getOrElse(
+              throw new IllegalStateException("Fulfilled obligation does not have an inboundCorrespondenceDateReceived")
+            )
+
+            Future.successful(
+              Left(
+                Ok(
+                  alreadySubmittedReturnView(
+                    obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
+                    obligationDetails.inboundCorrespondenceToDate.getYear.toString,
+                    ViewUtils.formatLocalDate(dateReceived)
+                  )
+                )
+              )
+            )
+          case Open      =>
+            for {
+              eclReturn <- eclReturnsService.getOrCreateReturn(request.internalId)
+              _         <- {
+                val optPeriodKey = eclReturn.obligationDetails.map(_.periodKey)
+                if (optPeriodKey.contains(periodKey) || optPeriodKey.isEmpty) {
+                  eclReturnsConnector.upsertReturn(eclReturn.copy(obligationDetails = Some(obligationDetails)))
+                } else {
+                  eclReturnsConnector
+                    .deleteReturn(request.internalId)
+                    .map(_ =>
+                      eclReturnsConnector.upsertReturn(
+                        EclReturn.empty(request.internalId).copy(obligationDetails = Some(obligationDetails))
+                      )
+                    )
+                }
+              }
+
+            } yield Right(obligationDetails)
+        }
     }
   }
 

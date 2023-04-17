@@ -15,29 +15,19 @@
  *@
 
 @this(
-    layout: templates.Layout,
-    govukButton: GovukButton
+        layout: templates.Layout
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(fyStartYear: String, fyEndYear: String, submittedDate: String)(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle    = title(messages("signedOut.title")),
-    showBackLink = false,
-    timeout      = false,
-    showSignOut  = false
+    pageTitle = title(messages("alreadySubmittedReturn.title", fyStartYear, fyEndYear))
 ) {
 
-    <h1 class="govuk-heading-xl">@messages("signedOut.heading")</h1>
+    <h1 class="govuk-heading-l">@messages("alreadySubmittedReturn.heading", fyStartYear, fyEndYear)</h1>
 
-    <p class="govuk-body">@messages("signedOut.guidance")</p>
+    <p class="govuk-body">@messages("alreadySubmittedReturn.p1", fyStartYear, fyEndYear, submittedDate)</p>
+    <p class="govuk-body">@Html(messages("alreadySubmittedReturn.p2", "#TODO"))</p>
+    <p class="govuk-body">@Html(messages("alreadySubmittedReturn.p3", "#TODO"))</p>
 
-    <p class="govuk-body">
-        @govukButton(
-            Button(
-                element = Some(messages("site.signIn")),
-                href    = Some(StartController.start.url)
-            )
-        )
-    </p>
 }

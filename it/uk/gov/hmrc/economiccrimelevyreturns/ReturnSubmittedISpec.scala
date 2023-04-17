@@ -17,11 +17,13 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
+import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
 
 class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -31,11 +33,15 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the return submitted HTML view" in {
       stubAuthorised()
 
-      val chargeReference = random[String]
+      val chargeReference   = random[String]
+      val obligationDetails = random[ObligationDetails]
 
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())
-          .withSession((SessionKeys.ChargeReference, chargeReference))
+          .withSession(
+            (SessionKeys.ChargeReference, chargeReference),
+            (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString())
+          )
       )
 
       status(result) shouldBe OK

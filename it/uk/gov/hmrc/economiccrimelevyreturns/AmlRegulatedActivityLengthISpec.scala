@@ -9,7 +9,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 
 class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -44,7 +43,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
         relevantApRevenue = Some(ukRevenue),
         carriedOutAmlRegulatedActivityForFullFy = Some(false)
       )
-      val calculatedLiability = random[CalculatedLiability]
+      val calculatedLiability        = random[CalculatedLiability]
 
       stubGetReturn(eclReturn)
 
@@ -52,7 +51,10 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
         eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength), calculatedLiability = None)
 
       stubUpsertReturn(updatedReturn)
-      stubCalculateLiability(CalculateLiabilityRequest(amlRegulatedActivityLength, EclTaxYear.YearInDays, ukRevenue), calculatedLiability)
+      stubCalculateLiability(
+        CalculateLiabilityRequest(amlRegulatedActivityLength, FullYear, ukRevenue),
+        calculatedLiability
+      )
 
       val result = callRoute(
         FakeRequest(routes.AmlRegulatedActivityLengthController.onSubmit(NormalMode))
