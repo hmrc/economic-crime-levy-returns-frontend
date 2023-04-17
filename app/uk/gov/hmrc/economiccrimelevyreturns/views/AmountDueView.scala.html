@@ -15,6 +15,7 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
+@import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 
 @this(
         layout: templates.Layout,
@@ -24,13 +25,13 @@
         button: GovukButton
 )
 
-@(calculatedLiability: CalculatedLiability, accountingDetails: SummaryList, mode: Mode)(implicit request: Request[_], messages: Messages)
+@(period: String, calculatedLiability: CalculatedLiability, accountingDetails: SummaryList, mode: Mode)(implicit request: Request[_], messages: Messages)
 
 @smallBandRange = @{
     if(!calculatedLiability.bands.apportioned) {
         Text(messages("band.Small.defaultRange"))
     } else {
-        Text(messages("amountDue.bands.b1", calculatedLiability.bands.small.to))
+        Text(messages("amountDue.band.range.bottom", calculatedLiability.bands.small.to))
     }
 }
 
@@ -38,7 +39,7 @@
     if(!calculatedLiability.bands.apportioned) {
         Text(messages("band.Medium.defaultRange"))
     } else {
-        Text(messages("amountDue.bands.b2", calculatedLiability.bands.medium.from, calculatedLiability.bands.medium.to))
+        Text(messages("amountDue.band.range", calculatedLiability.bands.medium.from, calculatedLiability.bands.medium.to))
     }
 }
 
@@ -46,7 +47,7 @@
     if(!calculatedLiability.bands.apportioned) {
         Text(messages("band.Large.defaultRange"))
     } else {
-        Text(messages("amountDue.bands.b3", calculatedLiability.bands.large.from, calculatedLiability.bands.large.to))
+        Text(messages("amountDue.band.range", calculatedLiability.bands.large.from, calculatedLiability.bands.large.to))
     }
 }
 
@@ -54,7 +55,7 @@
     if(!calculatedLiability.bands.apportioned) {
         Text(messages("band.VeryLarge.defaultRange"))
     } else {
-        Text(messages("amountDue.bands.b4", calculatedLiability.bands.veryLarge.from))
+        Text(messages("amountDue.band.range.top", calculatedLiability.bands.veryLarge.from))
     }
 }
 
@@ -62,8 +63,14 @@
     @formHelper(action = AmountDueController.onSubmit(mode)) {
         <h1 class="govuk-heading-l">@messages("amountDue.heading")</h1>
 
-        <p class="govuk-body">@messages("amountDue.p1", ViewUtils.formatMoney(calculatedLiability.amountDue.amount))</p>
-        <p class="govuk-body">@messages("amountDue.p2", messages(s"band.${calculatedLiability.calculatedBand}"))</p>
+        @if(calculatedLiability.calculatedBand == Small) {
+            <p class="govuk-body">@messages("amountDue.nilReturn.p1", period)</p>
+            <p class="govuk-body">@messages("amountDue.nilReturn.p2")</p>
+            <p class="govuk-body">@messages("amountDue.nilReturn.p3")</p>
+        } else {
+            <p class="govuk-body">@messages("amountDue.p1", ViewUtils.formatMoney(calculatedLiability.amountDue.amount), period)</p>
+            <p class="govuk-body">@messages("amountDue.p2", messages(s"band.${calculatedLiability.calculatedBand}"))</p>
+        }
 
         <h2 class="govuk-heading-m">@messages("amountDue.howWeWorkedThisOut")</h2>
 
@@ -80,6 +87,8 @@
         <h2 class="govuk-heading-m">@messages("amountDue.bands")</h2>
 
         <p class="govuk-body">@messages("amountDue.bands.p1")</p>
+        <p class="govuk-body">@messages("amountDue.bands.p2")</p>
+        <p class="govuk-body">@messages("amountDue.bands.p3")</p>
 
         @table(Table(
             rows = Seq(
@@ -142,8 +151,6 @@
             firstCellIsHeader = true
         ))
 
-        <p class="govuk-body">@messages("amountDue.bands.p2")</p>
-
         <h2 class="govuk-heading-m">@messages("amountDue.nextSteps")</h2>
 
         <p class="govuk-body">@messages("amountDue.nextSteps.p1")</p>
@@ -151,7 +158,6 @@
         <ul class="govuk-list govuk-list--bullet">
             <li>@messages("amountDue.nextSteps.b1")</li>
             <li>@messages("amountDue.nextSteps.b2")</li>
-            <li>@messages("amountDue.nextSteps.b3")</li>
         </ul>
 
         <p class="govuk-body">@messages("amountDue.nextSteps.p2")</p>
