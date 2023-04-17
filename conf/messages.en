@@ -43,19 +43,19 @@ answersAreInvalid.p2 = This might have happened because you bookmarked a URL in 
 answersAreInvalid.p3 = You will need to submit your answers again.
 answersAreInvalid.button = Submit an Economic Crime Levy return
 
-start.title = Submit your Economic Crime Levy return
-start.heading = Submit your Economic Crime Levy return
+start.title = Submit your Economic Crime Levy return for {0}
+start.heading = Submit your Economic Crime Levy return for {0}
 start.h2 = ECL registration details
 start.eclReferenceNumber = ECL reference number
 start.eclRegistrationDate = ECL registration date
 start.p1 = Use this service to submit your Economic Crime Levy (ECL) return.
 start.p2 = You must submit a return on a yearly basis if you are registered with HMRC for Anti-Money Laundering (AML) supervision.
 start.beforeYouStart = Before you start
-start.tellUsAbout = You need to:
-start.tellUsAbout.b1 = tell us about the relevant accounting period for your organisation
-start.tellUsAbout.b2 = tell us about your UK revenue for the relevant accounting period
-start.tellUsAbout.b3 = tell us if you carried out Anti-Money Laundering (AML) regulated activities in the last financial year
-start.tellUsAbout.b4 = provide the name, role and contact details of the person in your organisation who is completing this return
+start.tellUsAbout = You need to tell us about:
+start.tellUsAbout.b1 = your accounting period for your organisation - you may have more than one accounting period ending in this financial year
+start.tellUsAbout.b2 = your UK revenue during any relevant accounting periods
+start.tellUsAbout.b3 = if you carried out anti-money laundering (AML) regulated activities in the last financial year
+start.tellUsAbout.b4 = the contact details of the person in your organisation who is completing this return
 
 relevantAp12Months.title = Is your relevant accounting period 12 months?
 relevantAp12Months.heading = Is your relevant accounting period 12 months?
@@ -200,6 +200,21 @@ agentCannotSubmitReturn.p1 = Agents cannot submit an Economic Crime Levy (ECL) r
 agentCannotSubmitReturn.p2 = Your client must submit a return using their own Government Gateway ID.
 agentCannotSubmitReturn.p3 = Go to your {0}.
 agentCannotSubmitReturn.p3.link = <a href="https://www.gov.uk/guidance/sign-in-to-your-agent-services-account" class="govuk-link">agent services account</a>
+
+alreadySubmittedReturn.title = You have already submitted a return for the {0}-{1} financial year
+alreadySubmittedReturn.heading = You have already submitted a return for the {0}-{1} financial year
+alreadySubmittedReturn.p1 = You submitted a return for the {0}-{1} financial year on {2}.
+alreadySubmittedReturn.p2 = You can <a href="{0}" class="govuk-link">amend this return</a>
+alreadySubmittedReturn.p3 = Go to your <a href="{0}" class="govuk-link">returns history</a> in your Economic Crime Levy account if you want to submit a return for another financial year.
+
+noObligationForPeriod.title = You cannot submit a return for this financial year
+noObligationForPeriod.heading = You cannot submit a return for this financial year
+noObligationForPeriod.p1 = You cannot submit a return for the this financial year right now.
+
+choosePeriod.title = You need to choose a financial year before you submit a return
+choosePeriod.heading = You need to choose a financial year before you submit a return
+choosePeriod.p1 = You need to select which financial year you want to submit a return for.
+choosePeriod.p2 = Go to your <a href="{0}" class="govuk-link">returns history</a> in your Economic Crime Levy account to submit a return for a financial year.
 
 date.month.1 = January
 date.month.2 = February

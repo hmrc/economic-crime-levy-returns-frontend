@@ -11,7 +11,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Languages}
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
@@ -58,22 +57,25 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
     "redirect to the ECL return submitted page after submitting the ECL return successfully" in {
       stubAuthorised()
 
-      val validEclReturn  = random[ValidEclReturn]
-      val chargeReference = random[String]
+      val validEclReturn    = random[ValidEclReturn]
+      val chargeReference   = random[String]
+      val obligationDetails = validEclReturn.eclReturn.obligationDetails.get
 
       stubGetReturn(validEclReturn.eclReturn)
 
       stubSubmitReturn(chargeReference)
 
       val eclDueDate      =
-        ViewUtils.formatLocalDate(EclTaxYear.dueDate, translate = false)(messagesApi.preferred(Seq(Languages.english)))
+        ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate, translate = false)(
+          messagesApi.preferred(Seq(Languages.english))
+        )
       val dateSubmitted   = ViewUtils.formatToday(translate = false)(messagesApi.preferred(Seq(Languages.english)))
       val periodStartDate =
-        ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearStartDate, translate = false)(
+        ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate, translate = false)(
           messagesApi.preferred(Seq(Languages.english))
         )
       val periodEndDate   =
-        ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearEndDate, translate = false)(
+        ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)(
           messagesApi.preferred(Seq(Languages.english))
         )
 
@@ -83,8 +85,8 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
         periodStartDate = periodStartDate,
         periodEndDate = periodEndDate,
         chargeReference = chargeReference,
-        fyStartYear = EclTaxYear.currentFyStartYear,
-        fyEndYear = EclTaxYear.currentFyEndYear,
+        fyStartYear = obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
+        fyEndYear = obligationDetails.inboundCorrespondenceToDate.getYear.toString,
         datePaymentDue = eclDueDate
       )
 

@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.models
+package uk.gov.hmrc.economiccrimelevyreturns.models.audit
 
-object SessionKeys {
+import play.api.libs.json.{JsValue, Json, OFormat}
 
-  val ChargeReference: String   = "chargeReference"
-  val AmountDue: String         = "amountDue"
-  val ObligationDetails: String = "obligationDetails"
+case class ReturnStartedEvent(internalId: String) extends AuditEvent {
+  override val auditType: String   = "ReturnStarted"
+  override val detailJson: JsValue = Json.toJson(this)
+}
 
+object ReturnStartedEvent {
+  implicit val format: OFormat[ReturnStartedEvent] = Json.format[ReturnStartedEvent]
 }

@@ -21,9 +21,9 @@ import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailParameters
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, ObligationDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 import scala.concurrent.Future
@@ -36,12 +36,14 @@ class EmailServiceSpec extends SpecBase {
   "sendReturnSubmittedEmail" should {
     "send an email to the contact in the return" in forAll {
       (validEclReturn: ValidEclReturn, chargeReference: String) =>
-        val eclDueDate      = ViewUtils.formatLocalDate(EclTaxYear.dueDate, translate = false)(messages)
-        val dateSubmitted   = ViewUtils.formatToday(translate = false)(messages)
-        val periodStartDate =
-          ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearStartDate, translate = false)(messages)
-        val periodEndDate   =
-          ViewUtils.formatLocalDate(EclTaxYear.currentFinancialYearEndDate, translate = false)(messages)
+        val obligationDetails = validEclReturn.eclReturn.obligationDetails.get
+        val eclDueDate        =
+          ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate, translate = false)(messages)
+        val dateSubmitted     = ViewUtils.formatToday(translate = false)(messages)
+        val periodStartDate   =
+          ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate, translate = false)(messages)
+        val periodEndDate     =
+          ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)(messages)
 
         val expectedParams = ReturnSubmittedEmailParameters(
           name = validEclReturn.eclReturn.contactName.get,
@@ -49,8 +51,8 @@ class EmailServiceSpec extends SpecBase {
           periodStartDate = periodStartDate,
           periodEndDate = periodEndDate,
           chargeReference = chargeReference,
-          fyStartYear = EclTaxYear.currentFyStartYear,
-          fyEndYear = EclTaxYear.currentFyEndYear,
+          fyStartYear = obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
+          fyEndYear = obligationDetails.inboundCorrespondenceToDate.getYear.toString,
           datePaymentDue = eclDueDate
         )
 
@@ -74,10 +76,24 @@ class EmailServiceSpec extends SpecBase {
         reset(mockEmailConnector)
     }
 
-    "throw an IllegalStateException when the contact details are missing" in forAll {
+    "throw an IllegalStateException when there are no obligation details in the return data" in forAll {
       (internalId: String, chargeReference: String) =>
         val result = intercept[IllegalStateException] {
           await(service.sendReturnSubmittedEmail(EclReturn.empty(internalId), chargeReference)(hc, messages))
+        }
+
+        result.getMessage shouldBe "No obligation details found in return data"
+    }
+
+    "throw an IllegalStateException when the contact details are missing" in forAll {
+      (internalId: String, chargeReference: String, obligationDetails: ObligationDetails) =>
+        val result = intercept[IllegalStateException] {
+          await(
+            service.sendReturnSubmittedEmail(
+              EclReturn.empty(internalId).copy(obligationDetails = Some(obligationDetails)),
+              chargeReference
+            )(hc, messages)
+          )
         }
 
         result.getMessage shouldBe "Invalid contact details"

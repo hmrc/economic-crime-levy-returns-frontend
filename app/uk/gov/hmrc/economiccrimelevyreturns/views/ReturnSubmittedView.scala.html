@@ -15,7 +15,6 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-@import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
 @import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 
@@ -25,7 +24,7 @@
         appConfig: AppConfig
 )
 
-@(chargeReference: String, submittedWhen: String, amountToPay: BigDecimal)(implicit request: Request[_], messages: Messages)
+@(chargeReference: String, submittedWhen: String, dueDate: String, fyStartYear: String, fyEndYear: String, amountToPay: BigDecimal)(implicit request: Request[_], messages: Messages)
 
 @panelContentHtml = {
     <p class="govuk-label--m">@messages("submitted.reference", chargeReference)</p>
@@ -44,11 +43,11 @@
 
     <h2 class="govuk-heading-m">@messages("submitted.subHeading")</h2>
 
-    <p class="govuk-body">@messages("submitted.p1", submittedWhen, EclTaxYear.currentFyStartYear, EclTaxYear.currentFyEndYear)</p>
+    <p class="govuk-body">@messages("submitted.p1", submittedWhen, fyStartYear, fyEndYear)</p>
 
     <p class="govuk-body">@messages("submitted.p2")</p>
 
-    <p class="govuk-body">@messages("submitted.p3", EclTaxYear.currentFyStartYear, EclTaxYear.currentFyEndYear, formatLocalDate(EclTaxYear.dueDate))</p>
+    <p class="govuk-body">@messages("submitted.p3", fyStartYear, fyEndYear, dueDate)</p>
 
     <p class="govuk-body">@messages("submitted.p4")</p>
 

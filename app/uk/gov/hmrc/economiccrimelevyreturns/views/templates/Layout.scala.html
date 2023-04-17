@@ -61,7 +61,7 @@
     pageTitle = Some(pageTitle),
     nonce = CSPNonce.get,
     signOutUrl = Some(SignOutController.signOut.url),
-    serviceUrl = Some(StartController.onPageLoad.url),
+    serviceUrl = Some(StartController.start.url),
     isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
     additionalScriptsBlock = Some(additionalScripts),
     additionalHeadBlock = head,

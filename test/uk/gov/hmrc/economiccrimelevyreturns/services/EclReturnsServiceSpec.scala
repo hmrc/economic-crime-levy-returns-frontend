@@ -18,15 +18,17 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.Future
 
 class EclReturnsServiceSpec extends SpecBase {
   val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
-  val service                                      = new EclReturnsService(mockEclReturnsConnector)
+  val mockAuditConnector: AuditConnector           = mock[AuditConnector]
+  val service                                      = new EclReturnsService(mockEclReturnsConnector, mockAuditConnector)
 
   "getOrCreateReturn" should {
     "return a created ecl return when one does not exist" in forAll { (internalId: String, eclReturn: EclReturn) =>
@@ -38,6 +40,10 @@ class EclReturnsServiceSpec extends SpecBase {
 
       val result = await(service.getOrCreateReturn(internalId))
       result shouldBe eclReturn
+
+      verify(mockAuditConnector, times(1)).sendExtendedEvent(any())(any(), any())
+
+      reset(mockAuditConnector)
     }
 
     "return an existing ecl return" in forAll { (internalId: String, eclReturn: EclReturn) =>

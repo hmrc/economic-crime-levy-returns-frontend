@@ -6,10 +6,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.models.Band._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band._
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, NormalMode}
 
 class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -37,8 +36,8 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
     "save the UK revenue then redirect to the AML regulated activity page when the calculated band size is not Small" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
-      val ukRevenue = longsInRange(UkRevenueThreshold, MinMaxValues.RevenueMax).sample.get
+      val eclReturn           = random[EclReturn]
+      val ukRevenue           = longsInRange(UkRevenueThreshold, MinMaxValues.RevenueMax).sample.get
       val calculatedLiability = random[CalculatedLiability].copy(calculatedBand = Large)
 
       stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true), calculatedLiability = None))
@@ -51,7 +50,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       )
 
       stubUpsertReturn(updatedReturn)
-      stubCalculateLiability(CalculateLiabilityRequest(EclTaxYear.YearInDays, EclTaxYear.YearInDays, ukRevenue), calculatedLiability)
+      stubCalculateLiability(CalculateLiabilityRequest(FullYear, FullYear, ukRevenue), calculatedLiability)
       stubUpsertReturn(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))
 
       val result = callRoute(
@@ -67,8 +66,8 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
     "save the UK revenue then redirect to the ECL amount due page when the calculated band size is Small (nil return)" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
-      val ukRevenue = longsInRange(MinMaxValues.RevenueMin, UkRevenueThreshold).sample.get
+      val eclReturn           = random[EclReturn]
+      val ukRevenue           = longsInRange(MinMaxValues.RevenueMin, UkRevenueThreshold).sample.get
       val calculatedLiability = random[CalculatedLiability].copy(calculatedBand = Small)
 
       stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true), calculatedLiability = None))
@@ -82,7 +81,10 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       )
 
       stubUpsertReturn(updatedReturn)
-      stubCalculateLiability(CalculateLiabilityRequest(EclTaxYear.YearInDays, EclTaxYear.YearInDays, ukRevenue), calculatedLiability)
+      stubCalculateLiability(
+        CalculateLiabilityRequest(FullYear, FullYear, ukRevenue),
+        calculatedLiability
+      )
       stubUpsertReturn(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))
 
       val result = callRoute(

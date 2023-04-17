@@ -18,6 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.views
 
 import play.api.data.Form
 import play.api.i18n.Messages
+import uk.gov.hmrc.economiccrimelevyreturns.models.ObligationDetails
 
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
@@ -67,5 +68,8 @@ object ViewUtils {
     val formatter = NumberFormat.getNumberInstance(Locale.UK)
     formatter.format(amount)
   }
+
+  def formatObligationPeriodYears(obligationDetails: ObligationDetails): String =
+    s"${obligationDetails.inboundCorrespondenceFromDate.getYear.toString}-${obligationDetails.inboundCorrespondenceToDate.getYear.toString}"
 
 }

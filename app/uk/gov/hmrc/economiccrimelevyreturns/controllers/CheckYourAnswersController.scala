@@ -18,6 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, ValidatedReturnAction}
@@ -79,13 +80,18 @@ class CheckYourAnswersController @Inject() (
       _         = emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
       _        <- eclReturnsConnector.deleteReturn(request.internalId)
     } yield Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
-      request.session + (SessionKeys.ChargeReference -> response.chargeReference) + (SessionKeys.AmountDue ->
-        request.eclReturn.calculatedLiability
-          .getOrElse(
-            throw new IllegalStateException("Amount due was not found.")
-          )
-          .amountDue
-          .toString())
+      request.session
+        ++ Seq(
+          SessionKeys.ChargeReference   -> response.chargeReference,
+          SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString(),
+          SessionKeys.AmountDue         ->
+            request.eclReturn.calculatedLiability
+              .getOrElse(
+                throw new IllegalStateException("Amount due was not found.")
+              )
+              .amountDue
+              .toString()
+        )
     )
   }
 

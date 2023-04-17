@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.economiccrimelevyreturns.models
+package uk.gov.hmrc.economiccrimelevyreturns.models.audit
 
-object SessionKeys {
+import play.api.libs.json.JsValue
+import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
-  val ChargeReference: String   = "chargeReference"
-  val AmountDue: String         = "amountDue"
-  val ObligationDetails: String = "obligationDetails"
+trait AuditEvent {
+  private val AuditSource: String = "economic-crime-levy-returns-frontend"
+  val auditType: String
+  val detailJson: JsValue
 
+  def extendedDataEvent: ExtendedDataEvent =
+    ExtendedDataEvent(auditSource = AuditSource, auditType = auditType, detail = detailJson)
 }
