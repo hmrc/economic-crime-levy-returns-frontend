@@ -35,13 +35,14 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
       val chargeReference   = random[String]
       val obligationDetails = random[ObligationDetails]
+      val amountDue = "10000"
 
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())
           .withSession(
             (SessionKeys.ChargeReference, chargeReference),
-            (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString())
-          )
+            (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString()),
+              (SessionKeys.AmountDue, amountDue))
       )
 
       status(result) shouldBe OK

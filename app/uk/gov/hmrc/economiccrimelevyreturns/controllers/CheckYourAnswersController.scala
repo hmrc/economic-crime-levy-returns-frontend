@@ -83,7 +83,14 @@ class CheckYourAnswersController @Inject() (
       request.session
         ++ Seq(
           SessionKeys.ChargeReference   -> response.chargeReference,
-          SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString()
+          SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString(),
+          SessionKeys.AmountDue         ->
+            request.eclReturn.calculatedLiability
+              .getOrElse(
+                throw new IllegalStateException("Amount due not found in return data")
+              )
+              .amountDue
+              .toString()
         )
     )
   }

@@ -48,13 +48,20 @@ class ReturnSubmittedController @Inject() (
       )
       .as[ObligationDetails]
 
+    val amountDue: BigDecimal = BigDecimal(
+      request.session
+        .get(SessionKeys.AmountDue)
+        .getOrElse(throw new IllegalStateException("Amount due not found in session"))
+    )
+
     Ok(
       view(
         chargeReference,
         ViewUtils.formatToday(),
         ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate),
         obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
-        obligationDetails.inboundCorrespondenceToDate.getYear.toString
+        obligationDetails.inboundCorrespondenceToDate.getYear.toString,
+        amountDue
       )
     )
   }
