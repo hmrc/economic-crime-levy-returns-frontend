@@ -96,7 +96,7 @@ class ReturnSubmittedControllerSpec extends SpecBase {
         )
       }
 
-      result.getMessage shouldBe "Amount due not found in return data"
+      result.getMessage shouldBe "Amount due not found in session"
     }
 
     "throw an IllegalStateException when the obligation details are not found in the session" in {
