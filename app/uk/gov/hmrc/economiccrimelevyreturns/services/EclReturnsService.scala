@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.models.audit.ReturnStartedEvent
+import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
@@ -30,14 +31,17 @@ class EclReturnsService @Inject() (eclReturnsConnector: EclReturnsConnector, aud
   ec: ExecutionContext
 ) {
 
-  def getOrCreateReturn(internalId: String)(implicit hc: HeaderCarrier): Future[EclReturn] =
+  def getOrCreateReturn(
+    internalId: String
+  )(implicit hc: HeaderCarrier, request: AuthorisedRequest[_]): Future[EclReturn] =
     eclReturnsConnector.getReturn(internalId).flatMap {
       case Some(eclReturn) => Future.successful(eclReturn)
       case None            =>
         auditConnector
           .sendExtendedEvent(
             ReturnStartedEvent(
-              internalId
+              internalId,
+              request.eclRegistrationReference
             ).extendedDataEvent
           )
 
