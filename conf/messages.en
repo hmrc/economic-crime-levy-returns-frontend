@@ -222,3 +222,8 @@ band.Small.label = Small
 band.Medium.label = Medium
 band.Large.label = Large
 band.VeryLarge.label = Very large
+
+band.Small.defaultRange = Less than £10.2 million
+band.Medium.defaultRange = £10.2 million to £36 million
+band.Large.defaultRange = £36 million to £1 billion
+band.VeryLarge.defaultRange = £1 billion or more
