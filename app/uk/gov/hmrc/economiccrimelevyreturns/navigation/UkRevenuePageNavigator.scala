@@ -49,7 +49,7 @@ class UkRevenuePageNavigator @Inject() (
             f.flatMap { updatedReturn =>
               updatedReturn.calculatedLiability match {
                 case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
-                  clearAmlActivityAnswers(updatedReturn, mode)
+                  clearAmlActivityAnswersAndRecalculate(updatedReturn, mode)
                 case Some(_)                                                                  => navigateLiable(updatedReturn, mode)
                 case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
               }
@@ -59,10 +59,20 @@ class UkRevenuePageNavigator @Inject() (
       case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
     }
 
-  private def clearAmlActivityAnswers(eclReturn: EclReturn, mode: Mode)(implicit request: RequestHeader): Future[Call] =
+  private def clearAmlActivityAnswersAndRecalculate(eclReturn: EclReturn, mode: Mode)(implicit
+    request: RequestHeader
+  ): Future[Call] =
+    // TODO: I cannot quite decide whether we actually need to clear and recalculate if in NormalMode or just navigate to the amount due page?
+    //       As we *should* never already have AML activity answers when in NormalMode (unless we dopped out earlier having provided answers and are now resuming within the TTL period?)
+    //       Unconditionally clearing and recalculating might be safer but it just feels like overkill.
     eclReturnsConnector
       .upsertReturn(eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None))
-      .map(_ => routes.AmountDueController.onPageLoad(mode))
+      .flatMap { updatedReturn =>
+        eclLiabilityService.calculateLiability(updatedReturn) match {
+          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad(mode))
+          case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
+        }
+      }
 
   private def navigateLiable(eclReturn: EclReturn, mode: Mode): Future[Call] =
     mode match {
