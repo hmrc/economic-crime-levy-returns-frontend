@@ -39,7 +39,13 @@ class ReturnSubmittedController @Inject() (
       .get(SessionKeys.ChargeReference)
       .getOrElse(throw new IllegalStateException("Charge reference number not found in session"))
 
-    Ok(view(chargeReference, ViewUtils.formatToday()))
+    val amountDue: BigDecimal = BigDecimal(
+      request.session
+        .get(SessionKeys.AmountDue)
+        .getOrElse(throw new IllegalStateException("Amount due not found in session"))
+    )
+
+    Ok(view(chargeReference, ViewUtils.formatToday(), amountDue))
   }
 
 }

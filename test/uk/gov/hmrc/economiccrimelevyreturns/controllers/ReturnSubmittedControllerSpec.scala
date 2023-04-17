@@ -38,17 +38,24 @@ class ReturnSubmittedControllerSpec extends SpecBase {
   )
 
   "onPageLoad" should {
-    "return OK and the correct view" in forAll { chargeReference: String =>
+    "return OK and the correct view" in forAll { (chargeReference: String, amountDue: BigDecimal) =>
       implicit val authRequest: AuthorisedRequest[AnyContentAsEmpty.type] =
         AuthorisedRequest(fakeRequest, internalId, eclRegistrationReference)
       implicit val messages: Messages                                     = messagesApi.preferred(authRequest)
 
       val result: Future[Result] =
-        controller.onPageLoad()(fakeRequest.withSession((SessionKeys.ChargeReference, chargeReference)))
+        controller.onPageLoad()(
+          fakeRequest
+            .withSession((SessionKeys.ChargeReference, chargeReference))
+            .withSession((SessionKeys.AmountDue, amountDue.toString()))
+        )
 
       status(result) shouldBe OK
 
-      contentAsString(result) shouldBe view(chargeReference, ViewUtils.formatToday())(authRequest, messages).toString
+      contentAsString(result) shouldBe view(chargeReference, ViewUtils.formatToday(), amountDue)(
+        authRequest,
+        messages
+      ).toString
     }
 
     "throw an IllegalStateException when the charge reference is not found in the session" in {

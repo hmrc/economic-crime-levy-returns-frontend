@@ -16,6 +16,8 @@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 @import uk.gov.hmrc.economiccrimelevyreturns.utils.EclTaxYear
+@import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
+
 
 @this(
         layout: templates.Layout,
@@ -23,10 +25,11 @@
         appConfig: AppConfig
 )
 
-@(chargeReference: String, submittedWhen: String)(implicit request: Request[_], messages: Messages)
+@(chargeReference: String, submittedWhen: String, amountToPay: BigDecimal)(implicit request: Request[_], messages: Messages)
 
 @panelContentHtml = {
     <p class="govuk-label--m">@messages("submitted.reference", chargeReference)</p>
+    <p class="govuk-label--m">@messages("submitted.amountToPay", ViewUtils.formatMoney(amountToPay))</p>
 }
 
 @layout(

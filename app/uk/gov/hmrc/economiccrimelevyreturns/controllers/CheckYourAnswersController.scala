@@ -79,7 +79,13 @@ class CheckYourAnswersController @Inject() (
       _         = emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
       _        <- eclReturnsConnector.deleteReturn(request.internalId)
     } yield Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
-      request.session + (SessionKeys.ChargeReference -> response.chargeReference)
+      request.session + (SessionKeys.ChargeReference -> response.chargeReference) + (SessionKeys.AmountDue ->
+        request.eclReturn.calculatedLiability
+          .getOrElse(
+            throw new IllegalStateException("Amount due was not found.")
+          )
+          .amountDue
+          .toString())
     )
   }
 

@@ -32,10 +32,12 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val chargeReference = random[String]
+      val amountDue = "10000"
 
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())
-          .withSession((SessionKeys.ChargeReference, chargeReference))
+          .withSession((SessionKeys.ChargeReference, chargeReference),
+            (SessionKeys.AmountDue, amountDue))
       )
 
       status(result) shouldBe OK
