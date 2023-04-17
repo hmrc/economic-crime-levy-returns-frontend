@@ -45,7 +45,7 @@ class DataRetrievalActionSpec extends SpecBase {
   "transform" should {
     "transform an AuthorisedRequest into a ReturnDataRequest" in forAll {
       eclReturn: EclReturn => (internalId: String, eclReferenceNumber: String) =>
-        when(mockEclReturnService.getOrCreateReturn(any())(any())).thenReturn(Future(eclReturn))
+        when(mockEclReturnService.getOrCreateReturn(any())(any(), any())).thenReturn(Future(eclReturn))
 
         val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
           dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
