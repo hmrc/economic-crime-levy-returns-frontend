@@ -26,7 +26,8 @@ final case class ReturnSubmittedEmailParameters(
   chargeReference: String,
   fyStartYear: String,
   fyEndYear: String,
-  datePaymentDue: String
+  datePaymentDue: String,
+  amountDue: String
 )
 
 object ReturnSubmittedEmailParameters {

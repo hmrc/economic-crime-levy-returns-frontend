@@ -60,6 +60,7 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       val validEclReturn    = random[ValidEclReturn]
       val chargeReference   = random[String]
       val obligationDetails = validEclReturn.eclReturn.obligationDetails.get
+      val calculatedLiability = validEclReturn.eclReturn.calculatedLiability.get
 
       stubGetReturn(validEclReturn.eclReturn)
 
@@ -74,10 +75,12 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
         ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate, translate = false)(
           messagesApi.preferred(Seq(Languages.english))
         )
-      val periodEndDate   =
+      val periodEndDate   = {
         ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)(
           messagesApi.preferred(Seq(Languages.english))
         )
+      }
+      val amountDue = ViewUtils.formatMoney(calculatedLiability.amountDue)
 
       val emailParams = ReturnSubmittedEmailParameters(
         name = validEclReturn.eclReturn.contactName.get,
@@ -87,7 +90,8 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
         chargeReference = chargeReference,
         fyStartYear = obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
         fyEndYear = obligationDetails.inboundCorrespondenceToDate.getYear.toString,
-        datePaymentDue = eclDueDate
+        datePaymentDue = eclDueDate,
+        amountDue = amountDue
       )
 
       stubSendReturnSubmittedEmail(
