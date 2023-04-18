@@ -93,60 +93,30 @@
         @table(Table(
             rows = Seq(
               Seq(
-                TableRow(
-                  content = Text(messages("band.Small.label"))
-                ),
-                TableRow(
-                  content = smallBandRange
-                ),
-                TableRow(
-                  content = Text("None")
-                )
+                TableRow(content = Text(messages("band.Small.label"))),
+                TableRow(content = smallBandRange),
+                TableRow(content = Text(messages("amountDue.band.small.amount")))
               ),
               Seq(
-                TableRow(
-                  content = Text(messages("band.Medium.label"))
-                ),
-                TableRow(
-                  content = mediumBandRange
-                ),
-                TableRow(
-                  content = Text(ViewUtils.formatMoney(calculatedLiability.bands.medium.amount.amount))
-                )
+                TableRow(content = Text(messages("band.Medium.label"))),
+                TableRow(content = mediumBandRange),
+                TableRow(content = Text(ViewUtils.formatMoney(calculatedLiability.bands.medium.amount)))
               ),
               Seq(
-                TableRow(
-                  content = Text(messages("band.Large.label"))
-                ),
-                TableRow(
-                  content = largeBandRange
-                ),
-                TableRow(
-                  content = Text(ViewUtils.formatMoney(calculatedLiability.bands.large.amount.amount))
-                )
+                TableRow(content = Text(messages("band.Large.label"))),
+                TableRow(content = largeBandRange),
+                TableRow(content = Text(ViewUtils.formatMoney(calculatedLiability.bands.large.amount)))
               ),
               Seq(
-                TableRow(
-                  content = Text(messages("band.VeryLarge.label"))
-                ),
-                TableRow(
-                  content = veryLargeBandRange
-                ),
-                TableRow(
-                  content = Text(ViewUtils.formatMoney(calculatedLiability.bands.veryLarge.amount.amount))
-                )
+                TableRow(content = Text(messages("band.VeryLarge.label"))),
+                TableRow(content = veryLargeBandRange),
+                TableRow(content = Text(ViewUtils.formatMoney(calculatedLiability.bands.veryLarge.amount)))
               )
             ),
             head = Some(Seq(
-              HeadCell(
-                content = Text("Band size")
-              ),
-              HeadCell(
-                content = Text("Revenue")
-              ),
-              HeadCell(
-                content = Text("ECL fee to pay")
-              )
+              HeadCell(content = Text(messages("amountDue.bands.h1"))),
+              HeadCell(content = Text(messages("amountDue.bands.h2"))),
+              HeadCell(content = Text(messages("amountDue.bands.h3")))
             )),
             firstCellIsHeader = true
         ))
