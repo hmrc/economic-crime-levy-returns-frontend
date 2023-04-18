@@ -37,7 +37,7 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
       throw new IllegalStateException("No obligation details found in return data")
     )
     val calculatedLiability = eclReturn.calculatedLiability.getOrElse(
-      throw new IllegalStateException("No calculated liability   details found in return data")
+      throw new IllegalStateException("No calculated liability details found in return data")
     )
 
     val eclDueDate      = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate, translate = false)
