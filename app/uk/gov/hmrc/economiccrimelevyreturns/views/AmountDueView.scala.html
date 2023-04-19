@@ -31,7 +31,7 @@
     if(!calculatedLiability.bands.apportioned) {
         Text(messages("band.Small.defaultRange"))
     } else {
-        Text(messages("amountDue.band.range.bottom", calculatedLiability.bands.small.to))
+        Text(messages("amountDue.band.range.bottom", ViewUtils.formatMoney(calculatedLiability.bands.small.to)))
     }
 }
 
@@ -39,7 +39,7 @@
     if(!calculatedLiability.bands.apportioned) {
         Text(messages("band.Medium.defaultRange"))
     } else {
-        Text(messages("amountDue.band.range", calculatedLiability.bands.medium.from, calculatedLiability.bands.medium.to))
+        Text(messages("amountDue.band.range", ViewUtils.formatMoney(calculatedLiability.bands.medium.from), ViewUtils.formatMoney(calculatedLiability.bands.medium.to)))
     }
 }
 
@@ -47,7 +47,7 @@
     if(!calculatedLiability.bands.apportioned) {
         Text(messages("band.Large.defaultRange"))
     } else {
-        Text(messages("amountDue.band.range", calculatedLiability.bands.large.from, calculatedLiability.bands.large.to))
+        Text(messages("amountDue.band.range", ViewUtils.formatMoney(calculatedLiability.bands.large.from), ViewUtils.formatMoney(calculatedLiability.bands.large.to)))
     }
 }
 
@@ -55,7 +55,7 @@
     if(!calculatedLiability.bands.apportioned) {
         Text(messages("band.VeryLarge.defaultRange"))
     } else {
-        Text(messages("amountDue.band.range.top", calculatedLiability.bands.veryLarge.from))
+        Text(messages("amountDue.band.range.top", ViewUtils.formatMoney(calculatedLiability.bands.veryLarge.from)))
     }
 }
 
