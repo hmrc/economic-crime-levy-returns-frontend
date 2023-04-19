@@ -50,7 +50,7 @@ class RelevantAp12MonthsPageNavigator @Inject() (
             f.flatMap { updatedReturn =>
               updatedReturn.calculatedLiability match {
                 case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
-                  clearAmlActivityAnswers(updatedReturn)
+                  clearAmlActivityAnswersAndRecalculate(updatedReturn)
                 case Some(_)                                                                  => navigateLiable(updatedReturn)
                 case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
               }
@@ -61,10 +61,17 @@ class RelevantAp12MonthsPageNavigator @Inject() (
       case _           => Future.successful(routes.NotableErrorController.answersAreInvalid())
     }
 
-  private def clearAmlActivityAnswers(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
+  private def clearAmlActivityAnswersAndRecalculate(
+    eclReturn: EclReturn
+  )(implicit request: RequestHeader): Future[Call] =
     eclReturnsConnector
       .upsertReturn(eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None))
-      .map(_ => routes.AmountDueController.onPageLoad(CheckMode))
+      .flatMap { updatedReturn =>
+        eclLiabilityService.calculateLiability(updatedReturn) match {
+          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad(CheckMode))
+          case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
+        }
+      }
 
   private def navigateLiable(eclReturn: EclReturn): Future[Call] =
     eclReturn.carriedOutAmlRegulatedActivityForFullFy match {

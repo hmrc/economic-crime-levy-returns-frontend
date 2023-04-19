@@ -25,7 +25,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
       status(result) shouldBe OK
 
-      html(result) should include("Amount of ECL you need to pay")
+      html(result) should include("Amount of Economic Crime Levy you need to pay")
     }
 
     "redirect to the invalid data page when the ECL return data is invalid" in {
