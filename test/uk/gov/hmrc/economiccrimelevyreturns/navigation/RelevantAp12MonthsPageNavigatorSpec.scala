@@ -59,6 +59,9 @@ class RelevantAp12MonthsPageNavigatorSpec extends SpecBase {
         when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(nilReturn))(any()))
           .thenReturn(Future.successful(nilReturn))
 
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(nilReturn))(any()))
+          .thenReturn(Some(Future.successful(nilReturn)))
+
         await(
           pageNavigator.nextPage(CheckMode, updatedReturn)(fakeRequest)
         ) shouldBe routes.AmountDueController.onPageLoad(CheckMode)

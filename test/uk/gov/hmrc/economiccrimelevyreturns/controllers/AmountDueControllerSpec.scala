@@ -64,7 +64,10 @@ class AmountDueControllerSpec extends SpecBase {
         calculatedLiability: CalculatedLiability,
         mode: Mode
       ) =>
-        val updatedReturn = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
+        val updatedReturn = eclReturn.copy(
+          calculatedLiability = Some(calculatedLiability),
+          obligationDetails = Some(obligationDetails)
+        )
 
         new TestContext(updatedReturn) {
           implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
@@ -95,7 +98,7 @@ class AmountDueControllerSpec extends SpecBase {
 
     "redirect to the answers are invalid page when the ECL return data is invalid" in forAll {
       (eclReturn: EclReturn, mode: Mode) =>
-        val updatedReturn = eclReturn.copy(calculatedLiability = None)
+        val updatedReturn = eclReturn.copy(calculatedLiability = None, obligationDetails = None)
 
         new TestContext(updatedReturn) {
           implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
