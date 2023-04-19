@@ -117,6 +117,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           session(result).get(SessionKeys.ObligationDetails) shouldBe Some(
             Json.toJson(validEclReturn.eclReturn.obligationDetails.get).toString()
           )
+          session(result).get(SessionKeys.AmountDue)         shouldBe Some(
+            Json.toJson(validEclReturn.eclReturn.calculatedLiability.get.amountDue.amount).toString()
+          )
           redirectLocation(result)                           shouldBe Some(routes.ReturnSubmittedController.onPageLoad().url)
 
           verify(mockEmailService, times(1)).sendReturnSubmittedEmail(
