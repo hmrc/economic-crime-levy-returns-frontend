@@ -25,6 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, ObligationDetails}
 
 import java.time.{Instant, LocalDate}
+import scala.math.BigDecimal.RoundingMode
 
 case class EnrolmentsWithEcl(enrolments: Enrolments)
 
@@ -40,7 +41,9 @@ final case class ValidEclReturn(eclReturn: EclReturn, eclLiabilityCalculationDat
 
 trait EclTestData { self: Generators =>
 
-  val FullYear: Int = 365
+  val FullYear: Int        = 365
+  private val MinAmountDue = 0
+  private val MaxAmountDue = 250000
 
   implicit val arbInstant: Arbitrary[Instant] = Arbitrary {
     Instant.now()
@@ -79,6 +82,8 @@ trait EclTestData { self: Generators =>
       relevantApRevenue                       <- Gen.chooseNum[Long](MinMaxValues.RevenueMin, MinMaxValues.RevenueMax)
       carriedOutAmlRegulatedActivityForFullFy <- Arbitrary.arbitrary[Boolean]
       amlRegulatedActivityLength              <- Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax)
+      amountDue                               <-
+        Gen.chooseNum[Double](MinAmountDue, MaxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
       calculatedLiability                     <- Arbitrary.arbitrary[CalculatedLiability]
       contactName                             <- stringsWithMaxLength(MinMaxValues.NameMaxLength)
       contactRole                             <- stringsWithMaxLength(MinMaxValues.RoleMaxLength)
@@ -96,7 +101,8 @@ trait EclTestData { self: Generators =>
           carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy),
           amlRegulatedActivityLength =
             if (carriedOutAmlRegulatedActivityForFullFy) None else Some(amlRegulatedActivityLength),
-          calculatedLiability = Some(calculatedLiability),
+          calculatedLiability =
+            Some(calculatedLiability.copy(amountDue = calculatedLiability.amountDue.copy(amount = amountDue))),
           contactName = Some(contactName),
           contactRole = Some(contactRole),
           contactEmailAddress = Some(contactEmailAddress),
