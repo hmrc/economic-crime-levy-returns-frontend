@@ -21,10 +21,20 @@
         formHelper: FormWithCSRF,
         govukErrorSummary: GovukErrorSummary,
         govukInput: GovukInput,
-        govukButton: GovukButton
+        govukButton: GovukButton,
+        govukDetails: GovukDetails
 )
 
 @(form: Form[Long], mode: Mode)(implicit request: Request[_], messages: Messages)
+
+@turnoverDetailsContent = {
+    <p class="govuk-body">@messages("ukRevenue.turnover.details.p1")</p>
+    <ul class="govuk-list govuk-list--bullet">
+        <li>@messages("ukRevenue.turnover.details.b1")</li>
+        <li>@messages("ukRevenue.turnover.details.b2")</li>
+        <li>@messages("ukRevenue.turnover.details.b3")</li>
+    </ul>
+}
 
 @layout(pageTitle = titleWithForm(form, messages("ukRevenue.title"))) {
     @if(form.errors.nonEmpty) {
@@ -37,6 +47,8 @@
         <li>@messages("ukRevenue.b1")</li>
         <li>@messages("ukRevenue.b2")</li>
     </ul>
+    <h3 class="govuk-heading-s">@messages("ukRevenue.p2")</h3>
+    <p class="govuk-body ">@messages("ukRevenue.p3")</p>
 
     @formHelper(action = UkRevenueController.onSubmit(mode)) {
         @govukInput(
@@ -55,4 +67,9 @@
             ButtonViewModel(messages("site.saveAndContinue"))
         )
     }
+
+    @govukDetails(Details(
+        summary = Text(messages("ukRevenue.turnover.details")),
+        content = HtmlContent(turnoverDetailsContent)
+    ))
 }
