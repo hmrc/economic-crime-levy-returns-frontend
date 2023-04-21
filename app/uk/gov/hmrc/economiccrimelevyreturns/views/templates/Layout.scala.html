@@ -15,11 +15,11 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-@import views.html.helper.CSPNonce
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.{Banners, HmrcStandardPageParams, ServiceURLs, TemplateOverrides}
 
 @this(
         appConfig: AppConfig,
-        hmrcLayout: HmrcLayout,
+        hmrcStandardPage: HmrcStandardPage,
         govukBackLink: GovukBackLink,
         hmrcHead: HmrcHead,
         hmrcTimeoutDialog: HmrcTimeoutDialog,
@@ -57,14 +57,19 @@
     </div>
 }
 
-@hmrcLayout(
+@hmrcStandardPage(HmrcStandardPageParams(
     pageTitle = Some(pageTitle),
-    nonce = CSPNonce.get,
-    signOutUrl = Some(SignOutController.signOut.url),
-    serviceUrl = Some(StartController.start.url),
+    serviceURLs = ServiceURLs(
+        serviceUrl = Some(StartController.start.url),
+        signOutUrl = Some(SignOutController.signOut.url)
+    ),
+    banners = Banners(
+        phaseBanner = Some(betaBanner(appConfig.feedbackUrl))
+    ),
     isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
-    additionalScriptsBlock = Some(additionalScripts),
-    additionalHeadBlock = head,
-    backLink = if(showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None,
-    phaseBanner = Some(betaBanner(appConfig.feedbackUrl))
-)(content)
+    templateOverrides = TemplateOverrides(
+        additionalScriptsBlock = Some(additionalScripts),
+        additionalHeadBlock = head
+    ),
+    backLink = if(showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None
+))(content)
