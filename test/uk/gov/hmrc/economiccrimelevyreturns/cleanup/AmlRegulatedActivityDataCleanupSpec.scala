@@ -17,7 +17,6 @@
 package uk.gov.hmrc.economiccrimelevyreturns.cleanup
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 
 class AmlRegulatedActivityDataCleanupSpec extends SpecBase {

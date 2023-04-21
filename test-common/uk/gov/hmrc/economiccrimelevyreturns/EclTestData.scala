@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns
 
+import org.scalacheck.derive.MkArbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
@@ -26,6 +27,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclRetu
 
 import java.time.{Instant, LocalDate}
 import scala.math.BigDecimal.RoundingMode
+
+case class ValidPeriodKey(periodKey: String)
 
 case class EnrolmentsWithEcl(enrolments: Enrolments)
 
@@ -53,6 +56,10 @@ trait EclTestData { self: Generators =>
     LocalDate.now()
   }
 
+  implicit val arbPeriodKey: Arbitrary[ValidPeriodKey] = Arbitrary {
+    Gen.listOfN(4, Gen.alphaNumChar).map(_.mkString).map(ValidPeriodKey)
+  }
+
   implicit val arbEnrolmentsWithEcl: Arbitrary[EnrolmentsWithEcl] = Arbitrary {
     for {
       enrolments               <- Arbitrary.arbitrary[Enrolments]
@@ -73,6 +80,20 @@ trait EclTestData { self: Generators =>
         )
       )
       .map(EnrolmentsWithoutEcl)
+  }
+
+  implicit val arbEclReturn: Arbitrary[EclReturn] = Arbitrary {
+    for {
+      eclReturn           <- MkArbitrary[EclReturn].arbitrary.arbitrary
+      amountDue           <-
+        Gen.chooseNum[Double](MinAmountDue, MaxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
+      calculatedLiability <- Arbitrary.arbitrary[CalculatedLiability]
+      internalId          <- Gen.nonEmptyListOf(Arbitrary.arbitrary[Char]).map(_.mkString)
+    } yield eclReturn.copy(
+      internalId = internalId,
+      calculatedLiability =
+        Some(calculatedLiability.copy(amountDue = calculatedLiability.amountDue.copy(amount = amountDue)))
+    )
   }
 
   implicit val arbValidEclReturn: Arbitrary[ValidEclReturn] = Arbitrary {
@@ -123,5 +144,6 @@ trait EclTestData { self: Generators =>
   val testInternalId: String               = alphaNumericString
   val testEclRegistrationReference: String = alphaNumericString
   val UkRevenueThreshold: Long             = 10200000L
+  val validPeriodKey: String               = arbPeriodKey.arbitrary.sample.get.periodKey
 
 }

@@ -1,7 +1,6 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
-import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
@@ -18,7 +17,7 @@ class ContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val name         = random[String]
+      val name      = random[String]
 
       stubGetReturn(eclReturn.copy(contactName = Some(name)))
 
@@ -37,8 +36,8 @@ class ContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val name         = random[String]
-      val email        = emailAddress(MinMaxValues.EmailMaxLength).sample.get
+      val name      = random[String]
+      val email     = emailAddress(MinMaxValues.EmailMaxLength).sample.get
 
       val updatedReturn = eclReturn.copy(contactName = Some(name), contactEmailAddress = Some(email.toLowerCase))
 
