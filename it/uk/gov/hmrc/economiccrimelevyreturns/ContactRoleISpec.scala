@@ -1,6 +1,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
@@ -17,11 +18,11 @@ class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val name      = random[String]
+      val name         = random[String]
 
       stubGetReturn(
         eclReturn.copy(contactName = Some(name))
-      )
+          )
 
       val result = callRoute(FakeRequest(routes.ContactRoleController.onPageLoad(NormalMode)))
 
@@ -31,15 +32,15 @@ class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"POST ${routes.ContactRoleController.onSubmit(NormalMode).url}"  should {
+  s"POST ${routes.ContactRoleController.onSubmit(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.ContactRoleController.onSubmit(NormalMode))
 
     "save the provided role then redirect to the contact email page" in {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val name      = random[String]
-      val role      = stringsWithMaxLength(MinMaxValues.RoleMaxLength).sample.get
+      val name         = random[String]
+      val role         = stringsWithMaxLength(MinMaxValues.RoleMaxLength).sample.get
 
       val updatedReturn = eclReturn.copy(contactName = Some(name), contactRole = Some(role))
 
