@@ -27,6 +27,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclRetu
 import java.time.{Instant, LocalDate}
 import scala.math.BigDecimal.RoundingMode
 
+case class ValidPeriodKey(periodKey: String)
+
 case class EnrolmentsWithEcl(enrolments: Enrolments)
 
 case class EnrolmentsWithoutEcl(enrolments: Enrolments)
@@ -41,9 +43,14 @@ final case class ValidEclReturn(eclReturn: EclReturn, eclLiabilityCalculationDat
 
 trait EclTestData { self: Generators =>
 
-  val FullYear: Int        = 365
-  private val MinAmountDue = 0
-  private val MaxAmountDue = 250000
+  val FullYear: Int           = 365
+  private val MinAmountDue    = 0
+  private val MaxAmountDue    = 250000
+  private val PeriodKeyLength = 4
+
+  implicit val arbValidAmountDue: Arbitrary[BigDecimal] = Arbitrary {
+    Gen.chooseNum[Double](MinAmountDue, MaxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
+  }
 
   implicit val arbInstant: Arbitrary[Instant] = Arbitrary {
     Instant.now()
@@ -75,6 +82,10 @@ trait EclTestData { self: Generators =>
       .map(EnrolmentsWithoutEcl)
   }
 
+  implicit val arbPeriodKey: Arbitrary[ValidPeriodKey] = Arbitrary {
+    Gen.listOfN(PeriodKeyLength, Gen.alphaNumChar).map(_.mkString).map(ValidPeriodKey)
+  }
+
   implicit val arbValidEclReturn: Arbitrary[ValidEclReturn] = Arbitrary {
     for {
       relevantAp12Months                      <- Arbitrary.arbitrary[Boolean]
@@ -82,8 +93,6 @@ trait EclTestData { self: Generators =>
       relevantApRevenue                       <- Gen.chooseNum[Long](MinMaxValues.RevenueMin, MinMaxValues.RevenueMax)
       carriedOutAmlRegulatedActivityForFullFy <- Arbitrary.arbitrary[Boolean]
       amlRegulatedActivityLength              <- Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax)
-      amountDue                               <-
-        Gen.chooseNum[Double](MinAmountDue, MaxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
       calculatedLiability                     <- Arbitrary.arbitrary[CalculatedLiability]
       contactName                             <- stringsWithMaxLength(MinMaxValues.NameMaxLength)
       contactRole                             <- stringsWithMaxLength(MinMaxValues.RoleMaxLength)
@@ -101,8 +110,7 @@ trait EclTestData { self: Generators =>
           carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy),
           amlRegulatedActivityLength =
             if (carriedOutAmlRegulatedActivityForFullFy) None else Some(amlRegulatedActivityLength),
-          calculatedLiability =
-            Some(calculatedLiability.copy(amountDue = calculatedLiability.amountDue.copy(amount = amountDue))),
+          calculatedLiability = Some(calculatedLiability),
           contactName = Some(contactName),
           contactRole = Some(contactRole),
           contactEmailAddress = Some(contactEmailAddress),
@@ -123,5 +131,6 @@ trait EclTestData { self: Generators =>
   val testInternalId: String               = alphaNumericString
   val testEclRegistrationReference: String = alphaNumericString
   val UkRevenueThreshold: Long             = 10200000L
+  val validPeriodKey: String               = arbPeriodKey.arbitrary.sample.get.periodKey
 
 }
