@@ -33,8 +33,11 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
     hc: HeaderCarrier,
     messages: Messages
   ): Future[Unit] = {
-    val obligationDetails = eclReturn.obligationDetails.getOrElse(
+    val obligationDetails   = eclReturn.obligationDetails.getOrElse(
       throw new IllegalStateException("No obligation details found in return data")
+    )
+    val calculatedLiability = eclReturn.calculatedLiability.getOrElse(
+      throw new IllegalStateException("No calculated liability details found in return data")
     )
 
     val eclDueDate      = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate, translate = false)
@@ -43,6 +46,7 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
     val periodEndDate   = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)
     val fyStartYear     = obligationDetails.inboundCorrespondenceFromDate.getYear.toString
     val fyEndYear       = obligationDetails.inboundCorrespondenceToDate.getYear.toString
+    val amountDue       = ViewUtils.formatMoney(calculatedLiability.amountDue.amount)
 
     ((
       eclReturn.contactName,
@@ -59,7 +63,8 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
             chargeReference = chargeReference,
             fyStartYear = fyStartYear,
             fyEndYear = fyEndYear,
-            datePaymentDue = eclDueDate
+            datePaymentDue = eclDueDate,
+            amountDue = amountDue
           )
         )
       case _                                => throw new IllegalStateException("Invalid contact details")

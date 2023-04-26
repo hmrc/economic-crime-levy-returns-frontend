@@ -23,7 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailParameters
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, ObligationDetails}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, ObligationDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 import scala.concurrent.Future
@@ -36,14 +36,17 @@ class EmailServiceSpec extends SpecBase {
   "sendReturnSubmittedEmail" should {
     "send an email to the contact in the return" in forAll {
       (validEclReturn: ValidEclReturn, chargeReference: String) =>
-        val obligationDetails = validEclReturn.eclReturn.obligationDetails.get
-        val eclDueDate        =
+        val obligationDetails   = validEclReturn.eclReturn.obligationDetails.get
+        val calculatedLiability = validEclReturn.eclReturn.calculatedLiability.get
+
+        val eclDueDate      =
           ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate, translate = false)(messages)
-        val dateSubmitted     = ViewUtils.formatToday(translate = false)(messages)
-        val periodStartDate   =
+        val dateSubmitted   = ViewUtils.formatToday(translate = false)(messages)
+        val periodStartDate =
           ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate, translate = false)(messages)
-        val periodEndDate     =
+        val periodEndDate   =
           ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)(messages)
+        val amountDue       = ViewUtils.formatMoney(calculatedLiability.amountDue.amount)
 
         val expectedParams = ReturnSubmittedEmailParameters(
           name = validEclReturn.eclReturn.contactName.get,
@@ -53,7 +56,8 @@ class EmailServiceSpec extends SpecBase {
           chargeReference = chargeReference,
           fyStartYear = obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
           fyEndYear = obligationDetails.inboundCorrespondenceToDate.getYear.toString,
-          datePaymentDue = eclDueDate
+          datePaymentDue = eclDueDate,
+          amountDue
         )
 
         when(
@@ -86,11 +90,18 @@ class EmailServiceSpec extends SpecBase {
     }
 
     "throw an IllegalStateException when the contact details are missing" in forAll {
-      (internalId: String, chargeReference: String, obligationDetails: ObligationDetails) =>
+      (
+        internalId: String,
+        chargeReference: String,
+        obligationDetails: ObligationDetails,
+        calculatedLiability: CalculatedLiability
+      ) =>
         val result = intercept[IllegalStateException] {
           await(
             service.sendReturnSubmittedEmail(
-              EclReturn.empty(internalId).copy(obligationDetails = Some(obligationDetails)),
+              EclReturn
+                .empty(internalId)
+                .copy(obligationDetails = Some(obligationDetails), calculatedLiability = Some(calculatedLiability)),
               chargeReference
             )(hc, messages)
           )
