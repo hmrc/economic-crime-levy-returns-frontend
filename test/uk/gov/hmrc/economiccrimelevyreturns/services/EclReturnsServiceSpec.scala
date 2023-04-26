@@ -21,6 +21,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.Future
@@ -31,26 +32,31 @@ class EclReturnsServiceSpec extends SpecBase {
   val service                                      = new EclReturnsService(mockEclReturnsConnector, mockAuditConnector)
 
   "getOrCreateReturn" should {
-    "return a created ecl return when one does not exist" in forAll { (internalId: String, eclReturn: EclReturn) =>
-      when(mockEclReturnsConnector.getReturn(any())(any()))
-        .thenReturn(Future.successful(None))
+    "return a created ecl return when one does not exist" in forAll {
+      (internalId: String, eclReturn: EclReturn, eclReference: String) =>
+        when(mockEclReturnsConnector.getReturn(any())(any()))
+          .thenReturn(Future.successful(None))
 
-      when(mockEclReturnsConnector.upsertReturn(any())(any()))
-        .thenReturn(Future.successful(eclReturn))
+        when(mockEclReturnsConnector.upsertReturn(any())(any()))
+          .thenReturn(Future.successful(eclReturn))
 
-      val result = await(service.getOrCreateReturn(internalId))
-      result shouldBe eclReturn
+        val result = await(
+          service
+            .getOrCreateReturn(internalId)(hc, AuthorisedRequest(fakeRequest, internalId, eclReference))
+        )
+        result shouldBe eclReturn
 
-      verify(mockAuditConnector, times(1)).sendExtendedEvent(any())(any(), any())
+        verify(mockAuditConnector, times(1)).sendExtendedEvent(any())(any(), any())
 
-      reset(mockAuditConnector)
+        reset(mockAuditConnector)
     }
 
-    "return an existing ecl return" in forAll { (internalId: String, eclReturn: EclReturn) =>
+    "return an existing ecl return" in forAll { (internalId: String, eclReturn: EclReturn, eclReference: String) =>
       when(mockEclReturnsConnector.getReturn(any())(any()))
         .thenReturn(Future.successful(Some(eclReturn)))
 
-      val result = await(service.getOrCreateReturn(internalId))
+      val result =
+        await(service.getOrCreateReturn(internalId)(hc, AuthorisedRequest(fakeRequest, internalId, eclReference)))
       result shouldBe eclReturn
     }
   }

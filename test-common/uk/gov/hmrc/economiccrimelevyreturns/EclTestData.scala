@@ -25,6 +25,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, ObligationDetails}
 
 import java.time.{Instant, LocalDate}
+import scala.math.BigDecimal.RoundingMode
+
+case class ValidPeriodKey(periodKey: String)
 
 case class EnrolmentsWithEcl(enrolments: Enrolments)
 
@@ -40,7 +43,14 @@ final case class ValidEclReturn(eclReturn: EclReturn, eclLiabilityCalculationDat
 
 trait EclTestData { self: Generators =>
 
-  val FullYear: Int = 365
+  val FullYear: Int           = 365
+  private val MinAmountDue    = 0
+  private val MaxAmountDue    = 250000
+  private val PeriodKeyLength = 4
+
+  implicit val arbValidAmountDue: Arbitrary[BigDecimal] = Arbitrary {
+    Gen.chooseNum[Double](MinAmountDue, MaxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
+  }
 
   implicit val arbInstant: Arbitrary[Instant] = Arbitrary {
     Instant.now()
@@ -70,6 +80,10 @@ trait EclTestData { self: Generators =>
         )
       )
       .map(EnrolmentsWithoutEcl)
+  }
+
+  implicit val arbPeriodKey: Arbitrary[ValidPeriodKey] = Arbitrary {
+    Gen.listOfN(PeriodKeyLength, Gen.alphaNumChar).map(_.mkString).map(ValidPeriodKey)
   }
 
   implicit val arbValidEclReturn: Arbitrary[ValidEclReturn] = Arbitrary {
@@ -117,5 +131,6 @@ trait EclTestData { self: Generators =>
   val testInternalId: String               = alphaNumericString
   val testEclRegistrationReference: String = alphaNumericString
   val UkRevenueThreshold: Long             = 10200000L
+  val validPeriodKey: String               = arbPeriodKey.arbitrary.sample.get.periodKey
 
 }

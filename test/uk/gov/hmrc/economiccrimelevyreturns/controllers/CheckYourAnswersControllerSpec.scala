@@ -117,10 +117,39 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           session(result).get(SessionKeys.ObligationDetails) shouldBe Some(
             Json.toJson(validEclReturn.eclReturn.obligationDetails.get).toString()
           )
+          session(result).get(SessionKeys.AmountDue)         shouldBe Some(
+            validEclReturn.eclReturn.calculatedLiability.get.amountDue.amount.toString()
+          )
           redirectLocation(result)                           shouldBe Some(routes.ReturnSubmittedController.onPageLoad().url)
 
           verify(mockEmailService, times(1)).sendReturnSubmittedEmail(
             ArgumentMatchers.eq(validEclReturn.eclReturn),
+            ArgumentMatchers.eq(submitEclReturnResponse.chargeReference)
+          )(any(), any())
+
+          reset(mockEmailService)
+        }
+    }
+
+    "throw an IllegalStateException when the calculated liability is not present in the ECL return" in forAll {
+      (submitEclReturnResponse: SubmitEclReturnResponse, validEclReturn: ValidEclReturn) =>
+        val updatedReturn = validEclReturn.eclReturn.copy(calculatedLiability = None)
+
+        new TestContext(updatedReturn) {
+          when(mockEclReturnsConnector.submitReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+            .thenReturn(Future.successful(submitEclReturnResponse))
+
+          when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+            .thenReturn(Future.successful(()))
+
+          val result: IllegalStateException = intercept[IllegalStateException] {
+            await(controller.onSubmit()(fakeRequest))
+          }
+
+          result.getMessage shouldBe "Amount due not found in return data"
+
+          verify(mockEmailService, times(1)).sendReturnSubmittedEmail(
+            ArgumentMatchers.eq(updatedReturn),
             ArgumentMatchers.eq(submitEclReturnResponse.chargeReference)
           )(any(), any())
 

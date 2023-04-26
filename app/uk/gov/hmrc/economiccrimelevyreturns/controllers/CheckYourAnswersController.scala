@@ -90,6 +90,7 @@ class CheckYourAnswersController @Inject() (
                 throw new IllegalStateException("Amount due not found in return data")
               )
               .amountDue
+              .amount
               .toString()
         )
     )

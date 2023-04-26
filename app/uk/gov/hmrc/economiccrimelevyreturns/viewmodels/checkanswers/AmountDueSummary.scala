@@ -31,8 +31,9 @@ object AmountDueSummary {
     request.eclReturn.calculatedLiability.map { calculatedLiability =>
       SummaryListRowViewModel(
         key = Key("checkYourAnswers.amountDue.label"),
-        value =
-          ValueViewModel(HtmlContent(HtmlFormat.escape(s"${ViewUtils.formatMoney(calculatedLiability.amountDue)}")))
+        value = ValueViewModel(
+          HtmlContent(HtmlFormat.escape(s"${ViewUtils.formatMoney(calculatedLiability.amountDue.amount)}"))
+        )
       )
     }
 

@@ -23,6 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmountDuePageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
+import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmountDueView
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -50,9 +51,10 @@ class AmountDueController @Inject() (
       ).flatten
     ).withCssClass("govuk-!-margin-bottom-9")
 
-    request.eclReturn.calculatedLiability match {
-      case Some(calculatedLiability) => Ok(view(calculatedLiability, accountingDetails, mode))
-      case _                         => Redirect(routes.NotableErrorController.answersAreInvalid())
+    (request.eclReturn.obligationDetails, request.eclReturn.calculatedLiability) match {
+      case (Some(obligationDetails), Some(calculatedLiability)) =>
+        Ok(view(ViewUtils.formatObligationPeriodYears(obligationDetails), calculatedLiability, accountingDetails, mode))
+      case _                                                    => Redirect(routes.NotableErrorController.answersAreInvalid())
     }
   }
 

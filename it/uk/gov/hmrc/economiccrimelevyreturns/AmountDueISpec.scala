@@ -6,7 +6,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 
 class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -16,8 +16,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the ECL amount due view when the ECL return data is valid" in {
       stubAuthorised()
 
-      val calculatedLiability = random[CalculatedLiability]
-      val eclReturn           = random[EclReturn].copy(calculatedLiability = Some(calculatedLiability))
+      val eclReturn = random[ValidEclReturn].eclReturn
 
       stubGetReturn(eclReturn)
 
@@ -25,13 +24,13 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
       status(result) shouldBe OK
 
-      html(result) should include("Amount of ECL you need to pay")
+      html(result) should include("Amount of Economic Crime Levy you need to pay")
     }
 
     "redirect to the invalid data page when the ECL return data is invalid" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn].copy(calculatedLiability = None)
+      val eclReturn = random[EclReturn].copy(calculatedLiability = None, obligationDetails = None)
 
       stubGetReturn(eclReturn)
 

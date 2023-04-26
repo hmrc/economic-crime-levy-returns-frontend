@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.models.audit
 
 import play.api.libs.json.{JsValue, Json, OFormat}
 
-case class ReturnStartedEvent(internalId: String) extends AuditEvent {
+case class ReturnStartedEvent(internalId: String, eclReference: String) extends AuditEvent {
   override val auditType: String   = "ReturnStarted"
   override val detailJson: JsValue = Json.toJson(this)
 }

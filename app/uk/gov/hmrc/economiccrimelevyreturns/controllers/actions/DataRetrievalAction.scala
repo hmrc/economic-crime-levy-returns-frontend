@@ -31,7 +31,7 @@ class ReturnDataRetrievalAction @Inject() (
     with FrontendHeaderCarrierProvider {
 
   override protected def transform[A](request: AuthorisedRequest[A]): Future[ReturnDataRequest[A]] =
-    eclReturnService.getOrCreateReturn(request.internalId)(hc(request)).map {
+    eclReturnService.getOrCreateReturn(request.internalId)(hc(request), request).map {
       ReturnDataRequest(request.request, request.internalId, _, request.eclRegistrationReference)
     }
 }
