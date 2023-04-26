@@ -57,9 +57,9 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
     "redirect to the ECL return submitted page after submitting the ECL return successfully" in {
       stubAuthorised()
 
-      val validEclReturn    = random[ValidEclReturn]
-      val chargeReference   = random[String]
-      val obligationDetails = validEclReturn.eclReturn.obligationDetails.get
+      val validEclReturn      = random[ValidEclReturn]
+      val chargeReference     = random[String]
+      val obligationDetails   = validEclReturn.eclReturn.obligationDetails.get
       val calculatedLiability = validEclReturn.eclReturn.calculatedLiability.get
 
       stubGetReturn(validEclReturn.eclReturn)
@@ -75,12 +75,11 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
         ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate, translate = false)(
           messagesApi.preferred(Seq(Languages.english))
         )
-      val periodEndDate   = {
+      val periodEndDate   =
         ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)(
           messagesApi.preferred(Seq(Languages.english))
         )
-      }
-      val amountDue = ViewUtils.formatMoney(calculatedLiability.amountDue)
+      val amountDue       = ViewUtils.formatMoney(calculatedLiability.amountDue.amount)
 
       val emailParams = ReturnSubmittedEmailParameters(
         name = validEclReturn.eclReturn.contactName.get,

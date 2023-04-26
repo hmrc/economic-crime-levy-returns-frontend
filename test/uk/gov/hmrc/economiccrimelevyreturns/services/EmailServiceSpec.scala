@@ -46,7 +46,7 @@ class EmailServiceSpec extends SpecBase {
           ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate, translate = false)(messages)
         val periodEndDate   =
           ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)(messages)
-        val amountDue       = ViewUtils.formatMoney(calculatedLiability.amountDue)
+        val amountDue       = ViewUtils.formatMoney(calculatedLiability.amountDue.amount)
 
         val expectedParams = ReturnSubmittedEmailParameters(
           name = validEclReturn.eclReturn.contactName.get,

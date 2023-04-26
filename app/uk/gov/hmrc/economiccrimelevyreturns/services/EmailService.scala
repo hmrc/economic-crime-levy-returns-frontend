@@ -46,7 +46,7 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
     val periodEndDate   = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)
     val fyStartYear     = obligationDetails.inboundCorrespondenceFromDate.getYear.toString
     val fyEndYear       = obligationDetails.inboundCorrespondenceToDate.getYear.toString
-    val amountDue       = ViewUtils.formatMoney(calculatedLiability.amountDue)
+    val amountDue       = ViewUtils.formatMoney(calculatedLiability.amountDue.amount)
 
     ((
       eclReturn.contactName,
