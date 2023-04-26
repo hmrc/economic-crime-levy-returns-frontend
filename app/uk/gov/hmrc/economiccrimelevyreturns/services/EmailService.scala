@@ -64,7 +64,7 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
             fyStartYear = fyStartYear,
             fyEndYear = fyEndYear,
             datePaymentDue = eclDueDate,
-            amountDue
+            amountDue = amountDue
           )
         )
       case _                                => throw new IllegalStateException("Invalid contact details")
