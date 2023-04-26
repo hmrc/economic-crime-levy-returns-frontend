@@ -1,6 +1,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
@@ -28,14 +29,14 @@ class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"POST ${routes.ContactNameController.onSubmit(NormalMode).url}"  should {
+  s"POST ${routes.ContactNameController.onSubmit(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.ContactNameController.onSubmit(NormalMode))
 
     "save the provided name then redirect to the contact role page" in {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val name      = stringsWithMaxLength(MinMaxValues.NameMaxLength).sample.get
+      val name         = stringsWithMaxLength(MinMaxValues.NameMaxLength).sample.get
 
       stubGetReturn(eclReturn)
 

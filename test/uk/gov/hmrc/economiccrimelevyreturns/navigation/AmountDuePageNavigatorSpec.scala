@@ -18,6 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
 
 class AmountDuePageNavigatorSpec extends SpecBase {

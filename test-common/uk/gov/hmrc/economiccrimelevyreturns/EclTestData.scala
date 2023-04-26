@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import org.scalacheck.derive.MkArbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
@@ -44,9 +43,14 @@ final case class ValidEclReturn(eclReturn: EclReturn, eclLiabilityCalculationDat
 
 trait EclTestData { self: Generators =>
 
-  val FullYear: Int        = 365
-  private val MinAmountDue = 0
-  private val MaxAmountDue = 250000
+  val FullYear: Int           = 365
+  private val MinAmountDue    = 0
+  private val MaxAmountDue    = 250000
+  private val PeriodKeyLength = 4
+
+  implicit val arbValidAmountDue: Arbitrary[BigDecimal] = Arbitrary {
+    Gen.chooseNum[Double](MinAmountDue, MaxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
+  }
 
   implicit val arbInstant: Arbitrary[Instant] = Arbitrary {
     Instant.now()
@@ -54,10 +58,6 @@ trait EclTestData { self: Generators =>
 
   implicit val arbLocalDate: Arbitrary[LocalDate] = Arbitrary {
     LocalDate.now()
-  }
-
-  implicit val arbPeriodKey: Arbitrary[ValidPeriodKey] = Arbitrary {
-    Gen.listOfN(4, Gen.alphaNumChar).map(_.mkString).map(ValidPeriodKey)
   }
 
   implicit val arbEnrolmentsWithEcl: Arbitrary[EnrolmentsWithEcl] = Arbitrary {
@@ -82,18 +82,8 @@ trait EclTestData { self: Generators =>
       .map(EnrolmentsWithoutEcl)
   }
 
-  implicit val arbEclReturn: Arbitrary[EclReturn] = Arbitrary {
-    for {
-      eclReturn           <- MkArbitrary[EclReturn].arbitrary.arbitrary
-      amountDue           <-
-        Gen.chooseNum[Double](MinAmountDue, MaxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
-      calculatedLiability <- Arbitrary.arbitrary[CalculatedLiability]
-      internalId          <- Gen.nonEmptyListOf(Arbitrary.arbitrary[Char]).map(_.mkString)
-    } yield eclReturn.copy(
-      internalId = internalId,
-      calculatedLiability =
-        Some(calculatedLiability.copy(amountDue = calculatedLiability.amountDue.copy(amount = amountDue)))
-    )
+  implicit val arbPeriodKey: Arbitrary[ValidPeriodKey] = Arbitrary {
+    Gen.listOfN(PeriodKeyLength, Gen.alphaNumChar).map(_.mkString).map(ValidPeriodKey)
   }
 
   implicit val arbValidEclReturn: Arbitrary[ValidEclReturn] = Arbitrary {
@@ -103,8 +93,6 @@ trait EclTestData { self: Generators =>
       relevantApRevenue                       <- Gen.chooseNum[Long](MinMaxValues.RevenueMin, MinMaxValues.RevenueMax)
       carriedOutAmlRegulatedActivityForFullFy <- Arbitrary.arbitrary[Boolean]
       amlRegulatedActivityLength              <- Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax)
-      amountDue                               <-
-        Gen.chooseNum[Double](MinAmountDue, MaxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
       calculatedLiability                     <- Arbitrary.arbitrary[CalculatedLiability]
       contactName                             <- stringsWithMaxLength(MinMaxValues.NameMaxLength)
       contactRole                             <- stringsWithMaxLength(MinMaxValues.RoleMaxLength)
@@ -122,8 +110,7 @@ trait EclTestData { self: Generators =>
           carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy),
           amlRegulatedActivityLength =
             if (carriedOutAmlRegulatedActivityForFullFy) None else Some(amlRegulatedActivityLength),
-          calculatedLiability =
-            Some(calculatedLiability.copy(amountDue = calculatedLiability.amountDue.copy(amount = amountDue))),
+          calculatedLiability = Some(calculatedLiability),
           contactName = Some(contactName),
           contactRole = Some(contactRole),
           contactEmailAddress = Some(contactEmailAddress),
