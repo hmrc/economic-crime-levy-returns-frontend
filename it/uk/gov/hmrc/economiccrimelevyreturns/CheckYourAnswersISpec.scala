@@ -64,6 +64,8 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(validEclReturn.eclReturn)
 
+      stubUpsertReturnWithoutRequestMatching(validEclReturn.eclReturn)
+
       stubSubmitReturn(chargeReference)
 
       val eclDueDate      =

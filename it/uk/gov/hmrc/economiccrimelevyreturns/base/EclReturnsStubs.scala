@@ -31,6 +31,14 @@ trait EclReturnsStubs { self: WireMockStubs =>
         .withBody(Json.toJson(eclReturn).toString())
     )
 
+  def stubUpsertReturnWithoutRequestMatching(eclReturn: EclReturn): StubMapping =
+    stub(
+      put(urlEqualTo("/economic-crime-levy-returns/returns")),
+      aResponse()
+        .withStatus(OK)
+        .withBody(Json.toJson(eclReturn).toString())
+    )
+
   def stubGetReturnValidationErrors(valid: Boolean, errors: DataValidationErrors): StubMapping =
     stub(
       get(urlEqualTo(s"/economic-crime-levy-returns/returns/$testInternalId/validation-errors")),

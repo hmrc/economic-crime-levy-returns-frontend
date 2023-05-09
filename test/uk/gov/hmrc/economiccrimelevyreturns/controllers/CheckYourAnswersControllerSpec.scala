@@ -104,6 +104,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
     "redirect to the ECL return submitted page after submitting the ECL return successfully" in forAll {
       (submitEclReturnResponse: SubmitEclReturnResponse, validEclReturn: ValidEclReturn) =>
         new TestContext(validEclReturn.eclReturn) {
+          when(mockEclReturnsConnector.upsertReturn(any())(any()))
+            .thenReturn(Future.successful(validEclReturn.eclReturn))
+
           when(mockEclReturnsConnector.submitReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
             .thenReturn(Future.successful(submitEclReturnResponse))
 
