@@ -23,6 +23,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, ValidatedReturnAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
+import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.EmailService
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
@@ -30,6 +31,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
+import java.util.Base64
 import javax.inject.Singleton
 import scala.concurrent.ExecutionContext
 
@@ -47,35 +49,42 @@ class CheckYourAnswersController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
+  private def eclDetails()(implicit request: ReturnDataRequest[_]): SummaryList = SummaryListViewModel(
+    rows = Seq(
+      EclReferenceNumberSummary.row(),
+      RelevantAp12MonthsSummary.row(),
+      RelevantApLengthSummary.row(),
+      UkRevenueSummary.row(),
+      AmlRegulatedActivitySummary.row(),
+      AmlRegulatedActivityLengthSummary.row(),
+      CalculatedBandSummary.row(),
+      AmountDueSummary.row()
+    ).flatten
+  ).withCssClass("govuk-!-margin-bottom-9")
+
+  private def contactDetails()(implicit request: ReturnDataRequest[_]): SummaryList = SummaryListViewModel(
+    rows = Seq(
+      ContactNameSummary.row(),
+      ContactRoleSummary.row(),
+      ContactEmailSummary.row(),
+      ContactNumberSummary.row()
+    ).flatten
+  ).withCssClass("govuk-!-margin-bottom-9")
+
   def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData andThen validateReturnData) {
     implicit request =>
-      val eclDetails: SummaryList = SummaryListViewModel(
-        rows = Seq(
-          EclReferenceNumberSummary.row(),
-          RelevantAp12MonthsSummary.row(),
-          RelevantApLengthSummary.row(),
-          UkRevenueSummary.row(),
-          AmlRegulatedActivitySummary.row(),
-          AmlRegulatedActivityLengthSummary.row(),
-          CalculatedBandSummary.row(),
-          AmountDueSummary.row()
-        ).flatten
-      ).withCssClass("govuk-!-margin-bottom-9")
-
-      val contactDetails: SummaryList = SummaryListViewModel(
-        rows = Seq(
-          ContactNameSummary.row(),
-          ContactRoleSummary.row(),
-          ContactEmailSummary.row(),
-          ContactNumberSummary.row()
-        ).flatten
-      ).withCssClass("govuk-!-margin-bottom-9")
-
-      Ok(view(eclDetails, contactDetails))
+      Ok(view(eclDetails(), contactDetails()))
   }
 
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    val htmlView = view(eclDetails(), contactDetails())
+
+    val base64EncodedHtmlView: String = base64EncodeHtmlView(htmlView.body)
+
     for {
+      _        <- eclReturnsConnector.upsertReturn(eclReturn =
+                    request.eclReturn.copy(base64EncodedNrsSubmissionHtml = Some(base64EncodedHtmlView))
+                  )
       response <- eclReturnsConnector.submitReturn(request.internalId)
       _         = emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
       _        <- eclReturnsConnector.deleteReturn(request.internalId)
@@ -96,4 +105,6 @@ class CheckYourAnswersController @Inject() (
     )
   }
 
+  private def base64EncodeHtmlView(html: String): String = Base64.getEncoder
+    .encodeToString(html.getBytes)
 }
