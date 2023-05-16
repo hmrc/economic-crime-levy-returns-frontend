@@ -35,6 +35,9 @@ error.non_numeric = Give a value using only numbers
 error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
+error.problemWithService.title = Sorry, there is a problem with the service - Economic Crime Levy - GOV.UK
+error.problemWithService.heading = Sorry, there is a problem with the service
+error.problemWithService.message = Try again later.
 
 answersAreInvalid.title = The answers you provided are not valid
 answersAreInvalid.heading = The answers you provided are not valid
