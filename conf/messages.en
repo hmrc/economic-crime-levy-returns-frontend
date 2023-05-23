@@ -194,7 +194,7 @@ submitted.amountToPay = Amount you need to pay: {0}
 submitted.subHeading = What you need to do next
 submitted.p1 = You have submitted a return for the Economic Crime Levy (ECL) on {0} for the financial year {1}/{2}.
 submitted.p2 = You will receive a confirmation email. Please save this for your records.
-submitted.p3 = You must pay the levy for the {0}/{1} financial year by {2}. Your ECL return number can be used as a payment reference when you pay the levy.
+submitted.p3 = You must pay the levy for the {0}/{1} financial year by {2}. Your ECL return number must be used as a payment reference when you pay the levy.
 submitted.p4 = You will be charged interest if you make a late payment.
 submitted.payNow = You can {0} if you are ready.
 submitted.payNow.link = <a href="{0}" class="govuk-link">pay now</a>
