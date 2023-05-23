@@ -206,9 +206,9 @@ signedOut.title = For your security, we signed you out
 signedOut.heading = For your security, we signed you out
 signedOut.guidance = We did not save your answers.
 
-notRegistered.title = You need to register for the Economic Crime Levy
-notRegistered.heading = You need to register for the Economic Crime Levy
-notRegistered.body = You need to <a href="{0}" class="govuk-link">register for the Economic Crime Levy (ECL)</a> before you can submit a return.
+notRegistered.title = You must register for the Economic Crime Levy before you can submit a return
+notRegistered.heading = You must register for the Economic Crime Levy before you can submit a return
+notRegistered.body = You must <a href="{0}" class="govuk-link">register</a> for the Economic Crime Levy before you can submit a return.
 
 agentCannotSubmitReturn.title = You cannot use this service to submit an Economic Crime Levy return
 agentCannotSubmitReturn.heading = You cannot use this service to submit an Economic Crime Levy return
