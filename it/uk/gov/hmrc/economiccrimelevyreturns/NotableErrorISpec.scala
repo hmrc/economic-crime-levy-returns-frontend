@@ -50,7 +50,7 @@ class NotableErrorISpec extends ISpecBase with AuthorisedBehaviour {
       val result = callRoute(FakeRequest(routes.NotableErrorController.notRegistered()))
 
       status(result) shouldBe OK
-      html(result)     should include("You need to register for the Economic Crime Levy")
+      html(result)     should include("You must register for the Economic Crime Levy")
     }
   }
 
