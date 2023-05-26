@@ -141,6 +141,7 @@ contactName.heading = Who is completing this return?
 contactName.legend.p1 = Enter the name of the person who is completing this return.
 contactName.hint = For example, ''John Jones'' or ''Laura Smith''.
 contactName.error.required = Enter a full name
+contactName.error.invalid = TODO
 contactName.error.length = Full name must be {0} characters or less
 
 contactRole.title = What is {0}''s role in your organisation?
@@ -148,6 +149,7 @@ contactRole.heading = What is {0}''s role in your organisation?
 contactRole.legend = Tell us about their role in your organisation.
 contactRole.hint = For example, ''Compliance officer''.
 contactRole.error.required = Enter a role
+contactRole.error.invalid = TODO
 contactRole.error.length = Role must be {0} characters or less
 
 contactEmail.title = What is {0}''s email address?

@@ -1,12 +1,12 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
-import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 
 class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
@@ -38,7 +38,7 @@ class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
 
       val eclReturn = random[EclReturn]
       val name      = random[String]
-      val number    = telephoneNumber(MinMaxValues.TelephoneNumberMaxLength).sample.get
+      val number    = stringFromRegex(MinMaxValues.TelephoneNumberMaxLength, Regex.TelephoneNumberRegex).sample.get
 
       val updatedReturn = eclReturn.copy(contactName = Some(name), contactTelephoneNumber = Some(number))
 
