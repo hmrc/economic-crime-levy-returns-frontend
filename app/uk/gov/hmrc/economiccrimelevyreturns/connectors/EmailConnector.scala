@@ -17,6 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailRequest._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
@@ -42,7 +43,9 @@ class EmailConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(im
         sendEmailUrl,
         ReturnSubmittedEmailRequest(
           to = Seq(to),
-          parameters = returnSubmittedEmailParameters
+          parameters = returnSubmittedEmailParameters,
+          templateId =
+            if (returnSubmittedEmailParameters.chargeReference.isDefined) ReturnTemplateId else NilReturnTemplateId
         )
       )
       .map {
