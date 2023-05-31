@@ -194,12 +194,20 @@ submitted.heading = Return submitted
 submitted.reference = ECL return number: {0}
 submitted.amountToPay = Amount you need to pay: {0}
 submitted.subHeading = What you need to do next
-submitted.p1 = You have submitted a return for the Economic Crime Levy (ECL) on {0} for the financial year {1}/{2}.
-submitted.p2 = You will receive a confirmation email. Please save this for your records.
-submitted.p3 = You must pay the levy for the {0}/{1} financial year by {2}. Your ECL return number must be used as a payment reference when you pay the levy.
+submitted.p1 = You have submitted a return for the Economic Crime Levy (ECL) on {0} for the financial year {1}/{2}. You will receive a confirmation email. Please save this for your records.
+submitted.p2 = You must pay the levy by {0}.
+submitted.p3 = Your ECL return number must be used as a payment reference when you pay the levy. You will also be able to find your return number in your <a href="{0}" class="govuk-link">ECL account</a>.
 submitted.p4 = You will be charged interest if you make a late payment.
-submitted.payNow = You can {0} if you are ready.
-submitted.payNow.link = <a href="{0}" class="govuk-link">pay now</a>
+submitted.p5 = You can pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-the-economic-crime-levy" class="govuk-link">guidance on how to pay</a>.
+submitted.p6 = We have sent a confirmation email to {0}. Please save this for your records.
+
+nilSubmitted.title = Return submitted
+nilSubmitted.heading = Return submitted
+nilSubmitted.amountToPay = Amount you need to pay: {0}
+nilSubmitted.subHeading = What you need to do next
+nilSubmitted.p1 = You have submitted a return for the Economic Crime Levy (ECL) on {0} for the financial year {1}/{2}. You do not need to pay the levy for this financial year.
+nilSubmitted.p2 = You can find information about your return in your <a href="{0}" class="govuk-link">ECL account</a>
+nilSubmitted.p3 = We have sent a confirmation email to {0}. Please save this for your records.
 
 exit.survey.link = <a href="{0}" class="govuk-link">What did you think of this service?</a>
 exit.survey = {0} (takes 30 seconds) to exit survey.

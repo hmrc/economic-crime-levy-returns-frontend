@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.ReturnSubmittedView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{NilReturnSubmittedView, ReturnSubmittedView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -31,39 +31,48 @@ import javax.inject.{Inject, Singleton}
 class ReturnSubmittedController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
-  view: ReturnSubmittedView
+  returnSubmittedView: ReturnSubmittedView,
+  nilReturnSubmittedView: NilReturnSubmittedView
 ) extends FrontendBaseController
     with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = authorise { implicit request =>
-    val chargeReference: String = request.session
-      .get(SessionKeys.ChargeReference)
-      .getOrElse(throw new IllegalStateException("Charge reference number not found in session"))
+    val chargeReference: Option[String] = request.session.get(SessionKeys.ChargeReference)
+
+    val email: String = request.session(SessionKeys.Email)
 
     val obligationDetails: ObligationDetails = Json
-      .parse(
-        request.session
-          .get(SessionKeys.ObligationDetails)
-          .getOrElse(throw new IllegalStateException("Obligation details not found in session"))
-      )
+      .parse(request.session(SessionKeys.ObligationDetails))
       .as[ObligationDetails]
 
-    val amountDue: BigDecimal = BigDecimal(
-      request.session
-        .get(SessionKeys.AmountDue)
-        .getOrElse(throw new IllegalStateException("Amount due not found in session"))
-    )
+    val amountDue: BigDecimal = BigDecimal(request.session(SessionKeys.AmountDue))
 
-    Ok(
-      view(
-        chargeReference,
-        ViewUtils.formatToday(),
-        ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate),
-        obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
-        obligationDetails.inboundCorrespondenceToDate.getYear.toString,
-        amountDue
-      )
-    )
+    chargeReference match {
+      case Some(c) =>
+        Ok(
+          returnSubmittedView(
+            c,
+            ViewUtils.formatToday(),
+            ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate),
+            obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
+            obligationDetails.inboundCorrespondenceToDate.getYear.toString,
+            amountDue,
+            email
+          )
+        )
+      case None    =>
+        Ok(
+          nilReturnSubmittedView(
+            ViewUtils.formatToday(),
+            obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
+            obligationDetails.inboundCorrespondenceToDate.getYear.toString,
+            amountDue,
+            email
+          )
+        )
+
+    }
+
   }
 
 }

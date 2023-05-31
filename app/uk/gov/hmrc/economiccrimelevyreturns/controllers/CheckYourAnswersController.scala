@@ -89,9 +89,12 @@ class CheckYourAnswersController @Inject() (
       _         = emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
       _        <- eclReturnsConnector.deleteReturn(request.internalId)
     } yield Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
-      request.session
+      request.session ++ response.chargeReference.fold(Seq.empty[(String, String)])(c =>
+        Seq(SessionKeys.ChargeReference -> c)
+      )
         ++ Seq(
-          SessionKeys.ChargeReference   -> response.chargeReference,
+          SessionKeys.Email             -> request.eclReturn.contactEmailAddress
+            .getOrElse(throw new IllegalStateException("Contact email address not found in session")),
           SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString(),
           SessionKeys.AmountDue         ->
             request.eclReturn.calculatedLiability
