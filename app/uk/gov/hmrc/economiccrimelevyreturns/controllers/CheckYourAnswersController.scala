@@ -94,7 +94,7 @@ class CheckYourAnswersController @Inject() (
         Seq(SessionKeys.ChargeReference -> c)
       ) ++ Seq(
         SessionKeys.Email             -> request.eclReturn.contactEmailAddress
-          .getOrElse(throw new IllegalStateException("Contact email address not found in session")),
+          .getOrElse(throw new IllegalStateException("Contact email address not found in return data")),
         SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString(),
         SessionKeys.AmountDue         ->
           request.eclReturn.calculatedLiability

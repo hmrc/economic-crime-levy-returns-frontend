@@ -58,7 +58,7 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val validEclReturn      = random[ValidEclReturn]
-      val chargeReference     = random[String]
+      val chargeReference     = random[Option[String]]
       val obligationDetails   = validEclReturn.eclReturn.obligationDetails.get
       val calculatedLiability = validEclReturn.eclReturn.calculatedLiability.get
 
@@ -91,14 +91,16 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
         chargeReference = chargeReference,
         fyStartYear = obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
         fyEndYear = obligationDetails.inboundCorrespondenceToDate.getYear.toString,
-        datePaymentDue = eclDueDate,
+        datePaymentDue = if (chargeReference.isDefined) Some(eclDueDate) else None,
         amountDue = amountDue
       )
 
       stubSendReturnSubmittedEmail(
         ReturnSubmittedEmailRequest(
           to = Seq(validEclReturn.eclReturn.contactEmailAddress.get),
-          parameters = emailParams
+          parameters = emailParams,
+          templateId = if (chargeReference.isDefined) { ReturnSubmittedEmailRequest.ReturnTemplateId }
+          else { ReturnSubmittedEmailRequest.NilReturnTemplateId }
         )
       )
 

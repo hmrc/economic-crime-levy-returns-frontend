@@ -35,7 +35,7 @@ class EmailServiceSpec extends SpecBase {
 
   "sendReturnSubmittedEmail" should {
     "send an email to the contact in the return" in forAll {
-      (validEclReturn: ValidEclReturn, chargeReference: String) =>
+      (validEclReturn: ValidEclReturn, chargeReference: Option[String]) =>
         val obligationDetails   = validEclReturn.eclReturn.obligationDetails.get
         val calculatedLiability = validEclReturn.eclReturn.calculatedLiability.get
 
@@ -56,7 +56,7 @@ class EmailServiceSpec extends SpecBase {
           chargeReference = chargeReference,
           fyStartYear = obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
           fyEndYear = obligationDetails.inboundCorrespondenceToDate.getYear.toString,
-          datePaymentDue = eclDueDate,
+          datePaymentDue = if (chargeReference.isDefined) Some(eclDueDate) else None,
           amountDue
         )
 
@@ -81,7 +81,7 @@ class EmailServiceSpec extends SpecBase {
     }
 
     "throw an IllegalStateException when there are no obligation details in the return data" in forAll {
-      (internalId: String, chargeReference: String) =>
+      (internalId: String, chargeReference: Option[String]) =>
         val result = intercept[IllegalStateException] {
           await(service.sendReturnSubmittedEmail(EclReturn.empty(internalId), chargeReference)(hc, messages))
         }
@@ -92,7 +92,7 @@ class EmailServiceSpec extends SpecBase {
     "throw an IllegalStateException when the contact details are missing" in forAll {
       (
         internalId: String,
-        chargeReference: String,
+        chargeReference: Option[String],
         obligationDetails: ObligationDetails,
         calculatedLiability: CalculatedLiability
       ) =>

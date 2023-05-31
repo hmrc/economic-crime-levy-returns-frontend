@@ -116,7 +116,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           val result: Future[Result] = controller.onSubmit()(fakeRequest)
 
           status(result)                                     shouldBe SEE_OTHER
-          session(result).get(SessionKeys.ChargeReference)   shouldBe Some(submitEclReturnResponse.chargeReference)
+          session(result).get(SessionKeys.ChargeReference)   shouldBe submitEclReturnResponse.chargeReference
+          session(result).get(SessionKeys.Email)             shouldBe validEclReturn.eclReturn.contactEmailAddress
           session(result).get(SessionKeys.ObligationDetails) shouldBe Some(
             Json.toJson(validEclReturn.eclReturn.obligationDetails.get).toString()
           )
@@ -150,6 +151,32 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           }
 
           result.getMessage shouldBe "Amount due not found in return data"
+
+          verify(mockEmailService, times(1)).sendReturnSubmittedEmail(
+            ArgumentMatchers.eq(updatedReturn),
+            ArgumentMatchers.eq(submitEclReturnResponse.chargeReference)
+          )(any(), any())
+
+          reset(mockEmailService)
+        }
+    }
+
+    "throw an IllegalStateException when the contact email is not present in the ECL return" in forAll {
+      (submitEclReturnResponse: SubmitEclReturnResponse, validEclReturn: ValidEclReturn) =>
+        val updatedReturn = validEclReturn.eclReturn.copy(contactEmailAddress = None)
+
+        new TestContext(updatedReturn) {
+          when(mockEclReturnsConnector.submitReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+            .thenReturn(Future.successful(submitEclReturnResponse))
+
+          when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+            .thenReturn(Future.successful(()))
+
+          val result: IllegalStateException = intercept[IllegalStateException] {
+            await(controller.onSubmit()(fakeRequest))
+          }
+
+          result.getMessage shouldBe "Contact email address not found in return data"
 
           verify(mockEmailService, times(1)).sendReturnSubmittedEmail(
             ArgumentMatchers.eq(updatedReturn),
