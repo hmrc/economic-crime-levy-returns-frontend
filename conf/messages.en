@@ -138,7 +138,7 @@ amountDue.nextSteps.p2 = You can then check your answers and submit this return.
 
 contactName.title = Who is completing this return?
 contactName.heading = Who is completing this return?
-contactName.legend.p1 = Enter the name of the person who is completing this return.
+contactName.legend.p1 = Enter the full name of the person who is completing this return.
 contactName.hint = For example, ''John Jones'' or ''Laura Smith''.
 contactName.error.required = Enter a full name
 contactName.error.invalid = Full name must only include letters a to z, and special characters such as hyphens, spaces and apostrophes
