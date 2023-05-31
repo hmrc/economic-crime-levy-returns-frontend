@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns
 
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
@@ -97,7 +97,7 @@ trait EclTestData { self: Generators =>
       contactName                             <- stringsWithMaxLength(MinMaxValues.NameMaxLength)
       contactRole                             <- stringsWithMaxLength(MinMaxValues.RoleMaxLength)
       contactEmailAddress                     <- emailAddress(MinMaxValues.EmailMaxLength)
-      contactTelephoneNumber                  <- telephoneNumber(MinMaxValues.TelephoneNumberMaxLength)
+      contactTelephoneNumber                  <- stringFromRegex(MinMaxValues.TelephoneNumberMaxLength, Regex.TelephoneNumberRegex)
       obligationDetails                       <- Arbitrary.arbitrary[ObligationDetails]
       internalId                               = alphaNumericString
     } yield ValidEclReturn(

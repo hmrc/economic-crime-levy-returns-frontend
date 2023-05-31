@@ -26,7 +26,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactNameFormProvider
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactNamePageNavigator
@@ -87,7 +87,7 @@ class ContactNameControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided contact name then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      stringsWithMaxLength(MinMaxValues.NameMaxLength)
+      stringFromRegex(MinMaxValues.NameMaxLength, Regex.NameRegex)
     ) { (eclReturn: EclReturn, name: String) =>
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(contactName = Some(name))

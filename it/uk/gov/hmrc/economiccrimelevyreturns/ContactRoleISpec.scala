@@ -1,12 +1,12 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
-import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 
 class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
@@ -18,11 +18,11 @@ class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val name         = random[String]
+      val name      = random[String]
 
       stubGetReturn(
         eclReturn.copy(contactName = Some(name))
-          )
+      )
 
       val result = callRoute(FakeRequest(routes.ContactRoleController.onPageLoad(NormalMode)))
 
@@ -32,15 +32,15 @@ class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"POST ${routes.ContactRoleController.onSubmit(NormalMode).url}" should {
+  s"POST ${routes.ContactRoleController.onSubmit(NormalMode).url}"  should {
     behave like authorisedActionRoute(routes.ContactRoleController.onSubmit(NormalMode))
 
     "save the provided role then redirect to the contact email page" in {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val name         = random[String]
-      val role         = stringsWithMaxLength(MinMaxValues.RoleMaxLength).sample.get
+      val name      = random[String]
+      val role      = stringFromRegex(MinMaxValues.RoleMaxLength, Regex.PositionInCompanyRegex).sample.get
 
       val updatedReturn = eclReturn.copy(contactName = Some(name), contactRole = Some(role))
 

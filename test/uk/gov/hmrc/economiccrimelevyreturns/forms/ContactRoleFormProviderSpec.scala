@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.forms
 
-import play.api.data.FormError
+import play.api.data.{Form, FormError}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours.StringFieldBehaviours
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 
 class ContactRoleFormProviderSpec extends StringFieldBehaviours {
 
@@ -34,7 +34,7 @@ class ContactRoleFormProviderSpec extends StringFieldBehaviours {
     behave like fieldThatBindsValidData(
       form,
       fieldName,
-      stringsWithMaxLength(MinMaxValues.RoleMaxLength)
+      stringFromRegex(MinMaxValues.RoleMaxLength, Regex.PositionInCompanyRegex)
     )
 
     behave like fieldWithMaxLength(
@@ -49,5 +49,13 @@ class ContactRoleFormProviderSpec extends StringFieldBehaviours {
       fieldName,
       requiredError = FormError(fieldName, requiredKey)
     )
+
+    "fail to bind an invalid role" in forAll(
+      stringsWithMaxLength(MinMaxValues.RoleMaxLength).retryUntil(!_.matches(Regex.PositionInCompanyRegex))
+    ) { invalidRole: String =>
+      val result: Form[String] = form.bind(Map("value" -> invalidRole))
+
+      result.errors.map(_.message) should contain only "contactRole.error.invalid"
+    }
   }
 }
