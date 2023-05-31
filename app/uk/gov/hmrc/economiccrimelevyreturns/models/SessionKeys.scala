@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.models
 
+import play.api.mvc.Session
+
 object SessionKeys {
 
   val ChargeReference: String   = "chargeReference"
@@ -23,4 +25,7 @@ object SessionKeys {
   val AmountDue: String         = "amountDue"
   val ObligationDetails: String = "obligationDetails"
 
+  implicit class SessionOps(s: Session) {
+    def clearEclValues: Session = s -- Seq(ChargeReference, Email, AmountDue, ObligationDetails)
+  }
 }
