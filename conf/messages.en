@@ -68,9 +68,10 @@ relevantAp12Months.error.required = Select an answer
 
 relevantApLength.title = How long is your relevant accounting period?
 relevantApLength.heading = How long is your relevant accounting period?
-relevantApLength.p1 = Your relevant accounting period is any accounting period that ends in the financial year.
-relevantApLength.p2 = For the purposes of the ECL, the financial year starts on 1 April and ends on 31 March of the following year.
-relevantApLength.hint = Enter the number in days
+relevantApLength.p1 = Your relevant accounting period is any accounting period that ends in the financial year. It is based on the accounting period you use for your Company Tax Return.
+relevantApLength.p2 = You may have more than one relevant accounting period ending in the financial year.
+relevantApLength.p3 = For the purposes of the ECL, the financial year starts on 1 April and ends on 31 March of the following year.
+relevantApLength.hint = Enter the length of your accounting period in days
 relevantApLength.error.required = Enter the length
 relevantApLength.error.wholeNumber = Length must be a whole number
 relevantApLength.error.nonNumeric = Length must be a whole number
