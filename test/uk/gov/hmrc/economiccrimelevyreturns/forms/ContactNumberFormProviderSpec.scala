@@ -34,7 +34,7 @@ class ContactNumberFormProviderSpec extends StringFieldBehaviours {
     behave like fieldThatBindsValidData(
       form,
       fieldName,
-      telephoneNumber(MinMaxValues.TelephoneNumberMaxLength)
+      stringFromRegex(MinMaxValues.TelephoneNumberMaxLength, Regex.TelephoneNumberRegex)
     )
 
     behave like fieldWithMaxLength(

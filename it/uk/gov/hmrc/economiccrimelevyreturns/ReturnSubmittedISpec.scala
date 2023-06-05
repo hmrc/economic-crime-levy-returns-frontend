@@ -30,23 +30,48 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
   s"GET ${routes.ReturnSubmittedController.onPageLoad().url}" should {
     behave like authorisedActionRoute(routes.ReturnSubmittedController.onPageLoad())
 
-    "respond with 200 status and the return submitted HTML view" in {
+    "respond with 200 status and the return submitted HTML view when it is not a nil return" in {
       stubAuthorised()
 
       val chargeReference   = random[String]
+      val email             = random[String]
       val obligationDetails = random[ObligationDetails]
-      val amountDue = "10000"
+      val amountDue         = "10000"
 
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())
           .withSession(
             (SessionKeys.ChargeReference, chargeReference),
+            (SessionKeys.Email, email),
             (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString()),
-              (SessionKeys.AmountDue, amountDue))
+            (SessionKeys.AmountDue, amountDue)
+          )
       )
 
       status(result) shouldBe OK
       html(result)     should include("Return submitted")
+      html(result)     should include("ECL return number")
+    }
+
+    "respond with 200 status and the nil return submitted HTML view when it is a nil return" in {
+      stubAuthorised()
+
+      val email             = random[String]
+      val obligationDetails = random[ObligationDetails]
+      val amountDue         = "10000"
+
+      val result = callRoute(
+        FakeRequest(routes.ReturnSubmittedController.onPageLoad())
+          .withSession(
+            (SessionKeys.Email, email),
+            (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString()),
+            (SessionKeys.AmountDue, amountDue)
+          )
+      )
+
+      status(result) shouldBe OK
+      html(result)     should include("Return submitted")
+      html(result)     should not include "ECL return number"
     }
   }
 

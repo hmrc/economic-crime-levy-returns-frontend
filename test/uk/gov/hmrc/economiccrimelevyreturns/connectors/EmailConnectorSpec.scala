@@ -35,9 +35,11 @@ class EmailConnectorSpec extends SpecBase {
   "sendReturnSubmittedEmail" should {
     val expectedUrl = sendEmailUrl
 
-    "return unit when the http client returns a successful http response" in forAll {
-      (to: String, returnSubmittedEmailParameters: ReturnSubmittedEmailParameters) =>
+    "return unit when the http client returns a successful http response for the return submitted email template" in forAll {
+      (to: String, returnSubmittedEmailParameters: ReturnSubmittedEmailParameters, chargeReference: String) =>
         val response = HttpResponse(ACCEPTED, "")
+
+        val parametersWithChargeReference = returnSubmittedEmailParameters.copy(chargeReference = Some(chargeReference))
 
         when(
           mockHttpClient
@@ -46,8 +48,8 @@ class EmailConnectorSpec extends SpecBase {
               ArgumentMatchers.eq(
                 ReturnSubmittedEmailRequest(
                   Seq(to),
-                  templateId = ReturnSubmittedEmailRequest.TemplateId,
-                  returnSubmittedEmailParameters,
+                  templateId = ReturnSubmittedEmailRequest.ReturnTemplateId,
+                  parametersWithChargeReference,
                   force = false,
                   None
                 )
@@ -57,7 +59,45 @@ class EmailConnectorSpec extends SpecBase {
         )
           .thenReturn(Future.successful(Right(response)))
 
-        val result: Unit = await(connector.sendReturnSubmittedEmail(to, returnSubmittedEmailParameters))
+        val result: Unit = await(connector.sendReturnSubmittedEmail(to, parametersWithChargeReference))
+
+        result shouldBe ()
+
+        verify(mockHttpClient, times(1))
+          .POST[ReturnSubmittedEmailRequest, Either[UpstreamErrorResponse, HttpResponse]](
+            ArgumentMatchers.eq(expectedUrl),
+            any(),
+            any()
+          )(any(), any(), any(), any())
+
+        reset(mockHttpClient)
+    }
+
+    "return unit when the http client returns a successful http response for the nil return submitted email template" in forAll {
+      (to: String, returnSubmittedEmailParameters: ReturnSubmittedEmailParameters) =>
+        val response = HttpResponse(ACCEPTED, "")
+
+        val parametersWithoutChargeReference = returnSubmittedEmailParameters.copy(chargeReference = None)
+
+        when(
+          mockHttpClient
+            .POST[ReturnSubmittedEmailRequest, Either[UpstreamErrorResponse, HttpResponse]](
+              ArgumentMatchers.eq(expectedUrl),
+              ArgumentMatchers.eq(
+                ReturnSubmittedEmailRequest(
+                  Seq(to),
+                  templateId = ReturnSubmittedEmailRequest.NilReturnTemplateId,
+                  parametersWithoutChargeReference,
+                  force = false,
+                  None
+                )
+              ),
+              any()
+            )(any(), any(), any(), any())
+        )
+          .thenReturn(Future.successful(Right(response)))
+
+        val result: Unit = await(connector.sendReturnSubmittedEmail(to, parametersWithoutChargeReference))
 
         result shouldBe ()
 
@@ -79,15 +119,7 @@ class EmailConnectorSpec extends SpecBase {
           mockHttpClient
             .POST[ReturnSubmittedEmailRequest, Either[UpstreamErrorResponse, HttpResponse]](
               ArgumentMatchers.eq(expectedUrl),
-              ArgumentMatchers.eq(
-                ReturnSubmittedEmailRequest(
-                  Seq(to),
-                  templateId = ReturnSubmittedEmailRequest.TemplateId,
-                  returnSubmittedEmailParameters,
-                  force = false,
-                  None
-                )
-              ),
+              any(),
               any()
             )(any(), any(), any(), any())
         )
@@ -102,15 +134,7 @@ class EmailConnectorSpec extends SpecBase {
         verify(mockHttpClient, times(1))
           .POST[ReturnSubmittedEmailRequest, Either[UpstreamErrorResponse, HttpResponse]](
             ArgumentMatchers.eq(expectedUrl),
-            ArgumentMatchers.eq(
-              ReturnSubmittedEmailRequest(
-                Seq(to),
-                templateId = ReturnSubmittedEmailRequest.TemplateId,
-                returnSubmittedEmailParameters,
-                force = false,
-                None
-              )
-            ),
+            any(),
             any()
           )(any(), any(), any(), any())
 

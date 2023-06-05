@@ -29,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: ExecutionContext) extends Logging {
 
-  def sendReturnSubmittedEmail(eclReturn: EclReturn, chargeReference: String)(implicit
+  def sendReturnSubmittedEmail(eclReturn: EclReturn, chargeReference: Option[String])(implicit
     hc: HeaderCarrier,
     messages: Messages
   ): Future[Unit] = {
@@ -63,7 +63,7 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
             chargeReference = chargeReference,
             fyStartYear = fyStartYear,
             fyEndYear = fyEndYear,
-            datePaymentDue = eclDueDate,
+            datePaymentDue = if (chargeReference.isDefined) Some(eclDueDate) else None,
             amountDue = amountDue
           )
         )

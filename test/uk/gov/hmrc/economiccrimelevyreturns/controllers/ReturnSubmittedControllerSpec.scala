@@ -23,26 +23,27 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
-import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, Open, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.ReturnSubmittedView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{NilReturnSubmittedView, ReturnSubmittedView}
 
-import java.time.LocalDate
 import scala.concurrent.Future
 
 class ReturnSubmittedControllerSpec extends SpecBase {
 
-  val view: ReturnSubmittedView = app.injector.instanceOf[ReturnSubmittedView]
+  val returnSubmittedView: ReturnSubmittedView       = app.injector.instanceOf[ReturnSubmittedView]
+  val nilReturnSubmittedView: NilReturnSubmittedView = app.injector.instanceOf[NilReturnSubmittedView]
 
   val controller = new ReturnSubmittedController(
     mcc,
     fakeAuthorisedAction(internalId),
-    view
+    returnSubmittedView,
+    nilReturnSubmittedView
   )
 
   "onPageLoad" should {
-    "return OK and the correct view" in forAll {
-      (chargeReference: String, obligationDetails: ObligationDetails, amountDue: BigDecimal) =>
+    "return OK and the correct view for a submitted return" in forAll {
+      (chargeReference: String, obligationDetails: ObligationDetails, amountDue: BigDecimal, email: String) =>
         implicit val authRequest: AuthorisedRequest[AnyContentAsEmpty.type] =
           AuthorisedRequest(fakeRequest, internalId, eclRegistrationReference)
         implicit val messages: Messages                                     = messagesApi.preferred(authRequest)
@@ -51,6 +52,7 @@ class ReturnSubmittedControllerSpec extends SpecBase {
           controller.onPageLoad()(
             fakeRequest.withSession(
               (SessionKeys.ChargeReference, chargeReference),
+              (SessionKeys.Email, email),
               (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString()),
               (SessionKeys.AmountDue, amountDue.toString())
             )
@@ -58,53 +60,41 @@ class ReturnSubmittedControllerSpec extends SpecBase {
 
         status(result) shouldBe OK
 
-        contentAsString(result) shouldBe view(
+        contentAsString(result) shouldBe returnSubmittedView(
           chargeReference,
           ViewUtils.formatToday(),
           ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate),
           obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
           obligationDetails.inboundCorrespondenceToDate.getYear.toString,
-          amountDue
+          amountDue,
+          email
         )(authRequest, messages).toString()
     }
 
-    "throw an IllegalStateException when the charge reference is not found in the session" in {
-      val result: IllegalStateException = intercept[IllegalStateException] {
-        await(controller.onPageLoad()(fakeRequest))
-      }
+    "return OK and the correct view for a submitted nil return" in forAll {
+      (obligationDetails: ObligationDetails, amountDue: BigDecimal, email: String) =>
+        implicit val authRequest: AuthorisedRequest[AnyContentAsEmpty.type] =
+          AuthorisedRequest(fakeRequest, internalId, eclRegistrationReference)
+        implicit val messages: Messages                                     = messagesApi.preferred(authRequest)
 
-      result.getMessage shouldBe "Charge reference number not found in session"
-    }
-
-    "throw an IllegalStateException when the amount due is not found in session" in {
-      val obligationDetails             = ObligationDetails(
-        status = Open,
-        inboundCorrespondenceFromDate = LocalDate.now(),
-        inboundCorrespondenceToDate = LocalDate.now(),
-        inboundCorrespondenceDateReceived = None,
-        inboundCorrespondenceDueDate = LocalDate.now(),
-        periodKey = "22XY"
-      )
-      val result: IllegalStateException = intercept[IllegalStateException] {
-        await(
+        val result: Future[Result] =
           controller.onPageLoad()(
             fakeRequest.withSession(
-              (SessionKeys.ChargeReference, "test-charge-reference"),
-              (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString())
+              (SessionKeys.Email, email),
+              (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString()),
+              (SessionKeys.AmountDue, amountDue.toString())
             )
           )
-        )
-      }
 
-      result.getMessage shouldBe "Amount due not found in session"
-    }
+        status(result) shouldBe OK
 
-    "throw an IllegalStateException when the obligation details are not found in the session" in {
-      val result: IllegalStateException = intercept[IllegalStateException] {
-        await(controller.onPageLoad()(fakeRequest.withSession((SessionKeys.ChargeReference, "test-charge-reference"))))
-      }
-
-      result.getMessage shouldBe "Obligation details not found in session"
+        contentAsString(result) shouldBe nilReturnSubmittedView(
+          ViewUtils.formatToday(),
+          obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
+          obligationDetails.inboundCorrespondenceToDate.getYear.toString,
+          amountDue,
+          email
+        )(authRequest, messages).toString()
     }
   }
 

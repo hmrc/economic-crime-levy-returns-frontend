@@ -23,6 +23,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, ValidatedReturnAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
+import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.EmailService
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
@@ -89,19 +90,21 @@ class CheckYourAnswersController @Inject() (
       _         = emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
       _        <- eclReturnsConnector.deleteReturn(request.internalId)
     } yield Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
-      request.session
-        ++ Seq(
-          SessionKeys.ChargeReference   -> response.chargeReference,
-          SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString(),
-          SessionKeys.AmountDue         ->
-            request.eclReturn.calculatedLiability
-              .getOrElse(
-                throw new IllegalStateException("Amount due not found in return data")
-              )
-              .amountDue
-              .amount
-              .toString()
-        )
+      request.session.clearEclValues ++ response.chargeReference.fold(Seq.empty[(String, String)])(c =>
+        Seq(SessionKeys.ChargeReference -> c)
+      ) ++ Seq(
+        SessionKeys.Email             -> request.eclReturn.contactEmailAddress
+          .getOrElse(throw new IllegalStateException("Contact email address not found in return data")),
+        SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString(),
+        SessionKeys.AmountDue         ->
+          request.eclReturn.calculatedLiability
+            .getOrElse(
+              throw new IllegalStateException("Amount due not found in return data")
+            )
+            .amountDue
+            .amount
+            .toString()
+      )
     )
   }
 

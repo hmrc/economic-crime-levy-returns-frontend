@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.forms
 
 import play.api.data.Form
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{Mappings, MinMaxValues}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{Mappings, MinMaxValues, Regex}
 
 import javax.inject.Inject
 
@@ -27,8 +27,9 @@ class ContactNumberFormProvider @Inject() extends Mappings {
     Form(
       "value" -> text("contactNumber.error.required")
         .verifying(
-          telephoneNumber(
+          regexpWithMaxLength(
             MinMaxValues.TelephoneNumberMaxLength,
+            Regex.TelephoneNumberRegex,
             "contactNumber.error.length",
             "contactNumber.error.invalid"
           )

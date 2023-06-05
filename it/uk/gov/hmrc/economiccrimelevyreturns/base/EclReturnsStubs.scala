@@ -52,7 +52,7 @@ trait EclReturnsStubs { self: WireMockStubs =>
       }
     )
 
-  def stubSubmitReturn(chargeReference: String): StubMapping =
+  def stubSubmitReturn(chargeReference: Option[String]): StubMapping =
     stub(
       post(urlEqualTo(s"/economic-crime-levy-returns/submit-return/$testInternalId")),
       aResponse()

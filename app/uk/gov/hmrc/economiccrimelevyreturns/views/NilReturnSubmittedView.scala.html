@@ -24,31 +24,29 @@
         appConfig: AppConfig
 )
 
-@(chargeReference: String, submittedWhen: String, dueDate: String, fyStartYear: String, fyEndYear: String, amountToPay: BigDecimal, email: String)(implicit request: Request[_], messages: Messages)
+@(submittedWhen: String, fyStartYear: String, fyEndYear: String, amountToPay: BigDecimal, email: String)(implicit request: Request[_], messages: Messages)
 
 @panelContentHtml = {
-    <p class="govuk-label--m">@messages("submitted.reference", chargeReference)</p>
-    <p class="govuk-label--m">@messages("submitted.amountToPay", ViewUtils.formatMoney(amountToPay))</p>
+    <p class="govuk-label--m">@messages("nilSubmitted.amountToPay", ViewUtils.formatMoney(amountToPay))</p>
 }
 
 @layout(
-    pageTitle = title(messages("submitted.title")),
+    pageTitle = title(messages("nilSubmitted.title")),
     showBackLink = false
 ) {
 
     @govukPanel(Panel(
-        title = HtmlContent(messages("submitted.heading")),
+        title = HtmlContent(messages("nilSubmitted.heading")),
         content = HtmlContent(panelContentHtml)
     ))
 
-    <h2 class="govuk-heading-m">@messages("submitted.subHeading")</h2>
+    <h2 class="govuk-heading-m">@messages("nilSubmitted.subHeading")</h2>
 
-    <p class="govuk-body">@messages("submitted.p1", submittedWhen, fyStartYear, fyEndYear)</p>
-    <p class="govuk-body">@messages("submitted.p2", dueDate)</p>
-    <p class="govuk-body">@Html(messages("submitted.p3", appConfig.eclAccountUrl))</p>
-    <p class="govuk-body">@messages("submitted.p4")</p>
-    <p class="govuk-body">@Html(messages("submitted.p5"))</p>
-    <p class="govuk-body">@messages("submitted.p6", email)</p>
+    <p class="govuk-body">@messages("nilSubmitted.p1", submittedWhen, fyStartYear, fyEndYear)</p>
+
+    <p class="govuk-body">@Html(messages("nilSubmitted.p2", appConfig.eclAccountUrl))</p>
+
+    <p class="govuk-body">@messages("nilSubmitted.p3", email)</p>
 
     <p class="govuk-body">@Html(messages("exit.survey", messages("exit.survey.link", appConfig.exitSurveyUrl)))</p>
 

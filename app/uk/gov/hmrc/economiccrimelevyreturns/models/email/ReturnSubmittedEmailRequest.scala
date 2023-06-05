@@ -23,10 +23,10 @@ final case class ReturnSubmittedEmailParameters(
   dateSubmitted: String,
   periodStartDate: String,
   periodEndDate: String,
-  chargeReference: String,
+  chargeReference: Option[String],
   fyStartYear: String,
   fyEndYear: String,
-  datePaymentDue: String,
+  datePaymentDue: Option[String],
   amountDue: String
 )
 
@@ -36,13 +36,14 @@ object ReturnSubmittedEmailParameters {
 
 final case class ReturnSubmittedEmailRequest(
   to: Seq[String],
-  templateId: String = ReturnSubmittedEmailRequest.TemplateId,
+  templateId: String,
   parameters: ReturnSubmittedEmailParameters,
   force: Boolean = false,
   eventUrl: Option[String] = None
 )
 
 object ReturnSubmittedEmailRequest {
-  val TemplateId: String                                    = "ecl_return_submitted"
+  val ReturnTemplateId: String                              = "ecl_return_submitted"
+  val NilReturnTemplateId: String                           = "ecl_nil_return_submitted"
   implicit val format: OFormat[ReturnSubmittedEmailRequest] = Json.format[ReturnSubmittedEmailRequest]
 }
