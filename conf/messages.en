@@ -59,6 +59,7 @@ start.tellUsAbout.b1 = your accounting period for your organisation - you may ha
 start.tellUsAbout.b2 = your UK revenue during any relevant accounting periods
 start.tellUsAbout.b3 = if you carried out anti-money laundering (AML) regulated activities in the last financial year
 start.tellUsAbout.b4 = the contact details of the person in your organisation who is completing this return
+start.payLevyLater = You cannot pay the levy right now. You will be able to do so from August 2023.
 
 relevantAp12Months.title = Is your relevant accounting period 12 months?
 relevantAp12Months.heading = Is your relevant accounting period 12 months?
@@ -200,11 +201,12 @@ submitted.reference = ECL return number: {0}
 submitted.amountToPay = Amount you need to pay: {0}
 submitted.subHeading = What you need to do next
 submitted.p1 = You have submitted a return for the Economic Crime Levy (ECL) on {0} for the financial year {1}/{2}. You will receive a confirmation email. Please save this for your records.
-submitted.p2 = You must pay the levy by {0}.
+submitted.p2 = You must pay the levy for the {0}/{1} financial year by {2}.
 submitted.p3 = Your ECL return number must be used as a payment reference when you pay the levy. You will also be able to find your return number in your <a href="{0}" class="govuk-link">ECL account</a>.
 submitted.p4 = You will be charged interest if you make a late payment.
 submitted.p5 = You can pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-the-economic-crime-levy" class="govuk-link">guidance on how to pay</a>.
 submitted.p6 = We have sent a confirmation email to {0}
+submitted.payLevyLater = You will be able to pay the levy from August 2023.
 
 nilSubmitted.title = Return submitted
 nilSubmitted.heading = Return submitted

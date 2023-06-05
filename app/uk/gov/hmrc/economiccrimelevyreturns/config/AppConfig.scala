@@ -60,4 +60,5 @@ class AppConfig @Inject() (configuration: Configuration, servicesConfig: Service
 
   val emailBaseUrl: String = servicesConfig.baseUrl("email")
 
+  val privateBetaEnabled: Boolean = configuration.get[Boolean]("features.privateBeta.enabled")
 }

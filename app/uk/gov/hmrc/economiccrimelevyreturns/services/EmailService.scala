@@ -18,6 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import play.api.Logging
 import play.api.i18n.Messages
+import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailParameters
@@ -27,7 +28,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: ExecutionContext) extends Logging {
+class EmailService @Inject() (emailConnector: EmailConnector, appConfig: AppConfig)(implicit ec: ExecutionContext)
+    extends Logging {
 
   def sendReturnSubmittedEmail(eclReturn: EclReturn, chargeReference: Option[String])(implicit
     hc: HeaderCarrier,
@@ -64,7 +66,8 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
             fyStartYear = fyStartYear,
             fyEndYear = fyEndYear,
             datePaymentDue = if (chargeReference.isDefined) Some(eclDueDate) else None,
-            amountDue = amountDue
+            amountDue = amountDue,
+            privateBetaEnabled = appConfig.privateBetaEnabled.toString
           )
         )
       case _                                => throw new IllegalStateException("Invalid contact details")

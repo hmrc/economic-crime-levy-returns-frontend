@@ -44,10 +44,15 @@
     <h2 class="govuk-heading-m">@messages("submitted.subHeading")</h2>
 
     <p class="govuk-body">@messages("submitted.p1", submittedWhen, fyStartYear, fyEndYear)</p>
-    <p class="govuk-body">@messages("submitted.p2", dueDate)</p>
+    <p class="govuk-body">@messages("submitted.p2", fyStartYear, fyEndYear, dueDate)</p>
+    @if(appConfig.privateBetaEnabled){
+      <p class="govuk-body">@messages("submitted.payLevyLater")</p>
+    }
     <p class="govuk-body">@Html(messages("submitted.p3", appConfig.eclAccountUrl))</p>
     <p class="govuk-body">@messages("submitted.p4")</p>
-    <p class="govuk-body">@Html(messages("submitted.p5"))</p>
+    @if(!appConfig.privateBetaEnabled){
+        <p class="govuk-body">@Html(messages("submitted.p5"))</p>
+    }
     <p class="govuk-body">@messages("submitted.p6", email)</p>
 
     <p class="govuk-body">@Html(messages("exit.survey", messages("exit.survey.link", appConfig.exitSurveyUrl)))</p>
