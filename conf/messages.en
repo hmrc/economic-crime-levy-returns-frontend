@@ -62,8 +62,9 @@ start.tellUsAbout.b4 = the contact details of the person in your organisation wh
 
 relevantAp12Months.title = Is your relevant accounting period 12 months?
 relevantAp12Months.heading = Is your relevant accounting period 12 months?
-relevantAp12Months.p1 = Your relevant accounting period is the one that ends in the financial year. It is based on the accounting period you use for your Company Tax return.
-relevantAp12Months.p2 = For the purposes of the Economic Crime Levy (ECL), the financial year starts on 1 April and ends on 31 March of the following year.
+relevantAp12Months.p1 = Your relevant accounting period is any that ends in the financial year. It is based on the accounting period you use for your Company Tax return.
+relevantAp12Months.p2 = You may have more than one relevant accounting period ending in the financial year.
+relevantAp12Months.p3 = For the purposes of the Economic Crime Levy (ECL), the financial year starts on 1 April and ends on 31 March of the following year.
 relevantAp12Months.error.required = Select an answer
 
 relevantApLength.title = How long is your relevant accounting period?
