@@ -31,7 +31,7 @@ import scala.concurrent.Future
 class EmailServiceSpec extends SpecBase {
 
   val mockEmailConnector: EmailConnector = mock[EmailConnector]
-  val service                            = new EmailService(mockEmailConnector)
+  val service                            = new EmailService(mockEmailConnector, appConfig)
 
   "sendReturnSubmittedEmail" should {
     "send an email to the contact in the return" in forAll {
@@ -57,7 +57,8 @@ class EmailServiceSpec extends SpecBase {
           fyStartYear = obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
           fyEndYear = obligationDetails.inboundCorrespondenceToDate.getYear.toString,
           datePaymentDue = if (chargeReference.isDefined) Some(eclDueDate) else None,
-          amountDue
+          amountDue,
+          "true"
         )
 
         when(
