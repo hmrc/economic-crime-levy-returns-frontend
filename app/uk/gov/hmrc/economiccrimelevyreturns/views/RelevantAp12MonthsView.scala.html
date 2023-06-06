@@ -19,10 +19,20 @@
         formHelper: FormWithCSRF,
         errorSummary: GovukErrorSummary,
         radios: GovukRadios,
+        govukDetails: GovukDetails,
         button: GovukButton
 )
 
 @(form: Form[Boolean], mode: Mode)(implicit request: Request[_], messages: Messages)
+
+@accPeriod = {
+    <strong>@messages("relevantAp12Months.hidden1")</strong>
+}
+
+@accPeriodDetails = {
+    <p class="govuk-body">@messages("relevantAp12Months.hidden2")</p>
+    <p class="govuk-body">@messages("relevantAp12Months.hidden3")</p>
+}
 
 @layout(pageTitle = titleWithForm(form, messages("relevantAp12Months.title"))) {
     @if(form.errors.nonEmpty) {
@@ -32,6 +42,7 @@
     <h1 class="govuk-heading-l">@messages("relevantAp12Months.heading")</h1>
     <p class="govuk-body">@messages("relevantAp12Months.p1")</p>
     <p class="govuk-body">@messages("relevantAp12Months.p2")</p>
+    <p class="govuk-body">@messages("relevantAp12Months.p3")</p>
 
     @formHelper(action = RelevantAp12MonthsController.onSubmit(mode)) {
         @radios(
@@ -56,6 +67,11 @@
         @button(
             ButtonViewModel(messages("site.saveAndContinue"))
         )
+
+        @govukDetails(Details(
+            summary = HtmlContent(accPeriod),
+            content = HtmlContent(accPeriodDetails)
+        ))
     }
 }
 
