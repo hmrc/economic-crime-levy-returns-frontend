@@ -92,7 +92,8 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
         fyStartYear = obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
         fyEndYear = obligationDetails.inboundCorrespondenceToDate.getYear.toString,
         datePaymentDue = if (chargeReference.isDefined) Some(eclDueDate) else None,
-        amountDue = amountDue
+        amountDue = amountDue,
+        "true"
       )
 
       stubSendReturnSubmittedEmail(
