@@ -27,7 +27,8 @@ final case class ReturnSubmittedEmailParameters(
   fyStartYear: String,
   fyEndYear: String,
   datePaymentDue: Option[String],
-  amountDue: String
+  amountDue: String,
+  privateBetaEnabled: String
 )
 
 object ReturnSubmittedEmailParameters {

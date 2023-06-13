@@ -14,10 +14,13 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+
 @this(
         layout: templates.Layout,
         summaryList: GovukSummaryList,
-        button: GovukButton
+        button: GovukButton,
+        appConfig: AppConfig
 )
 
 @(eclRegistrationReference: String, eclRegistrationDate: String, period: String)(implicit request: Request[_], messages: Messages)
@@ -56,6 +59,10 @@
         <li>@messages("start.tellUsAbout.b3")</li>
         <li>@messages("start.tellUsAbout.b4")</li>
     </ul>
+
+    @if(appConfig.privateBetaEnabled){
+        <p class="govuk-body">@messages("start.payLevyLater")</p>
+    }
 
     @button(
         ButtonViewModel(messages("site.start"))
