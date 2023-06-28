@@ -89,7 +89,7 @@
         <p class="govuk-body">@messages("amountDue.bands.p1")</p>
         <p class="govuk-body">@messages("amountDue.bands.p2")</p>
 
-        @if(calculatedLiability.amountDue.amount == 0) {
+        @if(calculatedLiability.calculatedBand == Small) {
 
             <p class="govuk-body">@messages("amountDue.bands.nil.p1")</p>
             <p class="govuk-body">@messages("amountDue.bands.nil.p2")</p>
