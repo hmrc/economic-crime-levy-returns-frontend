@@ -79,6 +79,13 @@
         <ul class="govuk-list govuk-list--bullet">
             <li>@messages("amountDue.howWeWorkedThisOut.b1")</li>
             <li>@messages("amountDue.howWeWorkedThisOut.b2")</li>
+
+            @if(calculatedLiability.calculatedBand != Small) {
+
+                <li>@messages("amountDue.howWeWorkedThisOut.b3")</li>
+
+            }
+
         </ul>
 
         @summaryList(accountingDetails)
