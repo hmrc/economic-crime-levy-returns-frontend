@@ -95,19 +95,10 @@
         <p class="govuk-body">@messages("amountDue.bands.p1")</p>
         <p class="govuk-body">@messages("amountDue.bands.p2")</p>
 
-        @if(calculatedLiability.calculatedBand == Small) {
+        @if(calculatedLiability.calculatedBand != Small && calculatedLiability.amountDue.apportioned == true) {
 
-            <p class="govuk-body">@messages("amountDue.bands.nil.p1", period)</p>
-            <p class="govuk-body">@messages("amountDue.bands.nil.p2")</p>
-            <p class="govuk-body">@messages("amountDue.bands.nil.p3")</p>
+            <p class="govuk-body">@messages("amountDue.bands.p3")</p>
 
-        } else {
-
-            @if(calculatedLiability.amountDue.apportioned == true) {
-
-                <p class="govuk-body">@messages("amountDue.bands.p3")</p>
-
-            }
         }
 
         @table(Table(
