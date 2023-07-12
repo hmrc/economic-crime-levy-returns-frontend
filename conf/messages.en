@@ -175,6 +175,7 @@ contactEmail.legend = This is the email address of your named contact.
 contactEmail.error.required = Enter an email address
 contactEmail.error.length = Email address must be {0} characters or less
 contactEmail.error.invalid = Enter an email address in the correct format, like name@example.com
+contactEmail.use = We will only use this email address to contact {0} about the Economic Crime Levy.
 
 contactNumber.title = What is {0}''s telephone number?
 contactNumber.heading = What is {0}''s telephone number?
@@ -183,6 +184,7 @@ contactNumber.hint = For international numbers include the country code.
 contactNumber.error.required = Enter a telephone number
 contactNumber.error.length = Telephone number must be {0} characters or less
 contactNumber.error.invalid = Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 808 157 0192
+contactNumber.use = We will only use this telephone number to contact {0} about the Economic Crime Levy.
 
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers
