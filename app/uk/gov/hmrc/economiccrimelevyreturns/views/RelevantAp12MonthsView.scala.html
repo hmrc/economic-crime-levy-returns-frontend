@@ -44,6 +44,14 @@
     <p class="govuk-body">@messages("relevantAp12Months.p2")</p>
     <p class="govuk-body">@messages("relevantAp12Months.p3")</p>
 
+    <h2 class="govuk-heading-m">@messages("relevantAp12Months.ex.heading")</h2>
+
+    <p class="govuk-body">@messages("relevantAp12Months.ex.p1")</p>
+    <p class="govuk-body">@messages("relevantAp12Months.ex.p2")</p>
+    <p class="govuk-body">@messages("relevantAp12Months.ex.p3")</p>
+    <p class="govuk-body">@messages("relevantAp12Months.ex.p4")</p>
+    <p class="govuk-body">@messages("relevantAp12Months.ex.p5")</p>
+
     @formHelper(action = RelevantAp12MonthsController.onSubmit(mode)) {
         @radios(
             RadiosViewModel(
@@ -67,14 +75,6 @@
         @button(
             ButtonViewModel(messages("site.saveAndContinue"))
         )
-
-        <h2 class="govuk-heading-m">@messages("relevantAp12Months.ex.heading")</h2>
-
-        <p class="govuk-body">@messages("relevantAp12Months.ex.p1")</p>
-        <p class="govuk-body">@messages("relevantAp12Months.ex.p2")</p>
-        <p class="govuk-body">@messages("relevantAp12Months.ex.p3")</p>
-        <p class="govuk-body">@messages("relevantAp12Months.ex.p4")</p>
-        <p class="govuk-body">@messages("relevantAp12Months.ex.p5")</p>
 
         @govukDetails(Details(
             summary = HtmlContent(accPeriod),
