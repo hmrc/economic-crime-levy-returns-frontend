@@ -30,9 +30,9 @@
     <h1 class="govuk-heading-l">@messages("alreadySubmittedReturn.heading", fyStartYear, fyEndYear)</h1>
 
     <p class="govuk-body">@messages("alreadySubmittedReturn.p1", fyStartYear, fyEndYear, submittedDate)</p>
-    @if(!appConfig.privateBetaEnabled){
-        <p class="govuk-body">@Html(messages("alreadySubmittedReturn.p2", "#TODO"))</p>
-    }
+@*    @if(appConfig.amendReturnsEnabled){*@
+@*        <p class="govuk-body">@Html(messages("alreadySubmittedReturn.p2", "#TODO"))</p>*@
+@*    }*@
     <p class="govuk-body">@Html(messages("alreadySubmittedReturn.p3", s"${appConfig.eclAccountUrl}/your-ecl-returns"))</p>
 
 }
