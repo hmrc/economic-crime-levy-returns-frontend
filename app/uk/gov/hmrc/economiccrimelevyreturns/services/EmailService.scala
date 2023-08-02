@@ -67,7 +67,8 @@ class EmailService @Inject() (emailConnector: EmailConnector, appConfig: AppConf
             fyEndYear = fyEndYear,
             datePaymentDue = if (chargeReference.isDefined) Some(eclDueDate) else None,
             amountDue = amountDue,
-            privateBetaEnabled = appConfig.privateBetaEnabled.toString
+            // Not changing name of parameter sent to email service
+            privateBetaEnabled = (!appConfig.paymentsEnabled).toString
           )
         )
       case _                                => throw new IllegalStateException("Invalid contact details")

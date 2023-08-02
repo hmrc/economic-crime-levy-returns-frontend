@@ -45,12 +45,12 @@
 
     <p class="govuk-body">@messages("submitted.p1", submittedWhen, fyStartYear, fyEndYear)</p>
     <p class="govuk-body">@messages("submitted.p2", fyStartYear, fyEndYear, dueDate)</p>
-    @if(appConfig.privateBetaEnabled){
+    @if(!appConfig.paymentsEnabled){
         <p class="govuk-body">@messages("submitted.payLevyLater")</p>
     }
     <p class="govuk-body">@Html(messages("submitted.p3", appConfig.eclAccountUrl))</p>
     <p class="govuk-body">@messages("submitted.p4")</p>
-    @if(!appConfig.privateBetaEnabled){
+    @if(appConfig.paymentsEnabled){
         <p class="govuk-body">@Html(messages("submitted.p5"))</p>
     }
     <p class="govuk-body">@messages("submitted.p6", email)</p>

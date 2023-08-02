@@ -62,4 +62,7 @@ class AppConfig @Inject() (configuration: Configuration, servicesConfig: Service
 
   val privateBetaEnabled: Boolean = configuration.get[Boolean]("features.privateBeta.enabled")
 
+  val amendReturnsEnabled: Boolean = configuration.get[Boolean]("features.amendReturnsEnabled")
+
+  val paymentsEnabled: Boolean = configuration.get[Boolean]("features.paymentsEnabled")
 }

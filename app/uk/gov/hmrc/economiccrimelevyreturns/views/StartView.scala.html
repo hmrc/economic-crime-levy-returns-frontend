@@ -61,7 +61,7 @@
         <li>@messages("start.tellUsAbout.b4")</li>
     </ul>
 
-    @if(appConfig.privateBetaEnabled){
+    @if(!appConfig.paymentsEnabled){
         <p class="govuk-body">@messages("start.payLevyLater")</p>
     }
 
