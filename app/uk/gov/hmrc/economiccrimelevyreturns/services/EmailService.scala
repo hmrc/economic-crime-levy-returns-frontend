@@ -67,6 +67,7 @@ class EmailService @Inject() (emailConnector: EmailConnector, appConfig: AppConf
             fyEndYear = fyEndYear,
             datePaymentDue = if (chargeReference.isDefined) Some(eclDueDate) else None,
             amountDue = amountDue,
+            // Not changing name of parameter sent to email service
             privateBetaEnabled = (!appConfig.paymentsEnabled).toString
           )
         )
