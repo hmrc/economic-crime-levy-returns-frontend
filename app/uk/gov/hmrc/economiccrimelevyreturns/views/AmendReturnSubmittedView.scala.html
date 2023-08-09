@@ -1,0 +1,52 @@
+@*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
+@import java.time.LocalDate
+@import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+
+@this(
+        layout: templates.Layout,
+        govukPanel: GovukPanel,
+        appConfig: AppConfig
+)
+
+@(fyStart: LocalDate, fyEnd: LocalDate, confirmationEmail: String)(implicit request: Request[_], messages: Messages)
+
+@layout(
+    pageTitle = title(messages("amend.submitted.title")),
+    showBackLink = false
+) {
+
+
+    @govukPanel(Panel(
+        title = HtmlContent(messages("amend.submitted.heading"))
+    ))
+
+    <p class="govuk-body">@messages("amend.submitted.p1",
+        ViewUtils.formatLocalDate(LocalDate.now()),
+        ViewUtils.formatLocalDate(fyStart).takeRight(4),
+        ViewUtils.formatLocalDate(fyEnd).takeRight(4))</p>
+
+    <p class="govuk-body">@messages("amend.submitted.p2", confirmationEmail)</p>
+    <p class="govuk-body">@Html(messages("amend.submitted.p3", confirmationEmail))</p>
+
+    <h2 class="govuk-heading-m">@messages("amend.submitted.h2")</h2>
+
+    <p class="govuk-body">@(messages("amend.submitted.p4"))</p>
+    <p class="govuk-body">@messages("amend.submitted.p5")</p>
+    <p class="govuk-body">@Html(messages("exit.survey", messages("exit.survey.link", appConfig.exitSurveyUrl)))</p>
+}

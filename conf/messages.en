@@ -62,6 +62,19 @@ start.tellUsAbout.b3 = if you carried out anti-money laundering (AML) regulated 
 start.tellUsAbout.b4 = the contact details of the person in your organisation who is completing this return
 start.payLevyLater = You cannot pay the levy right now. You will be able to do so from August 2023.
 
+start.amend.title = Amend your Economic Crime Levy return for {0} to {1}
+start.amend.h1 = Amend your Economic Crime Levy return for {0} to {1}
+start.amend.table.header = ECL return details
+start.amend.table.returnNumber = ECL return number
+start.amend.p1 = Use this service to amend your Economic Crime Levy (ECL) return for the {0} to {1} financial year.
+start.amend.p2 = You will not be able to use the answers you sent for your original return. You will need to submit all of your answers again, including what you want to amend.
+start.amend.h2 = Before you start
+start.amend.p3 = You need to tell us about:
+start.amend.b1 = your accounting period for your organisation - you may have more than one accounting period ending in this financial year
+start.amend.b2 = your UK revenue during any relevant accounting periods
+start.amend.b3 = if you carried out anti-money laundering (AML) regulated activities in the last financial year
+start.amend.b4 = the contact details of the person in your organisation who is completing this return
+
 relevantAp12Months.title = Is your relevant accounting period 12 months?
 relevantAp12Months.heading = Is your relevant accounting period 12 months?
 relevantAp12Months.p1 = Your relevant accounting period is any that ends in the financial year. It is based on the accounting period you use for your Company Tax Return.
@@ -231,6 +244,15 @@ nilSubmitted.subHeading = What you need to do next
 nilSubmitted.p1 = You have submitted a return for the Economic Crime Levy (ECL) on {0} for the financial year {1}/{2}. You do not need to pay the levy for this financial year.
 nilSubmitted.p2 = You can find information about your return in your <a href="{0}" class="govuk-link">ECL account</a>.
 nilSubmitted.p3 = We have sent a confirmation email to {0}. Please save this for your records.
+
+amend.submitted.title = Economic Crime Levy return amended
+amend.submitted.heading = Economic Crime Levy return amended
+amend.submitted.p1 = You have amended a return for the Economic Crime Levy (ECL) on {0} for the financial year {1} to {2}.
+amend.submitted.p2 = We have sent a confirmation email to {0}. Please save this for your records
+amend.submitted.p3 = You can pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-the-economic-crime-levy">guidance on how to pay</a>
+amend.submitted.h2 = What happens next
+amend.submitted.p4 = We will review your answers. We may contact you using the details you provided if we need any more information. This process will take 15 working days.
+amend.submitted.p5 = We will send you a letter once we've amended your return. You won't be able to view these changes until after you've received this letter.
 
 exit.survey.link = <a href="{0}" class="govuk-link">What did you think of this service?</a>
 exit.survey = {0} (takes 30 seconds) to exit survey.

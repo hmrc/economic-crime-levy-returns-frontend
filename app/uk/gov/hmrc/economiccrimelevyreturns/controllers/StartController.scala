@@ -113,7 +113,9 @@ class StartController @Inject() (
                     .deleteReturn(request.internalId)
                     .map(_ =>
                       eclReturnsConnector.upsertReturn(
-                        EclReturn.empty(request.internalId).copy(obligationDetails = Some(obligationDetails))
+                        EclReturn
+                          .empty(request.internalId, Some(FirstTimeReturn))
+                          .copy(obligationDetails = Some(obligationDetails))
                       )
                     )
                 }

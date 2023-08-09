@@ -22,7 +22,8 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, ValidatedReturnAction}
-import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
+import uk.gov.hmrc.economiccrimelevyreturns.models
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, FirstTimeReturn, SessionKeys, SubmitEclReturnResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.EmailService
@@ -89,24 +90,38 @@ class CheckYourAnswersController @Inject() (
       response <- eclReturnsConnector.submitReturn(request.internalId)
       _         = emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
       _        <- eclReturnsConnector.deleteReturn(request.internalId)
-    } yield Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
-      request.session.clearEclValues ++ response.chargeReference.fold(Seq.empty[(String, String)])(c =>
-        Seq(SessionKeys.ChargeReference -> c)
-      ) ++ Seq(
-        SessionKeys.Email             -> request.eclReturn.contactEmailAddress
-          .getOrElse(throw new IllegalStateException("Contact email address not found in return data")),
-        SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString(),
-        SessionKeys.AmountDue         ->
-          request.eclReturn.calculatedLiability
-            .getOrElse(
-              throw new IllegalStateException("Amount due not found in return data")
-            )
-            .amountDue
-            .amount
-            .toString()
-      )
-    )
+    } yield getRedirectionRoute(request, response)
   }
+
+  private def getRedirectionRoute(request: ReturnDataRequest[AnyContent], response: SubmitEclReturnResponse) =
+    request.eclReturn.returnType.getOrElse(throw new IllegalStateException("Return type is missing in session")) match {
+      case FirstTimeReturn =>
+        Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
+          request.session.clearEclValues ++ response.chargeReference.fold(Seq.empty[(String, String)])(c =>
+            Seq(SessionKeys.ChargeReference -> c)
+          ) ++ Seq(
+            SessionKeys.Email             -> request.eclReturn.contactEmailAddress
+              .getOrElse(throw new IllegalStateException("Contact email address not found in return data")),
+            SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString(),
+            SessionKeys.AmountDue         ->
+              request.eclReturn.calculatedLiability
+                .getOrElse(
+                  throw new IllegalStateException("Amount due not found in return data")
+                )
+                .amountDue
+                .amount
+                .toString()
+          )
+        )
+      case AmendReturn     =>
+        Redirect(routes.AmendReturnSubmittedController.onPageLoad()).withSession(
+          request.session.clearEclValues ++ Seq(
+            SessionKeys.Email             -> request.eclReturn.contactEmailAddress
+              .getOrElse(throw new IllegalStateException("Contact email address not found in return data")),
+            SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString()
+          )
+        )
+    }
 
   private def base64EncodeHtmlView(html: String): String = Base64.getEncoder
     .encodeToString(html.getBytes)

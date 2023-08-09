@@ -4,6 +4,7 @@
 
 GET         /                                                             uk.gov.hmrc.economiccrimelevyreturns.controllers.StartController.start()
 GET         /period/:periodKey                                            uk.gov.hmrc.economiccrimelevyreturns.controllers.StartController.onPageLoad(periodKey)
+GET         /amend/:periodKey/:returnNumber                               uk.gov.hmrc.economiccrimelevyreturns.controllers.StartAmendController.onPageLoad(periodKey, returnNumber)
 
 GET         /is-relevant-accounting-period-12-months                      uk.gov.hmrc.economiccrimelevyreturns.controllers.RelevantAp12MonthsController.onPageLoad(mode: Mode = NormalMode)
 POST        /is-relevant-accounting-period-12-months                      uk.gov.hmrc.economiccrimelevyreturns.controllers.RelevantAp12MonthsController.onSubmit(mode: Mode = NormalMode)
@@ -67,6 +68,7 @@ GET         /check-your-answers                                           uk.gov
 POST        /check-your-answers                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onSubmit()
 
 GET         /confirmation                                                 uk.gov.hmrc.economiccrimelevyreturns.controllers.ReturnSubmittedController.onPageLoad()
+GET         /amend/confirmation                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.AmendReturnSubmittedController.onPageLoad()
 
 GET         /account/sign-out-survey                                      uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOut()
 GET         /account/sign-out                                             uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOutNoSurvey()
