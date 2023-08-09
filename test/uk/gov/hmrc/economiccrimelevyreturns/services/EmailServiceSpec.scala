@@ -84,7 +84,7 @@ class EmailServiceSpec extends SpecBase {
     "throw an IllegalStateException when there are no obligation details in the return data" in forAll {
       (internalId: String, chargeReference: Option[String]) =>
         val result = intercept[IllegalStateException] {
-          await(service.sendReturnSubmittedEmail(EclReturn.empty(internalId), chargeReference)(hc, messages))
+          await(service.sendReturnSubmittedEmail(EclReturn.empty(internalId, None), chargeReference)(hc, messages))
         }
 
         result.getMessage shouldBe "No obligation details found in return data"
@@ -101,7 +101,7 @@ class EmailServiceSpec extends SpecBase {
           await(
             service.sendReturnSubmittedEmail(
               EclReturn
-                .empty(internalId)
+                .empty(internalId, None)
                 .copy(obligationDetails = Some(obligationDetails), calculatedLiability = Some(calculatedLiability)),
               chargeReference
             )(hc, messages)

@@ -22,7 +22,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, ObligationDetails}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn, ObligationDetails}
 
 import java.time.{Instant, LocalDate}
 import scala.math.BigDecimal.RoundingMode
@@ -102,7 +102,7 @@ trait EclTestData { self: Generators =>
       internalId                               = alphaNumericString
     } yield ValidEclReturn(
       EclReturn
-        .empty(internalId = internalId)
+        .empty(internalId = internalId, Some(FirstTimeReturn))
         .copy(
           relevantAp12Months = Some(relevantAp12Months),
           relevantApLength = if (relevantAp12Months) None else Some(relevantApLength),
@@ -130,6 +130,7 @@ trait EclTestData { self: Generators =>
 
   val testInternalId: String               = alphaNumericString
   val testEclRegistrationReference: String = alphaNumericString
+  val testChargeReference: String          = alphaNumericString
   val UkRevenueThreshold: Long             = 10200000L
   val validPeriodKey: String               = arbPeriodKey.arbitrary.sample.get.periodKey
 

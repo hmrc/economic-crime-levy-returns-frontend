@@ -65,9 +65,10 @@ class StartControllerSpec extends SpecBase {
 
         when(mockEclAccountConnector.getObligations()(any())).thenReturn(Future.successful(Some(obligationData)))
 
-        val returnWithObligationDetails = EclReturn.empty(internalId).copy(obligationDetails = Some(openObligation))
+        val returnWithObligationDetails =
+          EclReturn.empty(internalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(openObligation))
 
-        when(mockEclReturnsService.getOrCreateReturn(any())(any(), any()))
+        when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
           .thenReturn(Future.successful(returnWithObligationDetails))
 
         val result: Future[Result] = controller.start()(fakeRequest)
@@ -78,9 +79,9 @@ class StartControllerSpec extends SpecBase {
     }
 
     "show the choose return period view if the return data does not contain any obligation details" in {
-      val returnWithoutObligationDetails = EclReturn.empty(internalId)
+      val returnWithoutObligationDetails = EclReturn.empty(internalId, Some(FirstTimeReturn))
 
-      when(mockEclReturnsService.getOrCreateReturn(any())(any(), any()))
+      when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
         .thenReturn(Future.successful(returnWithoutObligationDetails))
 
       val result: Future[Result] = controller.start()(fakeRequest)
@@ -106,10 +107,11 @@ class StartControllerSpec extends SpecBase {
 
           when(mockEclAccountConnector.getObligations()(any())).thenReturn(Future.successful(Some(obligationData)))
 
-          when(mockEclReturnsService.getOrCreateReturn(any())(any(), any()))
-            .thenReturn(Future.successful(EclReturn.empty(internalId)))
+          when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
+            .thenReturn(Future.successful(EclReturn.empty(internalId, Some(FirstTimeReturn))))
 
-          val updatedReturn = EclReturn.empty(internalId).copy(obligationDetails = Some(openObligation))
+          val updatedReturn =
+            EclReturn.empty(internalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(openObligation))
 
           when(
             mockEclReturnsConnector.upsertReturn(
@@ -144,12 +146,15 @@ class StartControllerSpec extends SpecBase {
           when(mockEclAccountConnector.getObligations()(any())).thenReturn(Future.successful(Some(obligationData)))
 
           val existingReturnWithDifferentPeriodKey =
-            EclReturn.empty(internalId).copy(obligationDetails = Some(openObligation.copy(periodKey = "P2")))
+            EclReturn
+              .empty(internalId, Some(FirstTimeReturn))
+              .copy(obligationDetails = Some(openObligation.copy(periodKey = "P2")))
 
-          when(mockEclReturnsService.getOrCreateReturn(any())(any(), any()))
+          when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
             .thenReturn(Future.successful(existingReturnWithDifferentPeriodKey))
 
-          val updatedReturn = EclReturn.empty(internalId).copy(obligationDetails = Some(openObligation))
+          val updatedReturn =
+            EclReturn.empty(internalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(openObligation))
 
           when(mockEclReturnsConnector.deleteReturn(any())(any())).thenReturn(Future.successful(()))
 

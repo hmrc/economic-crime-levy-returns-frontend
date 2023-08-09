@@ -34,7 +34,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
     "response with 200 status and the choose return period view if no obligation details are held in the return data" in {
       stubAuthorised()
 
-      stubGetReturn(EclReturn.empty(testInternalId))
+      stubGetReturn(EclReturn.empty(testInternalId, Some(FirstTimeReturn)))
 
       val result = callRoute(FakeRequest(routes.StartController.start()))
 
@@ -47,7 +47,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
 
       val obligationDetails = random[ObligationDetails]
 
-      stubGetReturn(EclReturn.empty(testInternalId).copy(obligationDetails = Some(obligationDetails)))
+      stubGetReturn(EclReturn.empty(testInternalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(obligationDetails)))
 
       val result = callRoute(FakeRequest(routes.StartController.start()))
 
@@ -70,7 +70,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
       )
 
       val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
-      val emptyReturn    = EclReturn.empty(testInternalId)
+      val emptyReturn    = EclReturn.empty(testInternalId, Some(FirstTimeReturn))
 
       val eclRegistrationReference = random[String]
       val eclRegistrationDate      = "20230901"
@@ -117,7 +117,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
       )
 
       val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
-      val emptyReturn    = EclReturn.empty(testInternalId)
+      val emptyReturn    = EclReturn.empty(testInternalId, Some(FirstTimeReturn))
 
       val eclRegistrationReference = random[String]
       val eclRegistrationDate      = "20230901"
