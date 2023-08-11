@@ -51,23 +51,25 @@
 
 
     <p class="govuk-body">
-        @messages("start.amend.p1", ViewUtils.formatLocalDate(dateFrom).takeRight(4), ViewUtils.formatLocalDate(dateTo).takeRight(4))
+    @messages("start.amend.p1", ViewUtils.formatLocalDate(dateFrom).takeRight(4), ViewUtils.formatLocalDate(dateTo).takeRight(4))
     </p>
 
     <p class="govuk-body">
-        @messages("start.amend.p2")
+    @messages("start.amend.p2")
     </p>
 
-  <h2 class="govuk-heading-m"> @messages("start.amend.h2")</h2>
+    <h2 class="govuk-heading-m"> @messages("start.amend.h2")</h2>
 
-  <p class="govuk-body">@messages("start.amend.p3")</p>
+    <p class="govuk-body">@messages("start.amend.p3")</p>
 
-  <ul class="govuk-list govuk-list--bullet">
-    <li>@messages("start.amend.b1")</li>
-    <li>@messages("start.amend.b2")</li>
-    <li>@messages("start.amend.b3")</li>
-    <li>@messages("start.amend.b4")</li>
-  </ul>
+    <ul class="govuk-list govuk-list--bullet">
+        <li>@messages("start.amend.b1")</li>
+        <li>@messages("start.amend.b2")</li>
+        <li>@messages("start.amend.b3")</li>
+        <li>@messages("start.amend.b4")</li>
+    </ul>
+
+    <p class="govuk-body">@messages("start.amend.p4")</p>
 
     @button(
         ButtonViewModel(messages("site.start"))
