@@ -17,13 +17,13 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import com.google.inject.Inject
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, ValidatedReturnAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, FirstTimeReturn, SessionKeys, SubmitEclReturnResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, FirstTimeReturn, SessionKeys, SubmitEclReturnResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.EmailService
@@ -31,6 +31,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import java.util.Base64
@@ -88,10 +89,19 @@ class CheckYourAnswersController @Inject() (
                     request.eclReturn.copy(base64EncodedNrsSubmissionHtml = Some(base64EncodedHtmlView))
                   )
       response <- eclReturnsConnector.submitReturn(request.internalId)
-      _         = emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
+      _         = sendConfirmationMail(request.eclReturn, response)
       _        <- eclReturnsConnector.deleteReturn(request.internalId)
     } yield getRedirectionRoute(request, response)
   }
+
+  private def sendConfirmationMail(eclReturn: EclReturn, response: SubmitEclReturnResponse)(implicit
+    messages: Messages,
+    hc: HeaderCarrier
+  ) =
+    eclReturn.returnType.getOrElse("Return type is missing in session") match {
+      case FirstTimeReturn => emailService.sendReturnSubmittedEmail(eclReturn, response.chargeReference)
+      case AmendReturn     => emailService.sendAmendReturnConfirmationEmail(eclReturn)
+    }
 
   private def getRedirectionRoute(request: ReturnDataRequest[AnyContent], response: SubmitEclReturnResponse) =
     request.eclReturn.returnType.getOrElse(throw new IllegalStateException("Return type is missing in session")) match {

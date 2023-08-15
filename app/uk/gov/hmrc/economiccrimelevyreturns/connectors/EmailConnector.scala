@@ -17,8 +17,9 @@
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+import uk.gov.hmrc.economiccrimelevyreturns.models.email.AmendReturnSubmittedRequest.AmendReturnTemplateId
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailRequest._
-import uk.gov.hmrc.economiccrimelevyreturns.models.email.{ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
+import uk.gov.hmrc.economiccrimelevyreturns.models.email._
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 
@@ -53,4 +54,20 @@ class EmailConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(im
         case Right(_) => ()
       }
 
+  def sendAmendReturnSubmittedEmail(to: String, parameters: AmendReturnSubmittedParameters)(implicit
+    hc: HeaderCarrier
+  ): Future[Unit] =
+    httpClient
+      .POST[AmendReturnSubmittedRequest, Either[UpstreamErrorResponse, HttpResponse]](
+        sendEmailUrl,
+        AmendReturnSubmittedRequest(
+          to = Seq(to),
+          templateId = AmendReturnTemplateId,
+          parameters = parameters
+        )
+      )
+      .map {
+        case Left(e)  => throw e
+        case Right(_) => ()
+      }
 }

@@ -20,8 +20,8 @@ import play.api.Logging
 import play.api.i18n.Messages
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
-import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailParameters
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, ObligationDetails}
+import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedParameters, ReturnSubmittedEmailParameters}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -75,6 +75,32 @@ class EmailService @Inject() (emailConnector: EmailConnector, appConfig: AppConf
     }).recover { case e: Throwable =>
       logger.error(s"Failed to send email: ${e.getMessage}")
       throw e
+    }
+  }
+
+  def sendAmendReturnConfirmationEmail(eclReturn: EclReturn)(implicit
+    hc: HeaderCarrier,
+    messages: Messages
+  ): Future[Unit] = {
+    val obligationDetails: ObligationDetails = eclReturn.obligationDetails.getOrElse(
+      throw new IllegalStateException("No obligation details found in return data")
+    )
+    val dateSubmitted                        = ViewUtils.formatToday(translate = false)
+    val periodStartDate                      = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate)
+    val periodToDate                         = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate)
+
+    (eclReturn.contactName, eclReturn.contactEmailAddress) match {
+      case (Some(name), Some(emailAddress)) =>
+        emailConnector.sendAmendReturnSubmittedEmail(
+          emailAddress,
+          AmendReturnSubmittedParameters(
+            name = name,
+            dateSubmitted = dateSubmitted,
+            periodStartDate = periodStartDate,
+            periodEndDate = periodToDate
+          )
+        )
+      case _                                => throw new IllegalStateException("Invalid contact details")
     }
   }
 }
