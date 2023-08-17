@@ -216,6 +216,7 @@ checkYourAnswers.amlRegulatedActivityLength.label = AML-regulated activity lengt
 checkYourAnswers.amlRegulatedActivityLength.days = days
 checkYourAnswers.band.label = Band
 checkYourAnswers.amountDue.label = Amount due
+checkYourAnswers.organisationDetails = Organisation details
 checkYourAnswers.contactDetails = Contact details
 checkYourAnswers.contactName.label = Return completed by
 checkYourAnswers.contactRole.label = Role
@@ -317,3 +318,6 @@ band.Small.defaultRange = Less than £10.2 million
 band.Medium.defaultRange = £10.2 million to £36 million
 band.Large.defaultRange = £36 million to £1 billion
 band.VeryLarge.defaultRange = £1 billion or more
+
+otherRegistration.pdfHtml.title = Application to Register for the Economic Crime Levy
+otherRegistration.pdfHtml.submissionDate = Submission date: {0}

@@ -29,10 +29,12 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.EmailService
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
+import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
+import java.time.LocalDate
 import java.util.Base64
 import javax.inject.Singleton
 import scala.concurrent.ExecutionContext
@@ -45,6 +47,7 @@ class CheckYourAnswersController @Inject() (
   validateReturnData: ValidatedReturnAction,
   eclReturnsConnector: EclReturnsConnector,
   emailService: EmailService,
+  amendReturnPdfView: AmendReturnPdfView,
   val controllerComponents: MessagesControllerComponents,
   view: CheckYourAnswersView
 )(implicit ec: ExecutionContext)
@@ -83,9 +86,14 @@ class CheckYourAnswersController @Inject() (
 
     val base64EncodedHtmlView: String = base64EncodeHtmlView(htmlView.body)
 
+    val base64EncodedDmsSubmissionHtml = request.eclReturn.returnType.flatMap {
+      case AmendReturn => Some(createAndEncodeHtmlForPdf())
+      case FirstTimeReturn => None
+    }
     for {
       _        <- eclReturnsConnector.upsertReturn(eclReturn =
-                    request.eclReturn.copy(base64EncodedNrsSubmissionHtml = Some(base64EncodedHtmlView))
+                    request.eclReturn.copy(base64EncodedNrsSubmissionHtml = Some(base64EncodedHtmlView),
+                      base64EncodedDmsSubmissionHtml = base64EncodedDmsSubmissionHtml)
                   )
       response <- eclReturnsConnector.submitReturn(request.internalId)
       _         = emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
@@ -125,4 +133,17 @@ class CheckYourAnswersController @Inject() (
 
   private def base64EncodeHtmlView(html: String): String = Base64.getEncoder
     .encodeToString(html.getBytes)
+
+  private def createAndEncodeHtmlForPdf()(implicit request: ReturnDataRequest[_]): String = {
+    val date = LocalDate.now
+    val organisation = eclDetails()
+    val contact = contactDetails()
+    base64EncodeHtmlView(
+      amendReturnPdfView(
+        ViewUtils.formatLocalDate(date),
+        organisation.copy(rows = organisation.rows.map(_.copy(actions = None))),
+        contact.copy(rows = contact.rows.map(_.copy(actions = None)))
+      ).toString()
+    )
+  }
 }
