@@ -1,0 +1,106 @@
+@*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@this()
+
+@(title: String)(content: Html)(implicit messages: Messages)
+
+<html>
+    <head>
+        <style>
+                body {
+                    margin: 0;
+                    font-family: Arial, sans-serif;
+                    font-size: 16px;
+                }
+
+                h1 {
+                    font-size: 36pt;
+                    letter-spacing: 0.04em;
+                }
+
+                h2 {
+                    font-size: 24pt;
+                }
+
+                h3 {
+                    font-size: 1em;
+                }
+
+                div {
+                    display: block;
+                }
+
+                .govuk-summary-list {
+                    font-family: Arial, sans-serif;
+                    font-weight: 400;
+                    font-size: 16px;
+                    color: #0b0c0c;
+                    margin: 0 0 20px;
+                    display: table;
+                    table-layout: fixed;
+                    border-collapse: collapse;
+                    padding-bottom: 20px;
+                }
+
+                .govuk-summary-list__row {
+                    border-bottom: 1px solid #b1b4b6;
+                    border-collapse: collapse;
+                    display: table-row;
+                }
+
+                .govuk-summary-list__key {
+                    display: table-cell;
+                    border-collapse: collapse;
+                    width: 300px;
+                    font-weight: 700;
+                    margin-bottom: 5px;
+                    padding-top: 10px;
+                    padding-right: 20px;
+                    padding-bottom: 10px;
+                    padding-left: 0;
+                    vertical-align: middle;
+                    border-bottom: 1px solid #b1b4b6;
+                }
+
+                .govuk-summary-list__value {
+                    display: table-cell;
+                    border-collapse: collapse;
+                    width: 300px;
+                    margin-bottom: 15px;
+                    margin-left: 300px;
+                    padding-top: 10px;
+                    padding-right: 20px;
+                    padding-bottom: 10px;
+                    padding-left: 20px;
+                    vertical-align: middle;
+                    border-bottom: 1px solid #b1b4b6;
+                }
+        </style>
+
+        <title>@title</title>
+
+        <meta name="subject" content="@title"/>
+    </head>
+
+    <body>
+        <div>
+            <h1>@title</h1>
+
+            @content
+        </div>
+    </body>
+</html>

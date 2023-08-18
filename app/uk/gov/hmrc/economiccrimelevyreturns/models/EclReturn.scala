@@ -55,6 +55,7 @@ final case class EclReturn(
   contactTelephoneNumber: Option[String],
   obligationDetails: Option[ObligationDetails],
   base64EncodedNrsSubmissionHtml: Option[String],
+  base64EncodedDmsSubmissionHtml: Option[String],
   returnType: Option[ReturnType]
 )
 
@@ -73,6 +74,7 @@ object EclReturn {
     contactTelephoneNumber = None,
     obligationDetails = None,
     base64EncodedNrsSubmissionHtml = None,
+    base64EncodedDmsSubmissionHtml = None,
     returnType = returnType
   )
 

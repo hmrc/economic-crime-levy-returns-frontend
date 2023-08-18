@@ -32,14 +32,15 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SessionKeys, Subm
 import uk.gov.hmrc.economiccrimelevyreturns.services.EmailService
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.CheckYourAnswersView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 
 import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec extends SpecBase {
 
-  val view: CheckYourAnswersView = app.injector.instanceOf[CheckYourAnswersView]
+  val view: CheckYourAnswersView        = app.injector.instanceOf[CheckYourAnswersView]
+  val pdfReturnView: AmendReturnPdfView = app.injector.instanceOf[AmendReturnPdfView]
 
   val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
   val mockEmailService: EmailService               = mock[EmailService]
@@ -52,6 +53,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       new FakeValidatedReturnAction(eclReturnData),
       mockEclReturnsConnector,
       mockEmailService,
+      pdfReturnView,
       mcc,
       view
     )
