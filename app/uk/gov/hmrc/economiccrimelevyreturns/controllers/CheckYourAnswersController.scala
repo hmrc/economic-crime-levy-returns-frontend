@@ -87,13 +87,15 @@ class CheckYourAnswersController @Inject() (
     val base64EncodedHtmlView: String = base64EncodeHtmlView(htmlView.body)
 
     val base64EncodedDmsSubmissionHtml = request.eclReturn.returnType.flatMap {
-      case AmendReturn => Some(createAndEncodeHtmlForPdf())
+      case AmendReturn     => Some(createAndEncodeHtmlForPdf())
       case FirstTimeReturn => None
     }
     for {
       _        <- eclReturnsConnector.upsertReturn(eclReturn =
-                    request.eclReturn.copy(base64EncodedNrsSubmissionHtml = Some(base64EncodedHtmlView),
-                      base64EncodedDmsSubmissionHtml = base64EncodedDmsSubmissionHtml)
+                    request.eclReturn.copy(
+                      base64EncodedNrsSubmissionHtml = Some(base64EncodedHtmlView),
+                      base64EncodedDmsSubmissionHtml = base64EncodedDmsSubmissionHtml
+                    )
                   )
       response <- eclReturnsConnector.submitReturn(request.internalId)
       _         = emailService.sendReturnSubmittedEmail(request.eclReturn, response.chargeReference)
@@ -135,9 +137,9 @@ class CheckYourAnswersController @Inject() (
     .encodeToString(html.getBytes)
 
   private def createAndEncodeHtmlForPdf()(implicit request: ReturnDataRequest[_]): String = {
-    val date = LocalDate.now
+    val date         = LocalDate.now
     val organisation = eclDetails()
-    val contact = contactDetails()
+    val contact      = contactDetails()
     base64EncodeHtmlView(
       amendReturnPdfView(
         ViewUtils.formatLocalDate(date),
