@@ -280,7 +280,8 @@ alreadySubmittedReturn.title = You have already submitted a return for the {0}-{
 alreadySubmittedReturn.heading = You have already submitted a return for the {0}-{1} financial year
 alreadySubmittedReturn.p1 = You submitted a return for the {0}-{1} financial year on {2}.
 alreadySubmittedReturn.p2 = You can <a href="{0}" class="govuk-link">amend this return</a>
-alreadySubmittedReturn.p3 = Go to your <a href="{0}" class="govuk-link">returns history</a> in your Economic Crime Levy account if you want to submit a return for another financial year.
+alreadySubmittedReturn.p3.v1 = Go to your <a href="{0}" class="govuk-link">returns history</a> in your Economic Crime Levy account if you want to submit a return for another financial year.
+alreadySubmittedReturn.p3.v2 = Go to your <a href="{0}" class="govuk-link">returns history</a> in your Economic Crime Levy account if you want to submit a return for another financial year or amend a submitted return.
 
 noObligationForPeriod.title = You cannot submit a return for this financial year
 noObligationForPeriod.heading = You cannot submit a return for this financial year
