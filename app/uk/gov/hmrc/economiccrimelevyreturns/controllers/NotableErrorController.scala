@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AgentCannotSubmitReturnView, AnswersAreInvalidView, NotRegisteredView}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AgentCannotSubmitReturnView, AnswersAreInvalidView}
 import uk.gov.hmrc.http.HttpVerbs.GET
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -35,7 +35,6 @@ class NotableErrorController @Inject() (
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
   answersAreInvalidView: AnswersAreInvalidView,
-  notRegisteredView: NotRegisteredView,
   agentCannotSubmitReturnView: AgentCannotSubmitReturnView,
   appConfig: AppConfig
 ) extends FrontendBaseController
