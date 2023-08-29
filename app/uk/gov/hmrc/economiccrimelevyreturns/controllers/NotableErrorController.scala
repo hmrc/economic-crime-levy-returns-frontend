@@ -17,12 +17,17 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.Results.Redirect
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AgentCannotSubmitReturnView, AnswersAreInvalidView, NotRegisteredView}
+import uk.gov.hmrc.http.HttpVerbs.GET
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.Future
 
 @Singleton
 class NotableErrorController @Inject() (
@@ -31,7 +36,8 @@ class NotableErrorController @Inject() (
   getReturnData: DataRetrievalAction,
   answersAreInvalidView: AnswersAreInvalidView,
   notRegisteredView: NotRegisteredView,
-  agentCannotSubmitReturnView: AgentCannotSubmitReturnView
+  agentCannotSubmitReturnView: AgentCannotSubmitReturnView,
+  appConfig: AppConfig
 ) extends FrontendBaseController
     with I18nSupport {
 
@@ -40,7 +46,7 @@ class NotableErrorController @Inject() (
   }
 
   def notRegistered: Action[AnyContent] = Action { implicit request =>
-    Ok(notRegisteredView())
+    Redirect(Call(GET, s"${appConfig.eclEnrolmentBaseUrl}/add-economic-crime-levy/do-you-have-an-ecl-reference-number"))
   }
 
   def agentCannotSubmitReturn: Action[AnyContent] = Action { implicit request =>
