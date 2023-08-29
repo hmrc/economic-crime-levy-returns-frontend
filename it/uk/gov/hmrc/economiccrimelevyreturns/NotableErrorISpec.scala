@@ -26,7 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 
 class NotableErrorISpec extends ISpecBase with AuthorisedBehaviour {
 
-  s"GET ${routes.NotableErrorController.answersAreInvalid().url}" should {
+  s"GET ${routes.NotableErrorController.answersAreInvalid().url}"       should {
     behave like authorisedActionRoute(routes.NotableErrorController.answersAreInvalid())
 
     "respond with 200 status and the answers are invalid HTML view" in {
@@ -43,18 +43,17 @@ class NotableErrorISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"GET ${routes.NotableErrorController.notRegistered().url}"     should {
-    "respond with 200 status and the not registered HTML view" in {
+  s"GET ${routes.NotableErrorController.notRegistered().url}"           should {
+    "respond with 303 status" in {
       stubAuthorised()
 
       val result = callRoute(FakeRequest(routes.NotableErrorController.notRegistered()))
 
-      status(result) shouldBe OK
-      html(result)     should include("You must register for the Economic Crime Levy")
+      status(result) shouldBe SEE_OTHER
     }
   }
 
-  s"GET ${routes.NotableErrorController.agentCannotSubmitReturn().url}"     should {
+  s"GET ${routes.NotableErrorController.agentCannotSubmitReturn().url}" should {
     "respond with 200 status and the agent cannot submit return HTML view" in {
       stubAuthorised()
 
