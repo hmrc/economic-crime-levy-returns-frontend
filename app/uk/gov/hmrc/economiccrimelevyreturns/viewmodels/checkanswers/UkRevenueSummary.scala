@@ -33,7 +33,7 @@ object UkRevenueSummary {
     request.eclReturn.relevantApRevenue.map { answer =>
       SummaryListRowViewModel(
         key = Key("checkYourAnswers.ukRevenue.label"),
-        value = ValueViewModel(HtmlContent(HtmlFormat.raw(s"&#163;${ViewUtils.formatNumber(answer)}"))),
+        value = ValueViewModel(HtmlContent(HtmlFormat.escape(s"£${ViewUtils.formatMoney(answer)}"))),
         actions = Seq(
           ActionItemViewModel("site.change", routes.UkRevenueController.onPageLoad(CheckMode).url)
             .withVisuallyHiddenText(
