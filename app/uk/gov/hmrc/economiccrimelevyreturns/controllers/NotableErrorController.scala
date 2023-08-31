@@ -42,7 +42,7 @@ class NotableErrorController @Inject() (
   }
 
   def notRegistered: Action[AnyContent] = Action { implicit request =>
-    Redirect(Call(GET, s"${appConfig.eclEnrolmentBaseUrl}/add-economic-crime-levy/do-you-have-an-ecl-reference-number"))
+    Redirect(Call(GET, appConfig.claimUrl))
   }
 
   def agentCannotSubmitReturn: Action[AnyContent] = Action { implicit request =>
