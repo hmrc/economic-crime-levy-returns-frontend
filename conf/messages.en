@@ -320,5 +320,5 @@ band.Medium.defaultRange = £10.2 million to £36 million
 band.Large.defaultRange = £36 million to £1 billion
 band.VeryLarge.defaultRange = £1 billion or more
 
-otherRegistration.pdfHtml.title = Application to Amend return for the Economic Crime Levy
+otherRegistration.pdfHtml.title = Application to amend return for the Economic Crime Levy
 otherRegistration.pdfHtml.submissionDate = Submission date: {0}
