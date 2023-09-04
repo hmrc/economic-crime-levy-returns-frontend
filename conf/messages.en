@@ -235,7 +235,7 @@ submitted.p1 = You have submitted a return for the Economic Crime Levy (ECL) on 
 submitted.p2 = You must pay the levy for the {0}/{1} financial year by {2}. You will not receive an email or notification from HMRC to remind you to make a payment.
 submitted.p3 = Your ECL return number must be used as a payment reference when you pay the levy. You will also be able to find your return number in your <a href="{0}" class="govuk-link">ECL account</a>.
 submitted.p4 = You will be charged interest if you make a late payment.
-submitted.p5 = You can pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-the-economic-crime-levy" class="govuk-link">guidance on how to pay</a>.
+submitted.p5 = You can pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">guidance on how to pay</a>.
 submitted.p6 = We have sent a confirmation email to {0}
 submitted.payLevyLater = You will be able to pay the levy from August 2023.
 
@@ -251,7 +251,7 @@ amend.submitted.title = Economic Crime Levy return amended
 amend.submitted.heading = Economic Crime Levy return amended
 amend.submitted.p1 = You have amended a return for the Economic Crime Levy (ECL) on {0} for the financial year {1} to {2}.
 amend.submitted.p2 = We have sent a confirmation email to {0}. Please save this for your records
-amend.submitted.p3 = You can pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-the-economic-crime-levy">guidance on how to pay</a>
+amend.submitted.p3 = You can pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy">guidance on how to pay</a>
 amend.submitted.h2 = What happens next
 amend.submitted.p4 = We will review your answers. We may contact you using the details you provided if we need any more information. This process will take 15 working days.
 amend.submitted.p5 = We will send you a letter once we''ve amended your return. You won''t be able to view these changes until after you''ve received this letter.
