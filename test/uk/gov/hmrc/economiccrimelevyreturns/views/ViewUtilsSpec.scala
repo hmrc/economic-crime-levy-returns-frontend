@@ -18,8 +18,10 @@ package uk.gov.hmrc.economiccrimelevyreturns.views
 
 import play.api.data.Form
 import play.api.data.Forms.{single, text}
+import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, Open}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 
 import java.time.{Instant, LocalDate}
 
@@ -89,11 +91,11 @@ class ViewUtilsSpec extends SpecBase {
 
   "formatMoney" should {
     "correctly format a monetary amount that includes pence" in {
-      ViewUtils.formatMoney(123456789.5) shouldBe "£123,456,789.50"
+      s"£${ViewUtils.formatMoney(123456789.5)}" shouldBe "£123,456,789.5"
     }
 
     "correctly format a monetary amount that does not include pence" in {
-      ViewUtils.formatMoney(123456789.0) shouldBe "£123,456,789"
+      s"£${ViewUtils.formatMoney(123456789.0)}" shouldBe "£123,456,789"
     }
   }
 
