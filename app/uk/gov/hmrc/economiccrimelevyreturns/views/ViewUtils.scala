@@ -63,7 +63,7 @@ object ViewUtils {
 
   def formatMoney(amount: Number): String = {
     val formatter = NumberFormat.getNumberInstance(Locale.UK)
-    formatter.format(amount)
+    s"£${formatter.format(amount)}"
   }
 
   def formatObligationPeriodYears(obligationDetails: ObligationDetails): String =
