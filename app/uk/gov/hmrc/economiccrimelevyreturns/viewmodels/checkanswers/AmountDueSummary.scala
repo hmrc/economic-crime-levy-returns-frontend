@@ -32,7 +32,7 @@ object AmountDueSummary {
       SummaryListRowViewModel(
         key = Key("checkYourAnswers.amountDue.label"),
         value = ValueViewModel(
-          HtmlContent(HtmlFormat.raw(s"£${ViewUtils.formatMoney(calculatedLiability.amountDue.amount)}"))
+          HtmlContent(HtmlFormat.raw(ViewUtils.formatMoney(calculatedLiability.amountDue.amount)))
         )
       )
     }
