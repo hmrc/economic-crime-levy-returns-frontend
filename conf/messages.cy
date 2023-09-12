@@ -12,7 +12,7 @@ start.amend.b1 = eich cyfnod cyfrifyddu ar gyfer eich sefydliad - efallai y bydd
 start.amend.b2 = eich refeniw yn y DU yn ystod unrhyw gyfnodau cyfrifyddu perthnasol
 start.amend.b3 = os ydych wedi cyflawni gweithgareddau a reoleiddir gan reoliadau gwrth-wyngalchu arian (AML) yn ystod y flwyddyn ariannol ddiwethaf
 start.amend.b4 = manylion cyswllt y person yn eich sefydliad sy’n llenwi’r datganiad hwn
-start.amend.p4 =
+start.amend.p4 = Ar ôl i chi wneud cais i ddiwygio’ch datganiad, byddwn yn adolygu’ch atebion. Bydd y broses hon yn cymryd hyd at 15 diwrnod gwaith.
 
 amend.submitted.title = Datganiad Ardoll Troseddau Economaidd wedi’i diwygio
 amend.submitted.heading = Datganiad Ardoll Troseddau Economaidd wedi’i diwygio
