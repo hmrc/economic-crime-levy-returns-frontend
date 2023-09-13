@@ -107,7 +107,9 @@ class StartController @Inject() (
               _         <- {
                 val optPeriodKey = eclReturn.obligationDetails.map(_.periodKey)
                 if (optPeriodKey.contains(periodKey) || optPeriodKey.isEmpty) {
-                  eclReturnsConnector.upsertReturn(eclReturn.copy(obligationDetails = Some(obligationDetails), returnType = Some(FirstTimeReturn)))
+                  eclReturnsConnector.upsertReturn(
+                    eclReturn.copy(obligationDetails = Some(obligationDetails), returnType = Some(FirstTimeReturn))
+                  )
                 } else {
                   eclReturnsConnector
                     .deleteReturn(request.internalId)
