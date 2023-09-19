@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import play.api.Logging
-import play.api.http.Status.{NO_CONTENT, OK}
+import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
@@ -30,13 +30,16 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext)
-    extends Logging {
+    extends Logging
+    with BaseConnector {
 
   private val eclReturnsUrl: String = s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns"
 
-  def getReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Option[EclReturn]] =
-    httpClient.GET[Option[EclReturn]](
-      s"$eclReturnsUrl/returns/$internalId"
+  def getReturn(internalId: String)(implicit hc: HeaderCarrier): Future[EclReturn] =
+    executeAndDeserialise[EclReturn](
+      httpClient.GET[HttpResponse](
+        s"$eclReturnsUrl/returns/$internalId"
+      )
     )
 
   def upsertReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): Future[EclReturn] =
@@ -66,21 +69,17 @@ class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClien
 
   def getReturnValidationErrors(
     internalId: String
-  )(implicit hc: HeaderCarrier): Future[Option[DataValidationErrors]] =
+  )(implicit hc: HeaderCarrier): Future[Option[Unit]] =
     httpClient
-      .GET[Either[UpstreamErrorResponse, HttpResponse]](
+      .GET[HttpResponse](
         s"$eclReturnsUrl/returns/$internalId/validation-errors"
       )
-      .map {
-        case Right(httpResponse) =>
-          httpResponse.status match {
-            case NO_CONTENT => None
-            case OK         =>
-              logger.warn(s"Data validation errors:\n${Json.prettyPrint(httpResponse.json)}")
-              Some(httpResponse.json.as[DataValidationErrors])
-            case s          => throw new HttpException(s"Unexpected response with HTTP status $s", s)
-          }
-        case Left(e)             => throw e
+      .map { httpResponse =>
+        httpResponse.status match {
+          case OK          => None
+          case BAD_REQUEST => Some(())
+          case status      => throw new HttpException(s"Unexpected response with HTTP status $status", status)
+        }
       }
 
   def submitReturn(internalId: String)(implicit hc: HeaderCarrier): Future[SubmitEclReturnResponse] =

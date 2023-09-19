@@ -2,7 +2,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.base
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.http.Status.{NO_CONTENT, OK}
+import play.api.http.Status.{BAD_REQUEST, NO_CONTENT, OK}
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
@@ -44,10 +44,10 @@ trait EclReturnsStubs { self: WireMockStubs =>
       get(urlEqualTo(s"/economic-crime-levy-returns/returns/$testInternalId/validation-errors")),
       if (valid) {
         aResponse()
-          .withStatus(NO_CONTENT)
+          .withStatus(OK)
       } else {
         aResponse()
-          .withStatus(OK)
+          .withStatus(BAD_REQUEST)
           .withBody(Json.toJson(errors).toString())
       }
     )
