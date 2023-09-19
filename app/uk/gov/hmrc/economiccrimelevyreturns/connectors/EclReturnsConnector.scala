@@ -69,7 +69,7 @@ class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClien
 
   def getReturnValidationErrors(
     internalId: String
-  )(implicit hc: HeaderCarrier): Future[Option[DataValidationErrors]] =
+  )(implicit hc: HeaderCarrier): Future[Option[Unit]] =
     httpClient
       .GET[HttpResponse](
         s"$eclReturnsUrl/returns/$internalId/validation-errors"
@@ -77,9 +77,7 @@ class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClien
       .map { httpResponse =>
         httpResponse.status match {
           case OK          => None
-          case BAD_REQUEST =>
-            logger.warn(s"Data validation errors:\n${Json.prettyPrint(httpResponse.json)}")
-            Some(httpResponse.json.as[DataValidationErrors])
+          case BAD_REQUEST => Some(())
           case status      => throw new HttpException(s"Unexpected response with HTTP status $status", status)
         }
       }

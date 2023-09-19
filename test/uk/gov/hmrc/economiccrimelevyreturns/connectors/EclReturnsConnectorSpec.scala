@@ -127,7 +127,7 @@ class EclReturnsConnectorSpec extends SpecBase {
       result shouldBe None
     }
 
-    "return validation errors when the http client return 400 bad request with validation errors" in forAll {
+    "return option of Unit when the http client return 400 bad request with validation errors" in forAll {
       (internalId: String, dataValidationErrors: DataValidationErrors) =>
         val expectedUrl = s"$eclReturnsUrl/returns/$internalId/validation-errors"
 
@@ -144,7 +144,7 @@ class EclReturnsConnectorSpec extends SpecBase {
 
         val result = await(connector.getReturnValidationErrors(internalId))
 
-        result shouldBe Some(dataValidationErrors)
+        result shouldBe Some(())
     }
 
     "throw a HttpException when an unexpected http status is returned by the http client" in forAll {
