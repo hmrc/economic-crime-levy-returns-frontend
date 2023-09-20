@@ -65,7 +65,7 @@ class StartAmendControllerSpec extends SpecBase {
           when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
             .thenReturn(Future.successful(EclReturn.empty(internalId = internalId, returnType = Some(AmendReturn))))
 
-          when(mockEclReturnsService.upsertEclReturn(any(), any())(any()))
+          when(mockEclReturnsService.upsertEclReturnType(any(), any())(any()))
             .thenReturn(Future.successful(EclReturn.empty(internalId = internalId, returnType = Some(AmendReturn))))
 
           when(mockEclReturnsConnector.upsertReturn(any())(any()))
@@ -83,7 +83,7 @@ class StartAmendControllerSpec extends SpecBase {
           )(fakeRequest, messages).toString()
 
           verify(mockEclReturnsService, times(1))
-            .upsertEclReturn(any(), any())(any())
+            .upsertEclReturnType(any(), any())(any())
 
           reset(mockEclReturnsService)
       }

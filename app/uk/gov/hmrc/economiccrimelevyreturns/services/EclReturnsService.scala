@@ -52,7 +52,7 @@ class EclReturnsService @Inject() (eclReturnsConnector: EclReturnsConnector, aud
       }
     }
 
-  def upsertEclReturn(internalId: String, returnType: ReturnType)(implicit hc: HeaderCarrier): Future[EclReturn] =
+  def upsertEclReturnType(internalId: String, returnType: ReturnType)(implicit hc: HeaderCarrier): Future[EclReturn] =
     for {
       eclReturn        <- eclReturnsConnector.getReturn(internalId)
       updatedEclReturn <- eclReturnsConnector.upsertReturn(eclReturn.copy(returnType = Some(returnType)))

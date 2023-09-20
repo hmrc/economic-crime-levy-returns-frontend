@@ -75,7 +75,7 @@ class EclReturnsServiceSpec extends SpecBase {
           .thenReturn(Future.successful(updatedEclReturn))
 
         val result =
-          await(service.upsertEclReturn(internalId, AmendReturn)(hc))
+          await(service.upsertEclReturnType(internalId, AmendReturn)(hc))
         result shouldBe updatedEclReturn
 
         verify(mockEclReturnsConnector, times(1))
