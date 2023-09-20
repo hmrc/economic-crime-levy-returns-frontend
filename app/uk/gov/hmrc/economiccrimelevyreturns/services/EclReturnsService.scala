@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
+import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, ReturnType}
 import uk.gov.hmrc.economiccrimelevyreturns.models.audit.ReturnStartedEvent
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import javax.inject.{Inject, Singleton}
@@ -35,21 +36,19 @@ class EclReturnsService @Inject() (eclReturnsConnector: EclReturnsConnector, aud
     internalId: String,
     returnType: Option[ReturnType] = None
   )(implicit hc: HeaderCarrier, request: AuthorisedRequest[_]): Future[EclReturn] =
-    eclReturnsConnector.getReturn(internalId).flatMap {
-      case Some(eclReturn) => Future.successful(eclReturn)
-      case None            =>
-        auditConnector
-          .sendExtendedEvent(
-            ReturnStartedEvent(
-              internalId,
-              request.eclRegistrationReference,
-              returnType = returnType.getOrElse(FirstTimeReturn)
-            ).extendedDataEvent
-          )
+    eclReturnsConnector.getReturn(internalId).recoverWith { case UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
+      auditConnector
+        .sendExtendedEvent(
+          ReturnStartedEvent(
+            internalId,
+            request.eclRegistrationReference,
+            returnType = returnType.getOrElse(FirstTimeReturn)
+          ).extendedDataEvent
+        )
 
-        returnType match {
-          case None        => eclReturnsConnector.upsertReturn(EclReturn.empty(internalId, Some(FirstTimeReturn)))
-          case Some(value) => eclReturnsConnector.upsertReturn(EclReturn.empty(internalId, Some(value)))
-        }
+      returnType match {
+        case None        => eclReturnsConnector.upsertReturn(EclReturn.empty(internalId, Some(FirstTimeReturn)))
+        case Some(value) => eclReturnsConnector.upsertReturn(EclReturn.empty(internalId, Some(value)))
+      }
     }
 }

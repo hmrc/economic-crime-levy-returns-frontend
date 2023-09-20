@@ -17,11 +17,13 @@
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import org.mockito.ArgumentMatchers.any
+import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.Future
@@ -35,7 +37,7 @@ class EclReturnsServiceSpec extends SpecBase {
     "return a created ecl return when one does not exist" in forAll {
       (internalId: String, eclReturn: EclReturn, eclReference: String) =>
         when(mockEclReturnsConnector.getReturn(any())(any()))
-          .thenReturn(Future.successful(None))
+          .thenReturn(Future.failed(UpstreamErrorResponse.apply("Not found", NOT_FOUND)))
 
         when(mockEclReturnsConnector.upsertReturn(any())(any()))
           .thenReturn(Future.successful(eclReturn))
@@ -53,7 +55,7 @@ class EclReturnsServiceSpec extends SpecBase {
 
     "return an existing ecl return" in forAll { (internalId: String, eclReturn: EclReturn, eclReference: String) =>
       when(mockEclReturnsConnector.getReturn(any())(any()))
-        .thenReturn(Future.successful(Some(eclReturn)))
+        .thenReturn(Future.successful(eclReturn))
 
       val result =
         await(service.getOrCreateReturn(internalId)(hc, AuthorisedRequest(fakeRequest, internalId, eclReference)))
