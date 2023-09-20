@@ -46,6 +46,7 @@ class StartAmendController @Inject() (
     for {
       obligationData          <- eclAccountConnector.getObligations()
       eitherObligationDetails <- validatePeriodKey(obligationData, periodKey)
+      _                        = eclReturnsService.upsertEclReturn(request.internalId, AmendReturn)
     } yield eitherObligationDetails match {
       case Right(value) =>
         Ok(view(returnNumber, value.inboundCorrespondenceFromDate, value.inboundCorrespondenceToDate))

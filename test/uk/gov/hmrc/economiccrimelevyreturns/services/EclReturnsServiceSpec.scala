@@ -21,7 +21,7 @@ import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -60,6 +60,29 @@ class EclReturnsServiceSpec extends SpecBase {
       val result =
         await(service.getOrCreateReturn(internalId)(hc, AuthorisedRequest(fakeRequest, internalId, eclReference)))
       result shouldBe eclReturn
+    }
+
+    "return an updated ecl return and verify number of calls" in forAll {
+      (internalId: String, eclReturn: EclReturn, eclReference: String) =>
+        reset(mockEclReturnsConnector)
+
+        when(mockEclReturnsConnector.getReturn(any())(any()))
+          .thenReturn(Future.successful(eclReturn))
+
+        val updatedEclReturn = eclReturn.copy(returnType = Some(AmendReturn))
+
+        when(mockEclReturnsConnector.upsertReturn(any())(any()))
+          .thenReturn(Future.successful(updatedEclReturn))
+
+        val result =
+          await(service.upsertEclReturn(internalId, AmendReturn)(hc))
+        result shouldBe updatedEclReturn
+
+        verify(mockEclReturnsConnector, times(1))
+          .getReturn(any())(any())
+
+        verify(mockEclReturnsConnector, times(1))
+          .upsertReturn(any())(any())
     }
   }
 }

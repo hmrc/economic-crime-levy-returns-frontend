@@ -65,6 +65,9 @@ class StartAmendControllerSpec extends SpecBase {
           when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
             .thenReturn(Future.successful(EclReturn.empty(internalId = internalId, returnType = Some(AmendReturn))))
 
+          when(mockEclReturnsService.upsertEclReturn(any(), any())(any()))
+            .thenReturn(Future.successful(EclReturn.empty(internalId = internalId, returnType = Some(AmendReturn))))
+
           when(mockEclReturnsConnector.upsertReturn(any())(any()))
             .thenReturn(Future.successful(updatedReturn))
 
@@ -79,6 +82,10 @@ class StartAmendControllerSpec extends SpecBase {
             openObligation.inboundCorrespondenceToDate
           )(fakeRequest, messages).toString()
 
+          verify(mockEclReturnsService, times(1))
+            .upsertEclReturn(any(), any())(any())
+
+          reset(mockEclReturnsService)
       }
     "return No Obligation view when there is no obligation returned" in forAll {
       (periodKey: String, returnNumber: String) =>
