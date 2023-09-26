@@ -1,50 +1,50 @@
 service.name = Cyflwyno’ch datganiad Ardoll Troseddau Economaidd
 
-site.back =
-site.remove =
-site.change =
+site.back = Yn ôl
+site.remove = Tynnu
+site.change = Newid
 site.no = Na
 site.yes = Iawn
-site.continue =
+site.continue = Yn eich blaen
 site.saveAndContinue = Cadw ac yn eich blaen
 site.start = Dechrau nawr
-site.startAgain =
-site.signIn =
+site.startAgain = Dechrau eto
+site.signIn = Mewngofnodi
 site.govuk = GOV.UK
 
-date.day =
-date.month =
-date.year =
+date.day = Diwrnod
+date.month = Mis
+date.year = Blwyddyn
 
-timeout.title =
-timeout.message =
-timeout.keepAlive =
-timeout.signOut =
+timeout.title = Rydych ar fin cael eich allgofnodi
+timeout.message = Am resymau diogelwch, cewch eich allgofnodi o’r gwasanaeth hwn ymhen
+timeout.keepAlive = Parhau i fod wedi’ch mewngofnodi
+timeout.signOut = Allgofnodi
 
-error.browser.title.prefix =
-error.boolean =
-error.invalid_date =
-error.date.day_blank =
-error.date.day_invalid =
-error.date.month_blank =
-error.date.month_invalid =
-error.date.year_blank =
-error.date.year_invalid =
-error.integer =
-error.non_numeric =
-error.number =
-error.required =
-error.summary.title =
-error.problemWithService.title =
-error.problemWithService.heading =
-error.problemWithService.message =
+error.browser.title.prefix = Gwall:
+error.boolean = Rhowch ateb
+error.invalid_date = Rhowch ddyddiad cywir
+error.date.day_blank = Nodwch ddiwrnod
+error.date.day_invalid = Rhowch ddiwrnod cywir gan ddefnyddio’r rhifau 1 i 31
+error.date.month_blank = Nodwch fis
+error.date.month_invalid = Rhowch fis cywir gan ddefnyddio’r rhifau 1 i 12
+error.date.year_blank = Nodwch flwyddyn
+error.date.year_invalid = Rhowch flwyddyn gywir
+error.integer = Rhowch ateb mewn rhifau cyfan
+error.non_numeric = Rhowch werth gan ddefnyddio rhifau yn unig
+error.number = Nodwch rif dilys
+error.required = Nodwch werth
+error.summary.title = Mae problem wedi codi
+error.problemWithService.title = Mae’n ddrwg gennym, ond mae problem gyda’r gwasanaeth – Ardoll Troseddau Economaidd – GOV.UK
+error.problemWithService.heading = Mae’n ddrwg gennym, ond mae problem gyda’r gwasanaeth
+error.problemWithService.message = Rhowch gynnig arall arni yn nes ymlaen.
 
-answersAreInvalid.title =
-answersAreInvalid.heading =
-answersAreInvalid.p1 =
-answersAreInvalid.p2 =
-answersAreInvalid.p3 =
-answersAreInvalid.button =
+answersAreInvalid.title = Nid yw’r atebion a roddwyd gennych yn ddilys
+answersAreInvalid.heading = Nid yw’r atebion a roddwyd gennych yn ddilys
+answersAreInvalid.p1 = Nid yw’r atebion a roddwyd gennych yn ddilys neu maen nhw’n anghyflawn.
+answersAreInvalid.p2 = Gallai hyn fod wedi digwydd oherwydd i chi greu nod tudalen ar gyfer URL yn y daith a cheisio dod yn ôl ato ar ôl 30 diwrnod.
+answersAreInvalid.p3 = Bydd angen i chi gyflwyno’ch atebion eto.
+answersAreInvalid.button = Cyflwyno datganiad Ardoll Troseddau Economaidd
 
 start.title = Cyflwyno’ch datganiad Ardoll Troseddau Economaidd ar gyfer {0}
 start.heading = Cyflwyno’ch datganiad Ardoll Troseddau Economaidd ar gyfer {0}
@@ -60,13 +60,13 @@ start.tellUsAbout.b1 = eich cyfnod cyfrifyddu ar gyfer eich sefydliad - efallai 
 start.tellUsAbout.b2 = eich refeniw yn y DU yn ystod unrhyw gyfnodau cyfrifyddu perthnasol
 start.tellUsAbout.b3 = os ydych wedi cynnal gweithgareddau a reoleiddir gan reoliadau gwrth-wyngalchu arian (AML) yn ystod y flwyddyn ariannol ddiwethaf
 start.tellUsAbout.b4 = manylion cyswllt y person yn eich sefydliad sy’n llenwi’r datganiad hwn
-start.payLevyLater =
+start.payLevyLater = Ni allwch dalu’r ardoll ar hyn o bryd. Byddwch yn gallu gwneud hynny o fis Awst 2023.
 
-start.amend.title = Diwygio’ch datganiad Ardoll Troseddau Economaidd ar gyfer {0} | {1}
-start.amend.h1 = Diwygio’ch datganiad Ardoll Troseddau Economaidd ar gyfer {0} | {1}
+start.amend.title = Diwygio’ch datganiad Ardoll Troseddau Economaidd ar gyfer {0} i {1}
+start.amend.h1 = Diwygio’ch datganiad Ardoll Troseddau Economaidd ar gyfer {0} i {1}
 start.amend.table.header = Manylion datganiad ECL
 start.amend.table.returnNumber = Rhif datganiad ECL
-start.amend.p1 = Defnyddiwch y gwasanaeth hwn i ddiwygio’ch datganiad Ardoll Troseddau Economaidd (ECL) ar gyfer blwyddyn ariannol {0} | {1}.
+start.amend.p1 = Defnyddiwch y gwasanaeth hwn i ddiwygio’ch datganiad Ardoll Troseddau Economaidd (ECL) ar gyfer blwyddyn ariannol 20XX i 20XX.
 start.amend.p2 = Ni fyddwch yn gallu defnyddio’r atebion gwnaethoch eu hanfon ar gyfer eich datganiad gwreiddiol. Bydd angen i chi cyflwyno’ch atebion i gyd eto, yn cynnwys yr hyn yr ydych am ei ddiwygio.
 start.amend.h2 = Cyn i chi ddechrau
 start.amend.p3 = Mae’n rhaid i chi roi gwybod i ni am:
@@ -103,10 +103,10 @@ relevantApLength.ex.p1 = Eich cyfnod cyfrifyddu perthnasol yw 9 mis. Mae’n dec
 relevantApLength.ex.p2 = Mae’r cyfnod cyfrifyddu hwn yn dod i ben yn ystod y flwyddyn ariannol ar gyfer yr ECL. Mae’r flwyddyn hon yn dechrau ar 1 Ebrill ac yn dod i ben ar 31 Mawrth y flwyddyn ganlynol.
 relevantApLength.ex.p3 = Rheoleiddir eich busnes at ddibenion gwrth-wyngalchu arian (AML) drwy gydol eich cyfnod cyfrifyddu perthnasol cyfan. Eich refeniw am y cyfnod cyfrifyddu hwn yw £20 miliwn.
 relevantApLength.ex.p4 = Ar sail yr enghraifft hon, bydd eich busnes yn agored i dalu’r ardoll ar gyfer y flwyddyn ariannol hon. Canolig yw maint eich band.
-relevantApLength.error.required =
-relevantApLength.error.wholeNumber =
-relevantApLength.error.nonNumeric =
-relevantApLength.error.outOfRange =
+relevantApLength.error.required = Nodwch yr hyd
+relevantApLength.error.wholeNumber = Mae’n rhaid i’r hyd fod yn rhif cyfan
+relevantApLength.error.nonNumeric = Mae’n rhaid i’r hyd fod yn rhif cyfan
+relevantApLength.error.outOfRange = Mae’n rhaid i’r hyd fod rhwng {0} a {1} o ddiwrnodau
 
 ukRevenue.title = Beth oedd eich refeniw yn y DU ar gyfer y cyfnod cyfrifyddu perthnasol?
 ukRevenue.heading = Beth oedd eich refeniw yn y DU ar gyfer y cyfnod cyfrifyddu perthnasol?
@@ -121,24 +121,24 @@ ukRevenue.turnover.details.p1 = Mae’ch trosiant yn seiliedig ar yr arian yr yd
 ukRevenue.turnover.details.b1 = gostyngiadau masnachol
 ukRevenue.turnover.details.b2 = treth ar werth (TAW)
 ukRevenue.turnover.details.b3 = unrhyw drethi eraill sy’n seiliedig ar eich trosiant
-ukRevenue.hint =
-ukRevenue.error.required =
-ukRevenue.error.wholeNumber =
-ukRevenue.error.nonNumeric =
-ukRevenue.error.outOfRange =
+ukRevenue.hint = Nodwch y swm mewn punnoedd, wedi’i dalgrynnu i lawr i’r bunt agosaf
+ukRevenue.error.required = Nodwch y refeniw yn y DU
+ukRevenue.error.wholeNumber = Mae’n rhaid i’r refeniw yn y DU fod yn rhif wedi’i dalgrynnu i lawr i’r bunt agosaf
+ukRevenue.error.nonNumeric = Mae’n rhaid i’r refeniw yn y DU fod yn rhif wedi’i dalgrynnu i lawr i’r bunt agosaf
+ukRevenue.error.outOfRange = Mae’n rhaid i’r refeniw yn y DU fod rhwng {0} a {1}
 
 amlRegulatedActivity.title = A wnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML ar gyfer y flwyddyn ariannol gyfan?
 amlRegulatedActivity.heading = A wnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML ar gyfer y flwyddyn ariannol gyfan?
-amlRegulatedActivity.p1 =At ddibenion yr Ardoll Troseddau Economaidd (ECL), mae blwyddyn ariannol y DU yn dechrau ar 1 Ebrill ac yn dod i ben ar 31 Mawrth y flwyddyn ganlynol.
+amlRegulatedActivity.p1 = At ddibenion yr Ardoll Troseddau Economaidd (ECL), mae blwyddyn ariannol y DU yn dechrau ar 1 Ebrill ac yn dod i ben ar 31 Mawrth y flwyddyn ganlynol.
 amlRegulatedActivity.error.required = Dewisoch os gwnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML yn ystod y flwyddyn ariannol
 
 amlRegulatedActivityLength.title = Sawl diwrnod o’r flwyddyn ariannol gwnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML?
 amlRegulatedActivityLength.heading = Sawl diwrnod o’r flwyddyn ariannol gwnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML?
 amlRegulatedActivityLength.p1 = Nodwch gyfanswm nifer y diwrnodau y gwnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML yn ystod y flwyddyn ariannol.
-amlRegulatedActivityLength.error.required =
-amlRegulatedActivityLength.error.wholeNumber =
-amlRegulatedActivityLength.error.nonNumeric =
-amlRegulatedActivityLength.error.outOfRange =
+amlRegulatedActivityLength.error.required = Nodwch nifer y diwrnodau y gwnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML
+amlRegulatedActivityLength.error.wholeNumber = Mae’n rhaid i’r hyd fod yn rhif cyfan
+amlRegulatedActivityLength.error.nonNumeric = Mae’n rhaid i’r hyd fod yn rhif cyfan
+amlRegulatedActivityLength.error.outOfRange = Mae’n rhaid i’r hyd fod rhwng {0} a {1} o ddiwrnodau
 
 amountDue.title = Swm yr Ardoll Troseddau Economaidd sydd angen i chi ei thalu
 amountDue.heading = Swm yr Ardoll Troseddau Economaidd sydd angen i chi ei thalu
@@ -175,23 +175,23 @@ contactName.legend.p1 = Nodwch enw llawn y person sy’n llenwi’r datganiad hw
 contactName.hint = Er enghraifft, ‘John Jones’ neu ‘Laura Smith’.
 contactName.error.required = Nodwch enw llawn
 contactName.error.invalid = Mae’n rhaid i’r enw llawn gynnwys y llythrennau a i z, a chymeriadau arbennig megis cysylltnodau, bylchau, a chollnodau yn unig
-contactName.error.length =
+contactName.error.length = Mae’n rhaid i’r enw llawn fod yn {0} o gymeriadau neu lai
 
 contactRole.title = Beth yw ei {0}''s rôl yn eich sefydliad?
 contactRole.heading = Beth yw ei {0}''s rôl yn eich sefydliad?
-contactRole.legend =
+contactRole.legend = Rhowch fanylion i ni am ei rôl yn eich sefydliad.
 contactRole.hint = Er enghraifft, ''Swyddog cydymffurfiad''.
 contactRole.error.required = Nodwch rôl
 contactRole.error.invalid = Mae’n rhaid i’r rôl gynnwys y llythrennau a i z, a chymeriadau arbennig megis cysylltnodau, bylchau, a chollnodau yn unig
-contactRole.error.length =
+contactRole.error.length = Mae’n rhaid i’r rôl fod yn {0} o gymeriadau neu lai
 
 contactEmail.title = Beth yw gyfeiriad e-bost {0}?
 contactEmail.heading = Beth yw gyfeiriad e-bost {0}?
 contactEmail.legend = Hwn yw cyfeiriad e-bost y cyswllt a enwir.
 contactEmail.error.required = Nodwch gyfeiriad e-bost
-contactEmail.error.length =
+contactEmail.error.length = Mae’n rhaid i’r cyfeiriad e-bost fod yn {0} o gymeriadau neu lai
 contactEmail.error.invalid = Nodwch gyfeiriad e-bost yn y fformat cywir, megis enw@enghraifft.com
-contactEmail.use =
+contactEmail.use = Byddwn ond yn defnyddio’r cyfeiriad e-bost hwn i gysylltu â’ch cyswllt ynghylch yr Ardoll Troseddau Economaidd.
 
 contactNumber.title = Beth yw rhif ffôn {0}?
 contactNumber.heading = Beth yw rhif ffôn {0}?
@@ -199,9 +199,9 @@ contactNumber.label = Rhif ffôn
 contactNumber.legend = Dyma rif ffôn eich cyswllt a enwir.
 contactNumber.hint = Ar gyfer rhifau rhyngwladol, cofiwch gynnwys cod y wlad
 contactNumber.error.required = Nodwch rif ffôn
-contactNumber.error.length =
-contactNumber.error.invalid =
-contactNumber.use =
+contactNumber.error.length = Mae’n rhaid i’r rhif ffôn fod yn {0} o gymeriadau neu lai
+contactNumber.error.invalid = Nodwch rif ffôn, megis 01632 960 001, 07700 900 982 neu +44 808 157 0192
+contactNumber.use = Byddwn ond yn defnyddio’r rhif ffôn hwn i gysylltu â’ch cyswllt ynghylch yr Ardoll Troseddau Economaidd.
 
 checkYourAnswers.title = Gwirio’ch atebion
 checkYourAnswers.heading = Gwirio’ch atebion
@@ -214,13 +214,13 @@ checkYourAnswers.ukRevenue.label = Refeniw yn y DU
 checkYourAnswers.amlRegulatedActivity.label = Wedi cynnal gweithgareddau a reoleiddir gan reoliadau AML ar gyfer blwyddyn ariannol gyfan
 checkYourAnswers.amlRegulatedActivityLength.label =
 checkYourAnswers.amlRegulatedActivityLength.days =
-checkYourAnswers.band.label =
-checkYourAnswers.amountDue.label =
+checkYourAnswers.band.label = Band
+checkYourAnswers.amountDue.label = Swm sy’n ddyledus
 checkYourAnswers.organisationDetails = Manylion ECL
-checkYourAnswers.contactDetails =
+checkYourAnswers.contactDetails = Manylion cyswllt
 checkYourAnswers.contactName.label = Datganiad wedi ei lenwi gan
 checkYourAnswers.contactRole.label = Rôl
-checkYourAnswers.contactEmail.label =
+checkYourAnswers.contactEmail.label = Cyfeiriad e-bost
 checkYourAnswers.contactNumber.label = Rhif ffôn
 checkYourAnswers.nowSend = Cyflwynwch eich datganiad nawr
 checkYourAnswers.bySubmitting = Drwy gyflwyno’r datganiad hwn, rydych yn cadarnhau, hyd eithaf eich gwybodaeth, fod y manylion a rowch yn gywir.
@@ -237,7 +237,7 @@ submitted.p3 = Mae’n rhaid defnyddio’ch rhif ECL fel cyfeirnod talu pan ydyc
 submitted.p4 = Codir llog arnoch os ydych yn talu’n hwyr.
 submitted.p5 = Gallwch dalu’r ardoll drwy ddarllen yr <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">arweiniad ar sut i dalu</a>.
 submitted.p6 = Rydym wedi anfon e-bost cadarnhau i (enw@e-bost.com)
-submitted.payLevyLater =
+submitted.payLevyLater = Byddwch yn gallu talu’r ardoll o fis Awst ymlaen.
 
 nilSubmitted.title = Datganiad wedi’i gyflwyno
 nilSubmitted.heading = Datganiad wedi’i gyflwyno
@@ -259,51 +259,51 @@ amend.submitted.p5 = Byddwn yn anfon llythyr atoch ar ôl i ni ddiwygio’ch dat
 exit.survey.link = <a href="{0}" class="govuk-link">Beth oedd eich barn am y gwasanaeth hwn?</a>
 exit.survey = {0} (mae’n cymryd 30 eiliad) i adael yr arolwg.
 
-signedOut.title =
-signedOut.heading =
-signedOut.guidance =
+signedOut.title = Er eich diogelwch, gwnaethom eich allgofnodi
+signedOut.heading = Er eich diogelwch, gwnaethom eich allgofnodi
+signedOut.guidance = Ni wnaethom gadw’ch atebion.
 
-notRegistered.title =
-notRegistered.heading =
-notRegistered.body1 =
-notRegistered.body2 =
-notRegistered.body3 =
+notRegistered.title = Mae’n rhaid i chi gofrestru ar gyfer yr Ardoll Troseddau Economaidd cyn i chi gyflwyno datganiad - Ardoll Troseddau Economaidd - GOV.UK
+notRegistered.heading = Mae’n rhaid i chi gofrestru ar gyfer yr Ardoll Troseddau Economaidd cyn i chi allu cyflwyno datganiad
+notRegistered.body1 = Ni allwch gyflwyno datganiad Ardoll Troseddau Economaidd (ECL).
+notRegistered.body2 = Gall hyn fod oherwydd nad ydych wedi cofrestru ar gyfer yr Ardoll Troseddau Economaidd.
+notRegistered.body3 = Os ydych eisoes wedi cofrestru ac wedi cael cyfeirnod ECL, bydd angen i chi ychwanegu’r ardoll i’ch cyfrif treth busnes.
 
-agentCannotSubmitReturn.title =
-agentCannotSubmitReturn.heading =
-agentCannotSubmitReturn.p1 =
-agentCannotSubmitReturn.p2 =
-agentCannotSubmitReturn.p3 =
-agentCannotSubmitReturn.p3.link =
+agentCannotSubmitReturn.title = Ni allwch ddefnyddio’r gwasanaeth hwn i gyflwyno datganiad Ardoll Troseddau Economaidd
+agentCannotSubmitReturn.heading = Ni allwch ddefnyddio’r gwasanaeth hwn i gyflwyno datganiad Ardoll Troseddau Economaidd
+agentCannotSubmitReturn.p1 = Ni all asiantau gyflwyno datganiad Ardoll Troseddau Economaidd (ECL) ar ran cleient.
+agentCannotSubmitReturn.p2 = Mae’n rhaid i’ch cleient gyflwyno datganiad drwy ddefnyddio’i Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth.
+agentCannotSubmitReturn.p3 = Ewch i’ch {0}.
+agentCannotSubmitReturn.p3.link = <a href="https://www.gov.uk/guidance/sign-in-to-your-agent-services-account" class="govuk-link">cyfrif gwasanaethau asiant</a>
 
-alreadySubmittedReturn.title =
-alreadySubmittedReturn.heading =
-alreadySubmittedReturn.p1 =
-alreadySubmittedReturn.p2 =
-alreadySubmittedReturn.p3.v1 =
-alreadySubmittedReturn.p3.v2 =
+alreadySubmittedReturn.title = Rydych eisoes wedi cyflwyno datganiad ar gyfer y {0}-{1} flwyddyn ariannol
+alreadySubmittedReturn.heading = Rydych eisoes wedi cyflwyno datganiad ar gyfer y {0}-{1} flwyddyn ariannol
+alreadySubmittedReturn.p1 = Gwnaethoch gyflwyno datganiad ar gyfer y {0}-{1} flwyddyn ariannol ar {2}.
+alreadySubmittedReturn.p2 = Gallwch <a href="{0}" class="govuk-link">ddiwygio’r datganiad hwn</a>
+alreadySubmittedReturn.p3.v1 = Ewch i <a href="{0}" class="govuk-link">hanes eich datganiadau</a> yn eich cyfrif Ardoll Troseddau Economaidd os ydych am gyflwyno datganiad ar gyfer blwyddyn ariannol arall.
+alreadySubmittedReturn.p3.v2 = Ewch i <a href="{0}" class="govuk-link">hanes eich datganiadau</a> yn eich cyfrif Ardoll Troseddau Economaidd os ydych am gyflwyno datganiad ar gyfer blwyddyn ariannol arall neu ddiwygio datganiad a gyflwynwyd.
 
-noObligationForPeriod.title =
-noObligationForPeriod.heading =
-noObligationForPeriod.p1 =
+noObligationForPeriod.title = Ni allwch gyflwyno datganiad ar gyfer y flwyddyn ariannol hon
+noObligationForPeriod.heading = Ni allwch gyflwyno datganiad ar gyfer y flwyddyn ariannol hon
+noObligationForPeriod.p1 = Ni allwch gyflwyno datganiad ar gyfer y flwyddyn ariannol hon ar hyn o bryd.
 
-choosePeriod.title =
-choosePeriod.heading =
-choosePeriod.p1 =
-choosePeriod.p2 =
+choosePeriod.title = Mae angen i chi ddewis blwyddyn ariannol cyn i chi gyflwyno datganiad
+choosePeriod.heading = Mae angen i chi ddewis blwyddyn ariannol cyn i chi gyflwyno datganiad
+choosePeriod.p1 = Mae angen i chi ddewis pa flwyddyn ariannol yr ydych am gyflwyno datganiad ar ei chyfer.
+choosePeriod.p2 = Ewch i <a href="{0}" class="govuk-link">hanes eich datganiadau</a> yn eich cyfrif Ardoll Troseddau Economaidd i gyflwyno datganiad ar gyfer blwyddyn ariannol arall.
 
-date.month.1 =
-date.month.2 =
-date.month.3 =
-date.month.4 =
-date.month.5 =
-date.month.6 =
-date.month.7 =
-date.month.8 =
-date.month.9 =
-date.month.10 =
-date.month.11 =
-date.month.12 =
+date.month.1 = Ionawr
+date.month.2 = Chwefror
+date.month.3 = Mawrth
+date.month.4 = Ebrill
+date.month.5 = Mai
+date.month.6 = Mehefin
+date.month.7 = Gorffennaf
+date.month.8 = Awst
+date.month.9 = Medi
+date.month.10 = Hydref
+date.month.11 = Tachwedd
+date.month.12 = Rhagfyr
 
 band.Small = bach
 band.Medium = canolig
