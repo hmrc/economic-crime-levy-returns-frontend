@@ -90,7 +90,7 @@ relevantAp12Months.ex.p5 = Ar sail yr enghraifft hon, bydd eich busnes yn agored
 relevantAp12Months.hidden1 = Pam ein bod yn gofyn am ba mor hir yw’ch cyfnod cyfrifyddu perthnasol
 relevantAp12Months.hidden2 = Rydym yn gofyn am hyn oherwydd bod y refeniw yn y DU yr ydych yn ei ennill yn ystod unrhyw gyfnod cyfrifyddu perthnasol yn cael ei ddefnyddio i gyfrifo a ydych yn atebol i dalu’r ECL am y flwyddyn ariannol hon.
 relevantAp12Months.hidden3 = Os yw’ch cyfnod cyfrifyddu perthnasol yn llai na 12 mis bydd angen i chi rhoi gwybod i ni’r hyd mewn diwrnodau.
-relevantAp12Months.error.required =
+relevantAp12Months.error.required = Dewiswch ateb
 
 relevantApLength.title = Pa mor hir yw’ch cyfnod cyfrifyddu perthnasol?
 relevantApLength.heading = Pa mor hir yw’ch cyfnod cyfrifyddu perthnasol?
@@ -212,8 +212,8 @@ checkYourAnswers.relevantApLength.label = Hyd cyfnod cyfrifyddu
 checkYourAnswers.relevantApLength.days =
 checkYourAnswers.ukRevenue.label = Refeniw yn y DU
 checkYourAnswers.amlRegulatedActivity.label = Wedi cynnal gweithgareddau a reoleiddir gan reoliadau AML ar gyfer blwyddyn ariannol gyfan
-checkYourAnswers.amlRegulatedActivityLength.label =
-checkYourAnswers.amlRegulatedActivityLength.days =
+checkYourAnswers.amlRegulatedActivityLength.label = Hyd gweithgaredd a reoleiddir gan AML
+checkYourAnswers.amlRegulatedActivityLength.days = o ddiwrnodau
 checkYourAnswers.band.label = Band
 checkYourAnswers.amountDue.label = Swm sy’n ddyledus
 checkYourAnswers.organisationDetails = Manylion ECL
@@ -320,5 +320,5 @@ band.Medium.defaultRange = £10.2 miliwn i £36 miliwn
 band.Large.defaultRange = £36 miliwn i £1 biliwn
 band.VeryLarge.defaultRange = £1 biliwn neu fwy
 
-otherRegistration.pdfHtml.title =
-otherRegistration.pdfHtml.submissionDate =
+otherRegistration.pdfHtml.title = Cais i ddiwygio datganiad ar gyfer yr Ardoll Troseddau Economaidd (ECL)
+otherRegistration.pdfHtml.submissionDate = Dyddiad cyflwyno:
