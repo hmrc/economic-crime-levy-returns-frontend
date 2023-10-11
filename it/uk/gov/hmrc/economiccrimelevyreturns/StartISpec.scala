@@ -47,7 +47,9 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
 
       val obligationDetails = random[ObligationDetails]
 
-      stubGetReturn(EclReturn.empty(testInternalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(obligationDetails)))
+      stubGetReturn(
+        EclReturn.empty(testInternalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(obligationDetails))
+      )
 
       val result = callRoute(FakeRequest(routes.StartController.start()))
 
