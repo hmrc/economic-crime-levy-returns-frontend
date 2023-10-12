@@ -9,7 +9,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
 
-class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour{
+class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
   s"GET ${routes.AmendReturnSubmittedController.onPageLoad().url}" should {
     behave like authorisedActionRoute(routes.AmendReturnSubmittedController.onPageLoad())
@@ -18,12 +18,14 @@ class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour{
       stubAuthorised()
 
       val obligationDetails = random[ObligationDetails]
-      val email = random[String]
+      val email             = random[String]
 
-      val result = callRoute(FakeRequest(routes.AmendReturnSubmittedController.onPageLoad()).withSession(
-        (SessionKeys.Email, email),
-        (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString())
-      ))
+      val result = callRoute(
+        FakeRequest(routes.AmendReturnSubmittedController.onPageLoad()).withSession(
+          (SessionKeys.Email, email),
+          (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString())
+        )
+      )
 
       status(result) shouldBe OK
 

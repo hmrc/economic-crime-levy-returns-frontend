@@ -9,7 +9,10 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, C
 
 trait EclCalculatorStubs { self: WireMockStubs =>
 
-  def stubCalculateLiability(calculateLiabilityRequest: CalculateLiabilityRequest, calculatedLiability: CalculatedLiability): StubMapping = {
+  def stubCalculateLiability(
+    calculateLiabilityRequest: CalculateLiabilityRequest,
+    calculatedLiability: CalculatedLiability
+  ): StubMapping =
     stub(
       post(urlEqualTo("/economic-crime-levy-calculator/calculate-liability"))
         .withRequestBody(
@@ -19,6 +22,5 @@ trait EclCalculatorStubs { self: WireMockStubs =>
         .withStatus(OK)
         .withBody(Json.toJson(calculatedLiability).toString())
     )
-  }
 
 }

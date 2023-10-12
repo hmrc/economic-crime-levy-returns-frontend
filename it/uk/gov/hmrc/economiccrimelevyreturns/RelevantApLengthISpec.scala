@@ -30,13 +30,13 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"POST ${routes.RelevantApLengthController.onSubmit(NormalMode).url}" should {
+  s"POST ${routes.RelevantApLengthController.onSubmit(NormalMode).url}"  should {
     behave like authorisedActionRoute(routes.RelevantApLengthController.onSubmit(NormalMode))
 
     "save the relevant AP length then redirect to the UK revenue page" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
+      val eclReturn        = random[EclReturn]
       val relevantApLength = Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax).sample.get
 
       stubGetReturn(eclReturn)
