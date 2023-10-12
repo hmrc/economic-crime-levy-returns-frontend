@@ -57,8 +57,7 @@ class EmailServiceSpec extends SpecBase {
           fyStartYear = obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
           fyEndYear = obligationDetails.inboundCorrespondenceToDate.getYear.toString,
           datePaymentDue = if (chargeReference.isDefined) Some(eclDueDate) else None,
-          amountDue,
-          "false"
+          amountDue
         )
 
         when(
