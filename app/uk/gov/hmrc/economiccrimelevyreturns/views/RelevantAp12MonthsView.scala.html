@@ -72,14 +72,14 @@
             )
         )
 
-        @button(
-            ButtonViewModel(messages("site.saveAndContinue"))
-        )
-
         @govukDetails(Details(
             summary = HtmlContent(accPeriod),
             content = HtmlContent(accPeriodDetails)
         ))
+
+        @button(
+            ButtonViewModel(messages("site.saveAndContinue"))
+        )
     }
 }
 
