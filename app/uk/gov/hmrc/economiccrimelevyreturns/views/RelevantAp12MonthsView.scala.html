@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Empty
+
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -56,7 +58,7 @@
         @radios(
             RadiosViewModel(
                 field = form("value"),
-                legend = LegendViewModel(Text(messages("relevantAp12Months.heading"))).asHiddenPageHeading(),
+                legend = LegendViewModel(Empty),
                 items = Seq(
                     RadioItem(
                         id = Some("yes"),
