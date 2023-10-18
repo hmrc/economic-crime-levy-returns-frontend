@@ -15,6 +15,7 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.LegendSize
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Empty
 
 @this(
         layout: templates.Layout,
@@ -38,7 +39,7 @@
         @radios(
             RadiosViewModel(
                 field = form("value"),
-                legend = LegendViewModel(messages("amlRegulatedActivity.heading")).asHiddenPageHeading(),
+                legend = LegendViewModel(Empty),
                 items = Seq(
                     RadioItem(
                         id = Some("yes"),
