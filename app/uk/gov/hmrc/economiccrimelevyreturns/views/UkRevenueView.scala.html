@@ -64,13 +64,13 @@
 
         )
 
+        @govukDetails(Details(
+            summary = Text(messages("ukRevenue.turnover.details")),
+            content = HtmlContent(turnoverDetailsContent)
+        ))
+
         @govukButton(
             ButtonViewModel(messages("site.saveAndContinue"))
         )
     }
-
-    @govukDetails(Details(
-        summary = Text(messages("ukRevenue.turnover.details")),
-        content = HtmlContent(turnoverDetailsContent)
-    ))
 }
