@@ -153,6 +153,7 @@ amountDue.howWeWorkedThisOut.b1 = eich cyfnod cyfrifyddu perthnasol
 amountDue.howWeWorkedThisOut.b2 = eich refeniw yn y DU am y cyfnodau cyfrifyddu hyn
 amountDue.howWeWorkedThisOut.b3 = eich gweithgareddau a reoleiddir gan reoliadau AML
 amountDue.bands = Sut y mae maint bandiau yn effeithio ar yr hyn y mae angen i chi ei dalu
+amountDue.bands.caption = Maint y bandiau Ardoll Troseddau Economaidd (ECL)
 amountDue.bands.h1 = Maint band
 amountDue.bands.h2 = Refeniw
 amountDue.bands.h3 = Ffi ECL i’w dalu

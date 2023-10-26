@@ -153,6 +153,7 @@ amountDue.howWeWorkedThisOut.b1 = your relevant accounting periods
 amountDue.howWeWorkedThisOut.b2 = your UK revenue for these accounting periods
 amountDue.howWeWorkedThisOut.b3 = your AML-regulated activity
 amountDue.bands = How the size bands affect what you need to pay
+amountDue.bands.caption = Economic Crime Levy (ECL) band sizes
 amountDue.bands.h1 = Band size
 amountDue.bands.h2 = Revenue
 amountDue.bands.h3 = ECL fee to pay
