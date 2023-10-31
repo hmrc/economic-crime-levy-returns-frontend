@@ -90,7 +90,7 @@ relevantAp12Months.ex.p5 = Ar sail yr enghraifft hon, bydd eich busnes yn agored
 relevantAp12Months.hidden1 = Pam ein bod yn gofyn am ba mor hir yw’ch cyfnod cyfrifyddu perthnasol
 relevantAp12Months.hidden2 = Rydym yn gofyn am hyn oherwydd bod y refeniw yn y DU yr ydych yn ei ennill yn ystod unrhyw gyfnod cyfrifyddu perthnasol yn cael ei ddefnyddio i gyfrifo a ydych yn atebol i dalu’r ECL am y flwyddyn ariannol hon.
 relevantAp12Months.hidden3 = Os yw’ch cyfnod cyfrifyddu perthnasol yn llai na 12 mis bydd angen i chi rhoi gwybod i ni’r hyd mewn diwrnodau.
-relevantAp12Months.error.required = Dewiswch ateb
+relevantAp12Months.error.required = Dewiswch Iawn os oes gennych gyfnod cyfrifyddu perthnasol sy’n dod i ben yn ystod y flwyddyn ariannol
 
 relevantApLength.title = Pa mor hir yw’ch cyfnod cyfrifyddu perthnasol?
 relevantApLength.heading = Pa mor hir yw’ch cyfnod cyfrifyddu perthnasol?
@@ -130,7 +130,7 @@ ukRevenue.error.outOfRange = Mae’n rhaid i’r refeniw yn y DU fod rhwng {0} a
 amlRegulatedActivity.title = A wnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML ar gyfer y flwyddyn ariannol gyfan?
 amlRegulatedActivity.heading = A wnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML ar gyfer y flwyddyn ariannol gyfan?
 amlRegulatedActivity.p1 = At ddibenion yr Ardoll Troseddau Economaidd (ECL), mae blwyddyn ariannol y DU yn dechrau ar 1 Ebrill ac yn dod i ben ar 31 Mawrth y flwyddyn ganlynol.
-amlRegulatedActivity.error.required = Dewisoch os gwnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML yn ystod y flwyddyn ariannol
+amlRegulatedActivity.error.required = Dewiswch Iawn os gwnaethoch gynnal gweithgaredda reoleiddir gan reoliadau gwrth-wyngalchu arian (AML)
 
 amlRegulatedActivityLength.title = Sawl diwrnod o’r flwyddyn ariannol gwnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML?
 amlRegulatedActivityLength.heading = Sawl diwrnod o’r flwyddyn ariannol gwnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML?

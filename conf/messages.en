@@ -90,7 +90,7 @@ relevantAp12Months.ex.p5 = Based on this example, your business would be liable 
 relevantAp12Months.hidden1 = Why we ask about the length of your relevant accounting period
 relevantAp12Months.hidden2 = We ask about this because the UK revenue you earn during any relevant accounting period is used to work out if you are liable to pay the ECL for this financial year.
 relevantAp12Months.hidden3 = If your relevant accounting period is less than 12 months, you will need to tell us the length in days.
-relevantAp12Months.error.required = Select an answer
+relevantAp12Months.error.required = Select yes if you have a relevant accounting period that ends in the financial year
 
 relevantApLength.title = How long is your relevant accounting period?
 relevantApLength.heading = How long is your relevant accounting period?
@@ -130,7 +130,7 @@ ukRevenue.error.outOfRange = UK revenue must be between {0} and {1}
 amlRegulatedActivity.title = Did you carry out AML-regulated activity for the full financial year?
 amlRegulatedActivity.heading = Did you carry out AML-regulated activity for the full financial year?
 amlRegulatedActivity.p1 = For the purposes of the Economic Crime Levy (ECL), the UK financial year starts on 1 April and ends on 31 March of the following year.
-amlRegulatedActivity.error.required = Select if you carried out AML-regulated activity in the financial year
+amlRegulatedActivity.error.required = Select yes if you have a relevant accounting period that ends in the financial year
 
 amlRegulatedActivityLength.title = How many days of the financial year did you carry out AML-regulated activity?
 amlRegulatedActivityLength.heading = How many days of the financial year did you carry out AML-regulated activity?
