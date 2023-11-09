@@ -40,8 +40,10 @@ class EclLiabilityService @Inject() (
       relevantApLength                       <- if (relevantAp12Months) FullYear else eclReturn.relevantApLength
       relevantApRevenue                      <- eclReturn.relevantApRevenue
       carriedOutAmlRegulatedActivityForFullFy = eclReturn.carriedOutAmlRegulatedActivityForFullFy.getOrElse(true)
-      amlRegulatedActivityLength             <-
-        if (carriedOutAmlRegulatedActivityForFullFy) FullYear else eclReturn.amlRegulatedActivityLength
+      amlRegulatedActivityLength             <- calculateAmlRegulatedActivityLength(
+                                                  carriedOutAmlRegulatedActivityForFullFy,
+                                                  eclReturn.amlRegulatedActivityLength
+                                                )
     } yield calculateLiabilityAndUpsertReturn(
       relevantApLength = relevantApLength,
       relevantApRevenue = relevantApRevenue,
@@ -60,4 +62,14 @@ class EclLiabilityService @Inject() (
         eclReturnsConnector.upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
     }
 
+  def calculateAmlRegulatedActivityLength(
+    carriedOutAmlRegulatedActivityForFullFy: Boolean,
+    optAmlRegulatedActivityLength: Option[Int]
+  ): Option[Int] =
+    (carriedOutAmlRegulatedActivityForFullFy, optAmlRegulatedActivityLength) match {
+      case (false, None)    => Some(0)
+      case (true, _)        => FullYear
+      case (false, Some(_)) => optAmlRegulatedActivityLength
+
+    }
 }
