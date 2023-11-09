@@ -66,6 +66,18 @@ class EclLiabilityServiceSpec extends SpecBase {
 
         result shouldBe None
     }
+
+    "return Some of 0 when user hasn't provided AML regulated activity length yet" in {
+      val amlRegulatedActivityLength = service.calculateAmlRegulatedActivityLength(false, None)
+
+      amlRegulatedActivityLength shouldBe Some(0)
+    }
+
+    "return Some of full year regulated activity when user answered Yes" in {
+      val amlRegulatedActivityLength = service.calculateAmlRegulatedActivityLength(true, None)
+
+      amlRegulatedActivityLength shouldBe Some(FullYear)
+    }
   }
 
 }
