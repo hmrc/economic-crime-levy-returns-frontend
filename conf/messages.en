@@ -235,9 +235,10 @@ submitted.subHeading = What you need to do next
 submitted.p1 = You have submitted a return for the Economic Crime Levy (ECL) on {0} for the financial year {1}/{2}. You will receive a confirmation email. Please save this for your records.
 submitted.p2 = You must pay the levy for the {0}/{1} financial year by {2}. You will not receive an email or notification from HMRC to remind you to make a payment.
 submitted.p3 = Your ECL return number must be used as a payment reference when you pay the levy. You will also be able to find your return number in your <a href="{0}" class="govuk-link">ECL account</a>.
-submitted.p4 = You will be charged interest if you make a late payment.
-submitted.p5 = You can pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">guidance on how to pay</a>.
-submitted.p6 = We have sent a confirmation email to {0}
+submitted.p5 = You will be charged interest if you make a late payment.
+submitted.p4 = If you use an incorrect reference number, there will be a delay in the payment being allocated correctly.
+submitted.p6 = You can pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">guidance on how to pay</a>.
+submitted.p7 = We have sent a confirmation email to {0}
 submitted.payLevyLater = You will be able to pay the levy from August 2023.
 
 nilSubmitted.title = Return submitted
