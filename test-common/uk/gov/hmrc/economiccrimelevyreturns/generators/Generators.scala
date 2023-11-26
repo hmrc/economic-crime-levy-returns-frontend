@@ -70,6 +70,14 @@ trait Generators {
       .suchThat(!_.isValidInt)
       .map("%f".format(_))
 
+  lazy val minCurrency = 0L
+  lazy val maxCurrency = 99999999999L
+
+  def currencyFormattedValue: Gen[String]  =
+    for {
+      long     <- choose[Long](minCurrency, maxCurrency)
+      decimals <- listOfN(2, numChar)
+    } yield s"£$long.${decimals.mkString}"
   def intsBelowValue(value: Int): Gen[Int] =
     arbitrary[Int] suchThat (_ < value)
 

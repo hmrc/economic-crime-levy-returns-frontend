@@ -24,6 +24,18 @@ import scala.util.control.Exception.nonFatalCatch
 
 trait Formatters {
 
+  private lazy val twoDecimalPattern = """^-?(\d*\.[0-9]{0,2})$""".r
+  private lazy val decimalRegexp     = """^-?(\d*\.\d*)$""".r
+
+  private def removeWhitespace(value: String) =
+    value.trim.filterNot(_.isWhitespace)
+
+  private def removePoundSign(value: String) =
+    value.filterNot(_ == '£')
+
+  private def removeCommas(value: String) =
+    value.filterNot(_ == ',')
+
   private[mappings] def stringFormatter(errorKey: String, args: Seq[String] = Seq.empty): Formatter[String] =
     new Formatter[String] {
 
@@ -57,6 +69,36 @@ trait Formatters {
           }
 
       def unbind(key: String, value: Boolean) = Map(key -> value.toString)
+    }
+
+  def currencyFormatter(
+    requiredKey: String,
+    nonCurrencyKey: String
+  ): Formatter[Long] =
+    new Formatter[Long] {
+
+      private val baseFormatter = stringFormatter(requiredKey)
+
+      override def bind(key: String, data: Map[String, String]) =
+        baseFormatter
+          .bind(key, data)
+          .map(removeCommas)
+          .map(removePoundSign)
+          .flatMap { value =>
+            val number = value match {
+              case twoDecimalPattern(d) =>
+                d.split('.')(0)
+              case d                    => d
+            }
+
+            nonFatalCatch
+              .either(number.toLong)
+              .left
+              .map(_ => Seq(FormError(key, nonCurrencyKey)))
+          }
+
+      override def unbind(key: String, value: Long) =
+        baseFormatter.unbind(key, value.toString)
     }
 
   private def numberFormatter[T](
