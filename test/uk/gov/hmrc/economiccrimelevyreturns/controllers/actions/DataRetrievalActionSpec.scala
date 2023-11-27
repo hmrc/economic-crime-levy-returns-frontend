@@ -50,7 +50,7 @@ class DataRetrievalActionSpec extends SpecBase {
         val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
           dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
 
-        await(result) shouldBe ReturnDataRequest(fakeRequest, internalId, eclReturn, eclReferenceNumber)
+        await(result) shouldBe ReturnDataRequest(fakeRequest, internalId, eclReturn, None, eclReferenceNumber)
     }
   }
 

@@ -15,6 +15,7 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.InputWidth._
+@import uk.gov.hmrc.economiccrimelevyreturns.models.AdditionalInfo
 
 @this(
         layout: templates.Layout,
@@ -25,7 +26,7 @@
         govukDetails: GovukDetails
 )
 
-@(form: Form[Long], mode: Mode)(implicit request: Request[_], messages: Messages)
+@(form: Form[Long], mode: Mode, info: Option[AdditionalInfo] = None)(implicit request: Request[_], messages: Messages)
 
 @turnoverDetailsContent = {
     <p class="govuk-body">@messages("ukRevenue.turnover.details.p1")</p>
@@ -36,7 +37,7 @@
     </ul>
 }
 
-@layout(pageTitle = titleWithForm(form, messages("ukRevenue.title"))) {
+@layout(pageTitle = titleWithForm(form, messages("ukRevenue.title")), info = info) {
     @if(form.errors.nonEmpty) {
         @govukErrorSummary(ErrorSummaryViewModel(form))
     }

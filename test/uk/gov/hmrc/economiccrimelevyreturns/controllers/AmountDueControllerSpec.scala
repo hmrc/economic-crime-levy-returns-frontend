@@ -71,7 +71,7 @@ class AmountDueControllerSpec extends SpecBase {
 
         new TestContext(updatedReturn) {
           implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
-            ReturnDataRequest(fakeRequest, updatedReturn.internalId, updatedReturn, eclRegistrationReference)
+            ReturnDataRequest(fakeRequest, updatedReturn.internalId, updatedReturn, None, eclRegistrationReference)
           implicit val messages: Messages                                           = messagesApi.preferred(returnDataRequest)
 
           val result: Future[Result] = controller.onPageLoad(mode)(returnDataRequest)
@@ -102,7 +102,7 @@ class AmountDueControllerSpec extends SpecBase {
 
         new TestContext(updatedReturn) {
           implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
-            ReturnDataRequest(fakeRequest, updatedReturn.internalId, updatedReturn, eclRegistrationReference)
+            ReturnDataRequest(fakeRequest, updatedReturn.internalId, updatedReturn, None, eclRegistrationReference)
 
           val result: Future[Result] = controller.onPageLoad(mode)(returnDataRequest)
 

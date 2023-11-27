@@ -78,7 +78,7 @@ class CheckYourAnswersController @Inject() (
 
   def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData andThen validateReturnData) {
     implicit request =>
-      Ok(view(eclDetails(), contactDetails()))
+      Ok(view(eclDetails(), contactDetails(), request.info))
   }
 
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>

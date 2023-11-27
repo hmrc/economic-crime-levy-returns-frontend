@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.OK
 import play.api.mvc.Result
 import play.api.test.Helpers.{contentAsString, status}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, EclReturnsConnector}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{AdditionalInfoConnector, EclAccountConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
@@ -32,9 +31,10 @@ import scala.concurrent.Future
 
 class StartAmendControllerSpec extends SpecBase {
 
-  val mockEclAccountConnector: EclAccountConnector = mock[EclAccountConnector]
-  val mockEclReturnsService: EclReturnsService     = mock[EclReturnsService]
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclAccountConnector: EclAccountConnector         = mock[EclAccountConnector]
+  val mockEclReturnsService: EclReturnsService             = mock[EclReturnsService]
+  val mockEclReturnsConnector: EclReturnsConnector         = mock[EclReturnsConnector]
+  val mockAdditionalInfoConnector: AdditionalInfoConnector = mock[AdditionalInfoConnector]
 
   val view: StartAmendView                                 = app.injector.instanceOf[StartAmendView]
   val noObligationForPeriodView: NoObligationForPeriodView = app.injector.instanceOf[NoObligationForPeriodView]
@@ -58,6 +58,13 @@ class StartAmendControllerSpec extends SpecBase {
           val updatedReturn  = EclReturn
             .empty(internalId = internalId, returnType = Some(AmendReturn))
             .copy(obligationDetails = Some(obligationDetails))
+          val info           = AdditionalInfo.empty(
+            internalId = updatedReturn.internalId,
+            periodKey = Some(openObligation.periodKey),
+            returnNumber = Some(returnNumber),
+            fromYear = Some(obligationDetails.inboundCorrespondenceFromDate.getYear.toString),
+            toYear = Some(obligationDetails.inboundCorrespondenceToDate.getYear.toString)
+          )
 
           when(mockEclAccountConnector.getObligations()(any()))
             .thenReturn(Future.successful(Some(obligationData)))
@@ -71,6 +78,9 @@ class StartAmendControllerSpec extends SpecBase {
           when(mockEclReturnsConnector.upsertReturn(any())(any()))
             .thenReturn(Future.successful(updatedReturn))
 
+          when(mockEclReturnsService.upsertAdditionalInfo(any())(any(), any()))
+            .thenReturn(Future.successful(info))
+
           val result: Future[Result] =
             controller.onPageLoad(periodKey = openObligation.periodKey, returnNumber = returnNumber)(fakeRequest)
 
@@ -79,7 +89,8 @@ class StartAmendControllerSpec extends SpecBase {
           contentAsString(result) shouldBe view(
             returnNumber,
             openObligation.inboundCorrespondenceFromDate,
-            openObligation.inboundCorrespondenceToDate
+            openObligation.inboundCorrespondenceToDate,
+            Some(info)
           )(fakeRequest, messages).toString()
 
           verify(mockEclReturnsService, times(1))

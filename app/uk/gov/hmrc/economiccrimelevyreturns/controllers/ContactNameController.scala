@@ -47,14 +47,14 @@ class ContactNameController @Inject() (
   val form: Form[String] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.contactName), mode))
+    Ok(view(form.prepare(request.eclReturn.contactName), mode, request.info))
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     form
       .bindFromRequest()
       .fold(
-        formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode))),
+        formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.info))),
         name =>
           eclReturnsConnector
             .upsertReturn(request.eclReturn.copy(contactName = Some(name)))

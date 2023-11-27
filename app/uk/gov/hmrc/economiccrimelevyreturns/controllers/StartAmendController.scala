@@ -38,7 +38,6 @@ class StartAmendController @Inject() (
   eclReturnsService: EclReturnsService,
   eclReturnsConnector: EclReturnsConnector,
   noObligationForPeriodView: NoObligationForPeriodView,
-  errorHandler: ErrorHandler,
   view: StartAmendView
 )(implicit ex: ExecutionContext)
     extends FrontendBaseController
@@ -59,7 +58,7 @@ class StartAmendController @Inject() (
           Some(value.inboundCorrespondenceToDate.getYear.toString)
         )
         eclReturnsService.upsertAdditionalInfo(info)
-        Ok(view(returnNumber, value.inboundCorrespondenceFromDate, value.inboundCorrespondenceToDate))
+        Ok(view(returnNumber, value.inboundCorrespondenceFromDate, value.inboundCorrespondenceToDate, Some(info)))
       case Left(result) => result
     }
   }

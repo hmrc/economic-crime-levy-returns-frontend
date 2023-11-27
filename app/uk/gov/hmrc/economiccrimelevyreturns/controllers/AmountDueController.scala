@@ -53,7 +53,15 @@ class AmountDueController @Inject() (
 
     (request.eclReturn.obligationDetails, request.eclReturn.calculatedLiability) match {
       case (Some(obligationDetails), Some(calculatedLiability)) =>
-        Ok(view(ViewUtils.formatObligationPeriodYears(obligationDetails), calculatedLiability, accountingDetails, mode))
+        Ok(
+          view(
+            ViewUtils.formatObligationPeriodYears(obligationDetails),
+            calculatedLiability,
+            accountingDetails,
+            mode,
+            request.info
+          )
+        )
       case _                                                    => Redirect(routes.NotableErrorController.answersAreInvalid())
     }
   }

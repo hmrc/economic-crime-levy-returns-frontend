@@ -67,6 +67,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
             fakeRequest,
             validEclReturn.eclReturn.internalId,
             validEclReturn.eclReturn,
+            None,
             eclRegistrationReference
           )
 

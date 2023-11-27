@@ -15,6 +15,7 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.InputWidth._
+@import uk.gov.hmrc.economiccrimelevyreturns.models.AdditionalInfo
 
 @this(
         layout: templates.Layout,
@@ -24,9 +25,9 @@
         govukButton: GovukButton
 )
 
-@(form: Form[Int], mode: Mode)(implicit request: Request[_], messages: Messages)
+@(form: Form[Int], mode: Mode, info: Option[AdditionalInfo] = None)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleWithForm(form, messages("amlRegulatedActivityLength.title"))) {
+@layout(pageTitle = titleWithForm(form, messages("amlRegulatedActivityLength.title")), info = info) {
     @if(form.errors.nonEmpty) {
         @govukErrorSummary(ErrorSummaryViewModel(form))
     }

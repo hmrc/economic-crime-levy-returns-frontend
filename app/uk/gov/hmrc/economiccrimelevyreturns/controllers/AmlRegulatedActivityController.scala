@@ -49,14 +49,14 @@ class AmlRegulatedActivityController @Inject() (
   val form: Form[Boolean] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.carriedOutAmlRegulatedActivityForFullFy), mode))
+    Ok(view(form.prepare(request.eclReturn.carriedOutAmlRegulatedActivityForFullFy), mode, request.info))
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     form
       .bindFromRequest()
       .fold(
-        formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode))),
+        formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.info))),
         amlRegulatedActivity =>
           eclReturnsConnector
             .upsertReturn(

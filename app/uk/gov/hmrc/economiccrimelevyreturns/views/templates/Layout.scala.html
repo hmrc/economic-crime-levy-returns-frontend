@@ -16,6 +16,7 @@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.{Banners, HmrcStandardPageParams, ServiceURLs, TemplateOverrides}
+@import uk.gov.hmrc.economiccrimelevyreturns.models.AdditionalInfo
 
 @this(
         appConfig: AppConfig,
@@ -27,7 +28,27 @@
         betaBanner: StandardBetaBanner
 )
 
-@(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+@(
+    pageTitle: String,
+    showBackLink: Boolean = true,
+    timeout: Boolean = true,
+    showSignOut: Boolean = true,
+    info: Option[AdditionalInfo] = None
+)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+
+@topPageTitle = @{
+    info match {
+        case Some(info) => Some(messages("start.amend.title", info.fromYear.getOrElse(""), info.toYear.getOrElse("")))
+        case _ => None
+    }
+}
+
+@startServiceUrl = @{
+    info match {
+        case Some(info) => Some(StartAmendController.onPageLoad(info.periodKey.getOrElse(""), info.returnNumber.getOrElse("")).url)
+        case _ => Some(StartController.start.url)
+    }
+}
 
 @head = @{
     if(timeout) {
@@ -60,7 +81,7 @@
 @hmrcStandardPage(HmrcStandardPageParams(
     pageTitle = Some(pageTitle),
     serviceURLs = ServiceURLs(
-        serviceUrl = Some(StartController.start.url),
+        serviceUrl = startServiceUrl,
         signOutUrl = Some(SignOutController.signOut.url)
     ),
     banners = Banners(
@@ -71,5 +92,6 @@
         additionalScriptsBlock = Some(additionalScripts),
         additionalHeadBlock = head
     ),
-    backLink = if(showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None
+    backLink = if(showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None,
+    serviceName = topPageTitle
 ))(content)

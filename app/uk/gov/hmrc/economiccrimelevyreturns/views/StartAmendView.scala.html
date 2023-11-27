@@ -16,6 +16,7 @@
 
 @import java.time.LocalDate
 @import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
+@import uk.gov.hmrc.economiccrimelevyreturns.models.AdditionalInfo
 
 @this(
         layout: templates.Layout,
@@ -23,10 +24,11 @@
         table: GovukTable
 )
 
-@(returnNumber: String, dateFrom: LocalDate, dateTo: LocalDate)(implicit request: Request[_], messages: Messages)
+@(returnNumber: String, dateFrom: LocalDate, dateTo: LocalDate, info: Option[AdditionalInfo] = None)(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle = title(messages("start.amend.title", dateFrom.getYear, dateTo.getYear))
+    pageTitle = title(messages("start.amend.title", dateFrom.getYear, dateTo.getYear)),
+    info = info
 ) {
 
     <div class="govuk-form-group">

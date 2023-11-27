@@ -17,11 +17,12 @@
 package uk.gov.hmrc.economiccrimelevyreturns.models.requests
 
 import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AdditionalInfo, EclReturn}
 
 case class ReturnDataRequest[A](
   request: Request[A],
   internalId: String,
   eclReturn: EclReturn,
+  info: Option[AdditionalInfo],
   eclRegistrationReference: String
 ) extends WrappedRequest[A](request)
