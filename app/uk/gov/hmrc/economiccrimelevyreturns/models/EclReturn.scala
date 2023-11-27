@@ -56,12 +56,8 @@ final case class EclReturn(
   obligationDetails: Option[ObligationDetails],
   base64EncodedNrsSubmissionHtml: Option[String],
   base64EncodedDmsSubmissionHtml: Option[String],
-  returnType: Option[ReturnType],
-  optAdditionalInfo: Option[AdditionalInfo]
-) {
-  def additionalInfo =
-    optAdditionalInfo.getOrElse(AdditionalInfo())
-}
+  returnType: Option[ReturnType]
+)
 
 object EclReturn {
   def empty(internalId: String, returnType: Option[ReturnType]): EclReturn = EclReturn(
@@ -79,14 +75,14 @@ object EclReturn {
     obligationDetails = None,
     base64EncodedNrsSubmissionHtml = None,
     base64EncodedDmsSubmissionHtml = None,
-    returnType = returnType,
-    optAdditionalInfo = None
+    returnType = returnType
   )
 
   implicit val format: OFormat[EclReturn] = Json.format[EclReturn]
 }
 
 final case class AdditionalInfo(
+  internalId: String,
   periodKey: Option[String],
   returnNumber: Option[String],
   fromYear: Option[String],
@@ -94,12 +90,14 @@ final case class AdditionalInfo(
 )
 
 object AdditionalInfo {
-  def apply(
+  def empty(
+    internalId: String,
     periodKey: Option[String] = None,
     returnNumber: Option[String] = None,
     fromYear: Option[String] = None,
     toYear: Option[String] = None
   ): AdditionalInfo = AdditionalInfo(
+    internalId,
     periodKey,
     returnNumber,
     fromYear,

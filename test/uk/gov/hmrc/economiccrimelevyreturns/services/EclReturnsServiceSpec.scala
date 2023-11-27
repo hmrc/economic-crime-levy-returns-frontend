@@ -19,9 +19,9 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{AdditionalInfoConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AdditionalInfo, AmendReturn, EclReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -29,9 +29,14 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import scala.concurrent.Future
 
 class EclReturnsServiceSpec extends SpecBase {
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
-  val mockAuditConnector: AuditConnector           = mock[AuditConnector]
-  val service                                      = new EclReturnsService(mockEclReturnsConnector, mockAuditConnector)
+  val mockEclReturnsConnector: EclReturnsConnector         = mock[EclReturnsConnector]
+  val mockAdditionalInfoConnector: AdditionalInfoConnector = mock[AdditionalInfoConnector]
+  val mockAuditConnector: AuditConnector                   = mock[AuditConnector]
+  val service                                              = new EclReturnsService(
+    mockEclReturnsConnector,
+    mockAdditionalInfoConnector,
+    mockAuditConnector
+  )
 
   "getOrCreateReturn" should {
     "return a created ecl return when one does not exist" in forAll {
@@ -83,6 +88,43 @@ class EclReturnsServiceSpec extends SpecBase {
 
         verify(mockEclReturnsConnector, times(1))
           .upsertReturn(any())(any())
+    }
+  }
+
+  "upsertAdditionalInfo" should {
+    "upserts and returns an additional info" in forAll { (info: AdditionalInfo) =>
+      when(mockAdditionalInfoConnector.upsertAdditionalInfo(any())(any()))
+        .thenReturn(Future.successful(info))
+
+      val result = await(
+        service
+          .upsertAdditionalInfo(info)(hc, AuthorisedRequest(fakeRequest, info.internalId, ""))
+      )
+      result shouldBe info
+    }
+  }
+
+  "getAdditionalInfo" should {
+    "returns an additional info with the given internal id" in forAll { (internalId: String, info: AdditionalInfo) =>
+      when(mockAdditionalInfoConnector.getAdditionalInfo(any())(any()))
+        .thenReturn(Future.successful(info))
+
+      val result = await(
+        service
+          .getAdditionalInfo(internalId)(hc, AuthorisedRequest(fakeRequest, info.internalId, ""))
+      )
+      result shouldBe Some(info)
+    }
+
+    "returns nothing of no additional info with the given internal id" in forAll { (internalId: String) =>
+      when(mockAdditionalInfoConnector.getAdditionalInfo(any())(any()))
+        .thenReturn(Future.failed(new Exception()))
+
+      val result = await(
+        service
+          .getAdditionalInfo(internalId)(hc, AuthorisedRequest(fakeRequest, internalId, ""))
+      )
+      result shouldBe None
     }
   }
 }
