@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{AdditionalInfoConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, ValidatedReturnAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
@@ -46,6 +46,7 @@ class CheckYourAnswersController @Inject() (
   getReturnData: DataRetrievalAction,
   validateReturnData: ValidatedReturnAction,
   eclReturnsConnector: EclReturnsConnector,
+  additionalInfoConnector: AdditionalInfoConnector,
   emailService: EmailService,
   amendReturnPdfView: AmendReturnPdfView,
   val controllerComponents: MessagesControllerComponents,
@@ -100,6 +101,7 @@ class CheckYourAnswersController @Inject() (
       response <- eclReturnsConnector.submitReturn(request.internalId)
       _         = sendConfirmationMail(request.eclReturn, response)
       _        <- eclReturnsConnector.deleteReturn(request.internalId)
+      _        <- additionalInfoConnector.deleteAdditionalInfo(request.internalId)
     } yield getRedirectionRoute(request, response)
   }
 
