@@ -53,7 +53,7 @@ class EclLiabilityService @Inject() (
 
   private def calculateLiabilityAndUpsertReturn(
     relevantApLength: Int,
-    relevantApRevenue: Long,
+    relevantApRevenue: Double,
     amlRegulatedActivityLength: Int,
     eclReturn: EclReturn
   )(implicit request: RequestHeader): Future[EclReturn] =

@@ -20,8 +20,8 @@ object MinMaxValues {
 
   val ApDaysMin                = 1
   val ApDaysMax                = 999
-  val RevenueMin               = 0L
-  val RevenueMax               = 99999999999L
+  val RevenueMin               = 0.0
+  val RevenueMax               = 99999999999.99
   val AmlDaysMin               = 0
   val AmlDaysMax               = 365
   val EmailMaxLength           = 132

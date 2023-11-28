@@ -24,8 +24,8 @@ import java.time.LocalDate
 
 trait Mappings extends Formatters with Constraints {
 
-  protected def text(errorKey: String = "error.required"): FieldMapping[String] =
-    of(stringFormatter(errorKey))
+  protected def text(errorKey: String = "error.required", removeAllWhitespace: Boolean): FieldMapping[String] =
+    of(stringFormatter(errorKey, removeAllWhitespace))
 
   protected def int(
     requiredKey: String = "error.required",
@@ -44,7 +44,7 @@ trait Mappings extends Formatters with Constraints {
   protected def currency(
     requiredKey: String = "error.required",
     nonNumericKey: String = "error.nonNumeric"
-  ): FieldMapping[Long] =
+  ): FieldMapping[Double] =
     of(currencyFormatter(requiredKey, nonNumericKey))
 
   protected def boolean(

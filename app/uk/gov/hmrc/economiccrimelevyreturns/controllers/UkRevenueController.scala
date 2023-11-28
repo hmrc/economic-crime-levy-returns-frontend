@@ -46,7 +46,7 @@ class UkRevenueController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
-  val form: Form[Long] = formProvider()
+  val form: Form[Double] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
     Ok(view(form.prepare(request.eclReturn.relevantApRevenue), mode))

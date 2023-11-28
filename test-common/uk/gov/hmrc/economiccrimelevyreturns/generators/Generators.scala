@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.generators
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
 import org.scalacheck.{Gen, Shrink}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import wolfendale.scalacheck.regexp.RegexpGen
 
 import java.time.{Instant, LocalDate, ZoneOffset}
@@ -62,22 +63,21 @@ trait Generators {
     arbitrary[BigInt] suchThat (x => x < Int.MinValue)
 
   def nonNumerics: Gen[String] =
-    alphaStr suchThat (_.size > 0)
+    alphaStr suchThat (_.nonEmpty)
 
   def decimals: Gen[String] =
     arbitrary[BigDecimal]
-      .suchThat(_.abs < Int.MaxValue)
+      .map(_.abs)
+      .suchThat(_ < Int.MaxValue)
       .suchThat(!_.isValidInt)
       .map("%f".format(_))
 
-  lazy val minCurrency = 0L
-  lazy val maxCurrency = 99999999999L
-
-  def currencyFormattedValue: Gen[String]  =
+  def currencyFormattedValue: Gen[String] =
     for {
-      long     <- choose[Long](minCurrency, maxCurrency)
+      long     <- choose[Double](MinMaxValues.RevenueMin, MinMaxValues.RevenueMax)
       decimals <- listOfN(2, numChar)
     } yield s"£$long.${decimals.mkString}"
+
   def intsBelowValue(value: Int): Gen[Int] =
     arbitrary[Int] suchThat (_ < value)
 
