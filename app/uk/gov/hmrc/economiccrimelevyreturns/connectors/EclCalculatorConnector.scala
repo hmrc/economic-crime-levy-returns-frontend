@@ -31,7 +31,7 @@ class EclCalculatorConnector @Inject() (appConfig: AppConfig, httpClient: HttpCl
 
   private val eclCalculatorUrl: String = s"${appConfig.eclCalculatorBaseUrl}/economic-crime-levy-calculator"
 
-  def calculateLiability(amlRegulatedActivityLength: Int, relevantApLength: Int, relevantApRevenue: Double)(implicit
+  def calculateLiability(amlRegulatedActivityLength: Int, relevantApLength: Int, relevantApRevenue: BigDecimal)(implicit
     hc: HeaderCarrier
   ): Future[CalculatedLiability] =
     httpClient.POST[CalculateLiabilityRequest, CalculatedLiability](

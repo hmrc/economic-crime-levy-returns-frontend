@@ -23,6 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import wolfendale.scalacheck.regexp.RegexpGen
 
 import java.time.{Instant, LocalDate, ZoneOffset}
+import scala.math.BigDecimal.RoundingMode
 
 trait Generators {
 
@@ -56,6 +57,17 @@ trait Generators {
     genIntersperseString(numberGen, ",")
   }
 
+  def bigDecimalInRange(min: Double, max: Double): Gen[BigDecimal] =
+    Gen.chooseNum[Double](min, max).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
+
+  def bigDecimalOutOfRange(min: Double, max: Double): Gen[BigDecimal] =
+    (arbitrary[BigDecimal] suchThat (x => x < min || x > max)).map(_.setScale(2, RoundingMode.DOWN))
+
+  def bigDecimalInRangeWithCommas(min: Double, max: Double): Gen[String] = {
+    val numberGen = bigDecimalInRange(min, max).map(_.toString)
+    genIntersperseString(numberGen, ",")
+  }
+
   def intsLargerThanMaxValue: Gen[BigInt] =
     arbitrary[BigInt] suchThat (x => x > Int.MaxValue)
 
@@ -74,9 +86,8 @@ trait Generators {
 
   def currencyFormattedValue: Gen[String] =
     for {
-      long     <- choose[Double](MinMaxValues.RevenueMin, MinMaxValues.RevenueMax)
-      decimals <- listOfN(2, numChar)
-    } yield s"£$long.${decimals.mkString}"
+      formattedValue <- bigDecimalInRangeWithCommas(MinMaxValues.RevenueMin.toDouble, MinMaxValues.RevenueMax.toDouble)
+    } yield s"£$formattedValue"
 
   def intsBelowValue(value: Int): Gen[Int] =
     arbitrary[Int] suchThat (_ < value)
@@ -89,6 +100,9 @@ trait Generators {
 
   def longsOutsideRange(min: Long, max: Long): Gen[Long] =
     arbitrary[Long] suchThat (x => x < min || x > max)
+
+  def doublesOutsideRange(min: Double, max: Double): Gen[Double] =
+    arbitrary[Double] suchThat (x => x < min || x > max)
 
   def nonBooleans: Gen[String] =
     arbitrary[String]

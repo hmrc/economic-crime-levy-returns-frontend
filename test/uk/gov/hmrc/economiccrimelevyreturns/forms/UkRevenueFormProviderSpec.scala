@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.forms
 
 import play.api.data.FormError
-import uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours.{CurrencyFieldBehaviours, LongFieldBehaviours}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours.CurrencyFieldBehaviours
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 
 class UkRevenueFormProviderSpec extends CurrencyFieldBehaviours {
@@ -26,9 +26,11 @@ class UkRevenueFormProviderSpec extends CurrencyFieldBehaviours {
 
   "value" should {
 
-    val fieldName = "value"
+    val fieldName          = "value"
+    val RevenueMin: Double = 0.0
+    val RevenueMax: Double = 99999999999.99
 
-    val validDataGenerator = longsInRangeWithCommas(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax)
+    val validDataGenerator = bigDecimalInRangeWithCommas(RevenueMin, RevenueMax)
 
     behave like fieldThatBindsValidData(
       form,
@@ -45,8 +47,8 @@ class UkRevenueFormProviderSpec extends CurrencyFieldBehaviours {
     behave like currencyFieldWithRange(
       form,
       fieldName,
-      minimum = MinMaxValues.RevenueMin,
-      maximum = MinMaxValues.RevenueMax,
+      minimum = RevenueMin,
+      maximum = RevenueMax,
       expectedError =
         FormError(fieldName, "ukRevenue.error.outOfRange", Seq(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax))
     )

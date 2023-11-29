@@ -40,7 +40,7 @@ class UkRevenueControllerSpec extends SpecBase {
 
   val view: UkRevenueView                 = app.injector.instanceOf[UkRevenueView]
   val formProvider: UkRevenueFormProvider = new UkRevenueFormProvider()
-  val form: Form[Long]                    = formProvider()
+  val form: Form[BigDecimal]              = formProvider()
 
   val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
@@ -103,9 +103,9 @@ class UkRevenueControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided UK revenue then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Long](MinMaxValues.RevenueMin, MinMaxValues.RevenueMax),
+      arbRevenue.arbitrary,
       Arbitrary.arbitrary[Mode]
-    ) { (eclReturn: EclReturn, ukRevenue: Long, mode: Mode) =>
+    ) { (eclReturn: EclReturn, ukRevenue: BigDecimal, mode: Mode) =>
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
 
@@ -127,9 +127,9 @@ class UkRevenueControllerSpec extends SpecBase {
       Arbitrary.arbitrary[Mode]
     ) { (eclReturn: EclReturn, invalidRevenue: String, mode: Mode) =>
       new TestContext(eclReturn) {
-        val result: Future[Result]     =
+        val result: Future[Result]           =
           controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", invalidRevenue)))
-        val formWithErrors: Form[Long] = form.bind(Map("value" -> invalidRevenue))
+        val formWithErrors: Form[BigDecimal] = form.bind(Map("value" -> invalidRevenue))
 
         status(result) shouldBe BAD_REQUEST
 

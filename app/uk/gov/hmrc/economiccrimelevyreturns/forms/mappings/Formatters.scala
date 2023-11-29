@@ -73,8 +73,8 @@ trait Formatters {
   def currencyFormatter(
     requiredKey: String,
     nonCurrencyKey: String
-  ): Formatter[Double] =
-    new Formatter[Double] {
+  ): Formatter[BigDecimal] =
+    new Formatter[BigDecimal] {
 
       private val baseFormatter = stringFormatter(requiredKey, removeAllWhitespace = true)
 
@@ -91,7 +91,7 @@ trait Formatters {
             }
           }
 
-      override def unbind(key: String, value: Double) =
+      override def unbind(key: String, value: BigDecimal) =
         baseFormatter.unbind(key, value.toString)
     }
 

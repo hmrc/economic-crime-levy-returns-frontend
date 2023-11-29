@@ -23,7 +23,7 @@ import javax.inject.Inject
 
 class UkRevenueFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Double] =
+  def apply(): Form[BigDecimal] =
     Form(
       "value" -> currency("ukRevenue.error.required", "ukRevenue.error.nonNumeric")
         .verifying(inRange(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax, "ukRevenue.error.outOfRange"))
