@@ -123,8 +123,8 @@ ukRevenue.turnover.details.b2 = value added tax (VAT)
 ukRevenue.turnover.details.b3 = any other taxes based on your turnover
 ukRevenue.hint = For example, £600 or £193.54.
 ukRevenue.error.required = Enter the UK revenue
-ukRevenue.error.wholeNumber = UK revenue must be a number rounded down to the nearest pound
-ukRevenue.error.nonNumeric = UK revenue must be a number rounded down to the nearest pound
+ukRevenue.error.wholeNumber = Amount entered must be a number
+ukRevenue.error.nonNumeric = The total UK revenue can only include pounds and pence
 ukRevenue.error.outOfRange = UK revenue must be between {0} and {1}
 
 amlRegulatedActivity.title = Did you carry out AML-regulated activity for the full financial year?

@@ -101,7 +101,7 @@ class ContactRoleControllerSpec extends SpecBase {
       stringFromRegex(MinMaxValues.RoleMaxLength, Regex.PositionInCompanyRegex)
     ) { (eclReturn: EclReturn, role: String) =>
       new TestContext(eclReturn) {
-        val updatedReturn: EclReturn = eclReturn.copy(contactRole = Some(role))
+        val updatedReturn: EclReturn = eclReturn.copy(contactRole = Some(role.strip()))
 
         when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(Future.successful(updatedReturn))

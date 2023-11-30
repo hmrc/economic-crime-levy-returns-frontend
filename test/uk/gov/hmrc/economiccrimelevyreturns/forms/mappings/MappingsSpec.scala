@@ -41,44 +41,45 @@ class MappingsSpec extends AnyWordSpec with Matchers with OptionValues with Mapp
 
   import MappingsSpec._
 
-  "text" should {
+  for (removeAllWhitespace <- Seq(true, false))
+    s"text - when removeAllWhitespace is ${removeAllWhitespace.toString}" should {
 
-    val testForm: Form[String] =
-      Form(
-        "value" -> text()
-      )
+      val testForm: Form[String] =
+        Form(
+          "value" -> text(removeAllWhitespace = removeAllWhitespace)
+        )
 
-    "bind a valid string" in {
-      val result = testForm.bind(Map("value" -> "foobar"))
-      result.get shouldEqual "foobar"
+      "bind a valid string" in {
+        val result = testForm.bind(Map("value" -> "foobar"))
+        result.get shouldEqual "foobar"
+      }
+
+      "not bind an empty string" in {
+        val result = testForm.bind(Map("value" -> ""))
+        result.errors should contain(FormError("value", "error.required"))
+      }
+
+      "not bind a string of whitespace only" in {
+        val result = testForm.bind(Map("value" -> " \t"))
+        result.errors should contain(FormError("value", "error.required"))
+      }
+
+      "not bind an empty map" in {
+        val result = testForm.bind(Map.empty[String, String])
+        result.errors should contain(FormError("value", "error.required"))
+      }
+
+      "return a custom error message" in {
+        val form   = Form("value" -> text("custom.error", removeAllWhitespace))
+        val result = form.bind(Map("value" -> ""))
+        result.errors should contain(FormError("value", "custom.error"))
+      }
+
+      "unbind a valid value" in {
+        val result = testForm.fill("foobar")
+        result.apply("value").value.value shouldEqual "foobar"
+      }
     }
-
-    "not bind an empty string" in {
-      val result = testForm.bind(Map("value" -> ""))
-      result.errors should contain(FormError("value", "error.required"))
-    }
-
-    "not bind a string of whitespace only" in {
-      val result = testForm.bind(Map("value" -> " \t"))
-      result.errors should contain(FormError("value", "error.required"))
-    }
-
-    "not bind an empty map" in {
-      val result = testForm.bind(Map.empty[String, String])
-      result.errors should contain(FormError("value", "error.required"))
-    }
-
-    "return a custom error message" in {
-      val form   = Form("value" -> text("custom.error"))
-      val result = form.bind(Map("value" -> ""))
-      result.errors should contain(FormError("value", "custom.error"))
-    }
-
-    "unbind a valid value" in {
-      val result = testForm.fill("foobar")
-      result.apply("value").value.value shouldEqual "foobar"
-    }
-  }
 
   "boolean" should {
 

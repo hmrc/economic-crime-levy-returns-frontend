@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.generators
 
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
-import org.scalacheck.{Gen, Shrink}
+import org.scalacheck.{Arbitrary, Gen, Shrink}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import wolfendale.scalacheck.regexp.RegexpGen
 
@@ -60,8 +60,8 @@ trait Generators {
   def bigDecimalInRange(min: Double, max: Double): Gen[BigDecimal] =
     Gen.chooseNum[Double](min, max).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
 
-  def bigDecimalOutOfRange(min: Double, max: Double): Gen[BigDecimal] =
-    (arbitrary[BigDecimal] suchThat (x => x < min || x > max)).map(_.setScale(2, RoundingMode.DOWN))
+  def bigDecimalOutOfRange(min: BigDecimal, max: BigDecimal): Gen[BigDecimal] =
+    arbitrary[BigDecimal].map(_.setScale(2, RoundingMode.DOWN)) suchThat (x => x < min || x > max)
 
   def bigDecimalInRangeWithCommas(min: Double, max: Double): Gen[String] = {
     val numberGen = bigDecimalInRange(min, max).map(_.toString)
@@ -162,6 +162,15 @@ trait Generators {
       firstPart  <- alphaNumStringsWithMaxLength(emailPartsLength)
       secondPart <- alphaNumStringsWithMaxLength(emailPartsLength)
       thirdPart  <- alphaNumStringsWithMaxLength(emailPartsLength)
+    } yield (s"$firstPart@$secondPart.$thirdPart")
+  }
+
+  def emailAddressMoreThanMaxLength(maxLength: Int): Gen[String] = {
+    val moreThanMax = maxLength * 10
+    for {
+      firstPart  <- alphaNumStringsWithMaxLength(moreThanMax)
+      secondPart <- alphaNumStringsWithMaxLength(moreThanMax)
+      thirdPart  <- alphaNumStringsWithMaxLength(moreThanMax)
     } yield (s"$firstPart@$secondPart.$thirdPart")
   }
 }

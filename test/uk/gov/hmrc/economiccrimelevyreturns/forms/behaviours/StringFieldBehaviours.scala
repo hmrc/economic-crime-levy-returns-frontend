@@ -17,13 +17,25 @@
 package uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours
 
 import play.api.data.{Form, FormError}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 
 trait StringFieldBehaviours extends FieldBehaviours {
+
+  def emailWithMaxLength(form: Form[_], fieldName: String, maxLength: Int, lengthError: FormError): Unit =
+    "bind" should {
+      s"not bind strings longer than $maxLength characters" in {
+        forAll(
+          emailAddressMoreThanMaxLength(MinMaxValues.EmailMaxLength) -> "longString"
+        ) { string =>
+          val result = form.bind(Map(fieldName -> string)).apply(fieldName)
+          result.errors should contain only lengthError
+        }
+      }
+    }
 
   def fieldWithMaxLength(form: Form[_], fieldName: String, maxLength: Int, lengthError: FormError): Unit =
     "bind" should {
       s"not bind strings longer than $maxLength characters" in {
-
         forAll(stringsLongerThan(maxLength) -> "longString") { string =>
           val result = form.bind(Map(fieldName -> string)).apply(fieldName)
           result.errors should contain only lengthError

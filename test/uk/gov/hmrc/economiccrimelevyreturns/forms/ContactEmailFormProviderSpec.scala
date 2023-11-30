@@ -37,7 +37,7 @@ class ContactEmailFormProviderSpec extends StringFieldBehaviours {
       emailAddress(MinMaxValues.EmailMaxLength)
     )
 
-    behave like fieldWithMaxLength(
+    behave like emailWithMaxLength(
       form,
       fieldName,
       maxLength = MinMaxValues.EmailMaxLength,
