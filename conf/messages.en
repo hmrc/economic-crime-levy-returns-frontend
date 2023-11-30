@@ -122,8 +122,7 @@ ukRevenue.turnover.details.b1 = trade discounts
 ukRevenue.turnover.details.b2 = value added tax (VAT)
 ukRevenue.turnover.details.b3 = any other taxes based on your turnover
 ukRevenue.hint = For example, £600 or £193.54.
-ukRevenue.error.required = Enter the UK revenue
-ukRevenue.error.wholeNumber = Amount entered must be a number
+ukRevenue.error.required = Enter the total UK revenue
 ukRevenue.error.nonNumeric = The total UK revenue can only include pounds and pence
 ukRevenue.error.outOfRange = UK revenue must be between {0} and {1}
 

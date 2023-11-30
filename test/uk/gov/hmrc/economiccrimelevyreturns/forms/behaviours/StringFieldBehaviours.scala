@@ -16,16 +16,23 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours
 
+import org.scalacheck.Gen
 import play.api.data.{Form, FormError}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 
 trait StringFieldBehaviours extends FieldBehaviours {
 
-  def emailWithMaxLength(form: Form[_], fieldName: String, maxLength: Int, lengthError: FormError): Unit =
+  def fieldWithMaxLength(
+    form: Form[_],
+    fieldName: String,
+    maxLength: Int,
+    lengthError: FormError,
+    genString: Gen[String]
+  ): Unit =
     "bind" should {
       s"not bind strings longer than $maxLength characters" in {
         forAll(
-          emailAddressMoreThanMaxLength(MinMaxValues.EmailMaxLength) -> "longString"
+          genString -> "longString"
         ) { string =>
           val result = form.bind(Map(fieldName -> string)).apply(fieldName)
           result.errors should contain only lengthError

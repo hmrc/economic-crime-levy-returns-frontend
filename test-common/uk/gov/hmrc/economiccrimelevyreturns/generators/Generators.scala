@@ -173,4 +173,12 @@ trait Generators {
       thirdPart  <- alphaNumStringsWithMaxLength(moreThanMax)
     } yield (s"$firstPart@$secondPart.$thirdPart")
   }
+
+  def contactNumberMoreThanMaxLength(maxLength: Int): Gen[String] = {
+    val moreThanMax = maxLength
+    for {
+      contactNumber <- stringsLongerThan(moreThanMax)
+    } yield contactNumber
+  }
+
 }

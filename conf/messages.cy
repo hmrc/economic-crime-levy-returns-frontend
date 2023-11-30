@@ -122,9 +122,8 @@ ukRevenue.turnover.details.b1 = gostyngiadau masnachol
 ukRevenue.turnover.details.b2 = treth ar werth (TAW)
 ukRevenue.turnover.details.b3 = unrhyw drethi eraill sy’n seiliedig ar eich trosiant
 ukRevenue.hint = Er enghraifft, £600 neu £193.54.
-ukRevenue.error.required = Nodwch y refeniw yn y DU
-ukRevenue.error.wholeNumber = Mae’n rhaid i’r refeniw yn y DU fod yn rhif wedi’i dalgrynnu i lawr i’r bunt agosaf
-ukRevenue.error.nonNumeric = Mae’n rhaid i’r refeniw yn y DU fod yn rhif wedi’i dalgrynnu i lawr i’r bunt agosaf
+ukRevenue.error.required = Nodwch gyfanswm y refeniw yn y DU
+ukRevenue.error.nonNumeric = Gall cyfanswm y refeniw yn y DU dim ond cynnwys punnoedd a cheiniogau
 ukRevenue.error.outOfRange = Mae’n rhaid i’r refeniw yn y DU fod rhwng {0} a {1}
 
 amlRegulatedActivity.title = A wnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML ar gyfer y flwyddyn ariannol gyfan?
