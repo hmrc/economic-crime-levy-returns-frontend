@@ -16,7 +16,6 @@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 @import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
-@import uk.gov.hmrc.economiccrimelevyreturns.models.AdditionalInfo
 
 @this(
         layout: templates.Layout,
@@ -26,7 +25,7 @@
         button: GovukButton
 )
 
-@(period: String, calculatedLiability: CalculatedLiability, accountingDetails: SummaryList, mode: Mode, info: Option[AdditionalInfo] = None)(implicit request: Request[_], messages: Messages)
+@(period: String, calculatedLiability: CalculatedLiability, accountingDetails: SummaryList, mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @smallBandRange = @{
     if(!calculatedLiability.bands.apportioned) {
@@ -60,7 +59,7 @@
     }
 }
 
-@layout(pageTitle = title(messages("amountDue.title")), info = info) {
+@layout(pageTitle = title(messages("amountDue.title")), startAmendUrl = startAmendUrl) {
     @formHelper(action = AmountDueController.onSubmit(mode)) {
         <h1 class="govuk-heading-l">@messages("amountDue.heading")</h1>
 

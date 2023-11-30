@@ -63,6 +63,7 @@ start.tellUsAbout.b4 = the contact details of the person in your organisation wh
 start.payLevyLater = You cannot pay the levy right now. You will be able to do so from August 2023.
 
 start.amend.title = Amend your Economic Crime Levy return for {0} to {1}
+start.amend.banner = Amending a return
 start.amend.h1 = Amend your Economic Crime Levy return for {0} to {1}
 start.amend.table.header = ECL return details
 start.amend.table.returnNumber = ECL return number

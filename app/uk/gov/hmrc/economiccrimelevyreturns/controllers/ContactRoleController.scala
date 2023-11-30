@@ -47,14 +47,15 @@ class ContactRoleController @Inject() (
   val form: Form[String] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.contactRole), contactName(request), mode, request.info))
+    Ok(view(form.prepare(request.eclReturn.contactRole), contactName(request), mode, request.startAmendUrl))
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     form
       .bindFromRequest()
       .fold(
-        formWithErrors => Future.successful(BadRequest(view(formWithErrors, contactName(request), mode, request.info))),
+        formWithErrors =>
+          Future.successful(BadRequest(view(formWithErrors, contactName(request), mode, request.startAmendUrl))),
         role =>
           eclReturnsConnector
             .upsertReturn(request.eclReturn.copy(contactRole = Some(role)))

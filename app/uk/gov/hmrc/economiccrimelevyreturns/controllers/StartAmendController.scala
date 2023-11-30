@@ -20,10 +20,9 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
-import uk.gov.hmrc.economiccrimelevyreturns.handlers.ErrorHandler
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AdditionalInfo, AmendReturn, EclReturn, ObligationData, ObligationDetails}
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.models._
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html._
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -36,6 +35,7 @@ class StartAmendController @Inject() (
   authorise: AuthorisedAction,
   eclAccountConnector: EclAccountConnector,
   eclReturnsService: EclReturnsService,
+  sessionService: SessionService,
   eclReturnsConnector: EclReturnsConnector,
   noObligationForPeriodView: NoObligationForPeriodView,
   view: StartAmendView
@@ -50,15 +50,26 @@ class StartAmendController @Inject() (
       _                        = eclReturnsService.upsertEclReturnType(request.internalId, AmendReturn)
     } yield eitherObligationDetails match {
       case Right(value) =>
-        val info = AdditionalInfo.empty(
-          request.internalId,
-          Some(periodKey),
-          Some(returnNumber),
-          Some(value.inboundCorrespondenceFromDate.getYear.toString),
-          Some(value.inboundCorrespondenceToDate.getYear.toString)
+        val startAmendUrl = routes.StartAmendController
+          .onPageLoad(
+            periodKey = periodKey,
+            returnNumber = returnNumber
+          )
+          .url
+        sessionService.upsert(
+          SessionData(
+            request.internalId,
+            Map(SessionKeys.StartAmendUrl -> startAmendUrl)
+          )
         )
-        eclReturnsService.upsertAdditionalInfo(info)
-        Ok(view(returnNumber, value.inboundCorrespondenceFromDate, value.inboundCorrespondenceToDate, Some(info)))
+        Ok(
+          view(
+            returnNumber,
+            value.inboundCorrespondenceFromDate,
+            value.inboundCorrespondenceToDate,
+            Some(startAmendUrl)
+          )
+        )
       case Left(result) => result
     }
   }

@@ -49,14 +49,14 @@ class AmlRegulatedActivityLengthController @Inject() (
   val form: Form[Int] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.amlRegulatedActivityLength), mode, request.info))
+    Ok(view(form.prepare(request.eclReturn.amlRegulatedActivityLength), mode, request.startAmendUrl))
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     form
       .bindFromRequest()
       .fold(
-        formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.info))),
+        formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
         amlRegulatedActivityLength =>
           eclReturnsConnector
             .upsertReturn(

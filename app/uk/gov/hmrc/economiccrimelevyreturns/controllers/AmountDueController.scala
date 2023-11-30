@@ -59,7 +59,7 @@ class AmountDueController @Inject() (
             calculatedLiability,
             accountingDetails,
             mode,
-            request.info
+            request.startAmendUrl
           )
         )
       case _                                                    => Redirect(routes.NotableErrorController.answersAreInvalid())

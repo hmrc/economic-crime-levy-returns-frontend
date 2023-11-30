@@ -24,12 +24,12 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{AdditionalInfoConnector, EclReturnsConnector}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.FakeValidatedReturnAction
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SessionKeys, SubmitEclReturnResponse}
-import uk.gov.hmrc.economiccrimelevyreturns.services.EmailService
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView}
@@ -42,9 +42,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
   val view: CheckYourAnswersView        = app.injector.instanceOf[CheckYourAnswersView]
   val pdfReturnView: AmendReturnPdfView = app.injector.instanceOf[AmendReturnPdfView]
 
-  val mockEclReturnsConnector: EclReturnsConnector         = mock[EclReturnsConnector]
-  val mockAdditionakInfoConnector: AdditionalInfoConnector = mock[AdditionalInfoConnector]
-  val mockEmailService: EmailService                       = mock[EmailService]
+  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockSessionService: SessionService           = mock[SessionService]
+  val mockEmailService: EmailService               = mock[EmailService]
 
   class TestContext(eclReturnData: EclReturn) {
     val controller = new CheckYourAnswersController(
@@ -53,7 +53,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       fakeDataRetrievalAction(eclReturnData),
       new FakeValidatedReturnAction(eclReturnData),
       mockEclReturnsConnector,
-      mockAdditionakInfoConnector,
+      mockSessionService,
       mockEmailService,
       pdfReturnView,
       mcc,
@@ -119,7 +119,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
             .thenReturn(Future.successful(()))
 
           when(
-            mockAdditionakInfoConnector.deleteAdditionalInfo(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(
+            mockSessionService.delete(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(
               any()
             )
           )
@@ -158,7 +158,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
             .thenReturn(Future.successful(()))
 
-          when(mockAdditionakInfoConnector.deleteAdditionalInfo(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+          when(mockSessionService.delete(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
             .thenReturn(Future.successful(()))
 
           val result: IllegalStateException = intercept[IllegalStateException] {
@@ -187,7 +187,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
             .thenReturn(Future.successful(()))
 
-          when(mockAdditionakInfoConnector.deleteAdditionalInfo(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+          when(mockSessionService.delete(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
             .thenReturn(Future.successful(()))
 
           val result: IllegalStateException = intercept[IllegalStateException] {

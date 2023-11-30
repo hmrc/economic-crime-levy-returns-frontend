@@ -16,7 +16,6 @@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.{Banners, HmrcStandardPageParams, ServiceURLs, TemplateOverrides}
-@import uk.gov.hmrc.economiccrimelevyreturns.models.AdditionalInfo
 
 @this(
         appConfig: AppConfig,
@@ -33,19 +32,19 @@
     showBackLink: Boolean = true,
     timeout: Boolean = true,
     showSignOut: Boolean = true,
-    info: Option[AdditionalInfo] = None
+    startAmendUrl: Option[String] = None
 )(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
 @topPageTitle = @{
-    info match {
-        case Some(info) => Some(messages("start.amend.title", info.fromYear.getOrElse(""), info.toYear.getOrElse("")))
+    startAmendUrl match {
+        case Some(_) => Some(messages("start.amend.banner"))
         case _ => None
     }
 }
 
 @startServiceUrl = @{
-    info match {
-        case Some(info) => Some(StartAmendController.onPageLoad(info.periodKey.getOrElse(""), info.returnNumber.getOrElse("")).url)
+   startAmendUrl match {
+        case Some(startAmendUrl) => Some(startAmendUrl)
         case _ => Some(StartController.start.url)
     }
 }

@@ -17,8 +17,8 @@
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import play.api.http.Status.NOT_FOUND
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{AdditionalInfoConnector, EclReturnsConnector}
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AdditionalInfo, EclReturn, FirstTimeReturn, ReturnType}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, ReturnType}
 import uk.gov.hmrc.economiccrimelevyreturns.models.audit.ReturnStartedEvent
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
@@ -30,7 +30,6 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class EclReturnsService @Inject() (
   eclReturnsConnector: EclReturnsConnector,
-  additionalInfoConnector: AdditionalInfoConnector,
   auditConnector: AuditConnector
 )(implicit
   ec: ExecutionContext
@@ -62,21 +61,4 @@ class EclReturnsService @Inject() (
       updatedEclReturn <- eclReturnsConnector.upsertReturn(eclReturn.copy(returnType = Some(returnType)))
     } yield updatedEclReturn
 
-  def upsertAdditionalInfo(
-    info: AdditionalInfo
-  )(implicit hc: HeaderCarrier, request: AuthorisedRequest[_]): Future[AdditionalInfo] =
-    additionalInfoConnector.upsertAdditionalInfo(info)
-
-  def getAdditionalInfo(
-    internalId: String
-  )(implicit hc: HeaderCarrier, request: AuthorisedRequest[_]): Future[Option[AdditionalInfo]] =
-    additionalInfoConnector
-      .getAdditionalInfo(internalId)
-      .map(info => Some(info))
-      .recover(_ => None)
-
-  def deleteAdditionalInfo(
-    internalId: String
-  )(implicit hc: HeaderCarrier, request: AuthorisedRequest[_]): Future[Unit] =
-    additionalInfoConnector.deleteAdditionalInfo(internalId)
 }

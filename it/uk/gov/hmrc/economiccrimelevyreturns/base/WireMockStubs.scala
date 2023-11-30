@@ -13,6 +13,7 @@ trait WireMockStubs
     with Generators
     with AuthStubs
     with EclReturnsStubs
+    with SessionDataStubs
     with EclCalculatorStubs
     with EclAccountStubs
     with EnrolmentStoreProxyStubs

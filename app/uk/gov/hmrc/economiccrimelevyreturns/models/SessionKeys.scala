@@ -24,8 +24,9 @@ object SessionKeys {
   val Email: String             = "email"
   val AmountDue: String         = "amountDue"
   val ObligationDetails: String = "obligationDetails"
+  val StartAmendUrl             = "StartAmendUrl"
 
   implicit class SessionOps(s: Session) {
-    def clearEclValues: Session = s -- Seq(ChargeReference, Email, AmountDue, ObligationDetails)
+    def clearEclValues: Session = s -- Seq(ChargeReference, Email, AmountDue, ObligationDetails, StartAmendUrl)
   }
 }

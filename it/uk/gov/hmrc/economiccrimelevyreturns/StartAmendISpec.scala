@@ -28,6 +28,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
       val emptyReturn    = EclReturn.empty(testInternalId, Some(AmendReturn))
 
       stubGetReturn(emptyReturn)
+      stubGetSessionEmpty()
 
       stubGetObligations(obligationData)
       stubUpsertReturn(emptyReturn.copy(obligationDetails = Some(openObligation), returnType = Some(AmendReturn)))

@@ -20,6 +20,7 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[EclReturn]
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.AmlRegulatedActivityController.onPageLoad(NormalMode)))
 
@@ -40,6 +41,7 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
       val calculatedLiability = random[CalculatedLiability]
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val updatedReturn = eclReturn.copy(
         carriedOutAmlRegulatedActivityForFullFy = Some(true),
@@ -66,6 +68,7 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[EclReturn].copy(internalId = testInternalId)
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val updatedReturn = eclReturn.copy(
         carriedOutAmlRegulatedActivityForFullFy = Some(false),

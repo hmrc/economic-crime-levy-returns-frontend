@@ -21,6 +21,7 @@ class ContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
       val name      = random[String]
 
       stubGetReturn(eclReturn.copy(contactName = Some(name)))
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.ContactEmailController.onPageLoad(NormalMode)))
 
@@ -44,6 +45,7 @@ class ContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(updatedReturn)
       stubUpsertReturn(updatedReturn)
+      stubGetSessionEmpty()
 
       val result = callRoute(
         FakeRequest(routes.ContactEmailController.onSubmit(NormalMode))

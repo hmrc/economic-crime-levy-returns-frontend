@@ -16,7 +16,6 @@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.LegendSize
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Empty
-@import uk.gov.hmrc.economiccrimelevyreturns.models.AdditionalInfo
 
 @this(
         layout: templates.Layout,
@@ -26,9 +25,9 @@
         button: GovukButton
 )
 
-@(form: Form[Boolean], mode: Mode, info: Option[AdditionalInfo] = None)(implicit request: Request[_], messages: Messages)
+@(form: Form[Boolean], mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleWithForm(form, messages("amlRegulatedActivity.title")), info = info) {
+@layout(pageTitle = titleWithForm(form, messages("amlRegulatedActivity.title")), startAmendUrl = startAmendUrl) {
     @if(form.errors.nonEmpty) {
         @errorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "yes")))
     }

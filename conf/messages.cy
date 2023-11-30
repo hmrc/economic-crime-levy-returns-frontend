@@ -63,6 +63,7 @@ start.tellUsAbout.b4 = manylion cyswllt y person yn eich sefydliad sy’n llenwi
 start.payLevyLater = Ni allwch dalu’r ardoll ar hyn o bryd. Byddwch yn gallu gwneud hynny o fis Awst 2023.
 
 start.amend.title = Diwygio’ch datganiad Ardoll Troseddau Economaidd ar gyfer {0} i {1}
+start.amend.banner = Diwygio datganiad
 start.amend.h1 = Diwygio’ch datganiad Ardoll Troseddau Economaidd ar gyfer {0} i {1}
 start.amend.table.header = Manylion datganiad ECL
 start.amend.table.returnNumber = Rhif datganiad ECL

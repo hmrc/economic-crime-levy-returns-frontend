@@ -21,6 +21,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
       val eclReturn = random[EclReturn]
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode)))
 
@@ -46,6 +47,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
       val calculatedLiability        = random[CalculatedLiability]
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val updatedReturn =
         eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength), calculatedLiability = None)

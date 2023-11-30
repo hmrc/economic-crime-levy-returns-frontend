@@ -15,7 +15,6 @@
  *@
 
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Empty
-@import uk.gov.hmrc.economiccrimelevyreturns.models.AdditionalInfo
 
 @this(
         layout: templates.Layout,
@@ -26,7 +25,7 @@
         button: GovukButton
 )
 
-@(form: Form[Boolean], mode: Mode, info: Option[AdditionalInfo] = None)(implicit request: Request[_], messages: Messages)
+@(form: Form[Boolean], mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @accPeriod = {
     <strong>@messages("relevantAp12Months.hidden1")</strong>
@@ -37,7 +36,7 @@
     <p class="govuk-body">@messages("relevantAp12Months.hidden3")</p>
 }
 
-@layout(pageTitle = titleWithForm(form, messages("relevantAp12Months.title")), info = info) {
+@layout(pageTitle = titleWithForm(form, messages("relevantAp12Months.title")), startAmendUrl = startAmendUrl) {
     @if(form.errors.nonEmpty) {
         @errorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "yes")))
     }

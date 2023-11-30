@@ -19,6 +19,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[ValidEclReturn].eclReturn
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad(NormalMode)))
 
@@ -33,6 +34,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[EclReturn].copy(calculatedLiability = None, obligationDetails = None)
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad(NormalMode)))
 
@@ -51,6 +53,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[ValidEclReturn].eclReturn
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.AmountDueController.onSubmit(NormalMode)))
 
