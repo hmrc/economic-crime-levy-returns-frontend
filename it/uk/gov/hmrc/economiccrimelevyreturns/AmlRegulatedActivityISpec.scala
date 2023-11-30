@@ -35,7 +35,7 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
     "save the selected AML regulated activity option then redirect to the ECL amount due page when the Yes option is selected" in {
       stubAuthorised()
 
-      val ukRevenue           = longsInRange(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax).sample.get
+      val ukRevenue           = bigDecimalInRange(MinMaxValues.RevenueMin.toDouble, MinMaxValues.RevenueMax.toDouble).sample.get
       val eclReturn           = random[EclReturn].copy(relevantAp12Months = Some(true), relevantApRevenue = Some(ukRevenue))
       val calculatedLiability = random[CalculatedLiability]
 
@@ -48,7 +48,7 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
       )
 
       stubUpsertReturn(updatedReturn)
-      stubCalculateLiability(CalculateLiabilityRequest(FullYear, FullYear, ukRevenue), calculatedLiability)
+      stubCalculateLiability(CalculateLiabilityRequest(FullYear, FullYear, ukRevenue.toLong), calculatedLiability)
 
       val result = callRoute(
         FakeRequest(routes.AmlRegulatedActivityController.onSubmit(NormalMode))

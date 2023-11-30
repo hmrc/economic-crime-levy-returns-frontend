@@ -36,7 +36,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
     "save the relevant AML regulated activity length then redirect to the ECL amount due page" in {
       stubAuthorised()
 
-      val ukRevenue                  = longsInRange(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax).sample.get
+      val ukRevenue                  = longsInRange(MinMaxValues.RevenueMin.toLong, MinMaxValues.RevenueMax.toLong).sample.get
       val amlRegulatedActivityLength = Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax).sample.get
       val eclReturn                  = random[EclReturn].copy(
         relevantAp12Months = Some(true),
