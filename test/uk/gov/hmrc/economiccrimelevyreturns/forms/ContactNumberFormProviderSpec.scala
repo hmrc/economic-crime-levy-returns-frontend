@@ -41,7 +41,8 @@ class ContactNumberFormProviderSpec extends StringFieldBehaviours {
       form,
       fieldName,
       maxLength = MinMaxValues.TelephoneNumberMaxLength,
-      lengthError = FormError(fieldName, lengthKey, Seq(MinMaxValues.TelephoneNumberMaxLength))
+      lengthError = FormError(fieldName, lengthKey, Seq(MinMaxValues.TelephoneNumberMaxLength)),
+      contactNumberMoreThanMaxLength(MinMaxValues.TelephoneNumberMaxLength)
     )
 
     behave like mandatoryField(

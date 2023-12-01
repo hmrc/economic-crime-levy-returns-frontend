@@ -101,7 +101,7 @@ class ContactNumberControllerSpec extends SpecBase {
       stringFromRegex(MinMaxValues.TelephoneNumberMaxLength, Regex.TelephoneNumberRegex)
     ) { (eclReturn: EclReturn, number: String) =>
       new TestContext(eclReturn) {
-        val updatedReturn: EclReturn = eclReturn.copy(contactTelephoneNumber = Some(number))
+        val updatedReturn: EclReturn = eclReturn.copy(contactTelephoneNumber = Some(number.filterNot(_.isWhitespace)))
 
         when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(Future.successful(updatedReturn))

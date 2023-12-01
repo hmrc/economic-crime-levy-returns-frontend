@@ -90,7 +90,7 @@ class ContactNameControllerSpec extends SpecBase {
       stringFromRegex(MinMaxValues.NameMaxLength, Regex.NameRegex)
     ) { (eclReturn: EclReturn, name: String) =>
       new TestContext(eclReturn) {
-        val updatedReturn: EclReturn = eclReturn.copy(contactName = Some(name))
+        val updatedReturn: EclReturn = eclReturn.copy(contactName = Some(name.strip()))
 
         when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(Future.successful(updatedReturn))

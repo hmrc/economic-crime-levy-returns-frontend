@@ -37,7 +37,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn           = random[EclReturn]
-      val ukRevenue           = longsInRange(UkRevenueThreshold, MinMaxValues.RevenueMax).sample.get
+      val ukRevenue           = bigDecimalInRange(UkRevenueThreshold, MinMaxValues.RevenueMax.toDouble).sample.get
       val calculatedLiability = random[CalculatedLiability].copy(calculatedBand = Large)
 
       stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true), calculatedLiability = None))
@@ -50,7 +50,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       )
 
       stubUpsertReturn(updatedReturn)
-      stubCalculateLiability(CalculateLiabilityRequest(FullYear, FullYear, ukRevenue), calculatedLiability)
+      stubCalculateLiability(CalculateLiabilityRequest(FullYear, FullYear, ukRevenue.toLong), calculatedLiability)
       stubUpsertReturn(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))
 
       val result = callRoute(
@@ -67,7 +67,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn           = random[EclReturn]
-      val ukRevenue           = longsInRange(MinMaxValues.RevenueMin, UkRevenueThreshold).sample.get
+      val ukRevenue           = bigDecimalInRange(MinMaxValues.RevenueMin.toDouble, UkRevenueThreshold).sample.get
       val calculatedLiability = random[CalculatedLiability].copy(calculatedBand = Small)
 
       stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true), calculatedLiability = None))
@@ -82,7 +82,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubUpsertReturn(updatedReturn)
       stubCalculateLiability(
-        CalculateLiabilityRequest(FullYear, FullYear, ukRevenue),
+        CalculateLiabilityRequest(FullYear, FullYear, ukRevenue.toLong),
         calculatedLiability
       )
       stubUpsertReturn(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))

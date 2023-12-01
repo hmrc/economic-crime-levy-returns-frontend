@@ -6,7 +6,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, FirstTimeReturn, Obligation, ObligationData, ObligationDetails, Open}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, Obligation, ObligationData, ObligationDetails, Open}
 
 import java.time.LocalDate
 
