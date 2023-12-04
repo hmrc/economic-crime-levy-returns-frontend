@@ -38,7 +38,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
       status(result) shouldBe OK
       html(result)     should include("Amend your Economic Crime Levy return for 2022 to 2023")
 
-      html(result) should include("Amending a return")
+      html(result) should include("Amending your Economic Crime Levy return")
       html(result) should include(routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference).url)
     }
 
