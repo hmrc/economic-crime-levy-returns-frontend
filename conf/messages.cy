@@ -122,10 +122,9 @@ ukRevenue.turnover.details.p1 = Mae’ch trosiant yn seiliedig ar yr arian yr yd
 ukRevenue.turnover.details.b1 = gostyngiadau masnachol
 ukRevenue.turnover.details.b2 = treth ar werth (TAW)
 ukRevenue.turnover.details.b3 = unrhyw drethi eraill sy’n seiliedig ar eich trosiant
-ukRevenue.hint = Nodwch y swm mewn punnoedd, wedi’i dalgrynnu i lawr i’r bunt agosaf
-ukRevenue.error.required = Nodwch y refeniw yn y DU
-ukRevenue.error.wholeNumber = Mae’n rhaid i’r refeniw yn y DU fod yn rhif wedi’i dalgrynnu i lawr i’r bunt agosaf
-ukRevenue.error.nonNumeric = Mae’n rhaid i’r refeniw yn y DU fod yn rhif wedi’i dalgrynnu i lawr i’r bunt agosaf
+ukRevenue.hint = Er enghraifft, £600 neu £193.54.
+ukRevenue.error.required = Nodwch gyfanswm y refeniw yn y DU
+ukRevenue.error.nonNumeric = Gall cyfanswm y refeniw yn y DU dim ond cynnwys punnoedd a cheiniogau
 ukRevenue.error.outOfRange = Mae’n rhaid i’r refeniw yn y DU fod rhwng {0} a {1}
 
 amlRegulatedActivity.title = A wnaethoch gynnal gweithgareddau a reoleiddir gan reoliadau AML ar gyfer y flwyddyn ariannol gyfan?
@@ -236,9 +235,10 @@ submitted.subHeading = Yr hyn y mae angen i chi ei wneud nesaf
 submitted.p1 = Rydych wedi cyflwyno datganiad ar gyfer yr Ardoll Troseddau Economaidd (ECL) ar {0} ar gyfer blwyddyn ariannol {1}/{2}. Byddwch yn cael e-bost cadarnhau. Cadwch hwn ar gyfer eich cofnodion.
 submitted.p2 = Mae’n rhaid i chi dalu’r ardoll ar gyfer blwyddyn ariannol {0}/{1} erbyn {2}. Ni fyddwch yn cael e-bost na hysbysiad oddi wrth CThEF i’ch atgoffa i dalu.
 submitted.p3 = Mae’n rhaid defnyddio’ch rhif ECL fel cyfeirnod talu pan ydych yn talu’r ardoll. Byddwch hefyd yn gallu gweld rhif eich datganiad yn eich cyfrif ECL (cysylltu ‘Cyfrif ECL’ i adran datganiadau cyfrif ECL).
-submitted.p4 = Codir llog arnoch os ydych yn talu’n hwyr.
-submitted.p5 = Gallwch dalu’r ardoll drwy ddarllen yr <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">arweiniad ar sut i dalu</a>.
-submitted.p6 = Rydym wedi anfon e-bost cadarnhau i (enw@e-bost.com)
+submitted.p4 = Os ydych yn defnyddio cyfeirnod anghywir, bydd oedi cyn i’r taliad gael ei ddyrannu’n gywir.
+submitted.p5 = Codir llog arnoch os ydych yn talu’n hwyr.
+submitted.p6 = Gallwch dalu’r ardoll drwy ddarllen yr <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">arweiniad ar sut i dalu</a>.
+submitted.p7 = Rydym wedi anfon e-bost cadarnhau i (enw@e-bost.com)
 submitted.payLevyLater = Byddwch yn gallu talu’r ardoll o fis Awst ymlaen.
 
 nilSubmitted.title = Datganiad wedi’i gyflwyno

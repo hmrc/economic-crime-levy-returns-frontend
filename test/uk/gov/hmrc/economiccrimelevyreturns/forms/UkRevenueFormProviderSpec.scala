@@ -17,18 +17,20 @@
 package uk.gov.hmrc.economiccrimelevyreturns.forms
 
 import play.api.data.FormError
-import uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours.LongFieldBehaviours
+import uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours.CurrencyFieldBehaviours
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 
-class UkRevenueFormProviderSpec extends LongFieldBehaviours {
+class UkRevenueFormProviderSpec extends CurrencyFieldBehaviours {
 
   val form = new UkRevenueFormProvider()()
 
   "value" should {
 
-    val fieldName = "value"
+    val fieldName              = "value"
+    val RevenueMin: BigDecimal = 0.00
+    val RevenueMax: BigDecimal = 99999999999.99
 
-    val validDataGenerator = longsInRangeWithCommas(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax)
+    val validDataGenerator = bigDecimalInRangeWithCommas(RevenueMin.toDouble, RevenueMax.toDouble)
 
     behave like fieldThatBindsValidData(
       form,
@@ -36,18 +38,17 @@ class UkRevenueFormProviderSpec extends LongFieldBehaviours {
       validDataGenerator
     )
 
-    behave like longField(
+    behave like currencyField(
       form,
       fieldName,
-      nonNumericError = FormError(fieldName, "ukRevenue.error.nonNumeric"),
-      wholeNumberError = FormError(fieldName, "ukRevenue.error.wholeNumber")
+      nonNumericError = FormError(fieldName, "ukRevenue.error.nonNumeric")
     )
 
-    behave like longFieldWithRange(
+    behave like currencyFieldOutsideRange(
       form,
       fieldName,
-      minimum = MinMaxValues.RevenueMin,
-      maximum = MinMaxValues.RevenueMax,
+      minimum = RevenueMin,
+      maximum = RevenueMax,
       expectedError =
         FormError(fieldName, "ukRevenue.error.outOfRange", Seq(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax))
     )

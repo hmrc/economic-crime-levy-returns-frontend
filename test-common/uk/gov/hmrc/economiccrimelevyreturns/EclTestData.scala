@@ -21,6 +21,7 @@ import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Medium
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn, ObligationDetails, SessionData}
 
@@ -35,7 +36,7 @@ case class EnrolmentsWithoutEcl(enrolments: Enrolments)
 
 final case class EclLiabilityCalculationData(
   relevantApLength: Int,
-  relevantApRevenue: Long,
+  relevantApRevenue: BigDecimal,
   amlRegulatedActivityLength: Int
 )
 
@@ -43,14 +44,12 @@ final case class ValidEclReturn(eclReturn: EclReturn, eclLiabilityCalculationDat
 
 trait EclTestData { self: Generators =>
 
-  val FullYear: Int           = 365
-  private val MinAmountDue    = 0
-  private val MaxAmountDue    = 250000
-  private val PeriodKeyLength = 4
-
-  implicit val arbValidAmountDue: Arbitrary[BigDecimal] = Arbitrary {
-    Gen.chooseNum[Double](MinAmountDue, MaxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
-  }
+  val FullYear: Int              = 365
+  private val MinAmountDue       = 0
+  private val MaxAmountDue       = 250000
+  private val PeriodKeyLength    = 4
+  private val RevenueMin: Double = 0.0
+  private val RevenueMax: Double = 99999999999.99
 
   implicit val arbInstant: Arbitrary[Instant] = Arbitrary {
     Instant.now()
@@ -86,14 +85,27 @@ trait EclTestData { self: Generators =>
     Gen.listOfN(PeriodKeyLength, Gen.alphaNumChar).map(_.mkString).map(ValidPeriodKey)
   }
 
+  implicit def arbRevenue: Arbitrary[BigDecimal] =
+    Arbitrary {
+      Gen.chooseNum[Double](RevenueMin, RevenueMax).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
+    }
+
   implicit val arbValidEclReturn: Arbitrary[ValidEclReturn] = Arbitrary {
     for {
       relevantAp12Months                      <- Arbitrary.arbitrary[Boolean]
       relevantApLength                        <- Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
-      relevantApRevenue                       <- Gen.chooseNum[Long](MinMaxValues.RevenueMin, MinMaxValues.RevenueMax)
+      relevantApRevenue                       <- arbRevenue.arbitrary
       carriedOutAmlRegulatedActivityForFullFy <- Arbitrary.arbitrary[Boolean]
       amlRegulatedActivityLength              <- Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax)
-      calculatedLiability                     <- Arbitrary.arbitrary[CalculatedLiability]
+      liabilityAmountDue                      <-
+        Gen.chooseNum[Double](MinAmountDue, MaxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
+      calculatedLiability                     <-
+        Arbitrary
+          .arbitrary[CalculatedLiability]
+          .map(calcLiability =>
+            calcLiability
+              .copy(calculatedBand = Medium, amountDue = calcLiability.amountDue.copy(amount = liabilityAmountDue))
+          )
       contactName                             <- stringsWithMaxLength(MinMaxValues.NameMaxLength)
       contactRole                             <- stringsWithMaxLength(MinMaxValues.RoleMaxLength)
       contactEmailAddress                     <- emailAddress(MinMaxValues.EmailMaxLength)

@@ -41,7 +41,8 @@ class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
       val name      = random[String]
       val number    = stringFromRegex(MinMaxValues.TelephoneNumberMaxLength, Regex.TelephoneNumberRegex).sample.get
 
-      val updatedReturn = eclReturn.copy(contactName = Some(name), contactTelephoneNumber = Some(number))
+      val updatedReturn =
+        eclReturn.copy(contactName = Some(name), contactTelephoneNumber = Some(number.filterNot(_.isWhitespace)))
 
       stubGetReturn(updatedReturn)
       stubUpsertReturn(updatedReturn)

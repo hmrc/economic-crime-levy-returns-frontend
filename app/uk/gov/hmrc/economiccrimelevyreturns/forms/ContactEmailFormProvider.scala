@@ -25,7 +25,7 @@ class ContactEmailFormProvider @Inject() extends Mappings {
 
   def apply(): Form[String] =
     Form(
-      "value" -> text("contactEmail.error.required")
+      "value" -> text("contactEmail.error.required", removeAllWhitespace = true)
         .transform[String](_.toLowerCase, identity)
         .verifying(
           regexpWithMaxLength(

@@ -18,10 +18,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.generators
 
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
-import org.scalacheck.{Gen, Shrink}
+import org.scalacheck.{Arbitrary, Gen, Shrink}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import wolfendale.scalacheck.regexp.RegexpGen
 
 import java.time.{Instant, LocalDate, ZoneOffset}
+import scala.math.BigDecimal.RoundingMode
 
 trait Generators {
 
@@ -55,6 +57,17 @@ trait Generators {
     genIntersperseString(numberGen, ",")
   }
 
+  def bigDecimalInRange(min: Double, max: Double): Gen[BigDecimal] =
+    Gen.chooseNum[Double](min, max).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
+
+  def bigDecimalOutOfRange(min: BigDecimal, max: BigDecimal): Gen[BigDecimal] =
+    arbitrary[BigDecimal].map(_.setScale(2, RoundingMode.DOWN)) suchThat (x => x < min || x > max)
+
+  def bigDecimalInRangeWithCommas(min: Double, max: Double): Gen[String] = {
+    val numberGen = bigDecimalInRange(min, max).map(_.toString)
+    genIntersperseString(numberGen, ",")
+  }
+
   def intsLargerThanMaxValue: Gen[BigInt] =
     arbitrary[BigInt] suchThat (x => x > Int.MaxValue)
 
@@ -62,13 +75,19 @@ trait Generators {
     arbitrary[BigInt] suchThat (x => x < Int.MinValue)
 
   def nonNumerics: Gen[String] =
-    alphaStr suchThat (_.size > 0)
+    alphaStr suchThat (_.nonEmpty)
 
   def decimals: Gen[String] =
     arbitrary[BigDecimal]
-      .suchThat(_.abs < Int.MaxValue)
+      .map(_.abs)
+      .suchThat(_ < Int.MaxValue)
       .suchThat(!_.isValidInt)
       .map("%f".format(_))
+
+  def currencyFormattedValue: Gen[String] =
+    for {
+      formattedValue <- bigDecimalInRangeWithCommas(MinMaxValues.RevenueMin.toDouble, MinMaxValues.RevenueMax.toDouble)
+    } yield s"£$formattedValue"
 
   def intsBelowValue(value: Int): Gen[Int] =
     arbitrary[Int] suchThat (_ < value)
@@ -81,6 +100,9 @@ trait Generators {
 
   def longsOutsideRange(min: Long, max: Long): Gen[Long] =
     arbitrary[Long] suchThat (x => x < min || x > max)
+
+  def doublesOutsideRange(min: Double, max: Double): Gen[Double] =
+    arbitrary[Double] suchThat (x => x < min || x > max)
 
   def nonBooleans: Gen[String] =
     arbitrary[String]
@@ -142,4 +164,21 @@ trait Generators {
       thirdPart  <- alphaNumStringsWithMaxLength(emailPartsLength)
     } yield (s"$firstPart@$secondPart.$thirdPart")
   }
+
+  def emailAddressMoreThanMaxLength(maxLength: Int): Gen[String] = {
+    val moreThanMax = maxLength * 10
+    for {
+      firstPart  <- alphaNumStringsWithMaxLength(moreThanMax)
+      secondPart <- alphaNumStringsWithMaxLength(moreThanMax)
+      thirdPart  <- alphaNumStringsWithMaxLength(moreThanMax)
+    } yield (s"$firstPart@$secondPart.$thirdPart")
+  }
+
+  def contactNumberMoreThanMaxLength(maxLength: Int): Gen[String] = {
+    val moreThanMax = maxLength
+    for {
+      contactNumber <- stringsLongerThan(moreThanMax)
+    } yield contactNumber
+  }
+
 }
