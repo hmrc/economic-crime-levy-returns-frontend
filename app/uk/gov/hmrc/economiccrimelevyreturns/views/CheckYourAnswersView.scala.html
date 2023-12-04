@@ -21,9 +21,9 @@
     govukButton: GovukButton
 )
 
-@(eclDetails: SummaryList, contactDetails: SummaryList)(implicit request: Request[_], messages: Messages)
+@(eclDetails: SummaryList, contactDetails: SummaryList, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(messages("checkYourAnswers.title"))) {
+@layout(pageTitle = title(messages("checkYourAnswers.title")), startAmendUrl = startAmendUrl) {
     @formHelper(action = CheckYourAnswersController.onSubmit()) {
 
         <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>

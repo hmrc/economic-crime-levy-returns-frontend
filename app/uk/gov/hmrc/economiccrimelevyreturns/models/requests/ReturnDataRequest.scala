@@ -23,5 +23,6 @@ case class ReturnDataRequest[A](
   request: Request[A],
   internalId: String,
   eclReturn: EclReturn,
+  startAmendUrl: Option[String],
   eclRegistrationReference: String
 ) extends WrappedRequest[A](request)

@@ -23,7 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Medium
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn, ObligationDetails}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn, ObligationDetails, SessionData}
 
 import java.time.{Instant, LocalDate}
 import scala.math.BigDecimal.RoundingMode
@@ -146,4 +146,11 @@ trait EclTestData { self: Generators =>
   val UkRevenueThreshold: Long             = 10200000L
   val validPeriodKey: String               = arbPeriodKey.arbitrary.sample.get.periodKey
 
+  implicit val arbSessionData: Arbitrary[SessionData] =
+    Arbitrary {
+      for {
+        id     <- Gen.uuid
+        values <- Arbitrary.arbitrary[Map[String, String]]
+      } yield SessionData(id.toString, values, None)
+    }
 }

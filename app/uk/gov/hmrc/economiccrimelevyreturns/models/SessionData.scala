@@ -16,17 +16,12 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.models
 
-import play.api.mvc.Session
+import play.api.libs.json.{Json, OFormat}
 
-object SessionKeys {
+import java.time.Instant
 
-  val ChargeReference: String   = "chargeReference"
-  val Email: String             = "email"
-  val AmountDue: String         = "amountDue"
-  val ObligationDetails: String = "obligationDetails"
-  val StartAmendUrl             = "StartAmendUrl"
+case class SessionData(internalId: String, values: Map[String, String], lastUpdated: Option[Instant] = None)
 
-  implicit class SessionOps(s: Session) {
-    def clearEclValues: Session = s -- Seq(ChargeReference, Email, AmountDue, ObligationDetails, StartAmendUrl)
-  }
+object SessionData {
+  implicit val format: OFormat[SessionData] = Json.format[SessionData]
 }

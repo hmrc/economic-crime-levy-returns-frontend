@@ -25,7 +25,7 @@
         button: GovukButton
 )
 
-@(period: String, calculatedLiability: CalculatedLiability, accountingDetails: SummaryList, mode: Mode)(implicit request: Request[_], messages: Messages)
+@(period: String, calculatedLiability: CalculatedLiability, accountingDetails: SummaryList, mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @smallBandRange = @{
     if(!calculatedLiability.bands.apportioned) {
@@ -59,7 +59,7 @@
     }
 }
 
-@layout(pageTitle = title(messages("amountDue.title"))) {
+@layout(pageTitle = title(messages("amountDue.title")), startAmendUrl = startAmendUrl) {
     @formHelper(action = AmountDueController.onSubmit(mode)) {
         <h1 class="govuk-heading-l">@messages("amountDue.heading")</h1>
 

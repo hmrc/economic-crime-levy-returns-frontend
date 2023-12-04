@@ -20,9 +20,8 @@ class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[EclReturn]
       val name      = random[String]
 
-      stubGetReturn(
-        eclReturn.copy(contactName = Some(name))
-      )
+      stubGetReturn(eclReturn.copy(contactName = Some(name)))
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.ContactRoleController.onPageLoad(NormalMode)))
 
@@ -46,6 +45,7 @@ class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(updatedReturn)
       stubUpsertReturn(updatedReturn)
+      stubGetSessionEmpty()
 
       val result = callRoute(
         FakeRequest(routes.ContactRoleController.onSubmit(NormalMode))

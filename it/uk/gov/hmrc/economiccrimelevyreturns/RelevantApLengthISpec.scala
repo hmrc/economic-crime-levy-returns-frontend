@@ -21,6 +21,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[EclReturn]
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.RelevantApLengthController.onPageLoad(NormalMode)))
 
@@ -40,6 +41,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
       val relevantApLength = Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax).sample.get
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val updatedReturn =
         eclReturn.copy(relevantApLength = Some(relevantApLength), calculatedLiability = None)

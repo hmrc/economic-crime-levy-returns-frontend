@@ -27,7 +27,7 @@
         hmrcCurrencyInput: HmrcCurrencyInput
 )
 
-@(form: Form[_], mode: Mode)(implicit request: Request[_], messages: Messages)
+@(form: Form[BigDecimal], mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @turnoverDetailsContent = {
     <p class="govuk-body">@messages("ukRevenue.turnover.details.p1")</p>
@@ -38,7 +38,7 @@
     </ul>
 }
 
-@layout(pageTitle = titleWithForm(form, messages("ukRevenue.title"))) {
+@layout(pageTitle = titleWithForm(form, messages("ukRevenue.title")), startAmendUrl = startAmendUrl) {
     @if(form.errors.nonEmpty) {
         @govukErrorSummary(ErrorSummaryViewModel(form))
     }

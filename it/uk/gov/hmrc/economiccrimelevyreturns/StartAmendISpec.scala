@@ -28,6 +28,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
       val emptyReturn    = EclReturn.empty(testInternalId, Some(AmendReturn))
 
       stubGetReturn(emptyReturn)
+      stubGetSessionEmpty()
 
       stubGetObligations(obligationData)
       stubUpsertReturn(emptyReturn.copy(obligationDetails = Some(openObligation), returnType = Some(AmendReturn)))
@@ -36,6 +37,9 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
 
       status(result) shouldBe OK
       html(result)     should include("Amend your Economic Crime Levy return for 2022 to 2023")
+
+      html(result) should include("Amending a return")
+      html(result) should include(routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference).url)
     }
 
     "respond with 200 status and no obligation for HTML view if there is no obligation data for provided period key" in {

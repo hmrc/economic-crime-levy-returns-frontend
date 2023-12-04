@@ -45,7 +45,7 @@ class ValidatedReturnActionSpec extends SpecBase {
 
       val result: Future[Option[Result]] =
         validatedReturnAction.filter(
-          ReturnDataRequest(fakeRequest, internalId, eclReturn, eclRegistrationReference)
+          ReturnDataRequest(fakeRequest, internalId, eclReturn, None, eclRegistrationReference)
         )
 
       await(result) shouldBe None
@@ -58,7 +58,7 @@ class ValidatedReturnActionSpec extends SpecBase {
 
         val result: Future[Option[Result]] =
           validatedReturnAction.filter(
-            ReturnDataRequest(fakeRequest, internalId, eclReturn, eclRegistrationReference)
+            ReturnDataRequest(fakeRequest, internalId, eclReturn, None, eclRegistrationReference)
           )
 
         await(result) shouldBe Some(Redirect(routes.NotableErrorController.answersAreInvalid()))

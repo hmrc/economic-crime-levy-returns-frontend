@@ -27,7 +27,27 @@
         betaBanner: StandardBetaBanner
 )
 
-@(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+@(
+    pageTitle: String,
+    showBackLink: Boolean = true,
+    timeout: Boolean = true,
+    showSignOut: Boolean = true,
+    startAmendUrl: Option[String] = None
+)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+
+@topPageTitle = @{
+    startAmendUrl match {
+        case Some(_) => Some(messages("start.amend.banner"))
+        case _ => None
+    }
+}
+
+@startServiceUrl = @{
+   startAmendUrl match {
+        case Some(startAmendUrl) => Some(startAmendUrl)
+        case _ => Some(StartController.start.url)
+    }
+}
 
 @head = @{
     if(timeout) {
@@ -60,7 +80,7 @@
 @hmrcStandardPage(HmrcStandardPageParams(
     pageTitle = Some(pageTitle),
     serviceURLs = ServiceURLs(
-        serviceUrl = Some(StartController.start.url),
+        serviceUrl = startServiceUrl,
         signOutUrl = Some(SignOutController.signOut.url)
     ),
     banners = Banners(
@@ -71,5 +91,6 @@
         additionalScriptsBlock = Some(additionalScripts),
         additionalHeadBlock = head
     ),
-    backLink = if(showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None
+    backLink = if(showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None,
+    serviceName = topPageTitle
 ))(content)

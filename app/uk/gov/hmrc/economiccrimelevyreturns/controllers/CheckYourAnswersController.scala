@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedActio
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.services.EmailService
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
@@ -46,6 +46,7 @@ class CheckYourAnswersController @Inject() (
   getReturnData: DataRetrievalAction,
   validateReturnData: ValidatedReturnAction,
   eclReturnsConnector: EclReturnsConnector,
+  sessionService: SessionService,
   emailService: EmailService,
   amendReturnPdfView: AmendReturnPdfView,
   val controllerComponents: MessagesControllerComponents,
@@ -78,7 +79,7 @@ class CheckYourAnswersController @Inject() (
 
   def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData andThen validateReturnData) {
     implicit request =>
-      Ok(view(eclDetails(), contactDetails()))
+      Ok(view(eclDetails(), contactDetails(), request.startAmendUrl))
   }
 
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
@@ -100,6 +101,7 @@ class CheckYourAnswersController @Inject() (
       response <- eclReturnsConnector.submitReturn(request.internalId)
       _         = sendConfirmationMail(request.eclReturn, response)
       _        <- eclReturnsConnector.deleteReturn(request.internalId)
+      _        <- sessionService.delete(request.internalId)
     } yield getRedirectionRoute(request, response)
   }
 

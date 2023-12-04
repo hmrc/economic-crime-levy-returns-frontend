@@ -49,14 +49,14 @@ class RelevantApLengthController @Inject() (
   val form: Form[Int] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.relevantApLength), mode))
+    Ok(view(form.prepare(request.eclReturn.relevantApLength), mode, request.startAmendUrl))
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     form
       .bindFromRequest()
       .fold(
-        formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode))),
+        formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
         relevantApLength =>
           eclReturnsConnector
             .upsertReturn(

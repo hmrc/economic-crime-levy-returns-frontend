@@ -23,10 +23,11 @@
         table: GovukTable
 )
 
-@(returnNumber: String, dateFrom: LocalDate, dateTo: LocalDate)(implicit request: Request[_], messages: Messages)
+@(returnNumber: String, dateFrom: LocalDate, dateTo: LocalDate, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle = title(messages("start.amend.title", dateFrom.getYear, dateTo.getYear))
+    pageTitle = title(messages("start.amend.title", dateFrom.getYear, dateTo.getYear)),
+    startAmendUrl = startAmendUrl
 ) {
 
     <div class="govuk-form-group">

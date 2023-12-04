@@ -28,7 +28,10 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EclReturnsService @Inject() (eclReturnsConnector: EclReturnsConnector, auditConnector: AuditConnector)(implicit
+class EclReturnsService @Inject() (
+  eclReturnsConnector: EclReturnsConnector,
+  auditConnector: AuditConnector
+)(implicit
   ec: ExecutionContext
 ) {
 
@@ -57,4 +60,5 @@ class EclReturnsService @Inject() (eclReturnsConnector: EclReturnsConnector, aud
       eclReturn        <- eclReturnsConnector.getReturn(internalId)
       updatedEclReturn <- eclReturnsConnector.upsertReturn(eclReturn.copy(returnType = Some(returnType)))
     } yield updatedEclReturn
+
 }

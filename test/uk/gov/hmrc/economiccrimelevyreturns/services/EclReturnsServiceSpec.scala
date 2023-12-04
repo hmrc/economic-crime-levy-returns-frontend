@@ -31,7 +31,10 @@ import scala.concurrent.Future
 class EclReturnsServiceSpec extends SpecBase {
   val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
   val mockAuditConnector: AuditConnector           = mock[AuditConnector]
-  val service                                      = new EclReturnsService(mockEclReturnsConnector, mockAuditConnector)
+  val service                                      = new EclReturnsService(
+    mockEclReturnsConnector,
+    mockAuditConnector
+  )
 
   "getOrCreateReturn" should {
     "return a created ecl return when one does not exist" in forAll {

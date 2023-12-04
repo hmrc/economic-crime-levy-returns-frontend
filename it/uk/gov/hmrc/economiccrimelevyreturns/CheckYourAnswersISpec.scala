@@ -26,6 +26,7 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(validEclReturn.eclReturn)
       stubGetReturnValidationErrors(valid = true, errors)
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onPageLoad()))
 
@@ -42,6 +43,7 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
       stubGetReturnValidationErrors(valid = false, errors)
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onPageLoad()))
 
@@ -63,10 +65,9 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       val calculatedLiability = validEclReturn.eclReturn.calculatedLiability.get
 
       stubGetReturn(validEclReturn.eclReturn)
-
       stubUpsertReturnWithoutRequestMatching(validEclReturn.eclReturn)
-
       stubSubmitReturn(chargeReference)
+      stubGetSessionEmpty()
 
       val eclDueDate      =
         ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate, translate = false)(

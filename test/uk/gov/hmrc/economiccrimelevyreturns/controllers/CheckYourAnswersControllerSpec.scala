@@ -29,7 +29,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.FakeValidatedRet
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SessionKeys, SubmitEclReturnResponse}
-import uk.gov.hmrc.economiccrimelevyreturns.services.EmailService
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView}
@@ -43,6 +43,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
   val pdfReturnView: AmendReturnPdfView = app.injector.instanceOf[AmendReturnPdfView]
 
   val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockSessionService: SessionService           = mock[SessionService]
   val mockEmailService: EmailService               = mock[EmailService]
 
   class TestContext(eclReturnData: EclReturn) {
@@ -52,6 +53,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       fakeDataRetrievalAction(eclReturnData),
       new FakeValidatedReturnAction(eclReturnData),
       mockEclReturnsConnector,
+      mockSessionService,
       mockEmailService,
       pdfReturnView,
       mcc,
@@ -67,6 +69,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
             fakeRequest,
             validEclReturn.eclReturn.internalId,
             validEclReturn.eclReturn,
+            None,
             eclRegistrationReference
           )
 
@@ -115,6 +118,13 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
             .thenReturn(Future.successful(()))
 
+          when(
+            mockSessionService.delete(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(
+              any()
+            )
+          )
+            .thenReturn(Future.successful(()))
+
           val result: Future[Result] = controller.onSubmit()(fakeRequest)
 
           status(result)                                     shouldBe SEE_OTHER
@@ -148,6 +158,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
             .thenReturn(Future.successful(()))
 
+          when(mockSessionService.delete(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+            .thenReturn(Future.successful(()))
+
           val result: IllegalStateException = intercept[IllegalStateException] {
             await(controller.onSubmit()(fakeRequest))
           }
@@ -172,6 +185,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
             .thenReturn(Future.successful(submitEclReturnResponse))
 
           when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+            .thenReturn(Future.successful(()))
+
+          when(mockSessionService.delete(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
             .thenReturn(Future.successful(()))
 
           val result: IllegalStateException = intercept[IllegalStateException] {

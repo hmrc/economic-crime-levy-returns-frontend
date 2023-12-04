@@ -21,6 +21,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[EclReturn]
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.UkRevenueController.onPageLoad(NormalMode)))
 
@@ -41,6 +42,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       val calculatedLiability = random[CalculatedLiability].copy(calculatedBand = Large)
 
       stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true), calculatedLiability = None))
+      stubGetSessionEmpty()
 
       val updatedReturn = eclReturn.copy(
         relevantAp12Months = Some(true),
@@ -71,6 +73,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       val calculatedLiability = random[CalculatedLiability].copy(calculatedBand = Small)
 
       stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true), calculatedLiability = None))
+      stubGetSessionEmpty()
 
       val updatedReturn = eclReturn.copy(
         relevantAp12Months = Some(true),

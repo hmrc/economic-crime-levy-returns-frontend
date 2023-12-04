@@ -20,6 +20,7 @@ class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[EclReturn]
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.ContactNameController.onPageLoad(NormalMode)))
 
@@ -39,6 +40,7 @@ class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
       val name      = stringFromRegex(MinMaxValues.NameMaxLength, Regex.NameRegex).sample.get
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val updatedReturn = eclReturn.copy(contactName = Some(name))
 

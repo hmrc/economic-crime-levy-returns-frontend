@@ -66,7 +66,8 @@ class StartController @Inject() (
           view(
             request.eclRegistrationReference,
             ViewUtils.formatLocalDate(registrationDate),
-            ViewUtils.formatObligationPeriodYears(obligationDetails)
+            ViewUtils.formatObligationPeriodYears(obligationDetails),
+            None
           )
         )
       case Left(result)             => result

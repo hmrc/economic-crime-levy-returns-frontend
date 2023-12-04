@@ -23,10 +23,11 @@
         appConfig: AppConfig
 )
 
-@(eclRegistrationReference: String, eclRegistrationDate: String, period: String)(implicit request: Request[_], messages: Messages)
+@(eclRegistrationReference: String, eclRegistrationDate: String, period: String, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle = title(messages("start.title", period))
+    pageTitle = title(messages("start.title", period)),
+    startAmendUrl = startAmendUrl
 ) {
 
     <h1 class="govuk-heading-l">@messages("start.heading", period)</h1>

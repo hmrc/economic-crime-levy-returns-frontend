@@ -19,6 +19,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[EclReturn]
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val result = callRoute(FakeRequest(routes.RelevantAp12MonthsController.onPageLoad(NormalMode)))
 
@@ -37,6 +38,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[EclReturn]
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val updatedReturn =
         eclReturn.copy(relevantAp12Months = Some(true), relevantApLength = None, calculatedLiability = None)
@@ -59,6 +61,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = random[EclReturn]
 
       stubGetReturn(eclReturn)
+      stubGetSessionEmpty()
 
       val updatedReturn = eclReturn.copy(relevantAp12Months = Some(false), calculatedLiability = None)
 

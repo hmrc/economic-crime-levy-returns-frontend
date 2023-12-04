@@ -17,14 +17,13 @@
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 @import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
-
 @this(
         layout: templates.Layout,
         govukPanel: GovukPanel,
         appConfig: AppConfig
 )
 
-@(chargeReference: String, submittedWhen: String, dueDate: String, fyStartYear: String, fyEndYear: String, amountToPay: BigDecimal, email: String)(implicit request: Request[_], messages: Messages)
+@(chargeReference: String, submittedWhen: String, dueDate: String, fyStartYear: String, fyEndYear: String, amountToPay: BigDecimal, email: String, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @panelContentHtml = {
     <p class="govuk-label--m">@messages("submitted.reference", chargeReference)</p>
@@ -33,7 +32,8 @@
 
 @layout(
     pageTitle = title(messages("submitted.title")),
-    showBackLink = false
+    showBackLink = false,
+    startAmendUrl = startAmendUrl
 ) {
 
     @govukPanel(Panel(
