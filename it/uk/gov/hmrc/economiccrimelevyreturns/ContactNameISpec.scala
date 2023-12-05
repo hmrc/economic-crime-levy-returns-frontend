@@ -37,7 +37,7 @@ class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val name      = stringFromRegex(MinMaxValues.NameMaxLength, Regex.NameRegex).sample.get
+      val name      = stringFromRegex(MinMaxValues.NameMaxLength, Regex.NameRegex).sample.get.trim
 
       stubGetReturn(eclReturn)
       stubGetSessionEmpty()

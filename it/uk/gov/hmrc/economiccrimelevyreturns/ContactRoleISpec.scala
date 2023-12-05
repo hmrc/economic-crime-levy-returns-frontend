@@ -38,8 +38,8 @@ class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val name      = random[String]
-      val role      = stringFromRegex(MinMaxValues.RoleMaxLength, Regex.PositionInCompanyRegex).sample.get
+      val name      = random[String].trim
+      val role      = stringFromRegex(MinMaxValues.RoleMaxLength, Regex.PositionInCompanyRegex).sample.get.trim
 
       val updatedReturn = eclReturn.copy(contactName = Some(name), contactRole = Some(role))
 

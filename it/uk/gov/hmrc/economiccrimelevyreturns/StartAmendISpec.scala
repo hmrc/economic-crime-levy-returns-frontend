@@ -6,7 +6,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, Obligation, ObligationData, ObligationDetails, Open}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, Obligation, ObligationData, ObligationDetails, Open, SessionData, SessionKeys}
 
 import java.time.LocalDate
 
@@ -33,13 +33,21 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetObligations(obligationData)
       stubUpsertReturn(emptyReturn.copy(obligationDetails = Some(openObligation), returnType = Some(AmendReturn)))
 
+      val startAmendUrl = routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference).url
+      stubGetSession(
+        SessionData(
+          internalId = emptyReturn.internalId,
+          values = Map(SessionKeys.StartAmendUrl -> startAmendUrl)
+        )
+      )
+
       val result = callRoute(FakeRequest(routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference)))
 
       status(result) shouldBe OK
       html(result)     should include("Amend your Economic Crime Levy return for 2022 to 2023")
 
       html(result) should include("Amending your Economic Crime Levy return")
-      html(result) should include(routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference).url)
+      html(result) should include(startAmendUrl)
     }
 
     "respond with 200 status and no obligation for HTML view if there is no obligation data for provided period key" in {
