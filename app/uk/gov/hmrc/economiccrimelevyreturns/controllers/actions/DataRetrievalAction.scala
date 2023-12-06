@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 
-import play.api.mvc.ActionTransformer
-import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
+import play.api.mvc.{ActionTransformer, Session}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, FirstTimeReturn, ReturnType, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, SessionService}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import javax.inject.Inject
@@ -34,16 +35,25 @@ class ReturnDataRetrievalAction @Inject() (
 
   override protected def transform[A](request: AuthorisedRequest[A]): Future[ReturnDataRequest[A]] =
     eclReturnService.getOrCreateReturn(request.internalId)(hc(request), request).flatMap { eclReturn =>
-      sessionService.get(request.session, request.internalId, SessionKeys.StartAmendUrl)(hc(request)).map {
-        startAmendUrl =>
-          ReturnDataRequest(
-            request.request,
-            request.internalId,
-            eclReturn,
-            startAmendUrl,
-            request.eclRegistrationReference
-          )
+      getStartAmendUrl(eclReturn.returnType, request.session, request.internalId)(hc(request)).map { startAmendUrl =>
+        ReturnDataRequest(
+          request.request,
+          request.internalId,
+          eclReturn,
+          startAmendUrl,
+          request.eclRegistrationReference
+        )
       }
+    }
+
+  private def getStartAmendUrl(returnType: Option[ReturnType], session: Session, internalId: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Option[String]] =
+    returnType match {
+      case Some(AmendReturn) =>
+        sessionService.get(session, internalId, SessionKeys.StartAmendUrl)
+      case _                 =>
+        Future.successful(None)
     }
 }
 
