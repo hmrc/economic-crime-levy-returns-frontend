@@ -53,6 +53,13 @@
     <h3 class="govuk-heading-s">@messages("ukRevenue.p2")</h3>
     <p class="govuk-body ">@messages("ukRevenue.p3")</p>
 
+    @govukDetails(Details(
+        summary = Text(messages("ukRevenue.turnover.details")),
+        content = HtmlContent(turnoverDetailsContent)
+    ))
+
+    <h2 class="govuk-heading-m">@messages("ukRevenue.h2")</h2>
+
     @formHelper(action = UkRevenueController.onSubmit(mode)) {
         @hmrcCurrencyInput(CurrencyInput(
             id = "value",
@@ -63,12 +70,6 @@
             label =  LabelViewModel(Empty),
             errorMessage = form("value").error.map(err => ErrorMessage(content = Text(messages(err.message, err.args:_*))))
         ))
-
-        @govukDetails(Details(
-            summary = Text(messages("ukRevenue.turnover.details")),
-            content = HtmlContent(turnoverDetailsContent)
-        )
-)
 
         @govukButton(
             ButtonViewModel(messages("site.saveAndContinue"))

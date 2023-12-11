@@ -122,6 +122,7 @@ ukRevenue.turnover.details.p1 = Mae’ch trosiant yn seiliedig ar yr arian yr yd
 ukRevenue.turnover.details.b1 = gostyngiadau masnachol
 ukRevenue.turnover.details.b2 = treth ar werth (TAW)
 ukRevenue.turnover.details.b3 = unrhyw drethi eraill sy’n seiliedig ar eich trosiant
+ukRevenue.h2 = Beth oedd cyfanswm eich refeniw yn y DU yn ystod eich cyfnod cyfrifyddu perthnasol?
 ukRevenue.hint = Er enghraifft, £600 neu £193.54.
 ukRevenue.error.required = Nodwch gyfanswm y refeniw yn y DU
 ukRevenue.error.nonNumeric = Gall cyfanswm y refeniw yn y DU dim ond cynnwys punnoedd a cheiniogau
