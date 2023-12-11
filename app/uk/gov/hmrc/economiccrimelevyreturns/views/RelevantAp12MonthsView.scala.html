@@ -28,7 +28,7 @@
 @(form: Form[Boolean], mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @accPeriod = {
-    <strong>@messages("relevantAp12Months.hidden1")</strong>
+    @messages("relevantAp12Months.hidden1")
 }
 
 @accPeriodDetails = {
@@ -55,6 +55,14 @@
     <p class="govuk-body">@messages("relevantAp12Months.ex.p5")</p>
 
     @formHelper(action = RelevantAp12MonthsController.onSubmit(mode)) {
+        @govukDetails(Details(
+            summary = HtmlContent(accPeriod),
+            content = HtmlContent(accPeriodDetails)
+        ))
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">@messages("relevantAp12Months.question")</h2>
+        </legend>
+
         @radios(
             RadiosViewModel(
                 field = form("value"),
@@ -73,11 +81,6 @@
                 )
             )
         )
-
-        @govukDetails(Details(
-            summary = HtmlContent(accPeriod),
-            content = HtmlContent(accPeriodDetails)
-        ))
 
         @button(
             ButtonViewModel(messages("site.saveAndContinue"))
