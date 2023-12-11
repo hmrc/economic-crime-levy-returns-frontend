@@ -27,7 +27,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
       status(result) shouldBe OK
 
-      html(result) should include("What was your total UK revenue in your relevant accounting period?")
+      html(result) should include("Total UK revenue")
     }
   }
 
