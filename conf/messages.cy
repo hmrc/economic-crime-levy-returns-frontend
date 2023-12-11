@@ -77,21 +77,22 @@ start.amend.b3 = os ydych wedi cyflawni gweithgareddau a reoleiddir gan reoliada
 start.amend.b4 = manylion cyswllt y person yn eich sefydliad sy’n llenwi’r datganiad hwn
 start.amend.p4 = Ar ôl i chi wneud cais i ddiwygio’ch datganiad, byddwn yn adolygu’ch atebion. Bydd y broses hon yn cymryd hyd at 15 diwrnod gwaith.
 
-relevantAp12Months.title = A yw’ch cyfnod cyfrifyddu yn 12 mis?
-relevantAp12Months.heading = A yw’ch cyfnod cyfrifyddu yn 12 mis?
+relevantAp12Months.title = Cyfnod cyfrifyddu perthnasol
+relevantAp12Months.heading = Cyfnod cyfrifyddu perthnasol
 relevantAp12Months.p1 = Eich cyfnod cyfrifyddu perthnasol yw unrhyw un sy’n dod i ben yn ystod y flwyddyn ariannol. Mae’n seiliedig ar y cyfnod cyfrifyddu yr ydych yn ei ddefnyddio ar gyfer eich Ffurflen Dreth y Cwmni.
 relevantAp12Months.p2 = Mae’n bosibl y bydd gennych fwy nag un cyfnod cyfrifyddu perthnasol yn dod i ben yn ystod y flwyddyn ariannol.
-relevantAp12Months.p3 = At ddibenion yr Ardoll Troseddau Economaidd (ECL), mae blwyddyn ariannol yn dechrau ar 1 Ebrill ac yn dod i ben ar 31 Mawrth y flwyddyn ganlynol.
+relevantAp12Months.p3 = Mae’r flwyddyn ariannol ar gyfer yr Ardoll Troseddau Economaidd (ECL) yn dechrau ar 1 Ebrill, ac yn dod i ben ar 31 Mawrth y flwyddyn ganlynol.
 relevantAp12Months.ex.heading = Enghraifft
 relevantAp12Months.ex.p1 = Eich cyfnod cyfrifyddu perthnasol yw 12 mis. Mae’n dechrau ar 1 Ionawr ac yn dod i ben ar 31 Rhagfyr yr un flwyddyn.
 relevantAp12Months.ex.p2 = Mae’r cyfnod cyfrifyddu hwn yn dod i ben yn ystod y flwyddyn ariannol ar gyfer yr ECL. Mae’r flwyddyn hon yn dechrau ar 1 Ebrill ac yn dod i ben ar 31 Mawrth y flwyddyn ganlynol.
 relevantAp12Months.ex.p3 = Rheoleiddir eich busnes at ddibenion gwrth-wyngalchu arian (AML) drwy gydol eich cyfnod cyfrifyddu perthnasol cyfan. Mae’r cyfnod hwn yn 12 mis o hyd.
 relevantAp12Months.ex.p4 = Eich refeniw am y cyfnod cyfrifyddu hwn yw £30 miliwn.
-relevantAp12Months.ex.p5 = Ar sail yr enghraifft hon, bydd eich busnes yn agored i dalu’r ardoll ar gyfer y flwyddyn ariannol honno. Canolig yw maint eich band. Byddai angen i chi dalu £10,000.
+relevantAp12Months.ex.p5 = Yn seiliedig ar yr enghraifft hon, bydd eich busnes yn agored i gofrestru ar gyfer yr ECL.
 relevantAp12Months.hidden1 = Pam ein bod yn gofyn am ba mor hir yw’ch cyfnod cyfrifyddu perthnasol
 relevantAp12Months.hidden2 = Rydym yn gofyn am hyn oherwydd bod y refeniw yn y DU yr ydych yn ei ennill yn ystod unrhyw gyfnod cyfrifyddu perthnasol yn cael ei ddefnyddio i gyfrifo a ydych yn atebol i dalu’r ECL am y flwyddyn ariannol hon.
 relevantAp12Months.hidden3 = Os yw’ch cyfnod cyfrifyddu perthnasol yn llai na 12 mis bydd angen i chi rhoi gwybod i ni’r hyd mewn diwrnodau.
 relevantAp12Months.error.required = Dewiswch Iawn os oes gennych gyfnod cyfrifyddu perthnasol sy’n dod i ben yn ystod y flwyddyn ariannol
+relevantAp12Months.question = A yw’ch cyfnod cyfrifyddu perthnasol yn 12 mis?
 
 relevantApLength.title = Pa mor hir yw’ch cyfnod cyfrifyddu perthnasol?
 relevantApLength.heading = Pa mor hir yw’ch cyfnod cyfrifyddu perthnasol?
