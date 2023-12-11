@@ -109,8 +109,8 @@ relevantApLength.error.wholeNumber = Length must be a whole number
 relevantApLength.error.nonNumeric = Length must be a whole number
 relevantApLength.error.outOfRange = Length must be between {0} and {1} days
 
-ukRevenue.title = What was your total UK revenue in your relevant accounting period?
-ukRevenue.heading = What was your total UK revenue in your relevant accounting period?
+ukRevenue.title = Total UK revenue
+ukRevenue.heading = Total UK revenue
 ukRevenue.p1 = Your UK revenue is defined as:
 ukRevenue.b1 = your turnover during the accounting period
 ukRevenue.b2 = any other amounts not included within your turnover that are recognised as revenue according to Generally Accepted Accounting Principles (GAAP) in your profit and loss account or income statement

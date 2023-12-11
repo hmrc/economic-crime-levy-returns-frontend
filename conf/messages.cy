@@ -109,8 +109,8 @@ relevantApLength.error.wholeNumber = Mae’n rhaid i’r hyd fod yn rhif cyfan
 relevantApLength.error.nonNumeric = Mae’n rhaid i’r hyd fod yn rhif cyfan
 relevantApLength.error.outOfRange = Mae’n rhaid i’r hyd fod rhwng {0} a {1} o ddiwrnodau
 
-ukRevenue.title = Beth oedd eich refeniw yn y DU ar gyfer y cyfnod cyfrifyddu perthnasol?
-ukRevenue.heading = Beth oedd eich refeniw yn y DU ar gyfer y cyfnod cyfrifyddu perthnasol?
+ukRevenue.title = Cyfanswm refeniw y DU
+ukRevenue.heading = Cyfanswm refeniw y DU
 ukRevenue.p1 = Caiff eich refeniw yn y DU ei ddiffinio fel:
 ukRevenue.b1 = eich trosiant yn ystod y cyfnod cyfrifyddu
 ukRevenue.b2 = unrhyw symiau eraill nad ydynt wedi’u cynnwys yn eich trosiant sy’n cael eu cydnabod fel refeniw yn unol ag Egwyddorion Cyfrifyddu a Dderbynnir yn Gyffredinol (GAAP) yn eich cyfrif elw a cholled neu yn eich cyfriflen incwm
