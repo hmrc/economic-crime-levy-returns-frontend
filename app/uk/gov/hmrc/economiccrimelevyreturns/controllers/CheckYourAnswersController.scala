@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, ValidatedReturnAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
@@ -41,16 +41,16 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class CheckYourAnswersController @Inject() (
-  override val messagesApi: MessagesApi,
-  authorise: AuthorisedAction,
-  getReturnData: DataRetrievalAction,
-  validateReturnData: ValidatedReturnAction,
-  eclReturnsConnector: EclReturnsConnector,
-  sessionService: SessionService,
-  emailService: EmailService,
-  amendReturnPdfView: AmendReturnPdfView,
-  val controllerComponents: MessagesControllerComponents,
-  view: CheckYourAnswersView
+                                             override val messagesApi: MessagesApi,
+                                             authorise: AuthorisedAction,
+                                             getReturnData: DataRetrievalAction,
+                                             validateReturnData: ValidatedReturnAction,
+                                             eclReturnsConnector: ReturnsConnector,
+                                             sessionService: SessionService,
+                                             emailService: EmailService,
+                                             amendReturnPdfView: AmendReturnPdfView,
+                                             val controllerComponents: MessagesControllerComponents,
+                                             view: CheckYourAnswersView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

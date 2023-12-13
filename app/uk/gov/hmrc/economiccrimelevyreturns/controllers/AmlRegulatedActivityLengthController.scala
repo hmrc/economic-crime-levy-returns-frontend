@@ -20,7 +20,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.AmlRegulatedActivityLengthDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthFormProvider
@@ -34,14 +34,14 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AmlRegulatedActivityLengthController @Inject() (
-  val controllerComponents: MessagesControllerComponents,
-  authorise: AuthorisedAction,
-  getReturnData: DataRetrievalAction,
-  eclReturnsConnector: EclReturnsConnector,
-  formProvider: AmlRegulatedActivityLengthFormProvider,
-  pageNavigator: AmlRegulatedActivityLengthPageNavigator,
-  dataCleanup: AmlRegulatedActivityLengthDataCleanup,
-  view: AmlRegulatedActivityLengthView
+                                                       val controllerComponents: MessagesControllerComponents,
+                                                       authorise: AuthorisedAction,
+                                                       getReturnData: DataRetrievalAction,
+                                                       eclReturnsConnector: ReturnsConnector,
+                                                       formProvider: AmlRegulatedActivityLengthFormProvider,
+                                                       pageNavigator: AmlRegulatedActivityLengthPageNavigator,
+                                                       dataCleanup: AmlRegulatedActivityLengthDataCleanup,
+                                                       view: AmlRegulatedActivityLengthView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

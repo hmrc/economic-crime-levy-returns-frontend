@@ -20,7 +20,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, CalculatedLiability, CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
@@ -32,7 +32,7 @@ import scala.concurrent.Future
 class RelevantApLengthPageNavigatorSpec extends SpecBase {
 
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
 
   val pageNavigator = new RelevantApLengthPageNavigator(mockEclLiabilityService, mockEclReturnsConnector)
 

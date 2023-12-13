@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 import org.mockito.ArgumentMatchers.any
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
@@ -30,7 +30,7 @@ import scala.concurrent.Future
 
 class ValidatedReturnActionSpec extends SpecBase {
 
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
 
   val validatedReturnAction = new ValidatedReturnActionImpl(mockEclReturnsConnector)
 

@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
@@ -29,7 +29,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import scala.concurrent.Future
 
 class EclReturnsServiceSpec extends SpecBase {
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
   val mockAuditConnector: AuditConnector           = mock[AuditConnector]
   val service                                      = new EclReturnsService(
     mockEclReturnsConnector,

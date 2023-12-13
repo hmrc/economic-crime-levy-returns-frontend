@@ -21,7 +21,7 @@ import play.api.i18n.Messages
 import play.api.mvc.{AnyContentAsEmpty, Call, Result}
 import play.api.test.Helpers.{contentAsString, redirectLocation, status}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, Mode, ObligationDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
@@ -38,7 +38,7 @@ class AmountDueControllerSpec extends SpecBase {
 
   val view: AmountDueView = app.injector.instanceOf[AmountDueView]
 
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
 
   val pageNavigator: AmountDuePageNavigator = new AmountDuePageNavigator() {
     override protected def navigateInNormalMode(eclReturn: EclReturn): Call = onwardRoute

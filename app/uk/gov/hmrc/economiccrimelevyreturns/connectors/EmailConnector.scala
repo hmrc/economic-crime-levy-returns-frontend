@@ -16,20 +16,32 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
+import akka.actor.ActorSystem
+import com.typesafe.config.Config
+import play.api.http.Status.OK
+import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+import uk.gov.hmrc.economiccrimelevyreturns.models.CalculatedLiability
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.AmendReturnSubmittedRequest.AmendReturnTemplateId
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailRequest._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email._
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EmailConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit
+class EmailConnector @Inject() (
+  appConfig: AppConfig,
+  httpClient: HttpClientV2,
+  override val configuration: Config,
+  override val actorSystem: ActorSystem
+)(implicit
   ec: ExecutionContext
-) {
+) extends BaseConnector
+    with Retries {
 
   private val sendEmailUrl: String = s"${appConfig.emailBaseUrl}/hmrc/email"
 
@@ -38,36 +50,30 @@ class EmailConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(im
     returnSubmittedEmailParameters: ReturnSubmittedEmailParameters
   )(implicit
     hc: HeaderCarrier
-  ): Future[Unit] =
-    httpClient
-      .POST[ReturnSubmittedEmailRequest, Either[UpstreamErrorResponse, HttpResponse]](
-        sendEmailUrl,
-        ReturnSubmittedEmailRequest(
-          to = Seq(to),
-          parameters = returnSubmittedEmailParameters,
-          templateId =
-            if (returnSubmittedEmailParameters.chargeReference.isDefined) ReturnTemplateId else NilReturnTemplateId
-        )
-      )
-      .map {
-        case Left(e)  => throw e
-        case Right(_) => ()
-      }
+  ): Future[Unit] = {
+    val body = ReturnSubmittedEmailRequest(
+      to = Seq(to),
+      parameters = returnSubmittedEmailParameters,
+      templateId =
+        if (returnSubmittedEmailParameters.chargeReference.isDefined) ReturnTemplateId else NilReturnTemplateId
+    )
+
+    retryFor[Unit]("HMRC Email service - initial return")(retryCondition) {
+      httpClient.post(url"$sendEmailUrl").withBody(Json.toJson(body)).executeAndExpect(OK)
+    }
+  }
 
   def sendAmendReturnSubmittedEmail(to: String, parameters: AmendReturnSubmittedParameters)(implicit
     hc: HeaderCarrier
-  ): Future[Unit] =
-    httpClient
-      .POST[AmendReturnSubmittedRequest, Either[UpstreamErrorResponse, HttpResponse]](
-        sendEmailUrl,
-        AmendReturnSubmittedRequest(
-          to = Seq(to),
-          templateId = AmendReturnTemplateId,
-          parameters = parameters
-        )
-      )
-      .map {
-        case Left(e)  => throw e
-        case Right(_) => ()
-      }
+  ): Future[Unit] = {
+    val body = AmendReturnSubmittedRequest(
+      to = Seq(to),
+      templateId = AmendReturnTemplateId,
+      parameters = parameters
+    )
+
+    retryFor[Unit]("HMRC Email service - amend return")(retryCondition) {
+      httpClient.post(url"$sendEmailUrl").withBody(Json.toJson(body)).executeAndExpect(OK)
+    }
+  }
 }

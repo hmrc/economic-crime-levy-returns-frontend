@@ -16,71 +16,62 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
-import play.api.Logging
-import play.api.http.Status.{BAD_REQUEST, OK}
+import akka.actor.ActorSystem
+import com.typesafe.config.Config
+import play.api.http.Status.OK
+import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, SubmitEclReturnResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EclReturnsConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext)
-    extends Logging
-    with BaseConnector {
+class ReturnsConnector @Inject() (
+  appConfig: AppConfig,
+  httpClient: HttpClientV2,
+  override val configuration: Config,
+  override val actorSystem: ActorSystem
+)(implicit ec: ExecutionContext)
+    extends BaseConnector
+    with Retries {
 
   private val eclReturnsUrl: String = s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns"
 
   def getReturn(internalId: String)(implicit hc: HeaderCarrier): Future[EclReturn] =
-    executeAndDeserialise[EclReturn](
-      httpClient.GET[HttpResponse](
-        s"$eclReturnsUrl/returns/$internalId"
-      )
-    )
+    httpClient.get(url"$eclReturnsUrl/returns/$internalId").executeAndDeserialise[EclReturn]
 
   def upsertReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): Future[EclReturn] =
-    httpClient.PUT[EclReturn, EclReturn](
-      s"$eclReturnsUrl/returns",
-      eclReturn
-    )
+    httpClient.put(url"$eclReturnsUrl/returns").withBody(Json.toJson(eclReturn)).executeAndDeserialise[EclReturn]
 
   def deleteReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] =
-    httpClient
-      .DELETE[HttpResponse](
-        s"$eclReturnsUrl/returns/$internalId"
-      )
-      .map(_ => ())
+    httpClient.delete(url"$eclReturnsUrl/returns/$internalId").executeAndExpect(OK)
 
   def calculateLiability(amlRegulatedActivityLength: Int, relevantApLength: Int, relevantApRevenue: Long)(implicit
     hc: HeaderCarrier
-  ): Future[CalculatedLiability] =
-    httpClient.POST[CalculateLiabilityRequest, CalculatedLiability](
-      s"$eclReturnsUrl/calculate-liability",
-      CalculateLiabilityRequest(
-        amlRegulatedActivityLength = amlRegulatedActivityLength,
-        relevantApLength = relevantApLength,
-        ukRevenue = relevantApRevenue
-      )
+  ): Future[CalculatedLiability] = {
+    val calculatedLiabilityRequest = CalculateLiabilityRequest(
+      amlRegulatedActivityLength = amlRegulatedActivityLength,
+      relevantApLength = relevantApLength,
+      ukRevenue = relevantApRevenue
     )
+
+    httpClient
+      .post(url"$eclReturnsUrl/calculate-liability")
+      .withBody(Json.toJson(calculatedLiabilityRequest))
+      .executeAndDeserialise[CalculatedLiability]
+
+  }
 
   def getReturnValidationErrors(
     internalId: String
-  )(implicit hc: HeaderCarrier): Future[Option[Unit]] =
-    httpClient
-      .GET[HttpResponse](
-        s"$eclReturnsUrl/returns/$internalId/validation-errors"
-      )
-      .map { httpResponse =>
-        httpResponse.status match {
-          case OK          => None
-          case BAD_REQUEST => Some(())
-          case status      => throw new HttpException(s"Unexpected response with HTTP status $status", status)
-        }
-      }
+  )(implicit hc: HeaderCarrier): Future[Unit] =
+    httpClient.get(url"$eclReturnsUrl/returns/$internalId/validation-errors").executeAndExpect(OK)
 
   def submitReturn(internalId: String)(implicit hc: HeaderCarrier): Future[SubmitEclReturnResponse] =
-    httpClient.POSTEmpty[SubmitEclReturnResponse](s"$eclReturnsUrl/submit-return/$internalId")
+    httpClient.post(url"$eclReturnsUrl/submit-return/$internalId").executeAndDeserialise[SubmitEclReturnResponse]
 
 }

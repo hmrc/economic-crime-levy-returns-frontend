@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchers.any
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, EclReturnsConnector}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, ReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, EnrolmentStoreProxyService}
@@ -36,7 +36,7 @@ class StartControllerSpec extends SpecBase {
   val mockEnrolmentStoreProxyService: EnrolmentStoreProxyService = mock[EnrolmentStoreProxyService]
   val mockEclAccountConnector: EclAccountConnector               = mock[EclAccountConnector]
   val mockEclReturnsService: EclReturnsService                   = mock[EclReturnsService]
-  val mockEclReturnsConnector: EclReturnsConnector               = mock[EclReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector               = mock[ReturnsConnector]
 
   val view: StartView                                        = app.injector.instanceOf[StartView]
   val alreadySubmittedReturnView: AlreadySubmittedReturnView = app.injector.instanceOf[AlreadySubmittedReturnView]

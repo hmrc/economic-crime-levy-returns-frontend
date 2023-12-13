@@ -20,14 +20,14 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, EclReturnsConnector}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, ReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
 
 import scala.concurrent.Future
 
 class EclLiabilityServiceSpec extends SpecBase {
-  private val mockEclReturnsConnector    = mock[EclReturnsConnector]
+  private val mockEclReturnsConnector    = mock[ReturnsConnector]
   private val mockEclCalculatorConnector = mock[EclCalculatorConnector]
   private val service                    = new EclLiabilityService(mockEclReturnsConnector, mockEclCalculatorConnector)
 

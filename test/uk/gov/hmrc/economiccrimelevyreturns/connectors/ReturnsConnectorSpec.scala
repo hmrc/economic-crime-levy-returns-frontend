@@ -29,9 +29,9 @@ import uk.gov.hmrc.http.{HttpClient, HttpException, HttpResponse, UpstreamErrorR
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-class EclReturnsConnectorSpec extends SpecBase {
+class ReturnsConnectorSpec extends SpecBase {
   val mockHttpClient: HttpClient = mock[HttpClient]
-  val connector                  = new EclReturnsConnector(appConfig, mockHttpClient)
+  val connector                  = new ReturnsConnector(appConfig, mockHttpClient)
   val eclReturnsUrl              = "http://localhost:14003/economic-crime-levy-returns"
 
   "getReturn" should {

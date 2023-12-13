@@ -16,31 +16,40 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
-import play.api.Logging
+import akka.actor.ActorSystem
+import com.typesafe.config.Config
+import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, ObligationData}
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EclCalculatorConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext)
-    extends Logging {
+class EclCalculatorConnector @Inject() (
+  appConfig: AppConfig,
+  httpClient: HttpClientV2
+)(implicit ec: ExecutionContext)
+    extends BaseConnector {
 
   private val eclCalculatorUrl: String = s"${appConfig.eclCalculatorBaseUrl}/economic-crime-levy-calculator"
 
   def calculateLiability(amlRegulatedActivityLength: Int, relevantApLength: Int, relevantApRevenue: BigDecimal)(implicit
     hc: HeaderCarrier
-  ): Future[CalculatedLiability] =
-    httpClient.POST[CalculateLiabilityRequest, CalculatedLiability](
-      s"$eclCalculatorUrl/calculate-liability",
-      CalculateLiabilityRequest(
-        amlRegulatedActivityLength = amlRegulatedActivityLength,
-        relevantApLength = relevantApLength,
-        ukRevenue = relevantApRevenue.toLong
-      )
+  ): Future[CalculatedLiability] = {
+    val calculatedLiability = CalculateLiabilityRequest(
+      amlRegulatedActivityLength = amlRegulatedActivityLength,
+      relevantApLength = relevantApLength,
+      ukRevenue = relevantApRevenue.toLong
     )
+
+      httpClient
+        .post(url"$eclCalculatorUrl/calculate-liability")
+        .withBody(Json.toJson(calculatedLiability))
+        .executeAndDeserialise[CalculatedLiability]
+  }
 
 }

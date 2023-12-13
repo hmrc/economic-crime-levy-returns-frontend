@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
@@ -26,8 +26,8 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvi
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ValidatedReturnActionImpl @Inject() (eclReturnsConnector: EclReturnsConnector)(implicit
-  val executionContext: ExecutionContext
+class ValidatedReturnActionImpl @Inject()(eclReturnsConnector: ReturnsConnector)(implicit
+                                                                                 val executionContext: ExecutionContext
 ) extends ValidatedReturnAction
     with FrontendHeaderCarrierProvider {
 

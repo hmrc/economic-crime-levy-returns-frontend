@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, EclReturnsConnector}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, ReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
@@ -31,14 +31,14 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class StartAmendController @Inject() (
-  val controllerComponents: MessagesControllerComponents,
-  authorise: AuthorisedAction,
-  eclAccountConnector: EclAccountConnector,
-  eclReturnsService: EclReturnsService,
-  sessionService: SessionService,
-  eclReturnsConnector: EclReturnsConnector,
-  noObligationForPeriodView: NoObligationForPeriodView,
-  view: StartAmendView
+                                       val controllerComponents: MessagesControllerComponents,
+                                       authorise: AuthorisedAction,
+                                       eclAccountConnector: EclAccountConnector,
+                                       eclReturnsService: EclReturnsService,
+                                       sessionService: SessionService,
+                                       eclReturnsConnector: ReturnsConnector,
+                                       noObligationForPeriodView: NoObligationForPeriodView,
+                                       view: StartAmendView
 )(implicit ex: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

@@ -24,7 +24,7 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.FakeValidatedReturnAction
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
@@ -42,7 +42,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
   val view: CheckYourAnswersView        = app.injector.instanceOf[CheckYourAnswersView]
   val pdfReturnView: AmendReturnPdfView = app.injector.instanceOf[AmendReturnPdfView]
 
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
   val mockSessionService: SessionService           = mock[SessionService]
   val mockEmailService: EmailService               = mock[EmailService]
 

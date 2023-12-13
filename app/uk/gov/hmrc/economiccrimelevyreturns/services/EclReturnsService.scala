@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
+import cats.data.EitherT
 import play.api.http.Status.NOT_FOUND
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, ReturnType}
 import uk.gov.hmrc.economiccrimelevyreturns.models.audit.ReturnStartedEvent
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -29,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EclReturnsService @Inject() (
-  eclReturnsConnector: EclReturnsConnector,
+  eclReturnsConnector: ReturnsConnector,
   auditConnector: AuditConnector
 )(implicit
   ec: ExecutionContext
@@ -53,6 +55,18 @@ class EclReturnsService @Inject() (
         case None        => eclReturnsConnector.upsertReturn(EclReturn.empty(internalId, Some(FirstTimeReturn)))
         case Some(value) => eclReturnsConnector.upsertReturn(EclReturn.empty(internalId, Some(value)))
       }
+    }
+
+  def upsertEclReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, EclReturn] =
+    EitherT {
+      eclReturnsConnector
+        .upsertReturn(eclReturn)
+        .map {
+          Right(_)
+        }
+        .recover { case thr =>
+          Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
+        }
     }
 
   def upsertEclReturnType(internalId: String, returnType: ReturnType)(implicit hc: HeaderCarrier): Future[EclReturn] =

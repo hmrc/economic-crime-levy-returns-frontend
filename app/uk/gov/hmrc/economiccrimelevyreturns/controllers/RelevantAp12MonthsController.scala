@@ -20,7 +20,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
@@ -34,14 +34,14 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RelevantAp12MonthsController @Inject() (
-  val controllerComponents: MessagesControllerComponents,
-  authorise: AuthorisedAction,
-  getReturnData: DataRetrievalAction,
-  eclReturnsConnector: EclReturnsConnector,
-  formProvider: RelevantAp12MonthsFormProvider,
-  pageNavigator: RelevantAp12MonthsPageNavigator,
-  dataCleanup: RelevantAp12MonthsDataCleanup,
-  view: RelevantAp12MonthsView
+                                               val controllerComponents: MessagesControllerComponents,
+                                               authorise: AuthorisedAction,
+                                               getReturnData: DataRetrievalAction,
+                                               eclReturnsConnector: ReturnsConnector,
+                                               formProvider: RelevantAp12MonthsFormProvider,
+                                               pageNavigator: RelevantAp12MonthsPageNavigator,
+                                               dataCleanup: RelevantAp12MonthsDataCleanup,
+                                               view: RelevantAp12MonthsView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

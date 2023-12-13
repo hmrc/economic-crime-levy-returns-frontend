@@ -9,13 +9,13 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.$className$View
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class $className$Controller @Inject()(
                                        override val messagesApi: MessagesApi,
-                                       eclReturnsConnector: EclReturnsConnector,
+                                       eclReturnsConnector: ReturnsConnector,
                                        navigator: Navigator,
                                        authorise: AuthorisedAction,
                                        getReturnData: DataRetrievalAction,

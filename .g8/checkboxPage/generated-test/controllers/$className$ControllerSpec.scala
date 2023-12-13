@@ -6,7 +6,7 @@ import play.api.data.Form
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.$className$FormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.{NormalMode, EclReturn, $className$}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.$className$View
@@ -21,7 +21,7 @@ class $className$ControllerSpec extends SpecBase {
 
   val form: Form[Set[$className$]] = formProvider()
 
-  val mockEclReturnConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclReturnConnector: ReturnsConnector = mock[ReturnsConnector]
 
   class TestFixture(data: EclReturn = emptyReturn) {
     val controller = new $className$Controller(

@@ -21,7 +21,7 @@ import play.api.http.Status.OK
 import play.api.mvc.Result
 import play.api.test.Helpers.{contentAsString, status}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, EclReturnsConnector}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, ReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, SessionService}
@@ -34,7 +34,7 @@ class StartAmendControllerSpec extends SpecBase {
 
   val mockEclAccountConnector: EclAccountConnector = mock[EclAccountConnector]
   val mockEclReturnsService: EclReturnsService     = mock[EclReturnsService]
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
   val mockSessionService: SessionService           = mock[SessionService]
 
   val view: StartAmendView                                 = app.injector.instanceOf[StartAmendView]

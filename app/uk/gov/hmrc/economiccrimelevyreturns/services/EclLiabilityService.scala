@@ -16,17 +16,21 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
+import cats.data.EitherT
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, EclReturnsConnector}
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, ReturnsConnector}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 @Singleton
 class EclLiabilityService @Inject() (
-  eclReturnsConnector: EclReturnsConnector,
+  eclReturnsConnector: ReturnsConnector,
   eclCalculatorConnector: EclCalculatorConnector
 )(implicit
   ec: ExecutionContext
@@ -62,6 +66,25 @@ class EclLiabilityService @Inject() (
         eclReturnsConnector.upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
     }
 
+  def getCalculatedLiability(relevantApLength: Int, relevantApRevenue: BigDecimal, amlRegulatedActivityLength: Int)(
+    implicit hc: HeaderCarrier
+  ): EitherT[Future, LiabilityCalculationError, CalculatedLiability] =
+    EitherT {
+      eclCalculatorConnector
+        .calculateLiability(amlRegulatedActivityLength, relevantApLength, relevantApRevenue)
+        .map {
+          Right(_)
+        }
+        .recover {
+          case error @ UpstreamErrorResponse(message, code, _, _)
+              if UpstreamErrorResponse.Upstream5xxResponse
+                .unapply(error)
+                .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
+            Left(LiabilityCalculationError.BadGateway(reason = message, code = code))
+          case NonFatal(thr) => Left(LiabilityCalculationError.InternalUnexpectedError(Some(thr)))
+        }
+    }
+
   def calculateAmlRegulatedActivityLength(
     carriedOutAmlRegulatedActivityForFullFy: Boolean,
     optAmlRegulatedActivityLength: Option[Int]
@@ -70,6 +93,6 @@ class EclLiabilityService @Inject() (
       case (false, None)    => Some(0)
       case (true, _)        => FullYear
       case (false, Some(_)) => optAmlRegulatedActivityLength
-
     }
+
 }

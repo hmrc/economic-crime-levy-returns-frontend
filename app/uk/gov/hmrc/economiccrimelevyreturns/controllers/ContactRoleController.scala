@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactRoleFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
@@ -33,13 +33,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ContactRoleController @Inject() (
-  val controllerComponents: MessagesControllerComponents,
-  authorise: AuthorisedAction,
-  getReturnData: DataRetrievalAction,
-  eclReturnsConnector: EclReturnsConnector,
-  formProvider: ContactRoleFormProvider,
-  pageNavigator: ContactRolePageNavigator,
-  view: ContactRoleView
+                                        val controllerComponents: MessagesControllerComponents,
+                                        authorise: AuthorisedAction,
+                                        getReturnData: DataRetrievalAction,
+                                        eclReturnsConnector: ReturnsConnector,
+                                        formProvider: ContactRoleFormProvider,
+                                        pageNavigator: ContactRolePageNavigator,
+                                        view: ContactRoleView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

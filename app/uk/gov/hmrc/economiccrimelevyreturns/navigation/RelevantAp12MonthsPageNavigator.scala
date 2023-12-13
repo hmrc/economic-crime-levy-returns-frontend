@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.{Call, RequestHeader}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
@@ -29,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class RelevantAp12MonthsPageNavigator @Inject() (
   eclLiabilityService: EclLiabilityService,
-  eclReturnsConnector: EclReturnsConnector
+  eclReturnsConnector: ReturnsConnector
 )(implicit
   ec: ExecutionContext
 ) extends AsyncPageNavigator
