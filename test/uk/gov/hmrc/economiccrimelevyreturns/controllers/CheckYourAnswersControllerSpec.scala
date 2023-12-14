@@ -43,8 +43,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
   val pdfReturnView: AmendReturnPdfView = app.injector.instanceOf[AmendReturnPdfView]
 
   val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
-  val mockSessionService: SessionService           = mock[SessionService]
-  val mockEmailService: EmailService               = mock[EmailService]
+  val mockSessionService: SessionService        = mock[SessionService]
+  val mockEmailService: EmailService            = mock[EmailService]
 
   class TestContext(eclReturnData: EclReturn) {
     val controller = new CheckYourAnswersController(

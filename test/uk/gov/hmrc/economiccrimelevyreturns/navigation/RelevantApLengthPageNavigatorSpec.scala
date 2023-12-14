@@ -32,7 +32,7 @@ import scala.concurrent.Future
 class RelevantApLengthPageNavigatorSpec extends SpecBase {
 
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
-  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector    = mock[ReturnsConnector]
 
   val pageNavigator = new RelevantApLengthPageNavigator(mockEclLiabilityService, mockEclReturnsConnector)
 

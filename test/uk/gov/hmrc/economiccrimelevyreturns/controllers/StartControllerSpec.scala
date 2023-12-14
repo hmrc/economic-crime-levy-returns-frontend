@@ -36,7 +36,7 @@ class StartControllerSpec extends SpecBase {
   val mockEnrolmentStoreProxyService: EnrolmentStoreProxyService = mock[EnrolmentStoreProxyService]
   val mockEclAccountConnector: EclAccountConnector               = mock[EclAccountConnector]
   val mockEclReturnsService: EclReturnsService                   = mock[EclReturnsService]
-  val mockEclReturnsConnector: ReturnsConnector               = mock[ReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector                  = mock[ReturnsConnector]
 
   val view: StartView                                        = app.injector.instanceOf[StartView]
   val alreadySubmittedReturnView: AlreadySubmittedReturnView = app.injector.instanceOf[AlreadySubmittedReturnView]

@@ -32,16 +32,16 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class StartController @Inject() (
-                                  val controllerComponents: MessagesControllerComponents,
-                                  authorise: AuthorisedAction,
-                                  enrolmentStoreProxyService: EnrolmentStoreProxyService,
-                                  eclAccountConnector: EclAccountConnector,
-                                  eclReturnsService: EclReturnsService,
-                                  eclReturnsConnector: ReturnsConnector,
-                                  alreadySubmittedReturnView: AlreadySubmittedReturnView,
-                                  noObligationForPeriodView: NoObligationForPeriodView,
-                                  chooseReturnPeriodView: ChooseReturnPeriodView,
-                                  view: StartView
+  val controllerComponents: MessagesControllerComponents,
+  authorise: AuthorisedAction,
+  enrolmentStoreProxyService: EnrolmentStoreProxyService,
+  eclAccountConnector: EclAccountConnector,
+  eclReturnsService: EclReturnsService,
+  eclReturnsConnector: ReturnsConnector,
+  alreadySubmittedReturnView: AlreadySubmittedReturnView,
+  noObligationForPeriodView: NoObligationForPeriodView,
+  chooseReturnPeriodView: ChooseReturnPeriodView,
+  view: StartView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

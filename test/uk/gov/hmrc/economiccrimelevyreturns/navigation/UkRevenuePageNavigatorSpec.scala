@@ -32,7 +32,7 @@ import scala.concurrent.Future
 class UkRevenuePageNavigatorSpec extends SpecBase {
 
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
-  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector    = mock[ReturnsConnector]
 
   val pageNavigator = new UkRevenuePageNavigator(mockEclLiabilityService, mockEclReturnsConnector)
 

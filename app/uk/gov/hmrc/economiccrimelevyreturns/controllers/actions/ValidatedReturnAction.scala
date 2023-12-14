@@ -26,8 +26,8 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvi
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ValidatedReturnActionImpl @Inject()(eclReturnsConnector: ReturnsConnector)(implicit
-                                                                                 val executionContext: ExecutionContext
+class ValidatedReturnActionImpl @Inject() (eclReturnsConnector: ReturnsConnector)(implicit
+  val executionContext: ExecutionContext
 ) extends ValidatedReturnAction
     with FrontendHeaderCarrierProvider {
 

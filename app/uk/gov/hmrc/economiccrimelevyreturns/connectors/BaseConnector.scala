@@ -65,11 +65,10 @@ trait BaseConnector {
         .flatMap { response =>
           response.status match {
             case OK | CREATED | ACCEPTED => response.asOption[T]
-            case _ =>
+            case _                       =>
               response.error
           }
         }
-
 
     def executeAndExpect(expected: Int)(implicit ec: ExecutionContext): Future[Unit] =
       requestBuilder

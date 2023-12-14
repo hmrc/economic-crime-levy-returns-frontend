@@ -42,7 +42,7 @@ class UkRevenueControllerSpec extends SpecBase {
   val formProvider: UkRevenueFormProvider = new UkRevenueFormProvider()
   val form: Form[BigDecimal]              = formProvider()
 
-  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector    = mock[ReturnsConnector]
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
 
   val pageNavigator: UkRevenuePageNavigator =

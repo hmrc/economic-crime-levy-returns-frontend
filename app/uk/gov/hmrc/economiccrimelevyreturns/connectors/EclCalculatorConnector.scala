@@ -46,10 +46,10 @@ class EclCalculatorConnector @Inject() (
       ukRevenue = relevantApRevenue.toLong
     )
 
-      httpClient
-        .post(url"$eclCalculatorUrl/calculate-liability")
-        .withBody(Json.toJson(calculatedLiability))
-        .executeAndDeserialise[CalculatedLiability]
+    httpClient
+      .post(url"$eclCalculatorUrl/calculate-liability")
+      .withBody(Json.toJson(calculatedLiability))
+      .executeAndDeserialise[CalculatedLiability]
   }
 
 }

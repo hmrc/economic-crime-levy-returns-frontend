@@ -42,7 +42,7 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
   val formProvider: AmlRegulatedActivityLengthFormProvider = new AmlRegulatedActivityLengthFormProvider()
   val form: Form[Int]                                      = formProvider()
 
-  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector    = mock[ReturnsConnector]
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
 
   val pageNavigator: AmlRegulatedActivityLengthPageNavigator = new AmlRegulatedActivityLengthPageNavigator(

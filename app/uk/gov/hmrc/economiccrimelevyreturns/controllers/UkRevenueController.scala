@@ -34,14 +34,14 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class UkRevenueController @Inject() (
-                                      val controllerComponents: MessagesControllerComponents,
-                                      authorise: AuthorisedAction,
-                                      getReturnData: DataRetrievalAction,
-                                      eclReturnsConnector: ReturnsConnector,
-                                      formProvider: UkRevenueFormProvider,
-                                      pageNavigator: UkRevenuePageNavigator,
-                                      dataCleanup: UkRevenueDataCleanup,
-                                      view: UkRevenueView
+  val controllerComponents: MessagesControllerComponents,
+  authorise: AuthorisedAction,
+  getReturnData: DataRetrievalAction,
+  eclReturnsConnector: ReturnsConnector,
+  formProvider: UkRevenueFormProvider,
+  pageNavigator: UkRevenuePageNavigator,
+  dataCleanup: UkRevenueDataCleanup,
+  view: UkRevenueView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

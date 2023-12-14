@@ -34,7 +34,7 @@ class StartAmendControllerSpec extends SpecBase {
 
   val mockEclAccountConnector: EclAccountConnector = mock[EclAccountConnector]
   val mockEclReturnsService: EclReturnsService     = mock[EclReturnsService]
-  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector    = mock[ReturnsConnector]
   val mockSessionService: SessionService           = mock[SessionService]
 
   val view: StartAmendView                                 = app.injector.instanceOf[StartAmendView]

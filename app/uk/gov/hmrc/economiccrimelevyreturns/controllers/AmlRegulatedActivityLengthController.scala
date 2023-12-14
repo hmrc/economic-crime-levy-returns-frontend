@@ -34,14 +34,14 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AmlRegulatedActivityLengthController @Inject() (
-                                                       val controllerComponents: MessagesControllerComponents,
-                                                       authorise: AuthorisedAction,
-                                                       getReturnData: DataRetrievalAction,
-                                                       eclReturnsConnector: ReturnsConnector,
-                                                       formProvider: AmlRegulatedActivityLengthFormProvider,
-                                                       pageNavigator: AmlRegulatedActivityLengthPageNavigator,
-                                                       dataCleanup: AmlRegulatedActivityLengthDataCleanup,
-                                                       view: AmlRegulatedActivityLengthView
+  val controllerComponents: MessagesControllerComponents,
+  authorise: AuthorisedAction,
+  getReturnData: DataRetrievalAction,
+  eclReturnsConnector: ReturnsConnector,
+  formProvider: AmlRegulatedActivityLengthFormProvider,
+  pageNavigator: AmlRegulatedActivityLengthPageNavigator,
+  dataCleanup: AmlRegulatedActivityLengthDataCleanup,
+  view: AmlRegulatedActivityLengthView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

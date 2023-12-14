@@ -40,7 +40,7 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
   val formProvider: RelevantAp12MonthsFormProvider = new RelevantAp12MonthsFormProvider()
   val form: Form[Boolean]                          = formProvider()
 
-  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector    = mock[ReturnsConnector]
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
 
   val pageNavigator: RelevantAp12MonthsPageNavigator =

@@ -33,13 +33,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ContactEmailController @Inject() (
-                                         val controllerComponents: MessagesControllerComponents,
-                                         authorise: AuthorisedAction,
-                                         getReturnData: DataRetrievalAction,
-                                         eclReturnsConnector: ReturnsConnector,
-                                         formProvider: ContactEmailFormProvider,
-                                         pageNavigator: ContactEmailPageNavigator,
-                                         view: ContactEmailView
+  val controllerComponents: MessagesControllerComponents,
+  authorise: AuthorisedAction,
+  getReturnData: DataRetrievalAction,
+  eclReturnsConnector: ReturnsConnector,
+  formProvider: ContactEmailFormProvider,
+  pageNavigator: ContactEmailPageNavigator,
+  view: ContactEmailView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

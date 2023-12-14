@@ -33,13 +33,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ContactNumberController @Inject() (
-                                          val controllerComponents: MessagesControllerComponents,
-                                          authorise: AuthorisedAction,
-                                          getReturnData: DataRetrievalAction,
-                                          eclReturnsConnector: ReturnsConnector,
-                                          formProvider: ContactNumberFormProvider,
-                                          pageNavigator: ContactNumberPageNavigator,
-                                          view: ContactNumberView
+  val controllerComponents: MessagesControllerComponents,
+  authorise: AuthorisedAction,
+  getReturnData: DataRetrievalAction,
+  eclReturnsConnector: ReturnsConnector,
+  formProvider: ContactNumberFormProvider,
+  pageNavigator: ContactNumberPageNavigator,
+  view: ContactNumberView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

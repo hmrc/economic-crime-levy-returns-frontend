@@ -31,14 +31,14 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class StartAmendController @Inject() (
-                                       val controllerComponents: MessagesControllerComponents,
-                                       authorise: AuthorisedAction,
-                                       eclAccountConnector: EclAccountConnector,
-                                       eclReturnsService: EclReturnsService,
-                                       sessionService: SessionService,
-                                       eclReturnsConnector: ReturnsConnector,
-                                       noObligationForPeriodView: NoObligationForPeriodView,
-                                       view: StartAmendView
+  val controllerComponents: MessagesControllerComponents,
+  authorise: AuthorisedAction,
+  eclAccountConnector: EclAccountConnector,
+  eclReturnsService: EclReturnsService,
+  sessionService: SessionService,
+  eclReturnsConnector: ReturnsConnector,
+  noObligationForPeriodView: NoObligationForPeriodView,
+  view: StartAmendView
 )(implicit ex: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

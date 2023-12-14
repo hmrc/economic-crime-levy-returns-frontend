@@ -42,7 +42,7 @@ class RelevantApLengthControllerSpec extends SpecBase {
   val formProvider: RelevantApLengthFormProvider = new RelevantApLengthFormProvider()
   val form: Form[Int]                            = formProvider()
 
-  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
+  val mockEclReturnsConnector: ReturnsConnector    = mock[ReturnsConnector]
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
 
   val pageNavigator: RelevantApLengthPageNavigator = new RelevantApLengthPageNavigator(

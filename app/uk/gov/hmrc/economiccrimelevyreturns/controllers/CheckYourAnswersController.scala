@@ -41,16 +41,16 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class CheckYourAnswersController @Inject() (
-                                             override val messagesApi: MessagesApi,
-                                             authorise: AuthorisedAction,
-                                             getReturnData: DataRetrievalAction,
-                                             validateReturnData: ValidatedReturnAction,
-                                             eclReturnsConnector: ReturnsConnector,
-                                             sessionService: SessionService,
-                                             emailService: EmailService,
-                                             amendReturnPdfView: AmendReturnPdfView,
-                                             val controllerComponents: MessagesControllerComponents,
-                                             view: CheckYourAnswersView
+  override val messagesApi: MessagesApi,
+  authorise: AuthorisedAction,
+  getReturnData: DataRetrievalAction,
+  validateReturnData: ValidatedReturnAction,
+  eclReturnsConnector: ReturnsConnector,
+  sessionService: SessionService,
+  emailService: EmailService,
+  amendReturnPdfView: AmendReturnPdfView,
+  val controllerComponents: MessagesControllerComponents,
+  view: CheckYourAnswersView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
