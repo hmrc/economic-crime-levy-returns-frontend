@@ -38,23 +38,17 @@ class EclLiabilityService @Inject() (
 
   private val FullYear: Option[Int] = Some(365)
 
-  private def validateOptExists[T](optData: Option[T]): Either[LiabilityCalculationError, T] =
-    optData match {
-      case Some(value) => Right(value)
-      case _           => Left(LiabilityCalculationError.InternalUnexpectedError(None))
-    }
-
-  def calculateLiability(eclReturn: EclReturn)(implicit request: RequestHeader): Either[LiabilityCalculationError, CalculatedLiability] =
+  def calculateLiability(eclReturn: EclReturn)(implicit request: RequestHeader): EitherT[Future, LiabilityCalculationError, CalculatedLiability] =
     for {
       relevantAp12Months                     <- eclReturn.relevantAp12Months
-      relevantApLength                       <- if (relevantAp12Months) FullYear else eclReturn.relevantApLength
-      relevantApRevenue                      <- eclReturn.relevantApRevenue
+      relevantApLength                       <- validateOptExists(if (relevantAp12Months) FullYear else eclReturn.relevantApLength)
+      relevantApRevenue                      <- validateOptExists(eclReturn.relevantApRevenue)
       carriedOutAmlRegulatedActivityForFullFy = eclReturn.carriedOutAmlRegulatedActivityForFullFy.getOrElse(true)
-      amlRegulatedActivityLength             <- calculateAmlRegulatedActivityLength(
-                                                  carriedOutAmlRegulatedActivityForFullFy,
-                                                  eclReturn.amlRegulatedActivityLength
-                                                )
-      response = getCalculatedLiability(
+      amlRegulatedActivityLength             <- validateOptExists(calculateAmlRegulatedActivityLength(
+        carriedOutAmlRegulatedActivityForFullFy,
+        eclReturn.amlRegulatedActivityLength
+      ))
+      response <- getCalculatedLiability(
         relevantApLength = relevantApLength,
         relevantApRevenue = relevantApRevenue,
         amlRegulatedActivityLength = amlRegulatedActivityLength
@@ -119,5 +113,16 @@ class EclLiabilityService @Inject() (
       case (true, _)        => FullYear
       case (false, Some(_)) => optAmlRegulatedActivityLength
     }
+}
 
+implicit class test[T](value: T) {
+  def validateOptExists[T](optData: Option[T]): EitherT[Future, LiabilityCalculationError, T] =
+    EitherT{
+      Future.successful(
+        optData match {
+          case Some(value) => Right(value)
+          case _           => Left(LiabilityCalculationError.InternalUnexpectedError(None))
+        }
+      )
+    }
 }
