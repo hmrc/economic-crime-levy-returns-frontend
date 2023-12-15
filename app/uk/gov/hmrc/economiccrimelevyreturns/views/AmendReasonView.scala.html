@@ -35,7 +35,7 @@
 
     <p class="govuk-body">@messages("amendReason.p1")</p>
 
-    @formHelper(action = ContactNameController.onSubmit(mode)) {
+    @formHelper(action = AmendReasonController.onSubmit(mode)) {
         @govukTextarea(
             Textarea(
                 id = "value",

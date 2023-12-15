@@ -30,21 +30,21 @@
 
         @if(amendReason.rows.nonEmpty) {
 
-            <h1 class="govuk-heading-l">@messages("checkYourAnswers.amendReason.title")</h1>
+            <h2 class="govuk-heading-m">@messages("checkYourAnswers.amendReason.title")</h2>
 
             @govukSummaryList(amendReason)
 
         }
 
-        <h1 class="govuk-heading-m">@messages("checkYourAnswers.eclDetails")</h1>
+        <h2 class="govuk-heading-m">@messages("checkYourAnswers.eclDetails")</h2>
 
         @govukSummaryList(eclDetails)
 
-        <h1 class="govuk-heading-m">@messages("checkYourAnswers.contactDetails")</h1>
+        <h2 class="govuk-heading-m">@messages("checkYourAnswers.contactDetails")</h2>
 
         @govukSummaryList(contactDetails)
 
-        <h1 class="govuk-heading-m">@messages("checkYourAnswers.nowSend")</h1>
+        <h2 class="govuk-heading-m">@messages("checkYourAnswers.nowSend")</h2>
 
         <div class="govuk-body">@messages("checkYourAnswers.bySubmitting")</div>
 
