@@ -26,6 +26,17 @@
 
 @(form: Form[String], mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
+@errorMessage = @{
+    if(form.errors.nonEmpty) {
+        Some(ErrorMessage(
+            id = Some("amendReason.error.required"),
+            content = Text(messages("amendReason.error.required"))
+        ))
+    } else {
+        None
+    }
+}
+
 @layout(pageTitle = titleWithForm(form, messages("amendReason.title")), startAmendUrl = startAmendUrl) {
     @if(form.errors.nonEmpty) {
         @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -40,7 +51,8 @@
             Textarea(
                 id = "value",
                 name = "value",
-                value = form("value").value
+                value = form("value").value,
+                errorMessage = errorMessage
             )
         )
 
