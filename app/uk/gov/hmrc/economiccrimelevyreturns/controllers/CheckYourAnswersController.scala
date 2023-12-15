@@ -77,13 +77,19 @@ class CheckYourAnswersController @Inject() (
     ).flatten
   ).withCssClass("govuk-!-margin-bottom-9")
 
+  private def amendReasonDetails()(implicit request: ReturnDataRequest[_]): SummaryList = SummaryListViewModel(
+    rows = Seq(
+      AmendReasonSummary.row()
+    ).flatten
+  ).withCssClass("govuk-!-margin-bottom-9")
+
   def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData andThen validateReturnData) {
     implicit request =>
-      Ok(view(eclDetails(), contactDetails(), request.startAmendUrl))
+      Ok(view(amendReasonDetails(), eclDetails(), contactDetails(), request.startAmendUrl))
   }
 
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
-    val htmlView = view(eclDetails(), contactDetails())
+    val htmlView = view(amendReasonDetails(), eclDetails(), contactDetails())
 
     val base64EncodedHtmlView: String = base64EncodeHtmlView(htmlView.body)
 

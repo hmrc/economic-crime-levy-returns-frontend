@@ -225,6 +225,8 @@ checkYourAnswers.contactName.label = Datganiad wedi ei lenwi gan
 checkYourAnswers.contactRole.label = Rôl
 checkYourAnswers.contactEmail.label = Cyfeiriad e-bost
 checkYourAnswers.contactNumber.label = Rhif ffôn
+checkYourAnswers.amendReason.title = Rheswm dros ddiwygio
+checkYourAnswers.amendReason.label = Gwybodaeth ychwanegol
 checkYourAnswers.nowSend = Cyflwynwch eich datganiad nawr
 checkYourAnswers.bySubmitting = Drwy gyflwyno’r datganiad hwn, rydych yn cadarnhau, hyd eithaf eich gwybodaeth, fod y manylion a rowch yn gywir.
 checkYourAnswers.confirmAndSend = Cadarnhau ac anfon
@@ -326,3 +328,8 @@ band.VeryLarge.defaultRange = £1 biliwn neu fwy
 
 otherRegistration.pdfHtml.title = Cais i ddiwygio datganiad ar gyfer yr Ardoll Troseddau Economaidd (ECL)
 otherRegistration.pdfHtml.submissionDate = Dyddiad cyflwyno:
+
+amendReason.title = Pam ydych yn gwneud cais i ddiwygio’ch datganiad?
+amendReason.h1 = Pam ydych yn gwneud cais i ddiwygio’ch datganiad?
+amendReason.p1 = Nodwch unrhyw wybodaeth sy’n berthnasol i’ch cais i ddiwygio’ch cofrestriad. Peidiwch â chynnwys gwybodaeth bersonol nac ariannol, megis eich rhif Yswiriant Gwladol neu fanylion eich cerdyn credyd.
+amendReason.error.required = Nodwch y rheswm pam yr ydych yn gwneud cais i newid eich datganiad

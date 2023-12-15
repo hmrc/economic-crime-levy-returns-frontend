@@ -73,3 +73,8 @@ GET         /amend/confirmation                                           uk.gov
 GET         /account/sign-out-survey                                      uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOut()
 GET         /account/sign-out                                             uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signOutNoSurvey()
 GET         /account/signed-out                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.SignOutController.signedOut()
+
+GET         /can-you-provide-more-detail                                  uk.gov.hmrc.economiccrimelevyreturns.controllers.AmendReasonController.onPageLoad(mode: Mode = NormalMode)
+POST        /can-you-provide-more-detail                                  uk.gov.hmrc.economiccrimelevyreturns.controllers.AmendReasonController.onSubmit(mode: Mode = NormalMode)
+GET         /change-answer/can-you-provide-more-detail                    uk.gov.hmrc.economiccrimelevyreturns.controllers.AmendReasonController.onPageLoad(mode: Mode = CheckMode)
+POST        /change-answer/can-you-provide-more-detail                    uk.gov.hmrc.economiccrimelevyreturns.controllers.AmendReasonController.onSubmit(mode: Mode = CheckMode)

@@ -99,8 +99,17 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           ).flatten
         ).withCssClass("govuk-!-margin-bottom-9")
 
+        val amendReasonDetails: SummaryList = SummaryListViewModel(
+          rows = Seq(
+            AmendReasonSummary.row()
+          ).flatten
+        ).withCssClass("govuk-!-margin-bottom-9")
+
         status(result)          shouldBe OK
-        contentAsString(result) shouldBe view(eclDetails, contactDetails)(fakeRequest, messages).toString
+        contentAsString(result) shouldBe view(amendReasonDetails, eclDetails, contactDetails)(
+          fakeRequest,
+          messages
+        ).toString
       }
     }
   }
