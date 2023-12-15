@@ -21,6 +21,8 @@ import play.api.mvc.{ActionFilter, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
+import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import javax.inject.Inject
@@ -31,11 +33,13 @@ class ValidatedReturnActionImpl @Inject() (eclReturnsConnector: ReturnsConnector
 ) extends ValidatedReturnAction
     with FrontendHeaderCarrierProvider {
 
-  override def filter[A](request: ReturnDataRequest[A]): Future[Option[Result]] =
-    eclReturnsConnector.getReturnValidationErrors(request.internalId)(hc(request)).map {
+  override def filter[A](request: ReturnDataRequest[A]): Future[Option[Result]] = {
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
+    eclReturnsConnector.getReturnValidationErrors(request.internalId)(hc).map {
       case Some(_) => Some(Redirect(routes.NotableErrorController.answersAreInvalid()))
       case None    => None
     }
+  }
 }
 
 trait ValidatedReturnAction extends ActionFilter[ReturnDataRequest]

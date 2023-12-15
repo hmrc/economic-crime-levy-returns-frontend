@@ -22,7 +22,7 @@ import play.api.Logging
 import play.api.http.Status.OK
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SessionData}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, Retries, StringContextOps}
@@ -44,13 +44,21 @@ class SessionDataConnector @Inject() (
   private val eclReturnsUrl: String =
     s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns"
 
-  def get(internalId: String)(implicit hc: HeaderCarrier): Future[SessionData] =
-    httpClient.get(url"$eclReturnsUrl/session/$internalId").executeAndDeserialise[SessionData]
+  def get(internalId: String)(implicit hc: HeaderCarrier): Future[SessionData] = {
+    retryFor[SessionData]("Session Data Connector - get")(retryCondition) {
+      httpClient.get(url"$eclReturnsUrl/session/$internalId").executeAndDeserialise[SessionData]
+    }
+  }
 
-  def upsert(session: SessionData)(implicit hc: HeaderCarrier): Future[Unit] =
-    httpClient.put(url"$eclReturnsUrl/session").withBody(Json.toJson(session)).executeAndExpect(OK)
+  def upsert(session: SessionData)(implicit hc: HeaderCarrier): Future[Unit] = {
+    retryFor[Unit]("Session Data Connector - upsert")(retryCondition) {
+      httpClient.put(url"$eclReturnsUrl/session").withBody(Json.toJson(session)).executeAndExpect(OK)
+    }
+  }
 
-  def delete(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] =
-    httpClient.delete(url"$eclReturnsUrl/session/$internalId").executeAndExpect(OK)
-
+  def delete(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] = {
+    retryFor[Unit]("Session Data Connector - delete")(retryCondition) {
+      httpClient.delete(url"$eclReturnsUrl/session/$internalId").executeAndExpect(OK)
+    }
+  }
 }

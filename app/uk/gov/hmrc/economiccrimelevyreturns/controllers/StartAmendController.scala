@@ -23,7 +23,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html._
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -44,6 +46,7 @@ class StartAmendController @Inject() (
     with I18nSupport {
 
   def onPageLoad(periodKey: String, returnNumber: String): Action[AnyContent] = authorise.async { implicit request =>
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     for {
       obligationData          <- eclAccountConnector.getObligations()
       eitherObligationDetails <- validatePeriodKey(obligationData, periodKey)

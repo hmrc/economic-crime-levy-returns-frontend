@@ -26,6 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
@@ -83,6 +84,8 @@ class CheckYourAnswersController @Inject() (
   }
 
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
+
     val htmlView = view(eclDetails(), contactDetails())
 
     val base64EncodedHtmlView: String = base64EncodeHtmlView(htmlView.body)

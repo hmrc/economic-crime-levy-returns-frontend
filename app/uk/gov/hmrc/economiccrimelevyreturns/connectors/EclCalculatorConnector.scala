@@ -31,9 +31,12 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class EclCalculatorConnector @Inject() (
   appConfig: AppConfig,
-  httpClient: HttpClientV2
+  httpClient: HttpClientV2,
+  override val configuration: Config,
+  override val actorSystem: ActorSystem
 )(implicit ec: ExecutionContext)
-    extends BaseConnector {
+    extends BaseConnector
+    with Retries {
 
   private val eclCalculatorUrl: String = s"${appConfig.eclCalculatorBaseUrl}/economic-crime-levy-calculator"
 
@@ -46,10 +49,12 @@ class EclCalculatorConnector @Inject() (
       ukRevenue = relevantApRevenue.toLong
     )
 
-    httpClient
-      .post(url"$eclCalculatorUrl/calculate-liability")
-      .withBody(Json.toJson(calculatedLiability))
-      .executeAndDeserialise[CalculatedLiability]
+    retryFor[CalculatedLiability]("ECL Calculator Connector - calculate liability")(retryCondition) {
+      httpClient
+        .post(url"$eclCalculatorUrl/calculate-liability")
+        .withBody(Json.toJson(calculatedLiability))
+        .executeAndDeserialise[CalculatedLiability]
+    }
   }
 
 }

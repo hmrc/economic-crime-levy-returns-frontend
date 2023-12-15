@@ -25,7 +25,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactRoleFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactRolePageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactRoleView
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -51,6 +53,7 @@ class ContactRoleController @Inject() (
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     form
       .bindFromRequest()
       .fold(

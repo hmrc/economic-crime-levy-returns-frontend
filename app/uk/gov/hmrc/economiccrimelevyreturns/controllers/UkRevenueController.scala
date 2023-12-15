@@ -26,7 +26,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.UkRevenuePageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -53,6 +55,7 @@ class UkRevenueController @Inject() (
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     form
       .bindFromRequest()
       .fold(

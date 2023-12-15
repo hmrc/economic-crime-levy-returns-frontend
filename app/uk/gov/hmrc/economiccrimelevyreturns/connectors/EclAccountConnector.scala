@@ -30,15 +30,20 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class EclAccountConnector @Inject() (
   appConfig: AppConfig,
-  httpClient: HttpClientV2
+  httpClient: HttpClientV2,
+  override val configuration: Config,
+  override val actorSystem: ActorSystem
 )(implicit ec: ExecutionContext)
-    extends BaseConnector {
+    extends BaseConnector
+    with Retries {
 
   private val eclAccountUrl: String = s"${appConfig.eclAccountBaseUrl}/economic-crime-levy-account"
 
   def getObligations()(implicit hc: HeaderCarrier): Future[Option[ObligationData]] =
-    httpClient
-      .get(url"$eclAccountUrl/obligation-data")
-      .executeAndDeserialiseOpt[ObligationData]
+    retryFor[Option[ObligationData]]("ECL Account Connector - get obligations")(retryCondition) {
+      httpClient
+        .get(url"$eclAccountUrl/obligation-data")
+        .executeAndDeserialiseOpt[ObligationData]
+    }
 
 }

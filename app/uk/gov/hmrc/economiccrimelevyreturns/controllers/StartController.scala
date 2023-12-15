@@ -23,8 +23,10 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, EnrolmentStoreProxyService}
+import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, NoObligationForPeriodView, StartView}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -47,6 +49,7 @@ class StartController @Inject() (
     with I18nSupport {
 
   def start(): Action[AnyContent] = authorise.async { implicit request =>
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     eclReturnsService.getOrCreateReturn(request.internalId).map { eclReturn =>
       eclReturn.obligationDetails match {
         case Some(obligationDetails) => Redirect(routes.StartController.onPageLoad(obligationDetails.periodKey))
@@ -56,6 +59,7 @@ class StartController @Inject() (
   }
 
   def onPageLoad(periodKey: String): Action[AnyContent] = authorise.async { implicit request =>
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     for {
       registrationDate        <- enrolmentStoreProxyService.getEclRegistrationDate(request.eclRegistrationReference)
       obligationData          <- eclAccountConnector.getObligations()
@@ -77,6 +81,8 @@ class StartController @Inject() (
   private def validatePeriodKey(obligationData: Option[ObligationData], periodKey: String)(implicit
     request: AuthorisedRequest[_]
   ): Future[Either[Result, ObligationDetails]] = {
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
+
     val obligationDetails =
       obligationData
         .map(_.obligations.flatMap(_.obligationDetails.find(_.periodKey == periodKey)))
