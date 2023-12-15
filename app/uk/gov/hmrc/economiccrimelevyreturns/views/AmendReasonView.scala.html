@@ -20,8 +20,7 @@
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukErrorSummary: GovukErrorSummary,
-        govukInput: GovukInput,
-        govukTextArea: GovukTextarea,
+        govukTextarea: GovukTextarea,
         govukButton: GovukButton
 )
 
@@ -37,10 +36,11 @@
     <p class="govuk-body">@messages("amendReason.p1")</p>
 
     @formHelper(action = ContactNameController.onSubmit(mode)) {
-        @govukInput(
-            InputViewModel(
-                field = form("value"),
-                label = LabelViewModel(Text(messages("contactName.heading"))).asHiddenPageHeading()
+        @govukTextarea(
+            Textarea(
+                id = "value",
+                name = "value",
+                value = form("value").value
             )
         )
 
