@@ -38,21 +38,23 @@ class EclLiabilityService @Inject() (
 
   private val FullYear: Option[Int] = Some(365)
 
-  def calculateLiability(eclReturn: EclReturn)(implicit request: RequestHeader): EitherT[Future, LiabilityCalculationError, CalculatedLiability] =
+  def calculateLiability(
+    eclReturn: EclReturn
+  )(implicit request: RequestHeader): EitherT[Future, LiabilityCalculationError, CalculatedLiability] =
     for {
       relevantAp12Months                     <- eclReturn.relevantAp12Months.valueOrError
       relevantApLength                       <- (if (relevantAp12Months) FullYear else eclReturn.relevantApLength).valueOrError
       relevantApRevenue                      <- eclReturn.relevantApRevenue.valueOrError
       carriedOutAmlRegulatedActivityForFullFy = eclReturn.carriedOutAmlRegulatedActivityForFullFy.getOrElse(true)
       amlRegulatedActivityLength             <- calculateAmlRegulatedActivityLength(
-        carriedOutAmlRegulatedActivityForFullFy,
-        eclReturn.amlRegulatedActivityLength
-      ).valueOrError
-      response <- getCalculatedLiability(
-        relevantApLength = relevantApLength,
-        relevantApRevenue = relevantApRevenue,
-        amlRegulatedActivityLength = amlRegulatedActivityLength
-      )
+                                                  carriedOutAmlRegulatedActivityForFullFy,
+                                                  eclReturn.amlRegulatedActivityLength
+                                                ).valueOrError
+      response                               <- getCalculatedLiability(
+                                                  relevantApLength = relevantApLength,
+                                                  relevantApRevenue = relevantApRevenue,
+                                                  amlRegulatedActivityLength = amlRegulatedActivityLength
+                                                )
     } yield response
 
 //  private def calculateLiabilityAndUpsertReturn(
@@ -66,8 +68,12 @@ class EclLiabilityService @Inject() (
 //        eclReturnsConnector.upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
 //    }
 
-  private def getCalculatedLiability(relevantApLength: Int, relevantApRevenue: BigDecimal, amlRegulatedActivityLength: Int)(
-    implicit hc: HeaderCarrier
+  private def getCalculatedLiability(
+    relevantApLength: Int,
+    relevantApRevenue: BigDecimal,
+    amlRegulatedActivityLength: Int
+  )(implicit
+    hc: HeaderCarrier
   ): EitherT[Future, LiabilityCalculationError, CalculatedLiability] =
     EitherT {
       eclCalculatorConnector
@@ -97,7 +103,7 @@ class EclLiabilityService @Inject() (
 
   implicit class valueOrError[T](value: Option[T]) {
     def valueOrError: EitherT[Future, LiabilityCalculationError, T] =
-      EitherT{
+      EitherT {
         Future.successful(
           value match {
             case Some(value) => Right(value)

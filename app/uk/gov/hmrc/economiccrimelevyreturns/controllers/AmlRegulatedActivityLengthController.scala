@@ -65,12 +65,18 @@ class AmlRegulatedActivityLengthController @Inject() (
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
         amlRegulatedActivityLength =>
           (for {
-            calculatedLiability <- eclLiabilityService.calculateLiability(request.eclReturn).asResponseError
-            copiedReturn         = request.eclReturn.copy(
-                                     amlRegulatedActivityLength = Some(amlRegulatedActivityLength),
-                                     calculatedLiability = Some(calculatedLiability)
+            calculatedLiability <- eclLiabilityService
+                                     .calculateLiability(
+                                       request.eclReturn.copy(
+                                         amlRegulatedActivityLength = Some(amlRegulatedActivityLength)
+                                       )
+                                     )
+                                     .asResponseError
+            updatedReturn        = request.eclReturn.copy(
+                                     calculatedLiability = Some(calculatedLiability),
+                                     amlRegulatedActivityLength = Some(amlRegulatedActivityLength)
                                    )
-            upsertedReturn      <- eclReturnsService.upsertEclReturn(copiedReturn).asResponseError
+            upsertedReturn      <- eclReturnsService.upsertEclReturn(updatedReturn).asResponseError
 
           } yield upsertedReturn)
             .convertToAsyncResult(mode, pageNavigator)

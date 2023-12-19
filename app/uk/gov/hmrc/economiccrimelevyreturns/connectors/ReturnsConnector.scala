@@ -41,23 +41,20 @@ class ReturnsConnector @Inject() (
 
   private val eclReturnsUrl: String = s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns"
 
-  def getReturn(internalId: String)(implicit hc: HeaderCarrier): Future[EclReturn] = {
+  def getReturn(internalId: String)(implicit hc: HeaderCarrier): Future[EclReturn] =
     retryFor[EclReturn]("ECL Returns Connector - get return")(retryCondition) {
       httpClient.get(url"$eclReturnsUrl/returns/$internalId").executeAndDeserialise[EclReturn]
     }
-  }
 
-  def upsertReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): Future[EclReturn] = {
+  def upsertReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): Future[EclReturn] =
     retryFor[EclReturn]("ECL Returns Connector - upsert return")(retryCondition) {
       httpClient.put(url"$eclReturnsUrl/returns").withBody(Json.toJson(eclReturn)).executeAndDeserialise[EclReturn]
     }
-  }
 
-  def deleteReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] = {
+  def deleteReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] =
     retryFor[Unit]("ECL Returns Connector - delete return")(retryCondition) {
       httpClient.delete(url"$eclReturnsUrl/returns/$internalId").executeAndExpect(OK)
     }
-  }
 
   def calculateLiability(amlRegulatedActivityLength: Int, relevantApLength: Int, relevantApRevenue: Long)(implicit
     hc: HeaderCarrier
@@ -78,16 +75,14 @@ class ReturnsConnector @Inject() (
 
   def getReturnValidationErrors(
     internalId: String
-  )(implicit hc: HeaderCarrier): Future[Unit] = {
+  )(implicit hc: HeaderCarrier): Future[Unit] =
     retryFor[Unit]("ECL Returns Connector - get return validation errors")(retryCondition) {
       httpClient.get(url"$eclReturnsUrl/returns/$internalId/validation-errors").executeAndExpect(OK)
     }
-  }
 
-  def submitReturn(internalId: String)(implicit hc: HeaderCarrier): Future[SubmitEclReturnResponse] = {
+  def submitReturn(internalId: String)(implicit hc: HeaderCarrier): Future[SubmitEclReturnResponse] =
     retryFor[SubmitEclReturnResponse]("ECL Returns Connector - submit return")(retryCondition) {
       httpClient.post(url"$eclReturnsUrl/submit-return/$internalId").executeAndDeserialise[SubmitEclReturnResponse]
     }
-  }
 
 }
