@@ -47,9 +47,9 @@ class AmlRegulatedActivityLengthController @Inject() (
   eclReturnsService: EclReturnsService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
+    with BaseController
     with ErrorHandler
-    with BaseController {
+    with I18nSupport {
 
   val form: Form[Int] = formProvider()
 
@@ -69,8 +69,8 @@ class AmlRegulatedActivityLengthController @Inject() (
           )
           (for {
             calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
-            updatedReturn        = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
-            upsertedReturn      <- eclReturnsService.upsertEclReturn(updatedReturn).asResponseError
+            calculatedReturn     = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
+            upsertedReturn      <- eclReturnsService.upsertEclReturn(calculatedReturn).asResponseError
 
           } yield upsertedReturn)
             .convertToAsyncResult(mode, pageNavigator)

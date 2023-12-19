@@ -24,9 +24,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvi
 import javax.inject.Inject
 import scala.concurrent.Future
 
-class AmlRegulatedActivityLengthPageNavigator @Inject() ()
-    extends AsyncPageNavigator
-    with FrontendHeaderCarrierProvider {
+class AmlRegulatedActivityLengthPageNavigator @Inject() extends AsyncPageNavigator with FrontendHeaderCarrierProvider {
 
   override protected def navigateInNormalMode(
     eclReturn: EclReturn
