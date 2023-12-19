@@ -33,5 +33,6 @@ class AmlRegulatedActivityLengthPageNavigator @Inject() extends AsyncPageNavigat
 
   override protected def navigateInCheckMode(
     eclReturn: EclReturn
-  )(implicit request: RequestHeader): Future[Call] = Future.successful(routes.CheckYourAnswersController.onPageLoad())
+  )(implicit request: RequestHeader): Future[Call] =
+    Future.successful(routes.CheckYourAnswersController.onPageLoad())
 }

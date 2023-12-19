@@ -25,6 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactEmailFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactEmailPageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactEmailView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -35,15 +36,17 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ContactEmailController @Inject() (
-  val controllerComponents: MessagesControllerComponents,
-  authorise: AuthorisedAction,
-  getReturnData: DataRetrievalAction,
-  eclReturnsConnector: ReturnsConnector,
-  formProvider: ContactEmailFormProvider,
-  pageNavigator: ContactEmailPageNavigator,
-  view: ContactEmailView
+   val controllerComponents: MessagesControllerComponents,
+   authorise: AuthorisedAction,
+   getReturnData: DataRetrievalAction,
+   eclReturnsService: EclReturnsService,
+   formProvider: ContactEmailFormProvider,
+   pageNavigator: ContactEmailPageNavigator,
+   view: ContactEmailView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
+    with BaseController
+    with ErrorHandler
     with I18nSupport {
 
   val form: Form[String] = formProvider()
@@ -59,12 +62,13 @@ class ContactEmailController @Inject() (
       .fold(
         formWithErrors =>
           Future.successful(BadRequest(view(formWithErrors, contactName(request), mode, request.startAmendUrl))),
-        email =>
-          eclReturnsConnector
-            .upsertReturn(request.eclReturn.copy(contactEmailAddress = Some(email)))
-            .map { updatedReturn =>
-              Redirect(pageNavigator.nextPage(mode, updatedReturn))
-            }
+        email => {
+          val eclReturn = request.eclReturn.copy(contactEmailAddress = Some(email))
+          (for {
+            upsertedReturn      <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+          } yield upsertedReturn)
+            .convertToResult(mode, pageNavigator)
+        }
       )
   }
 
