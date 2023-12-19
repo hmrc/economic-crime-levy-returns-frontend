@@ -20,7 +20,7 @@ import cats.data.EitherT
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, ReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
@@ -40,14 +40,14 @@ class EclLiabilityService @Inject() (
 
   def calculateLiability(eclReturn: EclReturn)(implicit request: RequestHeader): EitherT[Future, LiabilityCalculationError, CalculatedLiability] =
     for {
-      relevantAp12Months                     <- eclReturn.relevantAp12Months
-      relevantApLength                       <- validateOptExists(if (relevantAp12Months) FullYear else eclReturn.relevantApLength)
-      relevantApRevenue                      <- validateOptExists(eclReturn.relevantApRevenue)
+      relevantAp12Months                     <- eclReturn.relevantAp12Months.valueOrError
+      relevantApLength                       <- (if (relevantAp12Months) FullYear else eclReturn.relevantApLength).valueOrError
+      relevantApRevenue                      <- eclReturn.relevantApRevenue.valueOrError
       carriedOutAmlRegulatedActivityForFullFy = eclReturn.carriedOutAmlRegulatedActivityForFullFy.getOrElse(true)
-      amlRegulatedActivityLength             <- validateOptExists(calculateAmlRegulatedActivityLength(
+      amlRegulatedActivityLength             <- calculateAmlRegulatedActivityLength(
         carriedOutAmlRegulatedActivityForFullFy,
         eclReturn.amlRegulatedActivityLength
-      ))
+      ).valueOrError
       response <- getCalculatedLiability(
         relevantApLength = relevantApLength,
         relevantApRevenue = relevantApRevenue,
@@ -55,18 +55,18 @@ class EclLiabilityService @Inject() (
       )
     } yield response
 
-  private def calculateLiabilityAndUpsertReturn(
-    relevantApLength: Int,
-    relevantApRevenue: BigDecimal,
-    amlRegulatedActivityLength: Int,
-    eclReturn: EclReturn
-  )(implicit request: RequestHeader): Future[EclReturn] =
-    eclCalculatorConnector.calculateLiability(amlRegulatedActivityLength, relevantApLength, relevantApRevenue).flatMap {
-      calculatedLiability =>
-        eclReturnsConnector.upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
-    }
+//  private def calculateLiabilityAndUpsertReturn(
+//    relevantApLength: Int,
+//    relevantApRevenue: BigDecimal,
+//    amlRegulatedActivityLength: Int,
+//    eclReturn: EclReturn
+//  )(implicit request: RequestHeader): Future[EclReturn] =
+//    eclCalculatorConnector.calculateLiability(amlRegulatedActivityLength, relevantApLength, relevantApRevenue).flatMap {
+//      calculatedLiability =>
+//        eclReturnsConnector.upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
+//    }
 
-  def getCalculatedLiability(relevantApLength: Int, relevantApRevenue: BigDecimal, amlRegulatedActivityLength: Int)(
+  private def getCalculatedLiability(relevantApLength: Int, relevantApRevenue: BigDecimal, amlRegulatedActivityLength: Int)(
     implicit hc: HeaderCarrier
   ): EitherT[Future, LiabilityCalculationError, CalculatedLiability] =
     EitherT {
@@ -85,25 +85,6 @@ class EclLiabilityService @Inject() (
         }
     }
 
-  def test(relevantApLength: Int, relevantApRevenue: BigDecimal, amlRegulatedActivityLength: Int)(
-    implicit hc: HeaderCarrier
-  ): EitherT[Future, LiabilityCalculationError, CalculatedLiability] =
-    EitherT {
-      eclCalculatorConnector
-        .calculateLiability(amlRegulatedActivityLength, relevantApLength, relevantApRevenue)
-        .map {
-          Right(_)
-        }
-        .recover {
-          case error @ UpstreamErrorResponse(message, code, _, _)
-            if UpstreamErrorResponse.Upstream5xxResponse
-              .unapply(error)
-              .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(LiabilityCalculationError.BadGateway(reason = message, code = code))
-          case NonFatal(thr) => Left(LiabilityCalculationError.InternalUnexpectedError(Some(thr)))
-        }
-    }
-
   def calculateAmlRegulatedActivityLength(
     carriedOutAmlRegulatedActivityForFullFy: Boolean,
     optAmlRegulatedActivityLength: Option[Int]
@@ -113,16 +94,16 @@ class EclLiabilityService @Inject() (
       case (true, _)        => FullYear
       case (false, Some(_)) => optAmlRegulatedActivityLength
     }
-}
 
-implicit class test[T](value: T) {
-  def validateOptExists[T](optData: Option[T]): EitherT[Future, LiabilityCalculationError, T] =
-    EitherT{
-      Future.successful(
-        optData match {
-          case Some(value) => Right(value)
-          case _           => Left(LiabilityCalculationError.InternalUnexpectedError(None))
-        }
-      )
-    }
+  implicit class valueOrError[T](value: Option[T]) {
+    def valueOrError: EitherT[Future, LiabilityCalculationError, T] =
+      EitherT{
+        Future.successful(
+          value match {
+            case Some(value) => Right(value)
+            case _           => Left(LiabilityCalculationError.InternalUnexpectedError)
+          }
+        )
+      }
+  }
 }

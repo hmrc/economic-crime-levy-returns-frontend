@@ -26,6 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmlRegulatedActivityLengthPageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, EclReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityLengthView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -39,14 +40,15 @@ class AmlRegulatedActivityLengthController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsConnector: ReturnsConnector,
   formProvider: AmlRegulatedActivityLengthFormProvider,
   pageNavigator: AmlRegulatedActivityLengthPageNavigator,
-  dataCleanup: AmlRegulatedActivityLengthDataCleanup,
-  view: AmlRegulatedActivityLengthView
+  view: AmlRegulatedActivityLengthView,
+  eclLiabilityService: EclLiabilityService,
+  eclReturnsService: EclReturnsService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with ErrorHandler {
 
   val form: Form[Int] = formProvider()
 
@@ -61,13 +63,21 @@ class AmlRegulatedActivityLengthController @Inject() (
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
         amlRegulatedActivityLength =>
-          eclReturnsConnector
-            .upsertReturn(
-              dataCleanup.cleanup(request.eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength)))
+          {
+            var upsertedReturn = for {
+            calculatedLiability <- eclLiabilityService.calculateLiability(request.eclReturn).asResponseError
+            copiedReturn = request.eclReturn.copy(
+              amlRegulatedActivityLength = Some(amlRegulatedActivityLength),
+              calculatedLiability = Some(calculatedLiability))
+            upsertedReturn <- eclReturnsService.upsertEclReturn(copiedReturn).asResponseError
+
+          } yield upsertedReturn
+
+            upsertedReturn.fold(
+              error => ???,
+              eclReturn => pageNavigator.nextPage(mode, eclReturn).map(Redirect)
             )
-            .flatMap { updatedReturn =>
-              pageNavigator.nextPage(mode, updatedReturn).map(Redirect)
-            }
+          }
       )
   }
 
