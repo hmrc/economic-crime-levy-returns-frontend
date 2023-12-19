@@ -25,6 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactNumberFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactNumberPageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactNumberView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -38,12 +39,14 @@ class ContactNumberController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsConnector: ReturnsConnector,
+  eclReturnsService: EclReturnsService,
   formProvider: ContactNumberFormProvider,
   pageNavigator: ContactNumberPageNavigator,
   view: ContactNumberView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
+    with BaseController
+    with ErrorHandler
     with I18nSupport {
 
   val form: Form[String] = formProvider()
@@ -59,12 +62,13 @@ class ContactNumberController @Inject() (
       .fold(
         formWithErrors =>
           Future.successful(BadRequest(view(formWithErrors, contactName(request), mode, request.startAmendUrl))),
-        telephoneNumber =>
-          eclReturnsConnector
-            .upsertReturn(request.eclReturn.copy(contactTelephoneNumber = Some(telephoneNumber)))
-            .map { updatedReturn =>
-              Redirect(pageNavigator.nextPage(mode, updatedReturn))
-            }
+        telephoneNumber => {
+          val eclReturn = request.eclReturn.copy(contactTelephoneNumber = Some(telephoneNumber))
+          (for {
+            upsertedReturn <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+          } yield upsertedReturn)
+            .convertToResult(mode, pageNavigator)
+        }
       )
   }
 

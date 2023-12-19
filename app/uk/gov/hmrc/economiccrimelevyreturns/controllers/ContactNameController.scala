@@ -19,12 +19,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactNameFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactNamePageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactNameView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -38,12 +38,14 @@ class ContactNameController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsConnector: ReturnsConnector,
+  eclReturnsService: EclReturnsService,
   formProvider: ContactNameFormProvider,
   pageNavigator: ContactNamePageNavigator,
   view: ContactNameView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
+    with BaseController
+    with ErrorHandler
     with I18nSupport {
 
   val form: Form[String] = formProvider()
@@ -58,12 +60,13 @@ class ContactNameController @Inject() (
       .bindFromRequest()
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
-        name =>
-          eclReturnsConnector
-            .upsertReturn(request.eclReturn.copy(contactName = Some(name)))
-            .map { updatedReturn =>
-              Redirect(pageNavigator.nextPage(mode, updatedReturn))
-            }
+        name => {
+          val eclReturn = request.eclReturn.copy(contactName = Some(name))
+          (for {
+            upsertedReturn <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+          } yield upsertedReturn)
+            .convertToResult(mode, pageNavigator)
+        }
       )
   }
 

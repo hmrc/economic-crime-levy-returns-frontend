@@ -19,7 +19,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactEmailFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
@@ -36,13 +35,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ContactEmailController @Inject() (
-   val controllerComponents: MessagesControllerComponents,
-   authorise: AuthorisedAction,
-   getReturnData: DataRetrievalAction,
-   eclReturnsService: EclReturnsService,
-   formProvider: ContactEmailFormProvider,
-   pageNavigator: ContactEmailPageNavigator,
-   view: ContactEmailView
+  val controllerComponents: MessagesControllerComponents,
+  authorise: AuthorisedAction,
+  getReturnData: DataRetrievalAction,
+  eclReturnsService: EclReturnsService,
+  formProvider: ContactEmailFormProvider,
+  pageNavigator: ContactEmailPageNavigator,
+  view: ContactEmailView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with BaseController
@@ -65,7 +64,7 @@ class ContactEmailController @Inject() (
         email => {
           val eclReturn = request.eclReturn.copy(contactEmailAddress = Some(email))
           (for {
-            upsertedReturn      <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+            upsertedReturn <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
           } yield upsertedReturn)
             .convertToResult(mode, pageNavigator)
         }

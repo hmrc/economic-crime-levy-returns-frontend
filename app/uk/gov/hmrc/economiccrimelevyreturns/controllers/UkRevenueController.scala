@@ -20,12 +20,12 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.UkRevenueDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.UkRevenuePageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -39,13 +39,15 @@ class UkRevenueController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsConnector: ReturnsConnector,
+  eclReturnsService: EclReturnsService,
   formProvider: UkRevenueFormProvider,
   pageNavigator: UkRevenuePageNavigator,
   dataCleanup: UkRevenueDataCleanup,
   view: UkRevenueView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
+    with BaseController
+    with ErrorHandler
     with I18nSupport {
 
   val form: Form[BigDecimal] = formProvider()
@@ -60,14 +62,13 @@ class UkRevenueController @Inject() (
       .bindFromRequest()
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
-        revenue =>
-          eclReturnsConnector
-            .upsertReturn(
-              dataCleanup.cleanup(request.eclReturn.copy(relevantApRevenue = Some(revenue)))
-            )
-            .flatMap { updatedReturn =>
-              pageNavigator.nextPage(mode, updatedReturn).map(Redirect)
-            }
+        revenue => {
+          val eclReturn = dataCleanup.cleanup(request.eclReturn.copy(relevantApRevenue = Some(revenue)))
+          (for {
+            upsertedReturn <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+          } yield upsertedReturn)
+            .convertToAsyncResult(mode, pageNavigator)
+        }
       )
   }
 

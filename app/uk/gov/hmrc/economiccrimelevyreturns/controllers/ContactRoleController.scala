@@ -25,6 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactRoleFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactRolePageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactRoleView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -38,12 +39,14 @@ class ContactRoleController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsConnector: ReturnsConnector,
+  eclReturnsService: EclReturnsService,
   formProvider: ContactRoleFormProvider,
   pageNavigator: ContactRolePageNavigator,
   view: ContactRoleView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
+    with BaseController
+    with ErrorHandler
     with I18nSupport {
 
   val form: Form[String] = formProvider()
@@ -59,12 +62,13 @@ class ContactRoleController @Inject() (
       .fold(
         formWithErrors =>
           Future.successful(BadRequest(view(formWithErrors, contactName(request), mode, request.startAmendUrl))),
-        role =>
-          eclReturnsConnector
-            .upsertReturn(request.eclReturn.copy(contactRole = Some(role)))
-            .map { updatedReturn =>
-              Redirect(pageNavigator.nextPage(mode, updatedReturn))
-            }
+        role => {
+          val eclReturn = request.eclReturn.copy(contactRole = Some(role))
+          (for {
+            upsertedReturn <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+          } yield upsertedReturn)
+            .convertToResult(mode, pageNavigator)
+        }
       )
   }
 

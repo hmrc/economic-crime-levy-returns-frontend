@@ -20,12 +20,12 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantApLengthDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.RelevantApLengthPageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantApLengthView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -39,13 +39,15 @@ class RelevantApLengthController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsConnector: ReturnsConnector,
+  eclReturnsService: EclReturnsService,
   formProvider: RelevantApLengthFormProvider,
   pageNavigator: RelevantApLengthPageNavigator,
   dataCleanup: RelevantApLengthDataCleanup,
   view: RelevantApLengthView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
+    with BaseController
+    with ErrorHandler
     with I18nSupport {
 
   val form: Form[Int] = formProvider()
@@ -60,14 +62,13 @@ class RelevantApLengthController @Inject() (
       .bindFromRequest()
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
-        relevantApLength =>
-          eclReturnsConnector
-            .upsertReturn(
-              dataCleanup.cleanup(request.eclReturn.copy(relevantApLength = Some(relevantApLength)))
-            )
-            .flatMap { updatedReturn =>
-              pageNavigator.nextPage(mode, updatedReturn).map(Redirect)
-            }
+        relevantApLength => {
+          val eclReturn = dataCleanup.cleanup(request.eclReturn.copy(relevantApLength = Some(relevantApLength)))
+          (for {
+            upsertedReturn <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+          } yield upsertedReturn)
+            .convertToAsyncResult(mode, pageNavigator)
+        }
       )
   }
 

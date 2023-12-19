@@ -71,13 +71,4 @@ trait ErrorHandler extends Logging {
         case LiabilityCalculationError.BadRequest(message) => ResponseError.badRequestError(message)
       }
     }
-
-//  implicit val enrolmentStoreErrorConverter: Converter[EnrolmentStoreError] =
-//    new Converter[EnrolmentStoreError] {
-//      override def convert(error: EnrolmentStoreError): ResponseError = error match {
-//        case EnrolmentStoreError.BadGateway(cause, statusCode)           => ResponseError.badGateway(cause, statusCode)
-//        case EnrolmentStoreError.InternalUnexpectedError(message, cause) =>
-//          ResponseError.internalServiceError(message = message, cause = cause)
-//      }
-//    }
 }
