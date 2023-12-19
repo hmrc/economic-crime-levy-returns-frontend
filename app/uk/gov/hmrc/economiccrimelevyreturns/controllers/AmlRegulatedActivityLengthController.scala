@@ -48,7 +48,8 @@ class AmlRegulatedActivityLengthController @Inject() (
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
-    with ErrorHandler {
+    with ErrorHandler
+    with BaseController {
 
   val form: Form[Int] = formProvider()
 
@@ -63,21 +64,16 @@ class AmlRegulatedActivityLengthController @Inject() (
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
         amlRegulatedActivityLength =>
-          {
-            var upsertedReturn = for {
+          (for {
             calculatedLiability <- eclLiabilityService.calculateLiability(request.eclReturn).asResponseError
-            copiedReturn = request.eclReturn.copy(
-              amlRegulatedActivityLength = Some(amlRegulatedActivityLength),
-              calculatedLiability = Some(calculatedLiability))
-            upsertedReturn <- eclReturnsService.upsertEclReturn(copiedReturn).asResponseError
+            copiedReturn         = request.eclReturn.copy(
+                                     amlRegulatedActivityLength = Some(amlRegulatedActivityLength),
+                                     calculatedLiability = Some(calculatedLiability)
+                                   )
+            upsertedReturn      <- eclReturnsService.upsertEclReturn(copiedReturn).asResponseError
 
-          } yield upsertedReturn
-
-            upsertedReturn.fold(
-              error => ???,
-              eclReturn => pageNavigator.nextPage(mode, eclReturn).map(Redirect)
-            )
-          }
+          } yield upsertedReturn)
+            .convertToAsyncResult(mode, pageNavigator)
       )
   }
 
