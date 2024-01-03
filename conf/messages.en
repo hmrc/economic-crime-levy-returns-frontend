@@ -225,6 +225,8 @@ checkYourAnswers.contactName.label = Return completed by
 checkYourAnswers.contactRole.label = Role
 checkYourAnswers.contactEmail.label = Email address
 checkYourAnswers.contactNumber.label = Telephone number
+checkYourAnswers.amendReason.title = Reason for amending
+checkYourAnswers.amendReason.label = Additional Information
 checkYourAnswers.nowSend = Now submit your return
 checkYourAnswers.bySubmitting = By submitting this return, you are confirming that, to the best of your knowledge, the details you are providing are correct.
 checkYourAnswers.confirmAndSend = Confirm and send
@@ -326,3 +328,8 @@ band.VeryLarge.defaultRange = £1 billion or more
 
 otherRegistration.pdfHtml.title = Application to amend return for the Economic Crime Levy
 otherRegistration.pdfHtml.submissionDate = Submission date: {0}
+
+amendReason.title = Why are you requesting to amend your return?
+amendReason.h1 = Why are you requesting to amend your return?
+amendReason.p1 = Enter any information relating to your request to amend your return. Do not include personal or financial information, like your National Insurance number or credit card details.
+amendReason.error.required = Enter the reason why you are requesting to amend your return
