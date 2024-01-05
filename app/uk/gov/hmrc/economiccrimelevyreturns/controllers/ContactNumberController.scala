@@ -65,7 +65,7 @@ class ContactNumberController @Inject() (
         telephoneNumber => {
           val eclReturn = request.eclReturn.copy(contactTelephoneNumber = Some(telephoneNumber))
           (for {
-            upsertedReturn <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+            upsertedReturn <- eclReturnsService.upsertReturn(eclReturn).asResponseError
           } yield upsertedReturn)
             .convertToResult(mode, pageNavigator)
         }

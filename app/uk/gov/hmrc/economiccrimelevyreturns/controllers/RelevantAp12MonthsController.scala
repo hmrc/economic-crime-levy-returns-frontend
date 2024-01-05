@@ -65,7 +65,7 @@ class RelevantAp12MonthsController @Inject() (
         relevantAp12Months => {
           val eclReturn = dataCleanup.cleanup(request.eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
           (for {
-            upsertedReturn <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+            upsertedReturn <- eclReturnsService.upsertReturn(eclReturn).asResponseError
           } yield upsertedReturn)
             .convertToAsyncResult(mode, pageNavigator)
         }

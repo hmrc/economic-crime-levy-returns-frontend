@@ -20,7 +20,7 @@ import cats.data.EitherT
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, ReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 

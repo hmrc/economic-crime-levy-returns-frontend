@@ -65,7 +65,8 @@ class UkRevenuePageNavigator @Inject() (
     eclReturnsConnector
       .upsertReturn(eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None))
       .flatMap { updatedReturn =>
-        eclLiabilityService.calculateLiability(updatedReturn) match {
+        eclLiabilityService.calculateLiability(updatedReturn).map(_ => routes.AmountDueController.onPageLoad(mode))
+        match {
           case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad(mode))
           case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
         }

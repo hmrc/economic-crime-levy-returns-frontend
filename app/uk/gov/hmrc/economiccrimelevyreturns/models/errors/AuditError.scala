@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.models.errors
 
-trait DataHandlingError
+trait AuditError
 
-object DataHandlingError {
-  case class InternalUnexpectedError(cause: Option[Throwable], message: Option[String] = None) extends DataHandlingError
-  case class BadGateway(reason: String, code: Int) extends DataHandlingError
+object AuditError {
+  case class InternalUnexpectedError(message: String, cause: Option[Throwable]) extends AuditError
+  case class BadGateway(reason: String, code: Int) extends AuditError
 }

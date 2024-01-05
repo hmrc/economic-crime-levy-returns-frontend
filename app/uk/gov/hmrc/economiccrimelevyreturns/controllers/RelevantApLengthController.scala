@@ -65,7 +65,7 @@ class RelevantApLengthController @Inject() (
         relevantApLength => {
           val eclReturn = dataCleanup.cleanup(request.eclReturn.copy(relevantApLength = Some(relevantApLength)))
           (for {
-            upsertedReturn <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+            upsertedReturn <- eclReturnsService.upsertReturn(eclReturn).asResponseError
           } yield upsertedReturn)
             .convertToAsyncResult(mode, pageNavigator)
         }

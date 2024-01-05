@@ -65,7 +65,7 @@ class UkRevenueController @Inject() (
         revenue => {
           val eclReturn = dataCleanup.cleanup(request.eclReturn.copy(relevantApRevenue = Some(revenue)))
           (for {
-            upsertedReturn <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+            upsertedReturn <- eclReturnsService.upsertReturn(eclReturn).asResponseError
           } yield upsertedReturn)
             .convertToAsyncResult(mode, pageNavigator)
         }

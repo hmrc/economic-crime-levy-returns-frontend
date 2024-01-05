@@ -64,7 +64,7 @@ class ContactEmailController @Inject() (
         email => {
           val eclReturn = request.eclReturn.copy(contactEmailAddress = Some(email))
           (for {
-            upsertedReturn <- eclReturnsService.upsertEclReturn(eclReturn).asResponseError
+            upsertedReturn <- eclReturnsService.upsertReturn(eclReturn).asResponseError
           } yield upsertedReturn)
             .convertToResult(mode, pageNavigator)
         }

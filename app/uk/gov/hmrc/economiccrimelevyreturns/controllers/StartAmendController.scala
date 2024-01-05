@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, ReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EclReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -35,7 +36,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class StartAmendController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
-  eclAccountConnector: EclAccountConnector,
+  eclAccountService: EclAccountService,
   eclReturnsService: EclReturnsService,
   sessionService: SessionService,
   eclReturnsConnector: ReturnsConnector,
@@ -48,9 +49,10 @@ class StartAmendController @Inject() (
   def onPageLoad(periodKey: String, returnNumber: String): Action[AnyContent] = authorise.async { implicit request =>
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     for {
-      obligationData          <- eclAccountConnector.getObligations()
+      obligationData          <- eclAccountService.retrieveObligationData
       eitherObligationDetails <- validatePeriodKey(obligationData, periodKey)
-      _                        = eclReturnsService.upsertEclReturnType(request.internalId, AmendReturn)
+      eclReturn               <- eclReturnsService.getReturn(request.internalId)
+      _                        = eclReturnsService.upsertReturn(eclReturn.copy(returnType = Some(AmendReturn)))
     } yield eitherObligationDetails match {
       case Right(value) =>
         val startAmendUrl = routes.StartAmendController
@@ -79,33 +81,38 @@ class StartAmendController @Inject() (
 
   private def validatePeriodKey(obligationData: Option[ObligationData], periodKey: String)(implicit
     request: AuthorisedRequest[_]
-  ): Future[Either[Result, ObligationDetails]] = {
-    val obligationDetails =
-      obligationData
-        .map(_.obligations.flatMap(_.obligationDetails.find(_.periodKey == periodKey)))
-        .flatMap(_.headOption)
+  ): EitherT[Future, Result, ObligationDetails] =
+    EitherT {
+      val obligationDetails =
+        obligationData
+          .map(_.obligations.flatMap(_.obligationDetails.find(_.periodKey == periodKey)))
+          .flatMap(_.headOption)
 
-    obligationDetails match {
-      case None                    => Future.successful(Left(Ok(noObligationForPeriodView())))
-      case Some(obligationDetails) =>
-        for {
-          eclReturn <- eclReturnsService.getOrCreateReturn(request.internalId, Some(AmendReturn))
-          _         <- {
-            val optPeriodKey = eclReturn.obligationDetails.map(_.periodKey)
-            if (optPeriodKey.contains(periodKey) || optPeriodKey.isEmpty) {
-              eclReturnsConnector.upsertReturn(eclReturn.copy(obligationDetails = Some(obligationDetails)))
-            } else {
-              eclReturnsConnector
-                .deleteReturn(request.internalId)
-                .map(_ =>
-                  eclReturnsConnector.upsertReturn(
-                    EclReturn.empty(request.internalId, None).copy(obligationDetails = Some(obligationDetails))
-                  )
+      obligationDetails match {
+        case None                    => Future.successful(Left(Ok(noObligationForPeriodView())))
+        case Some(obligationDetails) =>
+          for {
+            eclReturn <- eclReturnsService.getOrCreateReturn(request.internalId, Some(AmendReturn))
+            _         <- {
+              val optPeriodKey = eclReturn.obligationDetails.map(_.periodKey)
+              if (optPeriodKey.contains(periodKey) || optPeriodKey.isEmpty) {
+                eclReturnsConnector.upsertReturn(
+                  eclReturn.copy(obligationDetails = Some(obligationDetails), returnType = Some(AmendReturn))
                 )
+              } else {
+                eclReturnsConnector
+                  .deleteReturn(request.internalId)
+                  .map(_ =>
+                    eclReturnsConnector.upsertReturn(
+                      EclReturn
+                        .empty(request.internalId, None)
+                        .copy(obligationDetails = Some(obligationDetails), returnType = Some(AmendReturn))
+                    )
+                  )
+              }
             }
-          }
 
-        } yield Right(obligationDetails)
+          } yield Right(obligationDetails)
+      }
     }
-  }
 }

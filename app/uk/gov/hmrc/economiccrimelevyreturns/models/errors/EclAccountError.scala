@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.models.errors
 
-trait DataHandlingError
+trait EclAccountError
 
-object DataHandlingError {
-  case class InternalUnexpectedError(cause: Option[Throwable], message: Option[String] = None) extends DataHandlingError
-  case class BadGateway(reason: String, code: Int) extends DataHandlingError
+object EclAccountError {
+  case class InternalUnexpectedError(message: String, cause: Option[Throwable]) extends EclAccountError
+  case class BadGateway(reason: String, code: Int) extends EclAccountError
 }
