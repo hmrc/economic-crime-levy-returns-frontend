@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 import play.api.mvc.{ActionTransformer, Session}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, FirstTimeReturn, ReturnType, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
@@ -27,7 +27,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ReturnDataRetrievalAction @Inject() (
-  val eclReturnService: EclReturnsService,
+  val eclReturnService: ReturnsService,
   val sessionService: SessionService
 )(implicit val executionContext: ExecutionContext)
     extends DataRetrievalAction

@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, ReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{NoObligationForPeriodView, StartAmendView}
 
 import scala.concurrent.Future
@@ -33,7 +33,7 @@ import scala.concurrent.Future.unit
 class StartAmendControllerSpec extends SpecBase {
 
   val mockEclAccountConnector: EclAccountConnector = mock[EclAccountConnector]
-  val mockEclReturnsService: EclReturnsService     = mock[EclReturnsService]
+  val mockEclReturnsService: ReturnsService        = mock[ReturnsService]
   val mockEclReturnsConnector: ReturnsConnector    = mock[ReturnsConnector]
   val mockSessionService: SessionService           = mock[SessionService]
 

@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactNumberFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactNumberPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactNumberView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -39,7 +39,7 @@ class ContactNumberController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsService: EclReturnsService,
+  eclReturnsService: ReturnsService,
   formProvider: ContactNumberFormProvider,
   pageNavigator: ContactNumberPageNavigator,
   view: ContactNumberView

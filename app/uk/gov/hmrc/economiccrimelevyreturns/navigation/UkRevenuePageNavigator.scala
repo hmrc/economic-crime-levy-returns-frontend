@@ -21,7 +21,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import javax.inject.Inject
@@ -29,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class UkRevenuePageNavigator @Inject() (
   eclLiabilityService: EclLiabilityService,
-  eclReturnsConnector: ReturnsConnector
+  returnsService: ReturnsService
 )(implicit
   ec: ExecutionContext
 ) extends AsyncPageNavigator
@@ -44,33 +44,32 @@ class UkRevenuePageNavigator @Inject() (
   private def navigate(eclReturn: EclReturn, mode: Mode)(implicit request: RequestHeader): Future[Call] =
     eclReturn.relevantApRevenue match {
       case Some(_) =>
-        eclLiabilityService.calculateLiability(eclReturn) match {
-          case Some(f) =>
-            f.flatMap { updatedReturn =>
-              updatedReturn.calculatedLiability match {
-                case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
-                  clearAmlActivityAnswersAndRecalculate(updatedReturn, mode)
-                case Some(_)                                                                  => navigateLiable(updatedReturn, mode)
-                case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
-              }
-            }
-          case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
-        }
-      case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
+        eclLiabilityService
+          .calculateLiability(eclReturn)
+          .foldF(
+            err => Future.successful(routes.NotableErrorController.answersAreInvalid()),
+            liability =>
+              if (liability.calculatedBand == Small) { clearAmlActivityAnswersAndRecalculate(eclReturn, mode) }
+              else { navigateLiable(eclReturn, mode) }
+          )
     }
 
   private def clearAmlActivityAnswersAndRecalculate(eclReturn: EclReturn, mode: Mode)(implicit
     request: RequestHeader
-  ): Future[Call] =
-    eclReturnsConnector
-      .upsertReturn(eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None))
+  ): Future[Call] = {
+    val updatedReturn =
+      eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
+    returnsService
+      .upsertReturn(updatedReturn)
       .flatMap { updatedReturn =>
-        eclLiabilityService.calculateLiability(updatedReturn).map(_ => routes.AmountDueController.onPageLoad(mode))
-        match {
-          case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad(mode))
-          case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
-        }
+        eclLiabilityService
+          .calculateLiability(updatedReturn)
+          .fold(
+            err => routes.NotableErrorController.answersAreInvalid(),
+            liability => routes.AmountDueController.onPageLoad(mode)
+          )
       }
+  }
 
   private def navigateLiable(eclReturn: EclReturn, mode: Mode): Future[Call] =
     mode match {

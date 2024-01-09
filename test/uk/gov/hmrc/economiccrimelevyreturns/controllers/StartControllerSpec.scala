@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, ReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, EnrolmentStoreProxyService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EnrolmentStoreProxyService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, NoObligationForPeriodView, StartView}
 
@@ -35,7 +35,7 @@ class StartControllerSpec extends SpecBase {
 
   val mockEnrolmentStoreProxyService: EnrolmentStoreProxyService = mock[EnrolmentStoreProxyService]
   val mockEclAccountConnector: EclAccountConnector               = mock[EclAccountConnector]
-  val mockEclReturnsService: EclReturnsService                   = mock[EclReturnsService]
+  val mockEclReturnsService: ReturnsService                      = mock[ReturnsService]
   val mockEclReturnsConnector: ReturnsConnector                  = mock[ReturnsConnector]
 
   val view: StartView                                        = app.injector.instanceOf[StartView]

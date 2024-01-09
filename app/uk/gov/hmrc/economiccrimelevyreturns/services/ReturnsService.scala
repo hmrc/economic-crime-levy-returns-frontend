@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 import cats.data.EitherT
 import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, ReturnType}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, ReturnType, SubmitEclReturnResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.audit.ReturnStartedEvent
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
@@ -31,43 +31,64 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class EclReturnsService @Inject() (
+class ReturnsService @Inject() (
   eclReturnsConnector: ReturnsConnector,
   auditService: AuditService
 )(implicit
   ec: ExecutionContext
-) {
+) extends BaseService {
 
   def getReturn(
     internalId: String
-  )(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, EclReturn] =
+  )(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, Option[EclReturn]] =
     EitherT {
-      eclReturnsConnector.getReturn(internalId).map(Right(_)).recover {
+      eclReturnsConnector.getReturn(internalId).map(eclReturn => Right(Some(eclReturn))).recover {
+        case UpstreamErrorResponse(_, NOT_FOUND, _, _) => Right(None)
         case error @ UpstreamErrorResponse(message, code, _, _)
             if UpstreamErrorResponse.Upstream5xxResponse
               .unapply(error)
               .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
           Left(DataHandlingError.BadGateway(reason = message, code = code))
-        case NonFatal(thr) => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
+        case NonFatal(thr)                             => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
       }
     }
 
   def getOrCreateReturn(
     internalId: String,
     returnType: Option[ReturnType] = None
-  )(implicit hc: HeaderCarrier, request: AuthorisedRequest[_]): Future[EclReturn] =
-    eclReturnsConnector.getReturn(internalId).recoverWith { case UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
-      auditService
-        .auditReturnStarted(
-          internalId,
-          request.eclRegistrationReference,
-          returnType
-        )
+  )(implicit hc: HeaderCarrier, request: AuthorisedRequest[_]): EitherT[Future, DataHandlingError, EclReturn] =
+    getReturn(internalId)
+      .flatMap {
+        case Some(eclReturn) => EitherT(Future.successful(Right(eclReturn)))
+        case None            =>
+          auditService
+            .auditReturnStarted(
+              internalId,
+              request.eclRegistrationReference,
+              returnType
+            )
 
-      returnType match {
-        case None        => eclReturnsConnector.upsertReturn(EclReturn.empty(internalId, Some(FirstTimeReturn)))
-        case Some(value) => eclReturnsConnector.upsertReturn(EclReturn.empty(internalId, Some(value)))
+          val newReturn =
+            if (returnType.isEmpty) {
+              EclReturn.empty(internalId, Some(FirstTimeReturn))
+            } else {
+              EclReturn.empty(internalId, returnType)
+            }
+          upsertReturn(newReturn)
       }
+
+  def submitReturn(
+    internalId: String
+  )(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, SubmitEclReturnResponse] =
+    EitherT {
+      eclReturnsConnector
+        .submitReturn(internalId)
+        .map {
+          Right(_)
+        }
+        .recover {
+          handleError
+        }
     }
 
   def upsertReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, EclReturn] =
@@ -78,16 +99,11 @@ class EclReturnsService @Inject() (
           Right(_)
         }
         .recover {
-          case error @ UpstreamErrorResponse(message, code, _, _)
-              if UpstreamErrorResponse.Upstream5xxResponse
-                .unapply(error)
-                .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(DataHandlingError.BadGateway(reason = message, code = code))
-          case NonFatal(thr) => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
+          handleError
         }
     }
 
-  def deleteEclReturn(internalId: String)(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, EclReturn] =
+  def deleteReturn(internalId: String)(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, Unit] =
     EitherT {
       eclReturnsConnector
         .deleteReturn(internalId)
@@ -95,12 +111,7 @@ class EclReturnsService @Inject() (
           Right(_)
         }
         .recover {
-          case error @ UpstreamErrorResponse(message, code, _, _)
-              if UpstreamErrorResponse.Upstream5xxResponse
-                .unapply(error)
-                .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(DataHandlingError.BadGateway(reason = message, code = code))
-          case NonFatal(thr) => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
+          handleError
         }
     }
 

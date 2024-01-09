@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.EitherT
 import play.api.Logging
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{BadGateway, DataHandlingError, InternalServiceError, LiabilityCalculationError, ResponseError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{BadGateway, DataHandlingError, EclAccountError, InternalServiceError, LiabilityCalculationError, ResponseError}
 
 trait ErrorHandler extends Logging {
 
@@ -61,7 +61,14 @@ trait ErrorHandler extends Logging {
   implicit val dataHandlingErrorConverter: Converter[DataHandlingError] =
     new Converter[DataHandlingError] {
       override def convert(error: DataHandlingError): ResponseError = error match {
-        case DataHandlingError.InternalUnexpectedError(cause) => ResponseError.internalServiceError(cause = cause)
+        case DataHandlingError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
+      }
+    }
+
+  implicit val eclAccountErrorConverter: Converter[EclAccountError] =
+    new Converter[EclAccountError] {
+      override def convert(error: EclAccountError): ResponseError = error match {
+        case EclAccountError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
       }
     }
 

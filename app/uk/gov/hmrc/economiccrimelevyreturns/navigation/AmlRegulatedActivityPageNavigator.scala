@@ -16,32 +16,24 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
-import play.api.mvc.{Call, RequestHeader}
+import play.api.mvc.Call
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
-import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
-
-class AmlRegulatedActivityPageNavigator @Inject() (eclLiabilityService: EclLiabilityService)(implicit
-  ec: ExecutionContext
-) extends AsyncPageNavigator
-    with FrontendHeaderCarrierProvider {
+class AmlRegulatedActivityPageNavigator extends PageNavigator {
 
   override protected def navigateInNormalMode(
     eclReturn: EclReturn
-  )(implicit request: RequestHeader): Future[Call] = navigate(NormalMode, eclReturn)
+  ): Call = navigate(NormalMode, eclReturn)
 
   override protected def navigateInCheckMode(
     eclReturn: EclReturn
-  )(implicit request: RequestHeader): Future[Call] = navigate(CheckMode, eclReturn)
+  ): Call = navigate(CheckMode, eclReturn)
 
-  private def navigate(mode: Mode, eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-    Future.successful(eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
+  private def navigate(mode: Mode, eclReturn: EclReturn): Call =
+    eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
       case Some(true)  => routes.AmountDueController.onPageLoad(mode)
       case Some(false) => routes.AmlRegulatedActivityLengthController.onPageLoad(mode)
       case None        => routes.NotableErrorController.answersAreInvalid()
-    })
+    }
 }

@@ -31,7 +31,7 @@ import scala.concurrent.Future
 class EclReturnsServiceSpec extends SpecBase {
   val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
   val mockAuditConnector: AuditConnector        = mock[AuditConnector]
-  val service                                   = new EclReturnsService(
+  val service                                   = new ReturnsService(
     mockEclReturnsConnector,
     mockAuditConnector
   )

@@ -19,14 +19,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.cleanup.AmlRegulatedActivityLengthDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmlRegulatedActivityLengthPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, EclReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityLengthView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -44,7 +42,7 @@ class AmlRegulatedActivityLengthController @Inject() (
   pageNavigator: AmlRegulatedActivityLengthPageNavigator,
   view: AmlRegulatedActivityLengthView,
   eclLiabilityService: EclLiabilityService,
-  eclReturnsService: EclReturnsService
+  eclReturnsService: ReturnsService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with BaseController

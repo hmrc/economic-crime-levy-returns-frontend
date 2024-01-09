@@ -48,7 +48,10 @@ object ObligationStatus {
 
 final case class ObligationData(
   obligations: Seq[Obligation]
-)
+) {
+  def getObligationDetails(periodKey: String) =
+    obligations.flatMap(_.obligationDetails.find(_.periodKey == periodKey)).headOption
+}
 
 object ObligationData {
   implicit val format: OFormat[ObligationData] = Json.format[ObligationData]

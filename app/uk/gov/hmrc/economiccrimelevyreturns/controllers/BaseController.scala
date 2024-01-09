@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
 import play.api.mvc.Results.Redirect
-import play.api.mvc.{Call, RequestHeader, Result}
+import play.api.mvc.{RequestHeader, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.{AsyncPageNavigator, PageNavigator}
@@ -32,8 +32,10 @@ trait BaseController {
     def convertToResult(mode: Mode, pageNavigator: PageNavigator)(implicit ec: ExecutionContext): Future[Result] =
       value
         .fold(
-          _ => Future.successful(routes.NotableErrorController.answersAreInvalid()),
-          eclReturn => pageNavigator.nextPage(mode, eclReturn)
+          _ =>
+            routes.NotableErrorController
+              .answersAreInvalid(), //this isn't the only reason for failing, only when it doesn't pass validation
+          result => pageNavigator.nextPage(mode, result)
         )
         .map(Redirect)
 
@@ -42,11 +44,9 @@ trait BaseController {
       request: RequestHeader
     ): Future[Result] =
       value
-        .fold(
-          _ => Future.successful(routes.NotableErrorController.answersAreInvalid()),
-          eclReturn => pageNavigator.nextPage(mode, eclReturn)
+        .foldF(
+          _ => Future.successful(Redirect(routes.NotableErrorController.answersAreInvalid())),
+          result => pageNavigator.nextPage(mode, result).map(Redirect)
         )
-        .flatMap(r => r)
-        .map(Redirect)
   }
 }

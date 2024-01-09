@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.RelevantApLengthPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantApLengthView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -39,7 +39,7 @@ class RelevantApLengthController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsService: EclReturnsService,
+  eclReturnsService: ReturnsService,
   formProvider: RelevantApLengthFormProvider,
   pageNavigator: RelevantApLengthPageNavigator,
   dataCleanup: RelevantApLengthDataCleanup,
@@ -71,5 +71,7 @@ class RelevantApLengthController @Inject() (
         }
       )
   }
+
+
 
 }

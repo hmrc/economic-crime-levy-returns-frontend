@@ -22,14 +22,14 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 
 import scala.concurrent.Future
 
 class DataRetrievalActionSpec extends SpecBase {
 
-  val mockEclReturnService: EclReturnsService = mock[EclReturnsService]
-  val mockSessionService: SessionService      = mock[SessionService]
+  val mockEclReturnService: ReturnsService = mock[ReturnsService]
+  val mockSessionService: SessionService   = mock[SessionService]
 
   class TestDataRetrievalAction extends ReturnDataRetrievalAction(mockEclReturnService, mockSessionService) {
     override def transform[A](request: AuthorisedRequest[A]): Future[ReturnDataRequest[A]] =

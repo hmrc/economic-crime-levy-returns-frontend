@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityFormProvid
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmlRegulatedActivityPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, EclReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -39,7 +39,7 @@ class AmlRegulatedActivityController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsService: EclReturnsService,
+  eclReturnsService: ReturnsService,
   eclLiabilityService: EclLiabilityService,
   formProvider: AmlRegulatedActivityFormProvider,
   pageNavigator: AmlRegulatedActivityPageNavigator,
@@ -75,7 +75,7 @@ class AmlRegulatedActivityController @Inject() (
             calculatedReturn     = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
             upsertedReturn      <- eclReturnsService.upsertReturn(calculatedReturn).asResponseError
           } yield upsertedReturn)
-            .convertToAsyncResult(mode, pageNavigator)
+            .convertToResult(mode, pageNavigator)
         }
       )
   }

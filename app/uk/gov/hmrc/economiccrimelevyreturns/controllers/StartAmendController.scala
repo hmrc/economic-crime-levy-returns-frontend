@@ -19,11 +19,11 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import cats.data.EitherT
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, ReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EclReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -37,82 +37,76 @@ class StartAmendController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   eclAccountService: EclAccountService,
-  eclReturnsService: EclReturnsService,
+  returnsService: ReturnsService,
   sessionService: SessionService,
-  eclReturnsConnector: ReturnsConnector,
   noObligationForPeriodView: NoObligationForPeriodView,
   view: StartAmendView
 )(implicit ex: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with BaseController
+    with ErrorHandler {
 
   def onPageLoad(periodKey: String, returnNumber: String): Action[AnyContent] = authorise.async { implicit request =>
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
-    for {
-      obligationData          <- eclAccountService.retrieveObligationData
-      eitherObligationDetails <- validatePeriodKey(obligationData, periodKey)
-      eclReturn               <- eclReturnsService.getReturn(request.internalId)
-      _                        = eclReturnsService.upsertReturn(eclReturn.copy(returnType = Some(AmendReturn)))
-    } yield eitherObligationDetails match {
-      case Right(value) =>
-        val startAmendUrl = routes.StartAmendController
-          .onPageLoad(
-            periodKey = periodKey,
-            returnNumber = returnNumber
+    (for {
+      obligationData    <- eclAccountService.retrieveObligationData.asResponseError
+      obligationDetails <- processObligationDetails(obligationData, periodKey).asResponseError
+    } yield obligationDetails).fold(
+      err => Ok(noObligationForPeriodView()), //TODO: how do we want to handle
+      {
+        case Some(value) =>
+          val startAmendUrl = routes.StartAmendController.onPageLoad(periodKey, returnNumber).url
+          sessionService.upsert(
+            SessionData(
+              request.internalId,
+              Map(SessionKeys.StartAmendUrl -> startAmendUrl)
+            )
           )
-          .url
-        sessionService.upsert(
-          SessionData(
-            request.internalId,
-            Map(SessionKeys.StartAmendUrl -> startAmendUrl)
+          Ok(
+            view(
+              returnNumber,
+              value.inboundCorrespondenceFromDate,
+              value.inboundCorrespondenceToDate,
+              Some(startAmendUrl)
+            )
           )
-        )
-        Ok(
-          view(
-            returnNumber,
-            value.inboundCorrespondenceFromDate,
-            value.inboundCorrespondenceToDate,
-            Some(startAmendUrl)
-          )
-        )
-      case Left(result) => result
+        case None        => Ok(noObligationForPeriodView())
+      }
+    )
+  }
+
+  private def validatePeriodKey(eclReturn: EclReturn, obligationDetails: ObligationDetails, periodKey: String)(implicit
+    request: AuthorisedRequest[_]
+  ): EitherT[Future, DataHandlingError, EclReturn] = {
+    val optPeriodKey = eclReturn.obligationDetails.map(_.periodKey)
+    if (optPeriodKey.contains(periodKey) || optPeriodKey.isEmpty) {
+      val updatedReturn = eclReturn.copy(obligationDetails = Some(obligationDetails), returnType = Some(AmendReturn))
+      returnsService.upsertReturn(updatedReturn)
+    } else {
+      for {
+        _            <- returnsService.deleteReturn(request.internalId)
+        updatedReturn = EclReturn
+                          .empty(request.internalId, None)
+                          .copy(obligationDetails = Some(obligationDetails), returnType = Some(AmendReturn))
+        eclReturn    <- returnsService.upsertReturn(updatedReturn)
+      } yield eclReturn
     }
   }
 
-  private def validatePeriodKey(obligationData: Option[ObligationData], periodKey: String)(implicit
+  private def processObligationDetails(obligationData: Option[ObligationData], periodKey: String)(implicit
     request: AuthorisedRequest[_]
-  ): EitherT[Future, Result, ObligationDetails] =
-    EitherT {
-      val obligationDetails =
-        obligationData
-          .map(_.obligations.flatMap(_.obligationDetails.find(_.periodKey == periodKey)))
-          .flatMap(_.headOption)
+  ): EitherT[Future, DataHandlingError, Option[ObligationDetails]] = {
+    val obligationDetails =
+      obligationData.flatMap(_.getObligationDetails(periodKey))
 
-      obligationDetails match {
-        case None                    => Future.successful(Left(Ok(noObligationForPeriodView())))
-        case Some(obligationDetails) =>
-          for {
-            eclReturn <- eclReturnsService.getOrCreateReturn(request.internalId, Some(AmendReturn))
-            _         <- {
-              val optPeriodKey = eclReturn.obligationDetails.map(_.periodKey)
-              if (optPeriodKey.contains(periodKey) || optPeriodKey.isEmpty) {
-                eclReturnsConnector.upsertReturn(
-                  eclReturn.copy(obligationDetails = Some(obligationDetails), returnType = Some(AmendReturn))
-                )
-              } else {
-                eclReturnsConnector
-                  .deleteReturn(request.internalId)
-                  .map(_ =>
-                    eclReturnsConnector.upsertReturn(
-                      EclReturn
-                        .empty(request.internalId, None)
-                        .copy(obligationDetails = Some(obligationDetails), returnType = Some(AmendReturn))
-                    )
-                  )
-              }
-            }
-
-          } yield Right(obligationDetails)
-      }
+    obligationDetails match {
+      case None                    => EitherT.rightT[Future, DataHandlingError](None)
+      case Some(obligationDetails) =>
+        for {
+          eclReturn <- returnsService.getOrCreateReturn(request.internalId, Some(AmendReturn))
+          _         <- validatePeriodKey(eclReturn, obligationDetails, periodKey)
+        } yield Some(obligationDetails)
     }
+  }
 }

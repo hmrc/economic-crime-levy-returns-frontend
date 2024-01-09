@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.UkRevenuePageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -39,7 +39,7 @@ class UkRevenueController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsService: EclReturnsService,
+  eclReturnsService: ReturnsService,
   formProvider: UkRevenueFormProvider,
   pageNavigator: UkRevenuePageNavigator,
   dataCleanup: UkRevenueDataCleanup,

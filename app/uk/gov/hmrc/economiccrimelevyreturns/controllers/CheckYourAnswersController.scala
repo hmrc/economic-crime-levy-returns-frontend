@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedActio
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
@@ -38,7 +38,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import java.time.LocalDate
 import java.util.Base64
 import javax.inject.Singleton
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CheckYourAnswersController @Inject() (
@@ -46,7 +46,7 @@ class CheckYourAnswersController @Inject() (
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
   validateReturnData: ValidatedReturnAction,
-  eclReturnsConnector: ReturnsConnector,
+  returnsService: ReturnsService,
   sessionService: SessionService,
   emailService: EmailService,
   amendReturnPdfView: AmendReturnPdfView,
@@ -54,7 +54,9 @@ class CheckYourAnswersController @Inject() (
   view: CheckYourAnswersView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with BaseController
+    with ErrorHandler {
 
   private def eclDetails()(implicit request: ReturnDataRequest[_]): SummaryList = SummaryListViewModel(
     rows = Seq(
@@ -94,18 +96,22 @@ class CheckYourAnswersController @Inject() (
       case AmendReturn     => Some(createAndEncodeHtmlForPdf())
       case FirstTimeReturn => None
     }
-    for {
-      _        <- eclReturnsConnector.upsertReturn(eclReturn =
-                    request.eclReturn.copy(
-                      base64EncodedNrsSubmissionHtml = Some(base64EncodedHtmlView),
-                      base64EncodedDmsSubmissionHtml = base64EncodedDmsSubmissionHtml
-                    )
-                  )
-      response <- eclReturnsConnector.submitReturn(request.internalId)
-      _         = sendConfirmationMail(request.eclReturn, response)
-      _        <- eclReturnsConnector.deleteReturn(request.internalId)
-      _        <- sessionService.delete(request.internalId)
-    } yield getRedirectionRoute(request, response)
+
+    val updatedReturn = request.eclReturn.copy(
+      base64EncodedNrsSubmissionHtml = Some(base64EncodedHtmlView),
+      base64EncodedDmsSubmissionHtml = base64EncodedDmsSubmissionHtml
+    )
+
+    (for {
+      _        <- returnsService.upsertReturn(eclReturn = updatedReturn).asResponseError
+      response <- returnsService.submitReturn(request.internalId).asResponseError
+      _         = sendConfirmationMail(request.eclReturn, response) // shouldn't this be set to the updated return?
+      _        <- returnsService.deleteReturn(request.internalId).asResponseError
+      _         = sessionService.delete(request.internalId)
+    } yield response).fold(
+      error => Redirect(routes.NotableErrorController.answersAreInvalid()), //needs fixing
+      response => getRedirectionRoute(request, response)
+    )
   }
 
   private def sendConfirmationMail(eclReturn: EclReturn, response: SubmitEclReturnResponse)(implicit
@@ -117,9 +123,19 @@ class CheckYourAnswersController @Inject() (
       case AmendReturn     => emailService.sendAmendReturnConfirmationEmail(eclReturn)
     }
 
+  //TODO: fix exception throwing
   private def getRedirectionRoute(request: ReturnDataRequest[AnyContent], response: SubmitEclReturnResponse) =
-    request.eclReturn.returnType.getOrElse(throw new IllegalStateException("Return type is missing in session")) match {
-      case FirstTimeReturn =>
+    request.eclReturn.returnType match {
+      case Some(AmendReturn) =>
+        if (request.eclReturn.contactEmailAddress.isEmpty) {}
+        Redirect(routes.AmendReturnSubmittedController.onPageLoad()).withSession(
+          request.session.clearEclValues ++ Seq(
+            SessionKeys.Email             -> request.eclReturn.contactEmailAddress
+              .getOrElse(throw new IllegalStateException("Contact email address not found in return data")),
+            SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString()
+          )
+        )
+      case _                 =>
         Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
           request.session.clearEclValues ++ response.chargeReference.fold(Seq.empty[(String, String)])(c =>
             Seq(SessionKeys.ChargeReference -> c)
@@ -137,14 +153,6 @@ class CheckYourAnswersController @Inject() (
                 .toString()
           )
         )
-      case AmendReturn     =>
-        Redirect(routes.AmendReturnSubmittedController.onPageLoad()).withSession(
-          request.session.clearEclValues ++ Seq(
-            SessionKeys.Email             -> request.eclReturn.contactEmailAddress
-              .getOrElse(throw new IllegalStateException("Contact email address not found in return data")),
-            SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString()
-          )
-        )
     }
 
   private def base64EncodeHtmlView(html: String): String = Base64.getEncoder
@@ -152,13 +160,13 @@ class CheckYourAnswersController @Inject() (
 
   private def createAndEncodeHtmlForPdf()(implicit request: ReturnDataRequest[_]): String = {
     val date         = LocalDate.now
-    val organisation = eclDetails()
-    val contact      = contactDetails()
+    val organisation = eclDetails().copy(rows = eclDetails().rows.map(_.copy(actions = None)))
+    val contact      = contactDetails().copy(rows = contactDetails().rows.map(_.copy(actions = None)))
     base64EncodeHtmlView(
       amendReturnPdfView(
         ViewUtils.formatLocalDate(date),
-        organisation.copy(rows = organisation.rows.map(_.copy(actions = None))),
-        contact.copy(rows = contact.rows.map(_.copy(actions = None)))
+        organisation,
+        contact
       ).toString()
     )
   }

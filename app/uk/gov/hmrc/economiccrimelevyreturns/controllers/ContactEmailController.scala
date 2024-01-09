@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactEmailFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactEmailPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactEmailView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -38,7 +38,7 @@ class ContactEmailController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsService: EclReturnsService,
+  eclReturnsService: ReturnsService,
   formProvider: ContactEmailFormProvider,
   pageNavigator: ContactEmailPageNavigator,
   view: ContactEmailView

@@ -44,18 +44,27 @@ class RelevantApLengthPageNavigator @Inject() (
   override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
     eclReturn.relevantApLength match {
       case Some(_) =>
-        eclLiabilityService.calculateLiability(eclReturn) match {
-          case Some(f) =>
-            f.flatMap { updatedReturn =>
-              updatedReturn.calculatedLiability match {
-                case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
-                  clearAmlActivityAnswersAndRecalculate(updatedReturn)
-                case Some(_)                                                                  => navigateLiable(updatedReturn)
-                case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
+        eclLiabilityService
+          .calculateLiability(eclReturn)
+          .foldF(
+            err => Future.successful(routes.NotableErrorController.answersAreInvalid()),
+            liability =>
+              if (liability.calculatedBand == Small) {
+                eclReturnsConnector
+                  .upsertReturn(eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None))
+                  .flatMap { updatedReturn =>
+                    eclLiabilityService.calculateLiability(updatedReturn) match {
+                      case Some(f) => f.map(_ => routes.AmountDueController.onPageLoad(CheckMode))
+                      case None => Future.successful(routes.NotableErrorController.answersAreInvalid())
+                    }
+                  }
+              } else {
+                eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
+                  case Some(_) => Future.successful(routes.AmountDueController.onPageLoad(CheckMode))
+                  case None => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(CheckMode))
+                }
               }
-            }
-          case None    => Future.successful(routes.NotableErrorController.answersAreInvalid())
-        }
+          )
       case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
     }
 
