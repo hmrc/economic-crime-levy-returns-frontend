@@ -40,7 +40,7 @@ class EclAccountService @Inject() (
               .unapply(error)
               .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
           Left(EclAccountError.BadGateway(reason = message, code = code))
-        case NonFatal(thr) => Left(EclAccountError.InternalUnexpectedError(thr.getMessage, Some(thr)))
+        case NonFatal(thr) => Left(EclAccountError.InternalUnexpectedError(Some(thr), Some(thr.getMessage)))
       }
     }
 

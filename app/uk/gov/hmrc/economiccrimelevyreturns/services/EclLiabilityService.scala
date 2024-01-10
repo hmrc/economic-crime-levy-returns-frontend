@@ -107,7 +107,7 @@ class EclLiabilityService @Inject() (
         Future.successful(
           value match {
             case Some(value) => Right(value)
-            case _           => Left(LiabilityCalculationError.InternalUnexpectedError)
+            case _           => Left(LiabilityCalculationError.BadRequest("Missing expected value."))
           }
         )
       }

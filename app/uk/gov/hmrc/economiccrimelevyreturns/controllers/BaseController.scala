@@ -17,11 +17,12 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
-import play.api.mvc.Results.Redirect
-import play.api.mvc.{RequestHeader, Result}
+import play.api.mvc.Results.{BadRequest, Redirect, Status}
+import play.api.mvc.{Request, Result}
+import uk.gov.hmrc.economiccrimelevyreturns.handlers.ErrorHandlers
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.{AsyncPageNavigator, PageNavigator}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{InternalServiceError, ResponseError, StandardError}
+import uk.gov.hmrc.economiccrimelevyreturns.navigation.PageNavigator
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,24 +30,14 @@ trait BaseController {
 
   implicit class ResponseHandler(value: EitherT[Future, ResponseError, EclReturn]) {
 
-    def convertToResult(mode: Mode, pageNavigator: PageNavigator)(implicit ec: ExecutionContext): Future[Result] =
-      value
-        .fold(
-          _ =>
-            routes.NotableErrorController
-              .answersAreInvalid(), //this isn't the only reason for failing, only when it doesn't pass validation
-          result => pageNavigator.nextPage(mode, result)
-        )
-        .map(Redirect)
-
-    def convertToAsyncResult(mode: Mode, pageNavigator: AsyncPageNavigator)(implicit
+    def convertToResult(mode: Mode, pageNavigator: PageNavigator)(implicit
       ec: ExecutionContext,
-      request: RequestHeader
+      request: Request[_]
     ): Future[Result] =
       value
-        .foldF(
-          _ => Future.successful(Redirect(routes.NotableErrorController.answersAreInvalid())),
-          result => pageNavigator.nextPage(mode, result).map(Redirect)
+        .fold(
+          _ => Status(500), //TBD - fix this
+          result => Redirect(pageNavigator.nextPage(mode, result))
         )
   }
 }

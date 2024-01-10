@@ -109,12 +109,12 @@ class StartController @Inject() (
       obligationData.flatMap(_.getObligationDetails(periodKey))
 
     obligationDetails match {
-      case None                    => EitherT(Future.successful(Right(None)))
+      case None                    => EitherT[Future, DataHandlingError, Option[ObligationDetails]](Future.successful(Right(None)))
       case Some(obligationDetails) =>
         obligationDetails.status match {
           case Fulfilled =>
             if (obligationDetails.inboundCorrespondenceDateReceived.isEmpty) {
-              EitherT(
+              EitherT[Future, DataHandlingError, Option[ObligationDetails]](
                 Future.successful(
                   Left(
                     DataHandlingError.InternalUnexpectedError(
@@ -125,7 +125,9 @@ class StartController @Inject() (
                 )
               )
             } else {
-              EitherT(Future.successful(Right(Some(obligationDetails))))
+              EitherT[Future, DataHandlingError, Option[ObligationDetails]](
+                Future.successful(Right(Some(obligationDetails)))
+              )
             }
           case Open      =>
             for {

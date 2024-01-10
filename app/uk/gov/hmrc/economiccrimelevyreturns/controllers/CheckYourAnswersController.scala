@@ -20,8 +20,7 @@ import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, ValidatedReturnAction}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
@@ -38,14 +37,13 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import java.time.LocalDate
 import java.util.Base64
 import javax.inject.Singleton
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class CheckYourAnswersController @Inject() (
   override val messagesApi: MessagesApi,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  validateReturnData: ValidatedReturnAction,
   returnsService: ReturnsService,
   sessionService: SessionService,
   emailService: EmailService,
@@ -80,9 +78,16 @@ class CheckYourAnswersController @Inject() (
     ).flatten
   ).withCssClass("govuk-!-margin-bottom-9")
 
-  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData andThen validateReturnData) {
-    implicit request =>
-      Ok(view(eclDetails(), contactDetails(), request.startAmendUrl))
+  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    (for {
+      errors <- returnsService.getReturnValidationErrors(request.internalId)(hc).asResponseError
+    } yield errors).fold(
+      error => Status(error.code.statusCode)(Json.toJson(error)),
+      {
+        case Some(_) => Redirect(routes.NotableErrorController.answersAreInvalid())
+        case None    => Ok(view(eclDetails(), contactDetails(), request.startAmendUrl))
+      }
+    )
   }
 
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>

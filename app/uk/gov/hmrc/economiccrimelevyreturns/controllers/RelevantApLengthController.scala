@@ -18,14 +18,15 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantApLengthDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
-import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.RelevantApLengthPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantApLengthView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,8 +41,8 @@ class RelevantApLengthController @Inject() (
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
   eclReturnsService: ReturnsService,
+  eclLiabilityService: EclLiabilityService,
   formProvider: RelevantApLengthFormProvider,
-  pageNavigator: RelevantApLengthPageNavigator,
   dataCleanup: RelevantApLengthDataCleanup,
   view: RelevantApLengthView
 )(implicit ec: ExecutionContext)
@@ -64,14 +65,67 @@ class RelevantApLengthController @Inject() (
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
         relevantApLength => {
           val eclReturn = dataCleanup.cleanup(request.eclReturn.copy(relevantApLength = Some(relevantApLength)))
-          (for {
-            upsertedReturn <- eclReturnsService.upsertReturn(eclReturn).asResponseError
-          } yield upsertedReturn)
-            .convertToAsyncResult(mode, pageNavigator)
+          eclReturnsService
+            .upsertReturn(eclReturn)
+            .asResponseError
+            .foldF(
+              error => Future.successful(Status(error.code.statusCode)(Json.toJson(error))),
+              _ => processByMode(mode, eclReturn).map(Redirect)
+            )
         }
       )
   }
 
+  private def processByMode(mode: Mode, eclReturn: EclReturn)(implicit request: RequestHeader) =
+    mode match {
+      case NormalMode => processNormalMode(eclReturn)
+      case CheckMode  => processCheckMode(eclReturn)
+    }
 
+  private def processNormalMode(eclReturn: EclReturn) = eclReturn.relevantApLength match {
+    case Some(_) => Future.successful(routes.UkRevenueController.onPageLoad(NormalMode))
+    case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
+  }
+
+  private def clearAmlActivityAnswersAndRecalculate(
+    eclReturn: EclReturn
+  )(implicit request: RequestHeader) = {
+    val updatedReturn =
+      eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
+    (for {
+      _         <- eclReturnsService.upsertReturn(updatedReturn).asResponseError
+      liability <- eclLiabilityService.calculateLiability(updatedReturn).asResponseError
+    } yield liability).fold(
+      error => routes.NotableErrorController.answersAreInvalid(),
+      _ => routes.AmountDueController.onPageLoad(CheckMode)
+    )
+  }
+
+  private def navigateLiable(eclReturn: EclReturn): Future[Call] =
+    eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
+      case Some(_) => Future.successful(routes.AmountDueController.onPageLoad(CheckMode))
+      case None    => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(CheckMode))
+    }
+
+  private def recalculateLiability(eclReturn: EclReturn)(implicit request: RequestHeader) =
+    eclReturn.calculatedLiability match {
+      case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
+        clearAmlActivityAnswersAndRecalculate(eclReturn)
+      case Some(_)                                                                  => navigateLiable(eclReturn)
+      case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
+    }
+
+  private def processCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader) = {
+    val updatedReturn =
+      eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
+
+    (for {
+      calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
+      _                   <- eclReturnsService.upsertReturn(updatedReturn).asResponseError
+    } yield calculatedLiability).foldF(
+      error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
+      _ => recalculateLiability(updatedReturn)
+    )
+  }
 
 }

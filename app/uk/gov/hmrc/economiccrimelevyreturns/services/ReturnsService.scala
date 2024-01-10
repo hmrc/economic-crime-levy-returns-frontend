@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import cats.data.EitherT
-import play.api.http.Status.NOT_FOUND
+import play.api.http.Status.{BAD_REQUEST, NOT_FOUND}
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, ReturnType, SubmitEclReturnResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.audit.ReturnStartedEvent
@@ -59,7 +59,7 @@ class ReturnsService @Inject() (
   )(implicit hc: HeaderCarrier, request: AuthorisedRequest[_]): EitherT[Future, DataHandlingError, EclReturn] =
     getReturn(internalId)
       .flatMap {
-        case Some(eclReturn) => EitherT(Future.successful(Right(eclReturn)))
+        case Some(eclReturn) => EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn)))
         case None            =>
           auditService
             .auditReturnStarted(
@@ -112,6 +112,24 @@ class ReturnsService @Inject() (
         }
         .recover {
           handleError
+        }
+    }
+
+  def getReturnValidationErrors(
+    internalId: String
+  )(implicit hc: HeaderCarrier) =
+    EitherT {
+      eclReturnsConnector
+        .getReturnValidationErrors(internalId)
+        .map(eclReturn => Right(Some(eclReturn)))
+        .recover {
+          case UpstreamErrorResponse(_, BAD_REQUEST, _, _) => Right(None)
+          case error @ UpstreamErrorResponse(message, code, _, _)
+              if UpstreamErrorResponse.Upstream5xxResponse
+                .unapply(error)
+                .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
+            Left(DataHandlingError.BadGateway(reason = message, code = code))
+          case NonFatal(thr)                               => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
         }
     }
 

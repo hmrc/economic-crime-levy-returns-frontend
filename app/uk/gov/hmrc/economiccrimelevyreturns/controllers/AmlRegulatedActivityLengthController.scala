@@ -71,7 +71,7 @@ class AmlRegulatedActivityLengthController @Inject() (
             upsertedReturn      <- eclReturnsService.upsertReturn(calculatedReturn).asResponseError
 
           } yield upsertedReturn)
-            .convertToAsyncResult(mode, pageNavigator)
+            .convertToResult(mode, pageNavigator)
         }
       )
   }

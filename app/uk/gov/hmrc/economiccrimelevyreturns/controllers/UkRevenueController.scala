@@ -18,14 +18,14 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.UkRevenueDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
-import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.UkRevenuePageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,8 +40,8 @@ class UkRevenueController @Inject() (
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
   eclReturnsService: ReturnsService,
+  eclLiabilityService: EclLiabilityService,
   formProvider: UkRevenueFormProvider,
-  pageNavigator: UkRevenuePageNavigator,
   dataCleanup: UkRevenueDataCleanup,
   view: UkRevenueView
 )(implicit ec: ExecutionContext)
@@ -64,12 +64,51 @@ class UkRevenueController @Inject() (
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
         revenue => {
           val eclReturn = dataCleanup.cleanup(request.eclReturn.copy(relevantApRevenue = Some(revenue)))
-          (for {
-            upsertedReturn <- eclReturnsService.upsertReturn(eclReturn).asResponseError
-          } yield upsertedReturn)
-            .convertToAsyncResult(mode, pageNavigator)
+          calculateLiability(mode, eclReturn).map(Redirect)
         }
       )
   }
+
+  private def calculateLiability(mode: Mode, eclReturn: EclReturn)(implicit request: RequestHeader) =
+    eclReturn.relevantApRevenue match {
+      case Some(_) =>
+        (for {
+          _                   <- eclReturnsService.upsertReturn(eclReturn).asResponseError
+          calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
+        } yield calculatedLiability).foldF(
+          error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
+          liability =>
+            if (liability.calculatedBand == Small) {
+              clearAmlActivityAnswersAndRecalculate(eclReturn)
+            } else {
+              navigateLiable(eclReturn, mode)
+            }
+        )
+      case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
+    }
+
+  private def clearAmlActivityAnswersAndRecalculate(
+    eclReturn: EclReturn
+  )(implicit request: RequestHeader) = {
+    val updatedReturn =
+      eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
+    (for {
+      _         <- eclReturnsService.upsertReturn(updatedReturn).asResponseError
+      liability <- eclLiabilityService.calculateLiability(updatedReturn).asResponseError
+    } yield liability).fold(
+      error => routes.NotableErrorController.answersAreInvalid(),
+      _ => routes.AmountDueController.onPageLoad(CheckMode)
+    )
+  }
+
+  private def navigateLiable(eclReturn: EclReturn, mode: Mode): Future[Call] =
+    mode match {
+      case NormalMode => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(mode))
+      case CheckMode  =>
+        eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
+          case Some(_) => Future.successful(routes.AmountDueController.onPageLoad(mode))
+          case None    => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(mode))
+        }
+    }
 
 }

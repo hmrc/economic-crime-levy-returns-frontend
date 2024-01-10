@@ -30,7 +30,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.UkRevenuePageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
 
