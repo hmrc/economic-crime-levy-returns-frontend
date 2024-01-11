@@ -18,201 +18,212 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import play.api.http.Status.{ACCEPTED, BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, NO_CONTENT, OK}
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SubmitEclReturnResponse}
-import uk.gov.hmrc.http.{HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
+import uk.gov.hmrc.http.{HttpResponse, StringContextOps, UpstreamErrorResponse}
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 class ReturnsConnectorSpec extends SpecBase {
-  val mockHttpClient: HttpClient = mock[HttpClient]
-  val connector                  = new ReturnsConnector(appConfig, mockHttpClient)
-  val eclReturnsUrl              = "http://localhost:14003/economic-crime-levy-returns"
+  val mockHttpClient: HttpClientV2       = mock[HttpClientV2]
+  val mockRequestBuilder: RequestBuilder = mock[RequestBuilder]
+  val connector                          = new ReturnsConnector(appConfig, mockHttpClient, config, actorSystem)
+  val eclReturnsUrl                      = "http://localhost:14003/economic-crime-levy-returns"
 
   "getReturn" should {
     "return an ecl return when the http client returns an ecl return" in forAll {
       (internalId: String, eclReturn: EclReturn) =>
-        val expectedUrl = s"$eclReturnsUrl/returns/$internalId"
+        val expectedUrl = url"$eclReturnsUrl/returns/$internalId"
 
-        when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any()))
+        when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+          .thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
           .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(Json.toJson(eclReturn)))))
 
         val result = await(connector.getReturn(internalId))
         result shouldBe eclReturn
 
-        verify(mockHttpClient, times(1))
-          .GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any())
+        verify(mockHttpClient, times(1)).get(ArgumentMatchers.eq(expectedUrl))(any())
 
         reset(mockHttpClient)
     }
 
-    "return none when the http client returns none" in forAll { internalId: String =>
-      val expectedUrl = s"$eclReturnsUrl/returns/$internalId"
+    "return UpstreamErrorResponse when call to returns service returns an error" in forAll { (internalId: String) =>
+      val expectedUrl = url"$eclReturnsUrl/returns/$internalId"
 
-      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "Not found")))
+      val errorCode = INTERNAL_SERVER_ERROR
+
+      when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
       Try(await(connector.getReturn(internalId))) match {
-        case Success(_) => fail("Expected UpstreamErrorResponse")
-        case Failure(e) => e.isInstanceOf[UpstreamErrorResponse] shouldBe true
+        case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+          code shouldEqual errorCode
+        case _                                             => fail("expected UpstreamErrorResponse when an error is received from the returns service")
       }
-
-      verify(mockHttpClient, times(1))
-        .GET[Option[EclReturn]](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any())
-
-      reset(mockHttpClient)
     }
   }
 
   "deleteReturn" should {
     "return unit when the http client successfully returns a http response" in forAll { internalId: String =>
-      val response    = HttpResponse(NO_CONTENT, "", Map.empty)
-      val expectedUrl = s"$eclReturnsUrl/returns/$internalId"
+      val expectedUrl = url"$eclReturnsUrl/returns/$internalId"
 
-      when(mockHttpClient.DELETE[HttpResponse](ArgumentMatchers.eq(expectedUrl), any())(any(), any(), any()))
-        .thenReturn(Future.successful(response))
+      when(mockHttpClient.delete(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(NO_CONTENT, "")))
 
       val result: Unit = await(connector.deleteReturn(internalId))
       result shouldBe ()
 
-      verify(mockHttpClient, times(1))
-        .DELETE[HttpResponse](ArgumentMatchers.eq(expectedUrl), any())(any(), any(), any())
+      verify(mockHttpClient, times(1)).delete(ArgumentMatchers.eq(expectedUrl))(any())
 
       reset(mockHttpClient)
+    }
+
+    "return UpstreamErrorResponse when call to returns service returns an error" in forAll { (internalId: String) =>
+      val expectedUrl = url"$eclReturnsUrl/returns/$internalId"
+
+      val errorCode = INTERNAL_SERVER_ERROR
+
+      when(mockHttpClient.delete(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
+
+      Try(await(connector.deleteReturn(internalId))) match {
+        case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+          code shouldEqual errorCode
+        case _                                             => fail("expected UpstreamErrorResponse when an error is received from the returns service")
+      }
     }
   }
 
   "upsertReturn" should {
     "return the new or updated ecl return" in forAll { eclReturn: EclReturn =>
-      val expectedUrl = s"$eclReturnsUrl/returns"
+      val expectedUrl = url"$eclReturnsUrl/returns"
 
-      when(
-        mockHttpClient
-          .PUT[EclReturn, EclReturn](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any(), any())
-      )
-        .thenReturn(Future.successful(eclReturn))
+      when(mockHttpClient.put(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody(ArgumentMatchers.eq(eclReturn))(any(), any(), any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(Json.toJson(eclReturn)))))
 
       val result = await(connector.upsertReturn(eclReturn))
       result shouldBe eclReturn
 
-      verify(mockHttpClient, times(1))
-        .PUT[EclReturn, EclReturn](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any(), any())
-
       reset(mockHttpClient)
+    }
+
+    "return UpstreamErrorResponse when call to returns service returns an error" in forAll {
+      (internalId: String, eclReturn: EclReturn) =>
+        val expectedUrl = url"$eclReturnsUrl/returns/$internalId"
+
+        val errorCode = INTERNAL_SERVER_ERROR
+
+        when(mockHttpClient.put(ArgumentMatchers.eq(expectedUrl))(any()))
+          .thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.withBody(ArgumentMatchers.eq(eclReturn))(any(), any(), any()))
+          .thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+          .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
+
+        Try(await(connector.upsertReturn(eclReturn))) match {
+          case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+            code shouldEqual errorCode
+          case _                                             => fail("expected UpstreamErrorResponse when an error is received from the returns service")
+        }
     }
   }
 
   "getReturnValidationErrors" should {
-    "return None when the http client returns 200 OK" in forAll { internalId: String =>
-      val expectedUrl = s"$eclReturnsUrl/returns/$internalId/validation-errors"
+    "return None when the http client returns 200 OK and body is empty" in forAll { internalId: String =>
+      val expectedUrl = url"$eclReturnsUrl/returns/$internalId/validation-errors"
 
-      val response = HttpResponse(OK, "")
-
-      when(
-        mockHttpClient
-          .GET[HttpResponse](ArgumentMatchers.eq(expectedUrl), any(), any())(
-            any(),
-            any(),
-            any()
-          )
-      ).thenReturn(Future.successful(response))
+      when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(OK, "")))
 
       val result = await(connector.getReturnValidationErrors(internalId))
 
       result shouldBe None
     }
 
-    "return option of Unit when the http client return 400 bad request with validation errors" in forAll {
+    "return Some with DataValidationErrors when 200 OK is returned with validation errors in the body" in forAll {
       (internalId: String, dataValidationErrors: DataValidationErrors) =>
-        val expectedUrl = s"$eclReturnsUrl/returns/$internalId/validation-errors"
+        val expectedUrl = url"$eclReturnsUrl/returns/$internalId/validation-errors"
 
-        val response = HttpResponse(BAD_REQUEST, Json.toJson(dataValidationErrors), Map.empty)
-
-        when(
-          mockHttpClient
-            .GET[HttpResponse](ArgumentMatchers.eq(expectedUrl), any(), any())(
-              any(),
-              any(),
-              any()
-            )
-        ).thenReturn(Future.successful(response))
+        when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+          .thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+          .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(Json.toJson(dataValidationErrors)))))
 
         val result = await(connector.getReturnValidationErrors(internalId))
 
-        result shouldBe Some(())
+        result shouldBe Some(dataValidationErrors)
     }
 
-    "throw a HttpException when an unexpected http status is returned by the http client" in forAll {
-      internalId: String =>
-        val expectedUrl = s"$eclReturnsUrl/returns/$internalId/validation-errors"
+    "return 5xx UpstreamErrorResponse when call to returns service returns an error" in forAll { (internalId: String) =>
+      val expectedUrl = url"$eclReturnsUrl/returns/$internalId"
 
-        val response = HttpResponse(INTERNAL_SERVER_ERROR, "")
+      val errorCode = INTERNAL_SERVER_ERROR
 
-        when(
-          mockHttpClient
-            .GET[HttpResponse](ArgumentMatchers.eq(expectedUrl), any(), any())(
-              any(),
-              any(),
-              any()
-            )
-        ).thenReturn(Future.successful(response))
+      when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
-        val result: HttpException = intercept[HttpException] {
-          await(connector.getReturnValidationErrors(internalId))
-        }
-
-        result.getMessage shouldBe s"Unexpected response with HTTP status $INTERNAL_SERVER_ERROR"
-    }
-
-    "throw an UpstreamErrorResponse exception when the http client returns a error response" in forAll {
-      internalId: String =>
-        val expectedUrl = s"$eclReturnsUrl/returns/$internalId/validation-errors"
-
-        val response = UpstreamErrorResponse("Internal server error", INTERNAL_SERVER_ERROR)
-
-        when(
-          mockHttpClient
-            .GET[HttpResponse](ArgumentMatchers.eq(expectedUrl), any(), any())(
-              any(),
-              any(),
-              any()
-            )
-        ).thenReturn(Future.failed(response))
-
-        val result: UpstreamErrorResponse = intercept[UpstreamErrorResponse] {
-          await(connector.getReturnValidationErrors(internalId))
-        }
-
-        result.getMessage shouldBe "Internal server error"
+      Try(await(connector.getReturnValidationErrors(internalId))) match {
+        case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+          code shouldEqual errorCode
+        case _                                             => fail("expected UpstreamErrorResponse when an error is received from the returns service")
+      }
     }
   }
 
   "submitReturn" should {
     "return an ECL return submission response when the http client returns an ECL return submission response" in forAll {
       (internalId: String, eclReturnResponse: SubmitEclReturnResponse) =>
-        val expectedUrl = s"$eclReturnsUrl/submit-return/$internalId"
+        val expectedUrl = url"$eclReturnsUrl/submit-return/$internalId"
 
-        when(
-          mockHttpClient
-            .POSTEmpty[SubmitEclReturnResponse](ArgumentMatchers.eq(expectedUrl), any())(any(), any(), any())
-        ).thenReturn(Future.successful(eclReturnResponse))
+        when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any()))
+          .thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+          .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(Json.toJson(eclReturnResponse)))))
 
         val result = await(connector.submitReturn(internalId))
 
         result shouldBe eclReturnResponse
 
-        verify(mockHttpClient, times(1))
-          .POSTEmpty[SubmitEclReturnResponse](
-            ArgumentMatchers.eq(expectedUrl),
-            any()
-          )(any(), any(), any())
+        verify(mockHttpClient, times(1)).post(ArgumentMatchers.eq(expectedUrl))
 
         reset(mockHttpClient)
+    }
+
+    "return UpstreamErrorResponse when call to returns service returns an error" in forAll { (internalId: String) =>
+      val expectedUrl = url"$eclReturnsUrl/returns/$internalId"
+      val errorCode   = INTERNAL_SERVER_ERROR
+
+      when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
+
+      Try(await(connector.submitReturn(internalId))) match {
+        case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+          code shouldEqual errorCode
+        case _                                             => fail("expected UpstreamErrorResponse when an error is received from the returns service")
+      }
     }
   }
 

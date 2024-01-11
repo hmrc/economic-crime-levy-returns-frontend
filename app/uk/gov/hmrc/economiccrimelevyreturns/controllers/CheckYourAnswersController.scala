@@ -19,12 +19,11 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.InternalServiceError
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
@@ -115,7 +114,7 @@ class CheckYourAnswersController @Inject() (
       _        <- returnsService.deleteReturn(request.internalId).asResponseError
       _         = sessionService.delete(request.internalId)
     } yield response).fold(
-      error => Redirect(routes.NotableErrorController.answersAreInvalid()), //needs fixing
+      error => Redirect(routes.NotableErrorController.answersAreInvalid()),
       response => getRedirectionRoute(request, response)
     )
   }

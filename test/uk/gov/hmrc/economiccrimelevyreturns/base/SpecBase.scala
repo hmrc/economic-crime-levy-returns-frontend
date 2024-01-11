@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.base
 
+import akka.actor.ActorSystem
+import com.typesafe.config.Config
 import org.mockito.MockitoSugar
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -57,6 +59,8 @@ trait SpecBase
   val messages: Messages                               = messagesApi.preferred(fakeRequest)
   val bodyParsers: PlayBodyParsers                     = app.injector.instanceOf[PlayBodyParsers]
   val eclRegistrationReference: String                 = "test-ecl-registration-reference"
+  val config: Config                                   = app.injector.instanceOf[Config]
+  val actorSystem: ActorSystem                         = ActorSystem("actor")
 
   def fakeAuthorisedAction(internalId: String) = new FakeAuthorisedAction(internalId, bodyParsers)
 

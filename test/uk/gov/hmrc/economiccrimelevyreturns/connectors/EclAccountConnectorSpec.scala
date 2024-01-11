@@ -18,33 +18,34 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.ObligationData
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{HttpResponse, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 
 import scala.concurrent.Future
+import scala.util.{Failure, Try}
 
 class EclAccountConnectorSpec extends SpecBase {
-  val mockHttpClient: HttpClient = mock[HttpClient]
-  val connector                  = new EclAccountConnector(appConfig, mockHttpClient)
-  val eclAccountUrl              = "http://localhost:14009/economic-crime-levy-account"
+  val mockHttpClient: HttpClientV2       = mock[HttpClientV2]
+  val connector                          = new EclAccountConnector(appConfig, mockHttpClient, config, actorSystem)
+  val mockRequestBuilder: RequestBuilder = mock[RequestBuilder]
+  val eclAccountUrl                      = "http://localhost:14009/economic-crime-levy-account"
+
+  val expectedUrl = url"${appConfig.eclAccountBaseUrl}/economic-crime-levy-account/obligation-data"
 
   "getObligations" should {
-    "return optional obligations when the http client returns optional obligations" in forAll {
+    "return obligations when the call to the account service is successful" in forAll {
       (
         obligationData: Option[ObligationData]
       ) =>
-        val expectedUrl = s"$eclAccountUrl/obligation-data"
-
-        when(
-          mockHttpClient.GET[Option[ObligationData]](
-            ArgumentMatchers.eq(expectedUrl),
-            any(),
-            any()
-          )(any(), any(), any())
-        )
-          .thenReturn(Future.successful(obligationData))
+        when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+          .thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+          .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(Json.toJson(obligationData)))))
 
         val result = await(
           connector.getObligations()
@@ -52,14 +53,27 @@ class EclAccountConnectorSpec extends SpecBase {
 
         result shouldBe obligationData
 
-        verify(mockHttpClient, times(1))
-          .GET[Option[ObligationData]](
-            ArgumentMatchers.eq(expectedUrl),
-            any(),
-            any()
-          )(any(), any(), any())
+        verify(mockHttpClient, times(1)).get(ArgumentMatchers.eq(expectedUrl))
 
         reset(mockHttpClient)
+    }
+
+    "return 5xx UpstreamErrorResponse when call to account service returns an error and executes retry" in {
+      val errorCode = INTERNAL_SERVER_ERROR
+
+      when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
+
+      Try(await(connector.getObligations())) match {
+        case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+          code shouldEqual errorCode
+        case _                                             => fail("expected UpstreamErrorResponse when an error is received from the account service")
+      }
+
+      verify(mockRequestBuilder, times(4))
+        .execute(any(), any())
     }
   }
 

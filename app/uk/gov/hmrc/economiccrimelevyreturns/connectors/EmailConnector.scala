@@ -43,7 +43,7 @@ class EmailConnector @Inject() (
 ) extends BaseConnector
     with Retries {
 
-  private val sendEmailUrl: String = s"${appConfig.emailBaseUrl}/hmrc/email"
+  private val sendEmailUrl = url"${appConfig.emailBaseUrl}/hmrc/email"
 
   def sendReturnSubmittedEmail(
     to: String,
@@ -59,7 +59,7 @@ class EmailConnector @Inject() (
     )
 
     retryFor[Unit]("HMRC Email service - initial return")(retryCondition) {
-      httpClient.post(url"$sendEmailUrl").withBody(Json.toJson(body)).executeAndExpect(OK)
+      httpClient.post(sendEmailUrl).withBody(Json.toJson(body)).executeAndExpect(OK)
     }
   }
 
