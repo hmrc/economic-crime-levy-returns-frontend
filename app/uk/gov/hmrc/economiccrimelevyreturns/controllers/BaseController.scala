@@ -17,6 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
+import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, Redirect, Status}
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.handlers.ErrorHandlers
@@ -36,7 +37,7 @@ trait BaseController {
     ): Future[Result] =
       value
         .fold(
-          _ => Status(500), //TBD - fix this
+          error => Status(error.code.statusCode)(Json.toJson(error)),
           result => Redirect(pageNavigator.nextPage(mode, result))
         )
   }

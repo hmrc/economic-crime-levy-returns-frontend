@@ -18,6 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
 import play.api.i18n.I18nSupport
+import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
@@ -28,6 +29,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.BaseController
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -53,7 +55,7 @@ class StartAmendController @Inject() (
       obligationData    <- eclAccountService.retrieveObligationData.asResponseError
       obligationDetails <- processObligationDetails(obligationData, periodKey).asResponseError
     } yield obligationDetails).fold(
-      err => Ok(noObligationForPeriodView()), //TODO: how do we want to handle
+      err => Status(err.code.statusCode)(Json.toJson(err)),
       {
         case Some(value) =>
           val startAmendUrl = routes.StartAmendController.onPageLoad(periodKey, returnNumber).url

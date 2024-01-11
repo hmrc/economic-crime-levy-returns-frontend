@@ -19,11 +19,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.InternalServiceError
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
@@ -110,7 +111,7 @@ class CheckYourAnswersController @Inject() (
     (for {
       _        <- returnsService.upsertReturn(eclReturn = updatedReturn).asResponseError
       response <- returnsService.submitReturn(request.internalId).asResponseError
-      _         = sendConfirmationMail(request.eclReturn, response) // shouldn't this be set to the updated return?
+      _         = sendConfirmationMail(request.eclReturn, response)
       _        <- returnsService.deleteReturn(request.internalId).asResponseError
       _         = sessionService.delete(request.internalId)
     } yield response).fold(
@@ -128,37 +129,51 @@ class CheckYourAnswersController @Inject() (
       case AmendReturn     => emailService.sendAmendReturnConfirmationEmail(eclReturn)
     }
 
-  //TODO: fix exception throwing
-  private def getRedirectionRoute(request: ReturnDataRequest[AnyContent], response: SubmitEclReturnResponse) =
+  def checkOptionalVal[T](value: Option[T]) =
+    if (value.isDefined) {
+      Right(value.get)
+    } else {
+      Left(Redirect(routes.NotableErrorController.answersAreInvalid()))
+    }
+
+  private def getRedirectionRoute(request: ReturnDataRequest[AnyContent], response: SubmitEclReturnResponse) = {
+    val containsEmailAddress = checkOptionalVal(request.eclReturn.contactEmailAddress)
     request.eclReturn.returnType match {
       case Some(AmendReturn) =>
-        if (request.eclReturn.contactEmailAddress.isEmpty) {}
-        Redirect(routes.AmendReturnSubmittedController.onPageLoad()).withSession(
-          request.session.clearEclValues ++ Seq(
-            SessionKeys.Email             -> request.eclReturn.contactEmailAddress
-              .getOrElse(throw new IllegalStateException("Contact email address not found in return data")),
-            SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString()
-          )
-        )
+        containsEmailAddress match {
+          case Right(email)    =>
+            val session = request.session.clearEclValues ++ Seq(
+              SessionKeys.Email             -> email,
+              SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString()
+            )
+
+            Redirect(routes.AmendReturnSubmittedController.onPageLoad()).withSession(session)
+          case Left(errorPage) => errorPage
+        }
       case _                 =>
-        Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(
-          request.session.clearEclValues ++ response.chargeReference.fold(Seq.empty[(String, String)])(c =>
-            Seq(SessionKeys.ChargeReference -> c)
-          ) ++ Seq(
-            SessionKeys.Email             -> request.eclReturn.contactEmailAddress
-              .getOrElse(throw new IllegalStateException("Contact email address not found in return data")),
-            SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString(),
-            SessionKeys.AmountDue         ->
-              request.eclReturn.calculatedLiability
-                .getOrElse(
-                  throw new IllegalStateException("Amount due not found in return data")
-                )
-                .amountDue
-                .amount
-                .toString()
-          )
-        )
+        containsEmailAddress match {
+          case Right(email)    =>
+            checkOptionalVal(request.eclReturn.calculatedLiability) match {
+              case Right(calculatedLiability) =>
+                val session =
+                  request.session.clearEclValues ++ response.chargeReference.fold(Seq.empty[(String, String)])(c =>
+                    Seq(SessionKeys.ChargeReference -> c)
+                  ) ++ Seq(
+                    SessionKeys.Email             -> email,
+                    SessionKeys.ObligationDetails -> Json.stringify(
+                      Json.toJson(request.eclReturn.obligationDetails)
+                    ),
+                    SessionKeys.AmountDue         ->
+                      calculatedLiability.amountDue.amount.toString()
+                  )
+
+                Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(session)
+              case Left(errorPage)            => errorPage
+            }
+          case Left(errorPage) => errorPage
+        }
     }
+  }
 
   private def base64EncodeHtmlView(html: String): String = Base64.getEncoder
     .encodeToString(html.getBytes)

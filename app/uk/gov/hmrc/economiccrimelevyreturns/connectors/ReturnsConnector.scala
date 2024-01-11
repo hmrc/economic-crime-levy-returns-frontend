@@ -21,6 +21,7 @@ import com.typesafe.config.Config
 import play.api.http.Status.OK
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, SubmitEclReturnResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -75,9 +76,11 @@ class ReturnsConnector @Inject() (
 
   def getReturnValidationErrors(
     internalId: String
-  )(implicit hc: HeaderCarrier): Future[Unit] =
-    retryFor[Unit]("ECL Returns Connector - get return validation errors")(retryCondition) {
-      httpClient.get(url"$eclReturnsUrl/returns/$internalId/validation-errors").executeAndExpect(OK)
+  )(implicit hc: HeaderCarrier): Future[Option[DataValidationError]] =
+    retryFor[Option[DataValidationError]]("ECL Returns Connector - get return validation errors")(retryCondition) {
+      httpClient
+        .get(url"$eclReturnsUrl/returns/$internalId/validation-errors")
+        .executeAndDeserialiseOpt[DataValidationError]
     }
 
   def submitReturn(internalId: String)(implicit hc: HeaderCarrier): Future[SubmitEclReturnResponse] =
