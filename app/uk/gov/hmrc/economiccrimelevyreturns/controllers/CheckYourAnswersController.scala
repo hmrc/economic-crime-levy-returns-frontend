@@ -157,11 +157,16 @@ class CheckYourAnswersController @Inject() (
     val date         = LocalDate.now
     val organisation = eclDetails()
     val contact      = contactDetails()
+    val amendReason  = amendReasonDetails()
     base64EncodeHtmlView(
       amendReturnPdfView(
         ViewUtils.formatLocalDate(date),
         organisation.copy(rows = organisation.rows.map(_.copy(actions = None))),
-        contact.copy(rows = contact.rows.map(_.copy(actions = None)))
+        contact.copy(rows = contact.rows.map(_.copy(actions = None))),
+        amendReason.copy(
+          rows = amendReason.rows.map(_.copy(actions = None)),
+          attributes = Map("id" -> "amendReason")
+        )
       ).toString()
     )
   }
