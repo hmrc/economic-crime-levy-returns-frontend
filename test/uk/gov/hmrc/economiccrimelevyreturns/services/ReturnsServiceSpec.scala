@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, anyString}
 import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.http.UpstreamErrorResponse
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.Future
 
@@ -42,17 +41,19 @@ class ReturnsServiceSpec extends SpecBase {
         when(mockEclReturnsConnector.getReturn(any())(any()))
           .thenReturn(Future.failed(UpstreamErrorResponse.apply("Not found", NOT_FOUND)))
 
+        val newReturn = EclReturn.empty(internalId, Some(eclReturn.returnType.getOrElse(FirstTimeReturn)))
+
         when(mockEclReturnsConnector.upsertReturn(any())(any()))
-          .thenReturn(Future.successful(eclReturn))
+          .thenReturn(Future.successful(()))
 
         val result = await(
           service
             .getOrCreateReturn(internalId)(hc, AuthorisedRequest(fakeRequest, internalId, eclReference))
             .value
         )
-        result shouldBe Right(eclReturn)
+        result shouldBe Right(newReturn)
 
-        verify(mockAuditService, times(1)).auditReturnStarted(any(), any(), any())
+        verify(mockAuditService, times(1)).auditReturnStarted(anyString(), anyString(), any())
 
         reset(mockAuditService)
     }

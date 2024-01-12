@@ -25,8 +25,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, 
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
-import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import play.api.http.Status.{INTERNAL_SERVER_ERROR}
 
 import scala.concurrent.Future
 
@@ -50,7 +50,7 @@ class EclLiabilityServiceSpec extends SpecBase {
 
         val result = await(service.calculateLiability(validEclReturn.eclReturn)(fakeRequest).value)
 
-        result shouldBe Right(updatedReturn)
+        result shouldBe Right(calculatedLiability)
     }
 
     "return InternalUnexpectedError when the ECL return does not contain any of the required AP and/or AML answers" in forAll {

@@ -43,7 +43,7 @@ class EclCalculatorConnector @Inject() (
   def calculateLiability(amlRegulatedActivityLength: Int, relevantApLength: Int, relevantApRevenue: BigDecimal)(implicit
     hc: HeaderCarrier
   ): Future[CalculatedLiability] = {
-    val calculatedLiability = CalculateLiabilityRequest(
+    val body = CalculateLiabilityRequest(
       amlRegulatedActivityLength = amlRegulatedActivityLength,
       relevantApLength = relevantApLength,
       ukRevenue = relevantApRevenue.toLong
@@ -52,7 +52,7 @@ class EclCalculatorConnector @Inject() (
     retryFor[CalculatedLiability]("ECL Calculator Connector - calculate liability")(retryCondition) {
       httpClient
         .post(url"$eclCalculatorUrl/calculate-liability")
-        .withBody(Json.toJson(calculatedLiability))
+        .withBody(Json.toJson(body))
         .executeAndDeserialise[CalculatedLiability]
     }
   }

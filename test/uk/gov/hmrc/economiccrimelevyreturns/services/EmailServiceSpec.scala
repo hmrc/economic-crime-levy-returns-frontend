@@ -70,7 +70,7 @@ class EmailServiceSpec extends SpecBase {
         )
           .thenReturn(Future.successful(()))
 
-        val result: Unit =
+        val result =
           await(service.sendReturnSubmittedEmail(validEclReturn.eclReturn, chargeReference)(hc, messages).value)
 
         result shouldBe Right(())
