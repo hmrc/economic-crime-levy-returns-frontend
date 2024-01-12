@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.data.Form
@@ -27,8 +28,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanu
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
 
 import scala.concurrent.Future
@@ -39,17 +41,8 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
   val formProvider: RelevantAp12MonthsFormProvider = new RelevantAp12MonthsFormProvider()
   val form: Form[Boolean]                          = formProvider()
 
-  val mockEclReturnsConnector: ReturnsConnector    = mock[ReturnsConnector]
+  val mockEclReturnsService: ReturnsService        = mock[ReturnsService]
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
-
-  val pageNavigator: RelevantAp12MonthsPageNavigator =
-    new RelevantAp12MonthsPageNavigator(mockEclLiabilityService, mockEclReturnsConnector) {
-      override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-        Future.successful(onwardRoute)
-
-      override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-        Future.successful(onwardRoute)
-    }
 
   val dataCleanup: RelevantAp12MonthsDataCleanup = new RelevantAp12MonthsDataCleanup {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
@@ -60,9 +53,9 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
       mcc,
       fakeAuthorisedAction(returnData.internalId),
       fakeDataRetrievalAction(returnData),
-      mockEclReturnsConnector,
+      mockEclReturnsService,
+      mockEclLiabilityService,
       formProvider,
-      pageNavigator,
       dataCleanup,
       view
     )
@@ -103,8 +96,8 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
           val updatedReturn: EclReturn =
             eclReturn.copy(relevantAp12Months = Some(relevantAp12Months))
 
-          when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
-            .thenReturn(Future.successful(updatedReturn))
+          when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           val result: Future[Result] =
             controller.onSubmit(mode)(

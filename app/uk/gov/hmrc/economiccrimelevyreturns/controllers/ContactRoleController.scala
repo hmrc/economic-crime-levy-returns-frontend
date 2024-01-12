@@ -65,8 +65,8 @@ class ContactRoleController @Inject() (
         role => {
           val eclReturn = request.eclReturn.copy(contactRole = Some(role))
           (for {
-            upsertedReturn <- eclReturnsService.upsertReturn(eclReturn).asResponseError
-          } yield upsertedReturn)
+            _ <- eclReturnsService.upsertReturn(eclReturn).asResponseError
+          } yield eclReturn)
             .convertToResult(mode, pageNavigator)
         }
       )

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.scalacheck.Arbitrary
@@ -28,8 +29,10 @@ import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactNumberFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactNumberPageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactNumberView
 
 import scala.concurrent.Future
@@ -44,14 +47,14 @@ class ContactNumberControllerSpec extends SpecBase {
     override protected def navigateInNormalMode(eclReturn: EclReturn): Call = onwardRoute
   }
 
-  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
+  val mockEclReturnsService: ReturnsService = mock[ReturnsService]
 
   class TestContext(returnData: EclReturn) {
     val controller = new ContactNumberController(
       mcc,
       fakeAuthorisedAction(returnData.internalId),
       fakeDataRetrievalAction(returnData),
-      mockEclReturnsConnector,
+      mockEclReturnsService,
       formProvider,
       pageNavigator,
       view
@@ -103,8 +106,8 @@ class ContactNumberControllerSpec extends SpecBase {
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(contactTelephoneNumber = Some(number.filterNot(_.isWhitespace)))
 
-        when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Future.successful(updatedReturn))
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         val result: Future[Result] =
           controller.onSubmit(NormalMode)(fakeRequest.withFormUrlEncodedBody(("value", number)))

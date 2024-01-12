@@ -63,8 +63,8 @@ class ContactNameController @Inject() (
         name => {
           val eclReturn = request.eclReturn.copy(contactName = Some(name))
           (for {
-            upsertedReturn <- eclReturnsService.upsertReturn(eclReturn).asResponseError
-          } yield upsertedReturn)
+            _ <- eclReturnsService.upsertReturn(eclReturn).asResponseError
+          } yield eclReturn)
             .convertToResult(mode, pageNavigator)
         }
       )

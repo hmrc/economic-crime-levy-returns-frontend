@@ -20,6 +20,7 @@ trait LiabilityCalculationError
 
 object LiabilityCalculationError {
   case class BadRequest(message: String) extends LiabilityCalculationError
-  case class InternalUnexpectedError(cause: Option[Throwable]) extends LiabilityCalculationError
+  case class InternalUnexpectedError(cause: Option[Throwable], message: Option[String] = None)
+      extends LiabilityCalculationError
   case class BadGateway(reason: String, code: Int) extends LiabilityCalculationError
 }

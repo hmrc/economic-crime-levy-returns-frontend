@@ -28,12 +28,12 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.Future
 
-class EclReturnsServiceSpec extends SpecBase {
+class ReturnsServiceSpec extends SpecBase {
   val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
-  val mockAuditConnector: AuditConnector        = mock[AuditConnector]
+  val mockAuditService: AuditService            = mock[AuditService]
   val service                                   = new ReturnsService(
     mockEclReturnsConnector,
-    mockAuditConnector
+    mockAuditService
   )
 
   "getOrCreateReturn" should {
@@ -48,12 +48,13 @@ class EclReturnsServiceSpec extends SpecBase {
         val result = await(
           service
             .getOrCreateReturn(internalId)(hc, AuthorisedRequest(fakeRequest, internalId, eclReference))
+            .value
         )
-        result shouldBe eclReturn
+        result shouldBe Right(eclReturn)
 
-        verify(mockAuditConnector, times(1)).sendExtendedEvent(any())(any(), any())
+        verify(mockAuditService, times(1)).auditReturnStarted(any(), any(), any())
 
-        reset(mockAuditConnector)
+        reset(mockAuditService)
     }
 
     "return an existing ecl return" in forAll { (internalId: String, eclReturn: EclReturn, eclReference: String) =>
@@ -61,31 +62,9 @@ class EclReturnsServiceSpec extends SpecBase {
         .thenReturn(Future.successful(eclReturn))
 
       val result =
-        await(service.getOrCreateReturn(internalId)(hc, AuthorisedRequest(fakeRequest, internalId, eclReference)))
-      result shouldBe eclReturn
-    }
+        await(service.getOrCreateReturn(internalId)(hc, AuthorisedRequest(fakeRequest, internalId, eclReference)).value)
 
-    "return an updated ecl return and verify number of calls" in forAll {
-      (internalId: String, eclReturn: EclReturn, eclReference: String) =>
-        reset(mockEclReturnsConnector)
-
-        when(mockEclReturnsConnector.getReturn(any())(any()))
-          .thenReturn(Future.successful(eclReturn))
-
-        val updatedEclReturn = eclReturn.copy(returnType = Some(AmendReturn))
-
-        when(mockEclReturnsConnector.upsertReturn(any())(any()))
-          .thenReturn(Future.successful(updatedEclReturn))
-
-        val result =
-          await(service.upsertEclReturnType(internalId, AmendReturn)(hc))
-        result shouldBe updatedEclReturn
-
-        verify(mockEclReturnsConnector, times(1))
-          .getReturn(any())(any())
-
-        verify(mockEclReturnsConnector, times(1))
-          .upsertReturn(any())(any())
+      result shouldBe Right(eclReturn)
     }
   }
 }

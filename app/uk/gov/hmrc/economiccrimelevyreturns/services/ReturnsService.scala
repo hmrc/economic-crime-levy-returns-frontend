@@ -68,13 +68,8 @@ class ReturnsService @Inject() (
               returnType
             )
 
-          val newReturn =
-            if (returnType.isEmpty) {
-              EclReturn.empty(internalId, Some(FirstTimeReturn))
-            } else {
-              EclReturn.empty(internalId, returnType)
-            }
-          upsertReturn(newReturn)
+          val newReturn = EclReturn.empty(internalId, Some(returnType.getOrElse(FirstTimeReturn)))
+          upsertReturn(newReturn).map(_ => newReturn)
       }
 
   def submitReturn(
@@ -87,11 +82,11 @@ class ReturnsService @Inject() (
           Right(_)
         }
         .recover {
-          handleError
+          handleError[SubmitEclReturnResponse]
         }
     }
 
-  def upsertReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, EclReturn] =
+  def upsertReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, Unit] =
     EitherT {
       eclReturnsConnector
         .upsertReturn(eclReturn)
@@ -99,7 +94,7 @@ class ReturnsService @Inject() (
           Right(_)
         }
         .recover {
-          handleError
+          handleError[Unit]
         }
     }
 
@@ -111,7 +106,7 @@ class ReturnsService @Inject() (
           Right(_)
         }
         .recover {
-          handleError
+          handleError[Unit]
         }
     }
 

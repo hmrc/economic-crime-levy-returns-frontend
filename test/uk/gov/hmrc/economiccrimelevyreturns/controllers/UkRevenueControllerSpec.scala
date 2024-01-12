@@ -16,21 +16,21 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.data.Form
 import play.api.http.Status.OK
-import play.api.mvc.{Call, RequestHeader, Result}
+import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.UkRevenueDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
 
 import scala.concurrent.Future
@@ -41,17 +41,8 @@ class UkRevenueControllerSpec extends SpecBase {
   val formProvider: UkRevenueFormProvider = new UkRevenueFormProvider()
   val form: Form[BigDecimal]              = formProvider()
 
-  val mockEclReturnsConnector: ReturnsConnector    = mock[ReturnsConnector]
+  val mockEclReturnsService: ReturnsService        = mock[ReturnsService]
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
-
-  val pageNavigator: UkRevenuePageNavigator =
-    new UkRevenuePageNavigator(mockEclLiabilityService, mockEclReturnsConnector) {
-      override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-        Future.successful(onwardRoute)
-
-      override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-        Future.successful(onwardRoute)
-    }
 
   val dataCleanup: UkRevenueDataCleanup = new UkRevenueDataCleanup {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
@@ -62,9 +53,9 @@ class UkRevenueControllerSpec extends SpecBase {
       mcc,
       fakeAuthorisedAction(internalId),
       fakeDataRetrievalAction(eclReturnData),
-      mockEclReturnsConnector,
+      mockEclReturnsService,
+      mockEclLiabilityService,
       formProvider,
-      pageNavigator,
       dataCleanup,
       view
     )
@@ -108,8 +99,8 @@ class UkRevenueControllerSpec extends SpecBase {
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
 
-        when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Future.successful(updatedReturn))
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         val result: Future[Result] =
           controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString)))

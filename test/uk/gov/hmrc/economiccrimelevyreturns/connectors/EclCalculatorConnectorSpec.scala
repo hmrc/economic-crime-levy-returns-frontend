@@ -39,7 +39,6 @@ class EclCalculatorConnectorSpec extends SpecBase {
   "calculateLiability" should {
     "return the calculated liability when the http client returns the calculated liability" in forAll {
       (calculateLiabilityRequest: CalculateLiabilityRequest, calculatedLiability: CalculatedLiability) =>
-
         when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any())).thenReturn(mockRequestBuilder)
         when(mockRequestBuilder.withBody(ArgumentMatchers.eq(calculateLiabilityRequest))(any(), any(), any()))
           .thenReturn(mockRequestBuilder)
@@ -63,21 +62,21 @@ class EclCalculatorConnectorSpec extends SpecBase {
 
     "return 5xx UpstreamErrorResponse when call to calculator service returns an error and executes retry" in {
       (calculateLiabilityRequest: CalculateLiabilityRequest) =>
-      val errorCode = INTERNAL_SERVER_ERROR
+        val errorCode = INTERNAL_SERVER_ERROR
 
-      when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any())).thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.withBody(ArgumentMatchers.eq(calculateLiabilityRequest))(any(), any(), any()))
-        .thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
-        .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
+        when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any())).thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.withBody(ArgumentMatchers.eq(calculateLiabilityRequest))(any(), any(), any()))
+          .thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+          .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
-      Try(await(connector.calculateLiability(any(), any(), any()))) match {
-        case Failure(UpstreamErrorResponse(_, code, _, _)) =>
-          code shouldEqual errorCode
-        case _                                             => fail("expected UpstreamErrorResponse when an error is received from the account service")
-      }
+        Try(await(connector.calculateLiability(any(), any(), any()))) match {
+          case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+            code shouldEqual errorCode
+          case _                                             => fail("expected UpstreamErrorResponse when an error is received from the account service")
+        }
 
-      verify(mockRequestBuilder, times(4)).execute(any(), any())
+        verify(mockRequestBuilder, times(4)).execute(any(), any())
     }
   }
 

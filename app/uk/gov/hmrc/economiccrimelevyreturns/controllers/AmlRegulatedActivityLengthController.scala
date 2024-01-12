@@ -68,9 +68,9 @@ class AmlRegulatedActivityLengthController @Inject() (
           (for {
             calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
             calculatedReturn     = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
-            upsertedReturn      <- eclReturnsService.upsertReturn(calculatedReturn).asResponseError
+            _                   <- eclReturnsService.upsertReturn(calculatedReturn).asResponseError
 
-          } yield upsertedReturn)
+          } yield calculatedReturn)
             .convertToResult(mode, pageNavigator)
         }
       )

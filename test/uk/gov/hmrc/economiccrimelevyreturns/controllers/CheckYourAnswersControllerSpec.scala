@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.i18n.Messages
@@ -25,11 +26,11 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.FakeValidatedReturnAction
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SessionKeys, SubmitEclReturnResponse}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView}
@@ -42,17 +43,16 @@ class CheckYourAnswersControllerSpec extends SpecBase {
   val view: CheckYourAnswersView        = app.injector.instanceOf[CheckYourAnswersView]
   val pdfReturnView: AmendReturnPdfView = app.injector.instanceOf[AmendReturnPdfView]
 
-  val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
-  val mockSessionService: SessionService        = mock[SessionService]
-  val mockEmailService: EmailService            = mock[EmailService]
+  val mockEclReturnsService: ReturnsService = mock[ReturnsService]
+  val mockSessionService: SessionService    = mock[SessionService]
+  val mockEmailService: EmailService        = mock[EmailService]
 
   class TestContext(eclReturnData: EclReturn) {
     val controller = new CheckYourAnswersController(
       messagesApi,
       fakeAuthorisedAction(eclReturnData.internalId),
       fakeDataRetrievalAction(eclReturnData),
-      new FakeValidatedReturnAction(eclReturnData),
-      mockEclReturnsConnector,
+      mockEclReturnsService,
       mockSessionService,
       mockEmailService,
       pdfReturnView,
@@ -109,14 +109,20 @@ class CheckYourAnswersControllerSpec extends SpecBase {
     "redirect to the ECL return submitted page after submitting the ECL return successfully" in forAll {
       (submitEclReturnResponse: SubmitEclReturnResponse, validEclReturn: ValidEclReturn) =>
         new TestContext(validEclReturn.eclReturn) {
-          when(mockEclReturnsConnector.upsertReturn(any())(any()))
-            .thenReturn(Future.successful(validEclReturn.eclReturn))
+          when(mockEclReturnsService.upsertReturn(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Unit](Future.successful(Right(())))
+            )
 
-          when(mockEclReturnsConnector.submitReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
-            .thenReturn(Future.successful(submitEclReturnResponse))
+          when(mockEclReturnsService.submitReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, SubmitEclReturnResponse](
+                Future.successful(Right(submitEclReturnResponse))
+              )
+            )
 
-          when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
-            .thenReturn(Future.successful(()))
+          when(mockEclReturnsService.deleteReturn(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           when(
             mockSessionService.delete(ArgumentMatchers.eq(validEclReturn.eclReturn.internalId))(
@@ -152,11 +158,15 @@ class CheckYourAnswersControllerSpec extends SpecBase {
         val updatedReturn = validEclReturn.eclReturn.copy(calculatedLiability = None)
 
         new TestContext(updatedReturn) {
-          when(mockEclReturnsConnector.submitReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
-            .thenReturn(Future.successful(submitEclReturnResponse))
+          when(mockEclReturnsService.submitReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, SubmitEclReturnResponse](
+                Future.successful(Right(submitEclReturnResponse))
+              )
+            )
 
-          when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
-            .thenReturn(Future.successful(()))
+          when(mockEclReturnsService.deleteReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           when(mockSessionService.delete(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
             .thenReturn(Future.successful(()))
@@ -181,11 +191,15 @@ class CheckYourAnswersControllerSpec extends SpecBase {
         val updatedReturn = validEclReturn.eclReturn.copy(contactEmailAddress = None)
 
         new TestContext(updatedReturn) {
-          when(mockEclReturnsConnector.submitReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
-            .thenReturn(Future.successful(submitEclReturnResponse))
+          when(mockEclReturnsService.submitReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, SubmitEclReturnResponse](
+                Future.successful(Right(submitEclReturnResponse))
+              )
+            )
 
-          when(mockEclReturnsConnector.deleteReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
-            .thenReturn(Future.successful(()))
+          when(mockEclReturnsService.deleteReturn(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           when(mockSessionService.delete(ArgumentMatchers.eq(updatedReturn.internalId))(any()))
             .thenReturn(Future.successful(()))

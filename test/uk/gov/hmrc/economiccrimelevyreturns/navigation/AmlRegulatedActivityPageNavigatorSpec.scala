@@ -28,21 +28,14 @@ import scala.concurrent.Future
 
 class AmlRegulatedActivityPageNavigatorSpec extends SpecBase {
 
-  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
-
-  val pageNavigator = new AmlRegulatedActivityPageNavigator(mockEclLiabilityService)
+  val pageNavigator = new AmlRegulatedActivityPageNavigator
 
   "nextPage" should {
     "return a Call to the amount of ECL you need to pay page from the AML regulated activity page in either mode when the 'Yes' option is selected and the ECL return data is valid" in forAll {
-      (eclReturn: EclReturn, mode: Mode, calculatedLiability: CalculatedLiability) =>
+      (eclReturn: EclReturn, mode: Mode) =>
         val updatedReturn = eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(true))
 
-        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Some(Future.successful(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))))
-
-        await(
-          pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)
-        ) shouldBe routes.AmountDueController.onPageLoad(mode)
+        pageNavigator.nextPage(mode, updatedReturn) shouldBe routes.AmountDueController.onPageLoad(mode)
     }
 
     "return a Call to the answers are invalid page in either mode when the 'Yes' option is selected and the ECL return data is invalid" in forAll {
@@ -50,10 +43,7 @@ class AmlRegulatedActivityPageNavigatorSpec extends SpecBase {
         val updatedReturn =
           eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(true), relevantAp12Months = None)
 
-        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(None)
-
-        await(pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)) shouldBe routes.NotableErrorController
+        pageNavigator.nextPage(mode, updatedReturn) shouldBe routes.NotableErrorController
           .answersAreInvalid()
     }
 
@@ -61,9 +51,9 @@ class AmlRegulatedActivityPageNavigatorSpec extends SpecBase {
       (eclReturn: EclReturn, mode: Mode) =>
         val updatedReturn = eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(false))
 
-        await(
-          pageNavigator.nextPage(mode, updatedReturn)(fakeRequest)
-        ) shouldBe routes.AmlRegulatedActivityLengthController.onPageLoad(mode)
+        pageNavigator.nextPage(mode, updatedReturn) shouldBe routes.AmlRegulatedActivityLengthController.onPageLoad(
+          mode
+        )
     }
   }
 

@@ -46,27 +46,16 @@ class EclLiabilityService @Inject() (
       relevantApLength                       <- (if (relevantAp12Months) FullYear else eclReturn.relevantApLength).valueOrError
       relevantApRevenue                      <- eclReturn.relevantApRevenue.valueOrError
       carriedOutAmlRegulatedActivityForFullFy = eclReturn.carriedOutAmlRegulatedActivityForFullFy.getOrElse(true)
-      amlRegulatedActivityLength             <- calculateAmlRegulatedActivityLength(
+      amlRegulatedActivityLength              = calculateAmlRegulatedActivityLength(
                                                   carriedOutAmlRegulatedActivityForFullFy,
                                                   eclReturn.amlRegulatedActivityLength
-                                                ).valueOrError
+                                                )
       response                               <- getCalculatedLiability(
                                                   relevantApLength = relevantApLength,
                                                   relevantApRevenue = relevantApRevenue,
                                                   amlRegulatedActivityLength = amlRegulatedActivityLength
                                                 )
     } yield response
-
-//  private def calculateLiabilityAndUpsertReturn(
-//    relevantApLength: Int,
-//    relevantApRevenue: BigDecimal,
-//    amlRegulatedActivityLength: Int,
-//    eclReturn: EclReturn
-//  )(implicit request: RequestHeader): Future[EclReturn] =
-//    eclCalculatorConnector.calculateLiability(amlRegulatedActivityLength, relevantApLength, relevantApRevenue).flatMap {
-//      calculatedLiability =>
-//        eclReturnsConnector.upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
-//    }
 
   private def getCalculatedLiability(
     relevantApLength: Int,
@@ -93,12 +82,12 @@ class EclLiabilityService @Inject() (
 
   def calculateAmlRegulatedActivityLength(
     carriedOutAmlRegulatedActivityForFullFy: Boolean,
-    optAmlRegulatedActivityLength: Option[Int]
-  ): Option[Int] =
-    (carriedOutAmlRegulatedActivityForFullFy, optAmlRegulatedActivityLength) match {
-      case (false, None)    => Some(0)
-      case (true, _)        => FullYear
-      case (false, Some(_)) => optAmlRegulatedActivityLength
+    amlRegulatedActivityLength: Option[Int]
+  ): Int =
+    (carriedOutAmlRegulatedActivityForFullFy, amlRegulatedActivityLength) match {
+      case (false, None)    => 0
+      case (true, _)        => FullYear.get
+      case (false, Some(_)) => amlRegulatedActivityLength.get
     }
 
   implicit class valueOrError[T](value: Option[T]) {
@@ -107,7 +96,7 @@ class EclLiabilityService @Inject() (
         Future.successful(
           value match {
             case Some(value) => Right(value)
-            case _           => Left(LiabilityCalculationError.BadRequest("Missing expected value."))
+            case _           => Left(LiabilityCalculationError.InternalUnexpectedError(None, Some("Missing expected value.")))
           }
         )
       }

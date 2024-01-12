@@ -140,7 +140,7 @@ class StartController @Inject() (
 
   private def validatePeriodKey(eclReturn: EclReturn, obligationDetails: ObligationDetails, periodKey: String)(implicit
     request: AuthorisedRequest[_]
-  ): EitherT[Future, DataHandlingError, EclReturn] = {
+  ): EitherT[Future, DataHandlingError, Unit] = {
     val optPeriodKey = eclReturn.obligationDetails.map(_.periodKey)
     if (optPeriodKey.contains(periodKey) || optPeriodKey.isEmpty) {
       val updatedReturn =
@@ -152,8 +152,8 @@ class StartController @Inject() (
         updatedReturn = EclReturn
                           .empty(request.internalId, None)
                           .copy(obligationDetails = Some(obligationDetails), returnType = Some(FirstTimeReturn))
-        eclReturn    <- returnsService.upsertReturn(updatedReturn)
-      } yield eclReturn
+        unit         <- returnsService.upsertReturn(updatedReturn)
+      } yield unit
     }
   }
 

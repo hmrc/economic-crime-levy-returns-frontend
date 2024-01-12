@@ -80,7 +80,7 @@ class StartAmendController @Inject() (
 
   private def validatePeriodKey(eclReturn: EclReturn, obligationDetails: ObligationDetails, periodKey: String)(implicit
     request: AuthorisedRequest[_]
-  ): EitherT[Future, DataHandlingError, EclReturn] = {
+  ): EitherT[Future, DataHandlingError, Unit] = {
     val optPeriodKey = eclReturn.obligationDetails.map(_.periodKey)
     if (optPeriodKey.contains(periodKey) || optPeriodKey.isEmpty) {
       val updatedReturn = eclReturn.copy(obligationDetails = Some(obligationDetails), returnType = Some(AmendReturn))
@@ -91,8 +91,8 @@ class StartAmendController @Inject() (
         updatedReturn = EclReturn
                           .empty(request.internalId, None)
                           .copy(obligationDetails = Some(obligationDetails), returnType = Some(AmendReturn))
-        eclReturn    <- returnsService.upsertReturn(updatedReturn)
-      } yield eclReturn
+        unit         <- returnsService.upsertReturn(updatedReturn)
+      } yield unit
     }
   }
 
