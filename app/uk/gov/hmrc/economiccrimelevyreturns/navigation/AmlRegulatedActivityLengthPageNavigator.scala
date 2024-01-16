@@ -16,13 +16,10 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
-import play.api.mvc.{Call, RequestHeader}
+import play.api.mvc.Call
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
-
-import javax.inject.Inject
-import scala.concurrent.Future
 
 class AmlRegulatedActivityLengthPageNavigator extends PageNavigator with FrontendHeaderCarrierProvider {
 

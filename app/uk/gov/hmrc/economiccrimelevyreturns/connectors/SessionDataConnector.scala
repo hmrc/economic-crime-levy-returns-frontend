@@ -18,15 +18,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
-import play.api.Logging
 import play.api.http.Status.OK
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SessionData}
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, Retries, StringContextOps}
-
+import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 

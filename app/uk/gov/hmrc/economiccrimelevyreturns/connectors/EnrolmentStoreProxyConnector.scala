@@ -23,7 +23,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models.KeyValue
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.{EclEnrolment, QueryKnownFactsRequest, QueryKnownFactsResponse}
 import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
-import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 
 import javax.inject.{Inject, Singleton}

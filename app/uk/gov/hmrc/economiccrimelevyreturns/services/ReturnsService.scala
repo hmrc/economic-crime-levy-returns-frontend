@@ -17,15 +17,12 @@
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import cats.data.EitherT
-import play.api.http.Status.{BAD_REQUEST, NOT_FOUND}
+import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, ReturnType, SubmitEclReturnResponse}
-import uk.gov.hmrc.economiccrimelevyreturns.models.audit.ReturnStartedEvent
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, DataValidationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal

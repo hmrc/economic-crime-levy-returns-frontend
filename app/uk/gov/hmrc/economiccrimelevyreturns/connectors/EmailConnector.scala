@@ -18,14 +18,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
-import play.api.http.Status.{ACCEPTED, OK}
+import play.api.http.Status.ACCEPTED
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.models.CalculatedLiability
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.AmendReturnSubmittedRequest.AmendReturnTemplateId
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailRequest._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email._
-import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
 

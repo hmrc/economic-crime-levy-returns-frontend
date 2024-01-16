@@ -20,7 +20,7 @@ import cats.data.EitherT
 import play.api.mvc.{ActionTransformer, Session}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.ErrorHandler
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, FirstTimeReturn, ReturnType, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, ReturnType, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 import uk.gov.hmrc.http.HeaderCarrier

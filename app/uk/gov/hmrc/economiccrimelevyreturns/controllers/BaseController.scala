@@ -18,12 +18,11 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
 import play.api.libs.json.Json
-import play.api.mvc.Results.{BadRequest, Redirect, Status}
+import play.api.mvc.Results.{Redirect, Status}
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{InternalServiceError, ResponseError, StandardError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.PageNavigator
-
 import scala.concurrent.{ExecutionContext, Future}
 
 trait BaseController {

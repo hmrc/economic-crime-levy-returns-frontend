@@ -18,12 +18,11 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
-import play.api.http.Status.{NO_CONTENT, OK}
+import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, SubmitEclReturnResponse}
-import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
 

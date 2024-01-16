@@ -25,7 +25,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedActio
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.StandardError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
