@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.{Call, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import javax.inject.Inject
@@ -34,5 +34,5 @@ class AmlRegulatedActivityLengthPageNavigator extends PageNavigator with Fronten
   override protected def navigateInCheckMode(
     eclReturn: EclReturn
   ): Call =
-    routes.CheckYourAnswersController.onPageLoad()
+    routes.AmountDueController.onPageLoad(CheckMode)
 }

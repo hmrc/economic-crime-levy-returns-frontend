@@ -79,4 +79,5 @@ class AmlRegulatedActivityController @Inject() (
         }
       )
   }
+
 }

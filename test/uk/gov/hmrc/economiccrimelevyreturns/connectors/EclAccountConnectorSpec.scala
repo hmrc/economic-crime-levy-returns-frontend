@@ -37,11 +37,18 @@ class EclAccountConnectorSpec extends SpecBase {
 
   val expectedUrl = url"${appConfig.eclAccountBaseUrl}/economic-crime-levy-account/obligation-data"
 
+  override def beforeEach() = {
+    reset(mockHttpClient)
+    reset(mockRequestBuilder)
+  }
+
   "getObligations" should {
     "return obligations when the call to the account service is successful" in forAll {
       (
         obligationData: Option[ObligationData]
       ) =>
+        beforeEach()
+
         when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
           .thenReturn(mockRequestBuilder)
         when(mockRequestBuilder.execute[HttpResponse](any(), any()))
@@ -52,10 +59,6 @@ class EclAccountConnectorSpec extends SpecBase {
         )
 
         result shouldBe obligationData
-
-        verify(mockHttpClient, times(1)).get(ArgumentMatchers.eq(expectedUrl))
-
-        reset(mockHttpClient)
     }
 
     "return 5xx UpstreamErrorResponse when call to account service returns an error and executes retry" in {

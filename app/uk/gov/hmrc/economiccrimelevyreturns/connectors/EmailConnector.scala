@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
-import play.api.http.Status.OK
+import play.api.http.Status.{ACCEPTED, OK}
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models.CalculatedLiability
@@ -59,7 +59,10 @@ class EmailConnector @Inject() (
     )
 
     retryFor[Unit]("HMRC Email service - initial return")(retryCondition) {
-      httpClient.post(sendEmailUrl).withBody(Json.toJson(body)).executeAndExpect(OK)
+      httpClient
+        .post(sendEmailUrl)
+        .withBody(Json.toJson(body))
+        .executeAndExpect(ACCEPTED)
     }
   }
 
@@ -73,7 +76,7 @@ class EmailConnector @Inject() (
     )
 
     retryFor[Unit]("HMRC Email service - amend return")(retryCondition) {
-      httpClient.post(url"$sendEmailUrl").withBody(Json.toJson(body)).executeAndExpect(OK)
+      httpClient.post(url"$sendEmailUrl").withBody(Json.toJson(body)).executeAndExpect(ACCEPTED)
     }
   }
 }

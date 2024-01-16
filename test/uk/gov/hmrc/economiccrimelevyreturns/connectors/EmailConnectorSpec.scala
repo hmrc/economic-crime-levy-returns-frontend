@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.reset
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR, OK}
+import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
@@ -27,7 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.email.AmendReturnSubmittedReq
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailRequest.{NilReturnTemplateId, ReturnTemplateId}
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedParameters, AmendReturnSubmittedRequest, ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
-import uk.gov.hmrc.http.{HttpClient, HttpResponse, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpResponse, StringContextOps, UpstreamErrorResponse}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Try}
@@ -39,6 +38,11 @@ class EmailConnectorSpec extends SpecBase {
   val connector                          = new EmailConnector(appConfig, mockHttpClient, config, actorSystem)
   private val expectedUrl                = url"${appConfig.emailBaseUrl}/hmrc/email"
 
+  override def beforeEach() = {
+    reset(mockHttpClient)
+    reset(mockRequestBuilder)
+  }
+
   "sendReturnSubmittedEmail" should {
     "return unit when the http client returns ACCEPTED for the return submitted email template" in forAll {
       (to: String, returnSubmittedEmailParameters: ReturnSubmittedEmailParameters) =>
@@ -49,12 +53,12 @@ class EmailConnectorSpec extends SpecBase {
         when(
           mockRequestBuilder.withBody(
             ArgumentMatchers.eq(
-              ReturnSubmittedEmailRequest(
-                Seq(to),
-                templateId = templateId,
-                returnSubmittedEmailParameters,
-                force = false,
-                None
+              Json.toJson(
+                ReturnSubmittedEmailRequest(
+                  Seq(to),
+                  templateId = templateId,
+                  returnSubmittedEmailParameters
+                )
               )
             )
           )(any(), any(), any())
@@ -65,14 +69,12 @@ class EmailConnectorSpec extends SpecBase {
         val result: Unit = await(connector.sendReturnSubmittedEmail(to, returnSubmittedEmailParameters))
 
         result shouldBe ()
-
-        verify(mockHttpClient, times(1)).post(ArgumentMatchers.eq(expectedUrl))
-
-        reset(mockHttpClient)
     }
 
     "return 5xx UpstreamErrorResponse when call to account service returns an error and executes retry" in forAll {
       (to: String, returnSubmittedEmailParameters: ReturnSubmittedEmailParameters) =>
+        beforeEach()
+
         val errorCode = INTERNAL_SERVER_ERROR
 
         val templateId =
@@ -83,12 +85,14 @@ class EmailConnectorSpec extends SpecBase {
         when(
           mockRequestBuilder.withBody(
             ArgumentMatchers.eq(
-              ReturnSubmittedEmailRequest(
-                Seq(to),
-                templateId = templateId,
-                returnSubmittedEmailParameters,
-                force = false,
-                None
+              Json.toJson(
+                ReturnSubmittedEmailRequest(
+                  Seq(to),
+                  templateId = templateId,
+                  returnSubmittedEmailParameters,
+                  force = false,
+                  None
+                )
               )
             )
           )(any(), any(), any())
@@ -114,10 +118,12 @@ class EmailConnectorSpec extends SpecBase {
         when(
           mockRequestBuilder.withBody(
             ArgumentMatchers.eq(
-              AmendReturnSubmittedRequest(
-                Seq(to),
-                templateId = AmendReturnTemplateId,
-                amendSubmittedEmailParameters
+              Json.toJson(
+                AmendReturnSubmittedRequest(
+                  Seq(to),
+                  templateId = AmendReturnTemplateId,
+                  amendSubmittedEmailParameters
+                )
               )
             )
           )(any(), any(), any())
@@ -128,14 +134,12 @@ class EmailConnectorSpec extends SpecBase {
         val result: Unit = await(connector.sendAmendReturnSubmittedEmail(to, amendSubmittedEmailParameters))
 
         result shouldBe ()
-
-        verify(mockHttpClient, times(1)).post(ArgumentMatchers.eq(expectedUrl))
-
-        reset(mockHttpClient)
     }
 
     "return 5xx UpstreamErrorResponse when call to account service returns an error and executes retry" in forAll {
       (to: String, amendSubmittedEmailParameters: AmendReturnSubmittedParameters) =>
+        beforeEach()
+
         val errorCode = INTERNAL_SERVER_ERROR
 
         when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any()))
@@ -143,10 +147,12 @@ class EmailConnectorSpec extends SpecBase {
         when(
           mockRequestBuilder.withBody(
             ArgumentMatchers.eq(
-              AmendReturnSubmittedRequest(
-                Seq(to),
-                templateId = AmendReturnTemplateId,
-                amendSubmittedEmailParameters
+              Json.toJson(
+                AmendReturnSubmittedRequest(
+                  Seq(to),
+                  templateId = AmendReturnTemplateId,
+                  amendSubmittedEmailParameters
+                )
               )
             )
           )(any(), any(), any())

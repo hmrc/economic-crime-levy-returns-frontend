@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
-import play.api.http.Status.OK
+import play.api.http.Status.{NO_CONTENT, OK}
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationError
@@ -46,10 +46,10 @@ class ReturnsConnector @Inject() (
     httpClient.get(url"$eclReturnsUrl/returns/$internalId").executeAndDeserialise[EclReturn]
 
   def upsertReturn(eclReturn: EclReturn)(implicit hc: HeaderCarrier): Future[Unit] =
-    httpClient.put(url"$eclReturnsUrl/returns").withBody(Json.toJson(eclReturn)).executeAndExpect(OK)
+    httpClient.put(url"$eclReturnsUrl/returns").withBody(Json.toJson(eclReturn)).executeAndExpect(NO_CONTENT)
 
   def deleteReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] =
-    httpClient.delete(url"$eclReturnsUrl/returns/$internalId").executeAndExpect(OK)
+    httpClient.delete(url"$eclReturnsUrl/returns/$internalId").executeAndExpect(NO_CONTENT)
 
   def calculateLiability(amlRegulatedActivityLength: Int, relevantApLength: Int, relevantApRevenue: Long)(implicit
     hc: HeaderCarrier

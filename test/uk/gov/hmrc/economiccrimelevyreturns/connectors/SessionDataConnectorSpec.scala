@@ -35,6 +35,11 @@ class SessionDataConnectorSpec extends SpecBase {
   val connector                          = new SessionDataConnector(appConfig, mockHttpClient, config, actorSystem)
   val eclSessionDataUrl                  = "http://localhost:14003/economic-crime-levy-returns"
 
+  override def beforeEach() = {
+    reset(mockHttpClient)
+    reset(mockRequestBuilder)
+  }
+
   "get" should {
 
     "return SessionData data when request succeeds" in forAll { (internalId: String, sessionData: SessionData) =>
@@ -90,7 +95,7 @@ class SessionDataConnectorSpec extends SpecBase {
     "return unit when request succeeds" in forAll { sessionData: SessionData =>
       when(mockHttpClient.put(ArgumentMatchers.eq(expectedUrl))(any()))
         .thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.withBody(ArgumentMatchers.eq(sessionData))(any(), any(), any()))
+      when(mockRequestBuilder.withBody(ArgumentMatchers.eq(Json.toJson(sessionData)))(any(), any(), any()))
         .thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.execute[HttpResponse](any(), any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, "")))
@@ -99,17 +104,16 @@ class SessionDataConnectorSpec extends SpecBase {
     }
 
     "return a failed future when the http client returns an error response" in forAll { sessionData: SessionData =>
-      val msg       = "internal server error"
       val errorCode = INTERNAL_SERVER_ERROR
 
       when(mockHttpClient.put(ArgumentMatchers.eq(expectedUrl))(any()))
         .thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.withBody(ArgumentMatchers.eq(sessionData))(any(), any(), any()))
+      when(mockRequestBuilder.withBody(ArgumentMatchers.eq(Json.toJson(sessionData)))(any(), any(), any()))
         .thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.execute[HttpResponse](any(), any()))
         .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
-      Try(await(connector.delete(internalId))) match {
+      Try(await(connector.upsert(sessionData))) match {
         case Failure(UpstreamErrorResponse(_, code, _, _)) =>
           code shouldEqual errorCode
         case _                                             => fail("expected UpstreamErrorResponse when an error is received from the session data service")

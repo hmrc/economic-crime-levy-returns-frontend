@@ -30,8 +30,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantApLengthView
 
@@ -48,6 +48,11 @@ class RelevantApLengthControllerSpec extends SpecBase {
 
   val dataCleanup: RelevantApLengthDataCleanup = new RelevantApLengthDataCleanup {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
+  }
+
+  override def beforeEach() = {
+    reset(mockEclLiabilityService)
+    reset(mockEclReturnsService)
   }
 
   class TestContext(eclReturnData: EclReturn) {
@@ -96,13 +101,18 @@ class RelevantApLengthControllerSpec extends SpecBase {
     "save the provided relevant AP length then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
       Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax),
-      Arbitrary.arbitrary[Mode]
-    ) { (eclReturn: EclReturn, relevantApLength: Int, mode: Mode) =>
+      Arbitrary.arbitrary[Mode],
+      Arbitrary.arbitrary[CalculatedLiability]
+    ) { (eclReturn: EclReturn, relevantApLength: Int, mode: Mode, calculatedLiability: CalculatedLiability) =>
       new TestContext(eclReturn) {
-        val updatedReturn: EclReturn =
-          eclReturn.copy(relevantApLength = Some(relevantApLength))
+        when(mockEclLiabilityService.calculateLiability(any())(any()))
+          .thenReturn(
+            EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+              Future.successful(Right(calculatedLiability))
+            )
+          )
 
-        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+        when(mockEclReturnsService.upsertReturn(any())(any()))
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         val result: Future[Result] =

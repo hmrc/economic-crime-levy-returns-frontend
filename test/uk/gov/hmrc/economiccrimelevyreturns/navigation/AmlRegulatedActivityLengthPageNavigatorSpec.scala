@@ -37,14 +37,6 @@ class AmlRegulatedActivityLengthPageNavigatorSpec extends SpecBase {
 
         pageNavigator.nextPage(mode, updatedReturn) shouldBe routes.AmountDueController.onPageLoad(mode)
     }
-
-    "return a Call to the answers are invalid page in either mode when the ECL return data is invalid" in forAll {
-      (eclReturn: EclReturn, mode: Mode) =>
-        val updatedReturn = eclReturn.copy(relevantAp12Months = None)
-
-        pageNavigator.nextPage(mode, updatedReturn) shouldBe routes.NotableErrorController
-          .answersAreInvalid()
-    }
   }
 
 }

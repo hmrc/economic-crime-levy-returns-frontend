@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
+import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
 import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
@@ -35,15 +36,21 @@ class ReturnsServiceSpec extends SpecBase {
     mockAuditService
   )
 
+  override def beforeEach() = {
+    reset(mockAuditService)
+    reset(mockEclReturnsConnector)
+  }
+
   "getOrCreateReturn" should {
     "return a created ecl return when one does not exist" in forAll {
       (internalId: String, eclReturn: EclReturn, eclReference: String) =>
+        beforeEach()
+
+        val newReturn = EclReturn.empty(internalId, Some(eclReturn.returnType.getOrElse(FirstTimeReturn)))
         when(mockEclReturnsConnector.getReturn(any())(any()))
           .thenReturn(Future.failed(UpstreamErrorResponse.apply("Not found", NOT_FOUND)))
 
-        val newReturn = EclReturn.empty(internalId, Some(eclReturn.returnType.getOrElse(FirstTimeReturn)))
-
-        when(mockEclReturnsConnector.upsertReturn(any())(any()))
+        when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(newReturn))(any()))
           .thenReturn(Future.successful(()))
 
         val result = await(
@@ -51,9 +58,10 @@ class ReturnsServiceSpec extends SpecBase {
             .getOrCreateReturn(internalId)(hc, AuthorisedRequest(fakeRequest, internalId, eclReference))
             .value
         )
+
         result shouldBe Right(newReturn)
 
-        verify(mockAuditService, times(1)).auditReturnStarted(anyString(), anyString(), any())
+        verify(mockAuditService, times(1)).auditReturnStarted(anyString(), anyString(), any())(any())
 
         reset(mockAuditService)
     }
@@ -68,4 +76,5 @@ class ReturnsServiceSpec extends SpecBase {
       result shouldBe Right(eclReturn)
     }
   }
+
 }

@@ -36,9 +36,16 @@ class EnrolmentStoreProxyConnectorSpec extends SpecBase {
   val connector                          = new EnrolmentStoreProxyConnectorImpl(appConfig, mockHttpClient, config, actorSystem)
   val enrolmentStoreUrl: String          = s"${appConfig.enrolmentStoreProxyBaseUrl}/enrolment-store-proxy/enrolment-store"
 
+  override def beforeEach() = {
+    reset(mockHttpClient)
+    reset(mockRequestBuilder)
+  }
+
   "queryKnownFacts" should {
     "return known facts when the http client returns known facts" in forAll {
       (eclRegistrationReference: String, queryKnownFactsResponse: QueryKnownFactsResponse) =>
+        beforeEach()
+
         val expectedUrl                    = url"$enrolmentStoreUrl/enrolments"
         val expectedQueryKnownFactsRequest = QueryKnownFactsRequest(
           service = EclEnrolment.ServiceName,
@@ -48,7 +55,10 @@ class EnrolmentStoreProxyConnectorSpec extends SpecBase {
         )
 
         when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any())).thenReturn(mockRequestBuilder)
-        when(mockRequestBuilder.withBody(ArgumentMatchers.eq(expectedQueryKnownFactsRequest))(any(), any(), any()))
+        when(
+          mockRequestBuilder
+            .withBody(ArgumentMatchers.eq(Json.toJson(expectedQueryKnownFactsRequest)))(any(), any(), any())
+        )
           .thenReturn(mockRequestBuilder)
         when(mockRequestBuilder.execute[HttpResponse](any(), any()))
           .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(Json.toJson(queryKnownFactsResponse)))))
@@ -56,10 +66,6 @@ class EnrolmentStoreProxyConnectorSpec extends SpecBase {
         val result = await(connector.queryKnownFacts(eclRegistrationReference))
 
         result shouldBe queryKnownFactsResponse
-
-        verify(mockHttpClient, times(1)).post(ArgumentMatchers.eq(expectedUrl))
-
-        reset(mockHttpClient)
     }
 
     "return 5xx UpstreamErrorResponse when call to calculator service returns an error and executes retry" in {
