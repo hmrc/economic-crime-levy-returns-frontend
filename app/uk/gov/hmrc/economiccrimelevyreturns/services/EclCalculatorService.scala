@@ -29,8 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class EclLiabilityService @Inject() (
-  eclReturnsConnector: ReturnsConnector,
+class EclCalculatorService @Inject() (
   eclCalculatorConnector: EclCalculatorConnector
 )(implicit
   ec: ExecutionContext

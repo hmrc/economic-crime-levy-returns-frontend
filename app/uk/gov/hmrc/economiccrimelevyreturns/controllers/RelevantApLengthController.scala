@@ -26,7 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantApLengthView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -41,7 +41,7 @@ class RelevantApLengthController @Inject() (
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
   eclReturnsService: ReturnsService,
-  eclLiabilityService: EclLiabilityService,
+  eclLiabilityService: EclCalculatorService,
   formProvider: RelevantApLengthFormProvider,
   dataCleanup: RelevantApLengthDataCleanup,
   view: RelevantApLengthView
@@ -85,13 +85,15 @@ class RelevantApLengthController @Inject() (
   private def processCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader) =
     (for {
       calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
-    } yield calculatedLiability).foldF(
+      updatedReturn        = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
+      _                   <- eclReturnsService.upsertReturn(updatedReturn).asResponseError
+    } yield updatedReturn).foldF(
       error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
-      _ =>
-        eclReturn.calculatedLiability match {
+      calculatedReturn =>
+        calculatedReturn.calculatedLiability match {
           case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
             clearAmlActivityAnswersAndRecalculate(eclReturn)
-          case Some(_)                                                                  => navigateLiable(eclReturn)
+          case Some(_)                                                                  => navigateLiable(calculatedReturn)
           case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
         }
     )
@@ -102,8 +104,10 @@ class RelevantApLengthController @Inject() (
     val updatedReturn =
       eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
     (for {
-      _         <- eclReturnsService.upsertReturn(updatedReturn).asResponseError
-      liability <- eclLiabilityService.calculateLiability(updatedReturn).asResponseError
+      _               <- eclReturnsService.upsertReturn(updatedReturn).asResponseError
+      liability       <- eclLiabilityService.calculateLiability(updatedReturn).asResponseError
+      calculatedReturn = updatedReturn.copy(calculatedLiability = Some(liability))
+      _               <- eclReturnsService.upsertReturn(calculatedReturn).asResponseError
     } yield liability).fold(
       error => routes.NotableErrorController.answersAreInvalid(),
       _ => routes.AmountDueController.onPageLoad(CheckMode)

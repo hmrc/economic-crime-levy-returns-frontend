@@ -33,7 +33,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, CheckMode, EclReturn, Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantApLengthView
 
 import scala.concurrent.Future
@@ -44,8 +44,8 @@ class RelevantApLengthControllerSpec extends SpecBase {
   val formProvider: RelevantApLengthFormProvider = new RelevantApLengthFormProvider()
   val form: Form[Int]                            = formProvider()
 
-  val mockEclReturnsService: ReturnsService        = mock[ReturnsService]
-  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
+  val mockEclReturnsService: ReturnsService         = mock[ReturnsService]
+  val mockEclLiabilityService: EclCalculatorService = mock[EclCalculatorService]
 
   val dataCleanup: RelevantApLengthDataCleanup = new RelevantApLengthDataCleanup {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn

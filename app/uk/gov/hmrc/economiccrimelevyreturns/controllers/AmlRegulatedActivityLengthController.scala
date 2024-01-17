@@ -23,7 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedActio
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.{Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityLengthView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -39,7 +39,7 @@ class AmlRegulatedActivityLengthController @Inject() (
   getReturnData: DataRetrievalAction,
   formProvider: AmlRegulatedActivityLengthFormProvider,
   view: AmlRegulatedActivityLengthView,
-  eclLiabilityService: EclLiabilityService,
+  eclLiabilityService: EclCalculatorService,
   eclReturnsService: ReturnsService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController

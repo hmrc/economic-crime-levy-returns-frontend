@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,7 +40,7 @@ class UkRevenueController @Inject() (
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
   eclReturnsService: ReturnsService,
-  eclLiabilityService: EclLiabilityService,
+  eclLiabilityService: EclCalculatorService,
   formProvider: UkRevenueFormProvider,
   dataCleanup: UkRevenueDataCleanup,
   view: UkRevenueView
@@ -70,22 +70,20 @@ class UkRevenueController @Inject() (
   }
 
   private def calculateLiability(mode: Mode, eclReturn: EclReturn)(implicit request: RequestHeader) =
-    eclReturn.relevantApRevenue match {
-      case Some(_) =>
-        (for {
-          _                   <- eclReturnsService.upsertReturn(eclReturn).asResponseError
-          calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
-        } yield calculatedLiability).foldF(
-          error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
-          liability =>
-            if (liability.calculatedBand == Small) {
-              clearAmlActivityAnswersAndRecalculate(eclReturn, mode)
-            } else {
-              navigateLiable(eclReturn, mode)
-            }
-        )
-      case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
-    }
+    (for {
+      _                   <- eclReturnsService.upsertReturn(eclReturn).asResponseError
+      calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
+      _                   <-
+        eclReturnsService.upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability))).asResponseError
+    } yield calculatedLiability).foldF(
+      error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
+      liability =>
+        if (liability.calculatedBand == Small) {
+          clearAmlActivityAnswersAndRecalculate(eclReturn, mode)
+        } else {
+          navigateLiable(eclReturn, mode)
+        }
+    )
 
   private def clearAmlActivityAnswersAndRecalculate(
     eclReturn: EclReturn,
@@ -96,6 +94,8 @@ class UkRevenueController @Inject() (
     (for {
       _         <- eclReturnsService.upsertReturn(updatedReturn).asResponseError
       liability <- eclLiabilityService.calculateLiability(updatedReturn).asResponseError
+      _         <-
+        eclReturnsService.upsertReturn(eclReturn.copy(calculatedLiability = Some(liability))).asResponseError
     } yield liability).fold(
       error => routes.NotableErrorController.answersAreInvalid(),
       _ => routes.AmountDueController.onPageLoad(mode)

@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityFormProvid
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmlRegulatedActivityPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,7 +40,7 @@ class AmlRegulatedActivityController @Inject() (
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
   eclReturnsService: ReturnsService,
-  eclLiabilityService: EclLiabilityService,
+  eclLiabilityService: EclCalculatorService,
   formProvider: AmlRegulatedActivityFormProvider,
   pageNavigator: AmlRegulatedActivityPageNavigator,
   dataCleanup: AmlRegulatedActivityDataCleanup,

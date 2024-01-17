@@ -22,7 +22,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, ReturnType, SubmitEclReturnResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, DataValidationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.UpstreamErrorResponse.Upstream4xxResponse
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, NotFoundException, UpstreamErrorResponse}
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -39,15 +41,20 @@ class ReturnsService @Inject() (
     internalId: String
   )(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, Option[EclReturn]] =
     EitherT {
-      eclReturnsConnector.getReturn(internalId).map(eclReturn => Right(Some(eclReturn))).recover {
-        case UpstreamErrorResponse(_, NOT_FOUND, _, _) => Right(None)
-        case error @ UpstreamErrorResponse(message, code, _, _)
-            if UpstreamErrorResponse.Upstream5xxResponse
-              .unapply(error)
-              .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-          Left(DataHandlingError.BadGateway(reason = message, code = code))
-        case NonFatal(thr)                             => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
-      }
+      eclReturnsConnector
+        .getReturn(internalId)
+        .map(eclReturn => Right(Some(eclReturn)))
+        .recover {
+          case err: NotFoundException =>
+            Right(None)
+          case error @ UpstreamErrorResponse(message, code, _, _)
+              if UpstreamErrorResponse.Upstream5xxResponse
+                .unapply(error)
+                .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
+            Left(DataHandlingError.BadGateway(reason = message, code = code))
+          case NonFatal(thr)          =>
+            Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
+        }
     }
 
   def getOrCreateReturn(
@@ -113,14 +120,15 @@ class ReturnsService @Inject() (
     EitherT {
       eclReturnsConnector
         .validateEclReturn(internalId)
-        .map(Right(_))
+        .map(str => Right(str.map(x => DataValidationError(x))))
         .recover {
           case error @ UpstreamErrorResponse(message, code, _, _)
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
             Left(DataHandlingError.BadGateway(reason = message, code = code))
-          case NonFatal(thr) => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
+          case NonFatal(thr) =>
+            Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
         }
     }
 

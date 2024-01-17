@@ -62,6 +62,7 @@ trait ErrorHandler extends Logging {
     new Converter[DataHandlingError] {
       override def convert(error: DataHandlingError): ResponseError = error match {
         case DataHandlingError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
+        case DataHandlingError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
       }
     }
 
@@ -69,13 +70,18 @@ trait ErrorHandler extends Logging {
     new Converter[EclAccountError] {
       override def convert(error: EclAccountError): ResponseError = error match {
         case EclAccountError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
+        case EclAccountError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
       }
     }
 
   implicit val liabilityCalculationErrorConverter: Converter[LiabilityCalculationError] =
     new Converter[LiabilityCalculationError] {
       override def convert(error: LiabilityCalculationError): ResponseError = error match {
-        case LiabilityCalculationError.BadRequest(message) => ResponseError.badRequestError(message)
+        case LiabilityCalculationError.BadRequest(message)               => ResponseError.badRequestError(message)
+        case LiabilityCalculationError.InternalUnexpectedError(cause, _) =>
+          ResponseError.internalServiceError(cause = cause)
+        case LiabilityCalculationError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
+
       }
     }
 }

@@ -30,7 +30,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, CalculatedLiability, CheckMode, EclReturn, Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band._
 
@@ -42,8 +42,8 @@ class UkRevenueControllerSpec extends SpecBase {
   val formProvider: UkRevenueFormProvider = new UkRevenueFormProvider()
   val form: Form[BigDecimal]              = formProvider()
 
-  val mockEclReturnsService: ReturnsService        = mock[ReturnsService]
-  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
+  val mockEclReturnsService: ReturnsService         = mock[ReturnsService]
+  val mockEclLiabilityService: EclCalculatorService = mock[EclCalculatorService]
 
   val dataCleanup: UkRevenueDataCleanup = new UkRevenueDataCleanup {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn

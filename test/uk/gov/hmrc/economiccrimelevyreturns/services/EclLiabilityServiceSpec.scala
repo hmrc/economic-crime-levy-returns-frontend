@@ -33,7 +33,7 @@ import scala.concurrent.Future
 class EclLiabilityServiceSpec extends SpecBase {
   private val mockEclReturnsConnector    = mock[ReturnsConnector]
   private val mockEclCalculatorConnector = mock[EclCalculatorConnector]
-  private val service                    = new EclLiabilityService(mockEclReturnsConnector, mockEclCalculatorConnector)
+  private val service                    = new EclCalculatorService(mockEclReturnsConnector, mockEclCalculatorConnector)
 
   "calculateLiability" should {
     "return an updated ECL return containing the calculated liability" in forAll {

@@ -26,7 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
 import uk.gov.hmrc.http.HeaderCarrier
@@ -41,7 +41,7 @@ class RelevantAp12MonthsController @Inject() (
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
   eclReturnsService: ReturnsService,
-  eclLiabilityService: EclLiabilityService,
+  eclLiabilityService: EclCalculatorService,
   formProvider: RelevantAp12MonthsFormProvider,
   dataCleanup: RelevantAp12MonthsDataCleanup,
   view: RelevantAp12MonthsView
@@ -78,15 +78,37 @@ class RelevantAp12MonthsController @Inject() (
 
   private def processByMode(mode: Mode, eclReturn: EclReturn)(implicit request: RequestHeader) =
     mode match {
-      case NormalMode => processNormalMode(eclReturn)
-      case CheckMode  => processCheckMode(eclReturn)
+      case NormalMode => navigateInNormalMode(eclReturn)
+      case CheckMode  => navigateInCheckMode(eclReturn)
     }
 
-  private def processNormalMode(eclReturn: EclReturn) = eclReturn.relevantAp12Months match {
-    case Some(true)  => Future.successful(routes.UkRevenueController.onPageLoad(NormalMode))
-    case Some(false) => Future.successful(routes.RelevantApLengthController.onPageLoad(NormalMode))
-    case _           => Future.successful(routes.NotableErrorController.answersAreInvalid())
-  }
+  private def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
+    eclReturn.relevantAp12Months match {
+      case Some(true)  => Future.successful(routes.UkRevenueController.onPageLoad(NormalMode))
+      case Some(false) => Future.successful(routes.RelevantApLengthController.onPageLoad(NormalMode))
+    }
+
+  private def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader) =
+    eclReturn.relevantAp12Months match {
+      case Some(true)  =>
+        (for {
+          calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
+          _                   <-
+            eclReturnsService
+              .upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
+              .asResponseError
+        } yield calculatedLiability).foldF(
+          error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
+          _ =>
+            eclReturn.calculatedLiability match {
+              case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
+                clearAmlActivityAnswersAndRecalculate(eclReturn)
+              case Some(_)                                                                  => navigateLiable(eclReturn)
+              case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
+            }
+        )
+      case Some(false) => Future.successful(routes.RelevantApLengthController.onPageLoad(CheckMode))
+    }
 
   private def clearAmlActivityAnswersAndRecalculate(
     eclReturn: EclReturn
@@ -94,8 +116,8 @@ class RelevantAp12MonthsController @Inject() (
     val updatedReturn =
       eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
     (for {
-      _         <- eclReturnsService.upsertReturn(updatedReturn).asResponseError
       liability <- eclLiabilityService.calculateLiability(updatedReturn).asResponseError
+      _         <- eclReturnsService.upsertReturn(updatedReturn.copy(calculatedLiability = Some(liability))).asResponseError
     } yield liability).fold(
       error => routes.NotableErrorController.answersAreInvalid(),
       _ => routes.AmountDueController.onPageLoad(CheckMode)
@@ -107,26 +129,5 @@ class RelevantAp12MonthsController @Inject() (
       case Some(_) => Future.successful(routes.AmountDueController.onPageLoad(CheckMode))
       case None    => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(CheckMode))
     }
-
-  private def recalculateLiability(eclReturn: EclReturn)(implicit request: RequestHeader) =
-    eclReturn.calculatedLiability match {
-      case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
-        clearAmlActivityAnswersAndRecalculate(eclReturn)
-      case Some(_)                                                                  => navigateLiable(eclReturn)
-      case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
-    }
-
-  private def processCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader) = {
-    val updatedReturn =
-      eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
-
-    (for {
-      _                   <- eclReturnsService.upsertReturn(updatedReturn).asResponseError
-      calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
-    } yield calculatedLiability).foldF(
-      error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
-      _ => recalculateLiability(updatedReturn)
-    )
-  }
 
 }

@@ -65,13 +65,13 @@ class ReturnsConnector @Inject() (
       .executeAndDeserialise[CalculatedLiability]
 
   }
-
+  //TBD: Update to a case class
   def validateEclReturn(
     internalId: String
-  )(implicit hc: HeaderCarrier): Future[Option[DataValidationError]] =
+  )(implicit hc: HeaderCarrier): Future[Option[String]]                          =
     httpClient
       .get(url"$eclReturnsUrl/returns/$internalId/validation-errors")
-      .executeAndDeserialiseOpt[DataValidationError]
+      .executeAndDeserialiseOpt[String]
 
   def submitReturn(internalId: String)(implicit hc: HeaderCarrier): Future[SubmitEclReturnResponse] =
     httpClient.post(url"$eclReturnsUrl/submit-return/$internalId").executeAndDeserialise[SubmitEclReturnResponse]

@@ -30,7 +30,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
 
 import scala.concurrent.Future
@@ -41,8 +41,8 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
   val formProvider: RelevantAp12MonthsFormProvider = new RelevantAp12MonthsFormProvider()
   val form: Form[Boolean]                          = formProvider()
 
-  val mockEclReturnsService: ReturnsService        = mock[ReturnsService]
-  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
+  val mockEclReturnsService: ReturnsService         = mock[ReturnsService]
+  val mockEclLiabilityService: EclCalculatorService = mock[EclCalculatorService]
 
   val dataCleanup: RelevantAp12MonthsDataCleanup = new RelevantAp12MonthsDataCleanup {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
