@@ -29,7 +29,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
 
@@ -90,23 +90,24 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
   }
 
   "onSubmit" should {
-    "save the selected answer then redirect to the next page" in forAll {
-      (eclReturn: EclReturn, relevantAp12Months: Boolean, mode: Mode) =>
+    "save the selected answer then redirect to the UK Revenue page in Normal mode and relevantAp12Months is set to true" in forAll {
+      (eclReturn: EclReturn) =>
+        val relevantAp12Months = true
         new TestContext(eclReturn) {
           val updatedReturn: EclReturn =
-            eclReturn.copy(relevantAp12Months = Some(relevantAp12Months))
+            dataCleanup.cleanup(eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
 
           when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           val result: Future[Result] =
-            controller.onSubmit(mode)(
+            controller.onSubmit(NormalMode)(
               fakeRequest.withFormUrlEncodedBody(("value", relevantAp12Months.toString))
             )
 
           status(result) shouldBe SEE_OTHER
 
-          redirectLocation(result) shouldBe Some(onwardRoute.url)
+          redirectLocation(result) shouldBe Some(routes.UkRevenueController.onPageLoad(NormalMode).url)
         }
     }
 

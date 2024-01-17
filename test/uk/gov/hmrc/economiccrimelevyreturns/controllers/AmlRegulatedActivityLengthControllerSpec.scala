@@ -28,9 +28,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmlRegulatedActivityLengthPageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityLengthView
 
@@ -45,21 +44,12 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
   val mockEclReturnsService: ReturnsService        = mock[ReturnsService]
   val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
 
-  val pageNavigator: AmlRegulatedActivityLengthPageNavigator = new AmlRegulatedActivityLengthPageNavigator {
-    override protected def navigateInNormalMode(eclReturn: EclReturn): Call =
-      onwardRoute
-
-    override protected def navigateInCheckMode(eclReturn: EclReturn): Call =
-      onwardRoute
-  }
-
   class TestContext(eclReturnData: EclReturn) {
     val controller = new AmlRegulatedActivityLengthController(
       mcc,
       fakeAuthorisedAction(eclReturnData.internalId),
       fakeDataRetrievalAction(eclReturnData),
       formProvider,
-      pageNavigator,
       view,
       mockEclLiabilityService,
       mockEclReturnsService
@@ -96,25 +86,52 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
   }
 
   "onSubmit" should {
-    "save the provided AML regulated activity length then redirect to the next page" in forAll(
+    "save the provided AML regulated activity length then redirect o the UK revenue page when in NormalMode" in forAll(
       Arbitrary.arbitrary[EclReturn],
       Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax),
-      Arbitrary.arbitrary[Mode]
-    ) { (eclReturn: EclReturn, amlRegulatedActivityLength: Int, mode: Mode) =>
-      new TestContext(eclReturn) {
-        val updatedReturn: EclReturn =
-          eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength))
+      Arbitrary.arbitrary[CalculatedLiability],
+      Arbitrary.arbitrary[Int]
+    ) {
+      (
+        randomEclReturn: EclReturn,
+        amlRegulatedActivityLength: Int,
+        calculatedLiability: CalculatedLiability,
+        length: Int
+      ) =>
+        val eclReturn = randomEclReturn.copy(
+          relevantApRevenue = Some(length),
+          relevantAp12Months = Some(true)
+        )
 
-        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+        new TestContext(eclReturn) {
+          val updatedReturn: EclReturn =
+            eclReturn.copy(
+              amlRegulatedActivityLength = Some(amlRegulatedActivityLength)
+            )
 
-        val result: Future[Result] =
-          controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", amlRegulatedActivityLength.toString)))
+          when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(
+              EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+                Future.successful(Right(calculatedLiability))
+              )
+            )
 
-        status(result) shouldBe SEE_OTHER
+          when(
+            mockEclReturnsService.upsertReturn(
+              ArgumentMatchers.eq(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))
+            )(any())
+          )
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
-        redirectLocation(result) shouldBe Some(onwardRoute.url)
-      }
+          val result: Future[Result] =
+            controller.onSubmit(NormalMode)(
+              fakeRequest.withFormUrlEncodedBody(("value", amlRegulatedActivityLength.toString))
+            )
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(NormalMode).url)
+        }
     }
 
     "return a Bad Request with form errors when invalid data is submitted" in forAll(

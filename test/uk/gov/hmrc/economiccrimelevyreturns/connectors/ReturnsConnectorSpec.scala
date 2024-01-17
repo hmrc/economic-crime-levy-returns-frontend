@@ -22,7 +22,7 @@ import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataValidationError, DataValidationErrors}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataValidationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SubmitEclReturnResponse}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HttpResponse, StringContextOps, UpstreamErrorResponse}
@@ -148,7 +148,7 @@ class ReturnsConnectorSpec extends SpecBase {
     }
   }
 
-  "getReturnValidationErrors" should {
+  "validateEclReturn" should {
     "return None when the http client returns 200 OK and body is empty" in forAll { internalId: String =>
       val expectedUrl = url"$eclReturnsUrl/returns/$internalId/validation-errors"
 
@@ -157,7 +157,7 @@ class ReturnsConnectorSpec extends SpecBase {
       when(mockRequestBuilder.execute[HttpResponse](any(), any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(JsNull))))
 
-      val result = await(connector.getReturnValidationErrors(internalId))
+      val result = await(connector.validateEclReturn(internalId))
 
       result shouldBe None
     }
@@ -171,7 +171,7 @@ class ReturnsConnectorSpec extends SpecBase {
         when(mockRequestBuilder.execute[HttpResponse](any(), any()))
           .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(Json.toJson(dataValidationError)))))
 
-        val result = await(connector.getReturnValidationErrors(internalId))
+        val result = await(connector.validateEclReturn(internalId))
 
         result shouldBe Some(dataValidationError)
     }
@@ -186,7 +186,7 @@ class ReturnsConnectorSpec extends SpecBase {
       when(mockRequestBuilder.execute[HttpResponse](any(), any()))
         .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
-      Try(await(connector.getReturnValidationErrors(internalId))) match {
+      Try(await(connector.validateEclReturn(internalId))) match {
         case Failure(UpstreamErrorResponse(_, code, _, _)) =>
           code shouldEqual errorCode
         case _                                             => fail("expected UpstreamErrorResponse when an error is received from the returns service")

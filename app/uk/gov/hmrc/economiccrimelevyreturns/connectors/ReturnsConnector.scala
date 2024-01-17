@@ -66,7 +66,7 @@ class ReturnsConnector @Inject() (
 
   }
 
-  def getReturnValidationErrors(
+  def validateEclReturn(
     internalId: String
   )(implicit hc: HeaderCarrier): Future[Option[DataValidationError]] =
     httpClient

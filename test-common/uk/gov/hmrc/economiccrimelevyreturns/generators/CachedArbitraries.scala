@@ -22,7 +22,7 @@ import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.EclTestData
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.QueryKnownFactsResponse
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedParameters, ReturnSubmittedEmailParameters}
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataValidationError, DataValidationErrors}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationError
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
 
@@ -37,7 +37,6 @@ object CachedArbitraries extends EclTestData with Generators {
   implicit lazy val arbMode: Arbitrary[Mode]                                                          = mkArb
   implicit lazy val arbCalculateLiabilityRequest: Arbitrary[CalculateLiabilityRequest]                = mkArb
   implicit lazy val arbCalculatedLiability: Arbitrary[CalculatedLiability]                            = mkArb
-  implicit lazy val arbDataValidationErrors: Arbitrary[DataValidationErrors]                          = mkArb
   implicit lazy val arbSubmitEclReturnResponse: Arbitrary[SubmitEclReturnResponse]                    = mkArb
   implicit lazy val arbReturnSubmittedEmailParameters: Arbitrary[ReturnSubmittedEmailParameters]      = mkArb
   implicit lazy val arbAmendReturnSubmittedEmailParameters: Arbitrary[AmendReturnSubmittedParameters] = mkArb

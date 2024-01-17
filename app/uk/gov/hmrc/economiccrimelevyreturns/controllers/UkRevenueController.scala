@@ -79,7 +79,7 @@ class UkRevenueController @Inject() (
           error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
           liability =>
             if (liability.calculatedBand == Small) {
-              clearAmlActivityAnswersAndRecalculate(eclReturn)
+              clearAmlActivityAnswersAndRecalculate(eclReturn, mode)
             } else {
               navigateLiable(eclReturn, mode)
             }
@@ -88,7 +88,8 @@ class UkRevenueController @Inject() (
     }
 
   private def clearAmlActivityAnswersAndRecalculate(
-    eclReturn: EclReturn
+    eclReturn: EclReturn,
+    mode: Mode
   )(implicit request: RequestHeader) = {
     val updatedReturn =
       eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
@@ -97,7 +98,7 @@ class UkRevenueController @Inject() (
       liability <- eclLiabilityService.calculateLiability(updatedReturn).asResponseError
     } yield liability).fold(
       error => routes.NotableErrorController.answersAreInvalid(),
-      _ => routes.AmountDueController.onPageLoad(CheckMode)
+      _ => routes.AmountDueController.onPageLoad(mode)
     )
   }
 

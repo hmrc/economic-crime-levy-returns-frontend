@@ -56,6 +56,12 @@ class StartControllerSpec extends SpecBase {
     view
   )
 
+  override def beforeEach() = {
+    reset(mockEnrolmentStoreProxyService)
+    reset(mockEclAccountService)
+    reset(mockEclReturnsService)
+  }
+
   "start" should {
     "redirect to the start page if the return data contains obligation details" in forAll {
       (internalId: String, obligationDetails: ObligationDetails) =>
@@ -142,7 +148,7 @@ class StartControllerSpec extends SpecBase {
           )(fakeRequest, messages).toString
       }
 
-    "upsert the return data to contain the obligation details, clearing any existing return data if the period key does not match one already held " +
+    "upsert the return data to contain the obligation details, clearing any existing return data if the period key does not match one already held" +
       "and return OK with the start view when the period key is for an open obligation" in forAll {
         (internalId: String, obligationDetails: ObligationDetails, eclRegistrationDate: LocalDate) =>
           when(
@@ -170,15 +176,12 @@ class StartControllerSpec extends SpecBase {
               )
             )
 
-          val updatedReturn =
-            EclReturn.empty(internalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(openObligation))
-
           when(mockEclReturnsService.deleteReturn(any())(any()))
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           when(
             mockEclReturnsService.upsertReturn(
-              ArgumentMatchers.eq(updatedReturn)
+              any()
             )(any())
           ).thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
@@ -239,7 +242,7 @@ class StartControllerSpec extends SpecBase {
         )(fakeRequest, messages).toString
     }
 
-    "throw an IllegalStateException when a fulfilled obligation does not contain an inboundCorrespondenceDateReceived" in forAll {
+    "return InternalServerError when a fulfilled obligation does not contain an inboundCorrespondenceDateReceived" in forAll {
       (obligationDetails: ObligationDetails, eclRegistrationDate: LocalDate) =>
         when(
           mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any())
@@ -254,11 +257,10 @@ class StartControllerSpec extends SpecBase {
         when(mockEclAccountService.retrieveObligationData(any())).thenReturn(
           EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(Some(obligationData))))
         )
-        val result = intercept[IllegalStateException] {
-          await(controller.onPageLoad(fulfilledObligation.periodKey)(fakeRequest))
-        }
 
-        result.getMessage shouldBe "Fulfilled obligation does not have an inboundCorrespondenceDateReceived"
+        val result = controller.onPageLoad(fulfilledObligation.periodKey)(fakeRequest)
+
+        status(result) shouldBe INTERNAL_SERVER_ERROR
     }
   }
 

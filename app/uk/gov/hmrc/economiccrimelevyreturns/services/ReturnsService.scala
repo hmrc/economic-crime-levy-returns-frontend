@@ -112,7 +112,7 @@ class ReturnsService @Inject() (
   )(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, Option[DataValidationError]] =
     EitherT {
       eclReturnsConnector
-        .getReturnValidationErrors(internalId)
+        .validateEclReturn(internalId)
         .map(Right(_))
         .recover {
           case error @ UpstreamErrorResponse(message, code, _, _)

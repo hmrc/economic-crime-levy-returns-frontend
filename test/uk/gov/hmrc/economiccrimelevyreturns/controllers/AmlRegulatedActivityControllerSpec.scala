@@ -27,8 +27,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.AmlRegulatedActivityDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmlRegulatedActivityPageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityView
@@ -99,17 +99,35 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
 
   "onSubmit" should {
     "save the selected answer then redirect to the next page" in forAll {
-      (eclReturn: EclReturn, carriedOutAmlRegulatedActivity: Boolean, mode: Mode) =>
+      (
+        eclReturn: EclReturn,
+        carriedOutAmlRegulatedActivityForFullFy: Boolean,
+        mode: Mode,
+        calculatedLiability: CalculatedLiability
+      ) =>
         new TestContext(eclReturn) {
           val updatedReturn: EclReturn =
-            eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivity))
+            dataCleanup.cleanup(
+              eclReturn.copy(
+                carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy)
+              )
+            )
 
-          when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(
+              EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+                Future.successful(Right(calculatedLiability))
+              )
+            )
+
+          val calculatedReturn = updatedReturn.copy(calculatedLiability = Some(calculatedLiability))
+
+          when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(calculatedReturn))(any()))
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           val result: Future[Result] =
             controller.onSubmit(mode)(
-              fakeRequest.withFormUrlEncodedBody(("value", carriedOutAmlRegulatedActivity.toString))
+              fakeRequest.withFormUrlEncodedBody(("value", carriedOutAmlRegulatedActivityForFullFy.toString))
             )
 
           status(result) shouldBe SEE_OTHER

@@ -55,7 +55,10 @@ class ReturnsServiceSpec extends SpecBase {
 
         val result = await(
           service
-            .getOrCreateReturn(internalId)(hc, AuthorisedRequest(fakeRequest, internalId, eclReference))
+            .getOrCreateReturn(internalId, eclReturn.returnType)(
+              hc,
+              AuthorisedRequest(fakeRequest, internalId, eclReference)
+            )
             .value
         )
 

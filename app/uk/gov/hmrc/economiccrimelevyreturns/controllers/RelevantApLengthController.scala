@@ -78,14 +78,23 @@ class RelevantApLengthController @Inject() (
 
   private def processByMode(mode: Mode, eclReturn: EclReturn)(implicit request: RequestHeader) =
     mode match {
-      case NormalMode => processNormalMode(eclReturn)
+      case NormalMode => Future.successful(routes.UkRevenueController.onPageLoad(NormalMode))
       case CheckMode  => processCheckMode(eclReturn)
     }
 
-  private def processNormalMode(eclReturn: EclReturn) = eclReturn.relevantApLength match {
-    case Some(_) => Future.successful(routes.UkRevenueController.onPageLoad(NormalMode))
-    case _       => Future.successful(routes.NotableErrorController.answersAreInvalid())
-  }
+  private def processCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader) =
+    (for {
+      calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
+    } yield calculatedLiability).foldF(
+      error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
+      _ =>
+        eclReturn.calculatedLiability match {
+          case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
+            clearAmlActivityAnswersAndRecalculate(eclReturn)
+          case Some(_)                                                                  => navigateLiable(eclReturn)
+          case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
+        }
+    )
 
   private def clearAmlActivityAnswersAndRecalculate(
     eclReturn: EclReturn
@@ -106,26 +115,5 @@ class RelevantApLengthController @Inject() (
       case Some(_) => Future.successful(routes.AmountDueController.onPageLoad(CheckMode))
       case None    => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(CheckMode))
     }
-
-  private def recalculateLiability(eclReturn: EclReturn)(implicit request: RequestHeader) =
-    eclReturn.calculatedLiability match {
-      case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
-        clearAmlActivityAnswersAndRecalculate(eclReturn)
-      case Some(_)                                                                  => navigateLiable(eclReturn)
-      case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
-    }
-
-  private def processCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader) = {
-    val updatedReturn =
-      eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
-
-    (for {
-      calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
-      _                   <- eclReturnsService.upsertReturn(updatedReturn).asResponseError
-    } yield calculatedLiability).foldF(
-      error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
-      _ => recalculateLiability(updatedReturn)
-    )
-  }
 
 }

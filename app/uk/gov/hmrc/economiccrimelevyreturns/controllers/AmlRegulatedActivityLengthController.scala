@@ -22,8 +22,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthFormProvider
-import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmlRegulatedActivityLengthPageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.models.{Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclLiabilityService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityLengthView
@@ -39,7 +38,6 @@ class AmlRegulatedActivityLengthController @Inject() (
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
   formProvider: AmlRegulatedActivityLengthFormProvider,
-  pageNavigator: AmlRegulatedActivityLengthPageNavigator,
   view: AmlRegulatedActivityLengthView,
   eclLiabilityService: EclLiabilityService,
   eclReturnsService: ReturnsService
@@ -69,9 +67,11 @@ class AmlRegulatedActivityLengthController @Inject() (
             calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
             calculatedReturn     = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
             _                   <- eclReturnsService.upsertReturn(calculatedReturn).asResponseError
+          } yield calculatedReturn).fold(
+            err => Redirect(routes.NotableErrorController.answersAreInvalid()),
+            _ => Redirect(routes.AmountDueController.onPageLoad(mode))
+          )
 
-          } yield calculatedReturn)
-            .convertToResult(mode, pageNavigator)
         }
       )
   }
