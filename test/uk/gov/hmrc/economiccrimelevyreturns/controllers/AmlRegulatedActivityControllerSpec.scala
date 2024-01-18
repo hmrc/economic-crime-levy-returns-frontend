@@ -89,20 +89,23 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
   }
 
   "onSubmit" should {
-    "save the selected answer then redirect to the next page" in forAll {
+    "save the selected answer then redirect to the Amount Due page when the user answers yes" in forAll {
       (
         eclReturn: EclReturn,
-        carriedOutAmlRegulatedActivityForFullFy: Boolean,
         mode: Mode,
         calculatedLiability: CalculatedLiability
       ) =>
         new TestContext(eclReturn) {
-          val updatedReturn: EclReturn =
+          val carriedOutAmlRegulatedActivityForFullFy = true
+          val updatedReturn: EclReturn                =
             dataCleanup.cleanup(
               eclReturn.copy(
                 carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy)
               )
             )
+
+          when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
             .thenReturn(
@@ -123,7 +126,36 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
 
           status(result) shouldBe SEE_OTHER
 
-          redirectLocation(result) shouldBe Some(onwardRoute.url)
+          redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(mode).url)
+        }
+    }
+
+    "save the selected answer then redirect to the AML Regulated activity length page when the user answers no" in forAll {
+      (
+        eclReturn: EclReturn,
+        mode: Mode,
+        calculatedLiability: CalculatedLiability
+      ) =>
+        new TestContext(eclReturn) {
+          val carriedOutAmlRegulatedActivityForFullFy = false
+          val updatedReturn: EclReturn                =
+            dataCleanup.cleanup(
+              eclReturn.copy(
+                carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy)
+              )
+            )
+
+          when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          val result: Future[Result] =
+            controller.onSubmit(mode)(
+              fakeRequest.withFormUrlEncodedBody(("value", carriedOutAmlRegulatedActivityForFullFy.toString))
+            )
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(routes.AmlRegulatedActivityLengthController.onPageLoad(mode).url)
         }
     }
 

@@ -162,8 +162,8 @@ class ReturnsConnectorSpec extends SpecBase {
       result shouldBe None
     }
 
-    "return Some with DataValidationErrors when 200 OK is returned with validation errors in the body" in forAll {
-      (internalId: String, dataValidationError: DataValidationError) =>
+    "return Some with DataValidationError when 200 OK is returned with validation errors in the body" in forAll {
+      (internalId: String, dataValidationError: String) =>
         val expectedUrl = url"$eclReturnsUrl/returns/$internalId/validation-errors"
 
         when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))

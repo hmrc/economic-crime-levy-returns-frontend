@@ -45,14 +45,15 @@ class ReturnsService @Inject() (
         .getReturn(internalId)
         .map(eclReturn => Right(Some(eclReturn)))
         .recover {
-          case err: NotFoundException =>
+          case err: NotFoundException                          => Right(None)
+          case err @ UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
             Right(None)
           case error @ UpstreamErrorResponse(message, code, _, _)
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
             Left(DataHandlingError.BadGateway(reason = message, code = code))
-          case NonFatal(thr)          =>
+          case NonFatal(thr)                                   =>
             Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
         }
     }

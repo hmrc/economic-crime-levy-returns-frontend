@@ -109,12 +109,17 @@ class UkRevenueControllerSpec extends SpecBase {
         when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
+        val liability = calculatedLiability.copy(calculatedBand = calculatedBand)
         when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(
             EitherT[Future, LiabilityCalculationError, CalculatedLiability](
-              Future.successful(Right(calculatedLiability.copy(calculatedBand = calculatedBand)))
+              Future.successful(Right(liability))
             )
           )
+
+        val calculatedReturn = updatedReturn.copy(calculatedLiability = Some(liability))
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(calculatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         val result: Future[Result] =
           controller.onSubmit(NormalMode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString())))
@@ -143,12 +148,17 @@ class UkRevenueControllerSpec extends SpecBase {
         when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
+        val liability = calculatedLiability.copy(calculatedBand = calculatedBand)
         when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(
             EitherT[Future, LiabilityCalculationError, CalculatedLiability](
-              Future.successful(Right(calculatedLiability.copy(calculatedBand = calculatedBand)))
+              Future.successful(Right(liability))
             )
           )
+
+        val calculatedReturn = updatedReturn.copy(calculatedLiability = Some(liability))
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(calculatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         val result: Future[Result] =
           controller.onSubmit(CheckMode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString)))
@@ -177,12 +187,17 @@ class UkRevenueControllerSpec extends SpecBase {
         when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
+        val liability = calculatedLiability.copy(calculatedBand = calculatedBand)
         when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(
             EitherT[Future, LiabilityCalculationError, CalculatedLiability](
-              Future.successful(Right(calculatedLiability.copy(calculatedBand = calculatedBand)))
+              Future.successful(Right(liability))
             )
           )
+
+        val calculatedReturn = updatedReturn.copy(calculatedLiability = Some(liability))
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(calculatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         val result: Future[Result] =
           controller.onSubmit(CheckMode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString)))
@@ -197,15 +212,14 @@ class UkRevenueControllerSpec extends SpecBase {
       (eclReturn: EclReturn, calculatedLiability: CalculatedLiability, mode: Mode) =>
         val ukRevenue     = bigDecimalInRange(1, 1000).sample.get
         val updatedReturn = eclReturn.copy(relevantAp12Months = Some(true))
-        new TestContext(eclReturn.copy(relevantAp12Months = Some(true))) {
+        val liability     = calculatedLiability.copy(calculatedBand = Small)
+
+        new TestContext(updatedReturn) {
           val cleansedReturn = dataCleanup.cleanup(
             updatedReturn.copy(
               relevantApRevenue = Some(ukRevenue)
             )
           )
-
-          val nilReturn =
-            cleansedReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
 
           when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(cleansedReturn))(any()))
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
@@ -213,17 +227,31 @@ class UkRevenueControllerSpec extends SpecBase {
           when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(cleansedReturn))(any()))
             .thenReturn(
               EitherT[Future, LiabilityCalculationError, CalculatedLiability](
-                Future.successful(Right(calculatedLiability.copy(calculatedBand = Small)))
+                Future.successful(Right(liability))
               )
             )
 
-          when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(nilReturn))(any()))
+          when(
+            mockEclReturnsService.upsertReturn(
+              ArgumentMatchers.eq(cleansedReturn.copy(calculatedLiability = Some(liability)))
+            )(any())
+          )
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          val nilReturn =
+            cleansedReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
+
+          when(
+            mockEclReturnsService.upsertReturn(
+              ArgumentMatchers.eq(nilReturn)
+            )(any())
+          )
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(nilReturn))(any()))
             .thenReturn(
               EitherT[Future, LiabilityCalculationError, CalculatedLiability](
-                Future.successful(Right(calculatedLiability.copy(calculatedBand = Small)))
+                Future.successful(Right(liability))
               )
             )
 
