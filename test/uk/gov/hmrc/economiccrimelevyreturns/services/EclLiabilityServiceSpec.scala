@@ -26,14 +26,13 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
 import uk.gov.hmrc.http.UpstreamErrorResponse
-import play.api.http.Status.{INTERNAL_SERVER_ERROR}
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 
 import scala.concurrent.Future
 
 class EclLiabilityServiceSpec extends SpecBase {
-  private val mockEclReturnsConnector    = mock[ReturnsConnector]
   private val mockEclCalculatorConnector = mock[EclCalculatorConnector]
-  private val service                    = new EclCalculatorService(mockEclReturnsConnector, mockEclCalculatorConnector)
+  private val service                    = new EclCalculatorService(mockEclCalculatorConnector)
 
   "calculateLiability" should {
     "return an updated ECL return containing the calculated liability" in forAll {

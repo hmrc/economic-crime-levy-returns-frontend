@@ -95,7 +95,9 @@ class EclCalculatorService @Inject() (
         Future.successful(
           value match {
             case Some(value) => Right(value)
-            case _           => Left(LiabilityCalculationError.InternalUnexpectedError(None, Some("Missing expected value.")))
+            case _           =>
+              println("HERE I AMMM")
+              Left(LiabilityCalculationError.InternalUnexpectedError(None, Some("Missing expected value.")))
           }
         )
       }
