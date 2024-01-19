@@ -78,6 +78,12 @@ class CheckYourAnswersController @Inject() (
     ).flatten
   ).withCssClass("govuk-!-margin-bottom-9")
 
+  private def amendReasonDetails()(implicit request: ReturnDataRequest[_]): SummaryList = SummaryListViewModel(
+    rows = Seq(
+      AmendReasonSummary.row()
+    ).flatten
+  ).withCssClass("govuk-!-margin-bottom-9")
+
   def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     (for {
       errors <- returnsService.getReturnValidationErrors(request.internalId)(hc).asResponseError
@@ -85,7 +91,7 @@ class CheckYourAnswersController @Inject() (
       error => Status(error.code.statusCode)(Json.toJson(error)),
       {
         case Some(_) => Redirect(routes.NotableErrorController.answersAreInvalid())
-        case None    => Ok(view(eclDetails(), contactDetails(), request.startAmendUrl))
+        case None    => Ok(view(amendReasonDetails(), eclDetails(), contactDetails(), request.startAmendUrl))
       }
     )
   }
@@ -93,7 +99,7 @@ class CheckYourAnswersController @Inject() (
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
 
-    val htmlView = view(eclDetails(), contactDetails())
+    val htmlView = view(amendReasonDetails(), eclDetails(), contactDetails())
 
     val base64EncodedHtmlView: String = base64EncodeHtmlView(htmlView.body)
 

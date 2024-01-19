@@ -15,33 +15,41 @@
  *@
 
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukSummaryList: GovukSummaryList,
-    govukButton: GovukButton
+layout: templates.Layout,
+formHelper: FormWithCSRF,
+govukSummaryList: GovukSummaryList,
+govukButton: GovukButton
 )
 
-@(eclDetails: SummaryList, contactDetails: SummaryList, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
+@(amendReason: SummaryList, eclDetails: SummaryList, contactDetails: SummaryList, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(messages("checkYourAnswers.title")), startAmendUrl = startAmendUrl) {
-    @formHelper(action = CheckYourAnswersController.onSubmit()) {
+@formHelper(action = CheckYourAnswersController.onSubmit()) {
 
-        <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
+<h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
 
-        <h1 class="govuk-heading-m">@messages("checkYourAnswers.eclDetails")</h1>
+@if(amendReason.rows.nonEmpty) {
 
-        @govukSummaryList(eclDetails)
+<h2 class="govuk-heading-m">@messages("checkYourAnswers.amendReason.title")</h2>
 
-        <h1 class="govuk-heading-m">@messages("checkYourAnswers.contactDetails")</h1>
+@govukSummaryList(amendReason)
 
-        @govukSummaryList(contactDetails)
+}
 
-        <h1 class="govuk-heading-m">@messages("checkYourAnswers.nowSend")</h1>
+<h2 class="govuk-heading-m">@messages("checkYourAnswers.eclDetails")</h2>
 
-        <div class="govuk-body">@messages("checkYourAnswers.bySubmitting")</div>
+@govukSummaryList(eclDetails)
 
-        @govukButton(
-            ButtonViewModel(messages("checkYourAnswers.confirmAndSend"))
-        )
-    }
+<h2 class="govuk-heading-m">@messages("checkYourAnswers.contactDetails")</h2>
+
+@govukSummaryList(contactDetails)
+
+<h2 class="govuk-heading-m">@messages("checkYourAnswers.nowSend")</h2>
+
+<div class="govuk-body">@messages("checkYourAnswers.bySubmitting")</div>
+
+@govukButton(
+ButtonViewModel(messages("checkYourAnswers.confirmAndSend"))
+)
+}
 }

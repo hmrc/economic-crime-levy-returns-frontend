@@ -56,7 +56,8 @@ final case class EclReturn(
   obligationDetails: Option[ObligationDetails],
   base64EncodedNrsSubmissionHtml: Option[String],
   base64EncodedDmsSubmissionHtml: Option[String],
-  returnType: Option[ReturnType]
+  returnType: Option[ReturnType],
+  amendReason: Option[String]
 )
 
 object EclReturn {
@@ -75,7 +76,8 @@ object EclReturn {
     obligationDetails = None,
     base64EncodedNrsSubmissionHtml = None,
     base64EncodedDmsSubmissionHtml = None,
-    returnType = returnType
+    returnType = returnType,
+    amendReason = None
   )
 
   implicit val format: OFormat[EclReturn] = Json.format[EclReturn]
