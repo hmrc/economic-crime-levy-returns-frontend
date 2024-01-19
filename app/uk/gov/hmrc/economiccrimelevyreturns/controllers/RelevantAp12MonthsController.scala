@@ -70,27 +70,29 @@ class RelevantAp12MonthsController @Inject() (
             .asResponseError
             .foldF(
               error => Future.successful(Status(error.code.statusCode)(Json.toJson(error))),
-              _ => processByMode(mode, eclReturn).map(Redirect)
+              _ => processByMode(mode, relevantAp12Months, eclReturn).map(Redirect)
             )
         }
       )
   }
 
-  private def processByMode(mode: Mode, eclReturn: EclReturn)(implicit request: RequestHeader) =
+  private def processByMode(mode: Mode, relevantAp12Months: Boolean, eclReturn: EclReturn)(implicit
+    request: RequestHeader
+  ) =
     mode match {
-      case NormalMode => navigateInNormalMode(eclReturn)
-      case CheckMode  => navigateInCheckMode(eclReturn)
+      case NormalMode => navigateInNormalMode(relevantAp12Months)
+      case CheckMode  => navigateInCheckMode(eclReturn, relevantAp12Months)
     }
 
-  private def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-    eclReturn.relevantAp12Months match {
-      case Some(true)  => Future.successful(routes.UkRevenueController.onPageLoad(NormalMode))
-      case Some(false) => Future.successful(routes.RelevantApLengthController.onPageLoad(NormalMode))
+  private def navigateInNormalMode(relevantAp12Months: Boolean): Future[Call] =
+    relevantAp12Months match {
+      case true  => Future.successful(routes.UkRevenueController.onPageLoad(NormalMode))
+      case false => Future.successful(routes.RelevantApLengthController.onPageLoad(NormalMode))
     }
 
-  private def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader) =
-    eclReturn.relevantAp12Months match {
-      case Some(true)  =>
+  private def navigateInCheckMode(eclReturn: EclReturn, relevantAp12Months: Boolean)(implicit request: RequestHeader) =
+    relevantAp12Months match {
+      case true  =>
         (for {
           calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
           _                   <-
@@ -107,7 +109,7 @@ class RelevantAp12MonthsController @Inject() (
               case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
             }
         )
-      case Some(false) => Future.successful(routes.RelevantApLengthController.onPageLoad(CheckMode))
+      case false => Future.successful(routes.RelevantApLengthController.onPageLoad(CheckMode))
     }
 
   private def clearAmlActivityAnswersAndRecalculate(

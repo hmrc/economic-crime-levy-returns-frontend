@@ -41,7 +41,7 @@ class NotableErrorController @Inject() (
     Ok(answersAreInvalidView())
   }
 
-  def notRegistered: Action[AnyContent] = Action { implicit request =>
+  def notRegistered: Action[AnyContent] = Action {
     Redirect(Call(GET, appConfig.claimUrl))
   }
 

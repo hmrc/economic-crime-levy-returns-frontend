@@ -73,7 +73,7 @@ class StartAmendControllerSpec extends SpecBase {
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           when(mockSessionService.upsert(any())(any()))
-            .thenReturn(Future.successful(unit))
+            .thenReturn(unit)
 
           val result: Future[Result] =
             controller.onPageLoad(periodKey = openObligation.periodKey, returnNumber = returnNumber)(fakeRequest)

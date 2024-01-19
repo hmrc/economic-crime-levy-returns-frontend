@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
@@ -24,6 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedActio
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.EmailSubmissionError
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
@@ -37,7 +39,8 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import java.time.LocalDate
 import java.util.Base64
 import javax.inject.Singleton
-import scala.concurrent.ExecutionContext
+import scala.Left
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CheckYourAnswersController @Inject() (
@@ -128,10 +131,17 @@ class CheckYourAnswersController @Inject() (
   private def sendConfirmationMail(eclReturn: EclReturn, response: SubmitEclReturnResponse)(implicit
     messages: Messages,
     hc: HeaderCarrier
-  ) =
-    eclReturn.returnType.getOrElse("Return type is missing in session") match {
-      case FirstTimeReturn => emailService.sendReturnSubmittedEmail(eclReturn, response.chargeReference)
-      case AmendReturn     => emailService.sendAmendReturnConfirmationEmail(eclReturn)
+  ): EitherT[Future, EmailSubmissionError, Unit] =
+    eclReturn.returnType match {
+      case Some(FirstTimeReturn) => emailService.sendReturnSubmittedEmail(eclReturn, response.chargeReference)
+      case Some(AmendReturn)     => emailService.sendAmendReturnConfirmationEmail(eclReturn)
+      case None                  =>
+        EitherT.left(
+          Future.successful(
+            EmailSubmissionError
+              .InternalUnexpectedError(None, Some("Return type is missing in session"))
+          )
+        )
     }
 
   def checkOptionalVal[T](value: Option[T]) =

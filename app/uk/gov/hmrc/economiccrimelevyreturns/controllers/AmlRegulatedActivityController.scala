@@ -75,15 +75,17 @@ class AmlRegulatedActivityController @Inject() (
           } yield unit)
             .foldF(
               err => Future.successful(Status(err.code.statusCode)(Json.toJson(err))),
-              _ => route(eclReturn, mode).map(Redirect)
+              _ => route(eclReturn, carriedOutAmlRegulatedActivityForFullFy, mode).map(Redirect)
             )
         }
       )
   }
 
-  private def route(eclReturn: EclReturn, mode: Mode)(implicit requestHeader: RequestHeader) =
-    eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
-      case Some(true)  =>
+  private def route(eclReturn: EclReturn, carriedOutAmlRegulatedActivityForFullFy: Boolean, mode: Mode)(implicit
+    requestHeader: RequestHeader
+  ) =
+    carriedOutAmlRegulatedActivityForFullFy match {
+      case true  =>
         (for {
           calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
           calculatedReturn     = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
@@ -92,7 +94,7 @@ class AmlRegulatedActivityController @Inject() (
           error => routes.NotableErrorController.answersAreInvalid(),
           _ => routes.AmountDueController.onPageLoad(mode)
         )
-      case Some(false) => Future.successful(routes.AmlRegulatedActivityLengthController.onPageLoad(mode))
+      case false => Future.successful(routes.AmlRegulatedActivityLengthController.onPageLoad(mode))
     }
 
 }

@@ -73,7 +73,6 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       val calculatedLiability =
         random[CalculatedLiability].copy(calculatedBand = Small)
 
-
       stubGetReturn(eclReturn)
       stubGetSessionEmpty()
 

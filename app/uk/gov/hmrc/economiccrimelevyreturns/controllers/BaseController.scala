@@ -30,8 +30,7 @@ trait BaseController {
   implicit class ResponseHandler(value: EitherT[Future, ResponseError, EclReturn]) {
 
     def convertToResult(mode: Mode, pageNavigator: PageNavigator)(implicit
-      ec: ExecutionContext,
-      request: Request[_]
+      ec: ExecutionContext
     ): Future[Result] =
       value
         .fold(

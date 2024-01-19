@@ -37,8 +37,6 @@ class EclLiabilityServiceSpec extends SpecBase {
   "calculateLiability" should {
     "return an updated ECL return containing the calculated liability" in forAll {
       (validEclReturn: ValidEclReturn, calculatedLiability: CalculatedLiability) =>
-        val updatedReturn = validEclReturn.eclReturn.copy(calculatedLiability = Some(calculatedLiability))
-
         when(
           mockEclCalculatorConnector.calculateLiability(
             ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength),
