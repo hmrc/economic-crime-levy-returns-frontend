@@ -185,13 +185,18 @@ class CheckYourAnswersController @Inject() (
 
   private def createAndEncodeHtmlForPdf()(implicit request: ReturnDataRequest[_]): String = {
     val date         = LocalDate.now
-    val organisation = eclDetails().copy(rows = eclDetails().rows.map(_.copy(actions = None)))
-    val contact      = contactDetails().copy(rows = contactDetails().rows.map(_.copy(actions = None)))
+    val organisation = eclDetails()
+    val contact      = contactDetails()
+    val amendReason  = amendReasonDetails()
     base64EncodeHtmlView(
       amendReturnPdfView(
         ViewUtils.formatLocalDate(date),
-        organisation,
-        contact
+        organisation.copy(rows = organisation.rows.map(_.copy(actions = None))),
+        contact.copy(rows = contact.rows.map(_.copy(actions = None))),
+        amendReason.copy(
+          rows = amendReason.rows.map(_.copy(actions = None)),
+          attributes = Map("id" -> "amendReason")
+        )
       ).toString()
     )
   }

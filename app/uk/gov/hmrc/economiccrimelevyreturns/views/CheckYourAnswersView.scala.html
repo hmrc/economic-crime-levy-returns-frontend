@@ -28,11 +28,19 @@ govukButton: GovukButton
 
 <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
 
-@if(amendReason.rows.nonEmpty) {
+        @if(amendReason.rows.nonEmpty) {
 
-<h2 class="govuk-heading-m">@messages("checkYourAnswers.amendReason.title")</h2>
+            <h2 class="govuk-heading-m">@messages("checkYourAnswers.amendReason.title")</h2>
 
-@govukSummaryList(amendReason)
+            @govukSummaryList(amendReason)
+
+        }
+
+      <h2 class="govuk-heading-m">@messages("checkYourAnswers.eclDetails")</h2>
+
+      <h2 class="govuk-heading-m">@messages("checkYourAnswers.amendReason.title")</h2>
+
+      <h2 class="govuk-heading-m">@messages("checkYourAnswers.contactDetails")</h2>
 
 }
 
@@ -40,7 +48,7 @@ govukButton: GovukButton
 
 @govukSummaryList(eclDetails)
 
-<h2 class="govuk-heading-m">@messages("checkYourAnswers.contactDetails")</h2>
+        <h2 class="govuk-heading-m">@messages("checkYourAnswers.nowSend")</h2>
 
 @govukSummaryList(contactDetails)
 

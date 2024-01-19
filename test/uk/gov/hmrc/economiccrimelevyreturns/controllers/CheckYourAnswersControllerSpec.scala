@@ -101,7 +101,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           ).flatten
         ).withCssClass("govuk-!-margin-bottom-9")
 
-        val amendReasonDetails = SummaryListViewModel(
+        val amendReasonDetails: SummaryList = SummaryListViewModel(
           rows = Seq(
             AmendReasonSummary.row()
           ).flatten

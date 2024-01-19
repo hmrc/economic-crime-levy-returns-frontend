@@ -50,7 +50,6 @@
         classes = "govuk-table"
     ))
 
-
     <p class="govuk-body">
     @messages("start.amend.p1", ViewUtils.formatLocalDate(dateFrom).takeRight(4), ViewUtils.formatLocalDate(dateTo).takeRight(4))
     </p>
@@ -74,7 +73,7 @@
 
     @button(
         ButtonViewModel(messages("site.start"))
-                .asLink(RelevantAp12MonthsController.onPageLoad(NormalMode).url)
+                .asLink(AmendReasonController.onPageLoad(NormalMode).url)
                 .asStartButton()
                 .withAttribute("id" -> "start")
                 .withCssClass("govuk-!-margin-top-2 govuk-!-margin-bottom-8")
