@@ -18,17 +18,21 @@
 
 @this(pdfLayout: PdfLayout, govukSummaryList: GovukSummaryList)
 
-@(date: String, organisationDetails: SummaryList, contactDetails: SummaryList)(implicit request: Request[_], messages: Messages)
+@(date: String, organisationDetails: SummaryList, contactDetails: SummaryList, amendReason: SummaryList)(implicit request: Request[_], messages: Messages)
 
-@pdfLayout(messages("otherRegistration.pdfHtml.title")) {
+    @pdfLayout(messages("otherRegistration.pdfHtml.title")) {
+        <p class="govuk-body" align="right">@messages("otherRegistration.pdfHtml.submissionDate", date)</p>
 
-    <p class="govuk-body" align="right">@messages("otherRegistration.pdfHtml.submissionDate", date)</p>
 
-    <h2>@messages("checkYourAnswers.organisationDetails")</h2>
+        <h2>@messages("checkYourAnswers.amendReason.title")</h2>
 
-    @govukSummaryList(organisationDetails)
+        @govukSummaryList(amendReason)
 
-    <h2>@messages("checkYourAnswers.contactDetails")</h2>
+        <h2>@messages("checkYourAnswers.organisationDetails")</h2>
 
-    @govukSummaryList(contactDetails)
-}
+        @govukSummaryList(organisationDetails)
+
+        <h2>@messages("checkYourAnswers.contactDetails")</h2>
+
+        @govukSummaryList(contactDetails)
+    }

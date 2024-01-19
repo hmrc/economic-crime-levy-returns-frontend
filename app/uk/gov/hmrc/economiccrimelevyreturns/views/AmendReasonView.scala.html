@@ -15,47 +15,48 @@
  *@
 
 @this(
-layout: templates.Layout,
-formHelper: FormWithCSRF,
-govukErrorSummary: GovukErrorSummary,
-govukTextarea: GovukTextarea,
-govukButton: GovukButton
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukTextarea: GovukTextarea,
+        govukButton: GovukButton
 )
 
 @(form: Form[String], mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @errorMessage = @{
-if(form.errors.nonEmpty) {
-Some(ErrorMessage(
-id = Some("amendReason.error.required"),
-content = Text(messages("amendReason.error.required"))
-))
-} else {
-None
-}
+
+    if(form.errors.nonEmpty) {
+        Some(ErrorMessage(
+            id = Some("amendReason.error.required"),
+            content = Text(messages("amendReason.error.required"))
+        ))
+    } else {
+        None
+    }
 }
 
 @layout(pageTitle = titleWithForm(form, messages("amendReason.title")), startAmendUrl = startAmendUrl) {
-@if(form.errors.nonEmpty) {
-@govukErrorSummary(ErrorSummaryViewModel(form))
-}
+    @if(form.errors.nonEmpty) {
+        @govukErrorSummary(ErrorSummaryViewModel(form))
+    }
 
-<h1 class="govuk-heading-l">@messages("amendReason.h1")</h1>
+    <h1 class="govuk-heading-l">@messages("amendReason.h1")</h1>
 
-<p class="govuk-body">@messages("amendReason.p1")</p>
+    <p class="govuk-body">@messages("amendReason.p1")</p>
 
-@formHelper(action = AmendReasonController.onSubmit(mode)) {
-@govukTextarea(
-Textarea(
-id = "value",
-name = "value",
-value = form("value").value,
-errorMessage = errorMessage
-)
-)
+    @formHelper(action = AmendReasonController.onSubmit(mode)) {
+        @govukTextarea(
+            Textarea(
+                id = "value",
+                name = "value",
+                value = form("value").value,
+                errorMessage = errorMessage
+            )
+        )
 
-@govukButton(
-ButtonViewModel(messages("site.saveAndContinue"))
-)
-}
+        @govukButton(
+            ButtonViewModel(messages("site.saveAndContinue"))
+        )
+    }
 }
