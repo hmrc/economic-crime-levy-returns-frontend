@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import cats.data.EitherT
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, ReturnsConnector}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclCalculatorConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
@@ -96,7 +96,6 @@ class EclCalculatorService @Inject() (
           value match {
             case Some(value) => Right(value)
             case _           =>
-              println("HERE I AMMM")
               Left(LiabilityCalculationError.InternalUnexpectedError(None, Some("Missing expected value.")))
           }
         )

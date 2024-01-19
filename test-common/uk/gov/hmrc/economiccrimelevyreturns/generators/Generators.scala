@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.generators
 
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
-import org.scalacheck.{Arbitrary, Gen, Shrink}
+import org.scalacheck.{Gen, Shrink}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import wolfendale.scalacheck.regexp.RegexpGen
 

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
-import play.api.http.Status.{ACCEPTED, CREATED, NO_CONTENT, OK}
+import play.api.http.Status.{ACCEPTED, CREATED, OK}
 import play.api.libs.json.{JsResult, Reads}
 import uk.gov.hmrc.http.client.RequestBuilder
 import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}

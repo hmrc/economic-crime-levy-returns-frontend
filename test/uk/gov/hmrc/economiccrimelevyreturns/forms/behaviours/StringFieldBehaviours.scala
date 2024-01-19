@@ -18,7 +18,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours
 
 import org.scalacheck.Gen
 import play.api.data.{Form, FormError}
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 
 trait StringFieldBehaviours extends FieldBehaviours {
 

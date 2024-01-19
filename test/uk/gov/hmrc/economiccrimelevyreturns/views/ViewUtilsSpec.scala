@@ -18,10 +18,8 @@ package uk.gov.hmrc.economiccrimelevyreturns.views
 
 import play.api.data.Form
 import play.api.data.Forms.{single, text}
-import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, Open}
-import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 
 import java.time.{Instant, LocalDate}
 

@@ -56,9 +56,6 @@ class StartAmendControllerSpec extends SpecBase {
         (internalId: String, obligationDetails: ObligationDetails, returnNumber: String) =>
           val openObligation = obligationDetails.copy(status = Open)
           val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
-          val updatedReturn  = EclReturn
-            .empty(internalId = internalId, returnType = Some(AmendReturn))
-            .copy(obligationDetails = Some(obligationDetails))
 
           when(mockEclAccountService.retrieveObligationData(any()))
             .thenReturn(

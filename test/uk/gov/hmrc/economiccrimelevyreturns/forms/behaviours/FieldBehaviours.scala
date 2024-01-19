@@ -24,9 +24,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 
 trait FieldBehaviours extends FormSpec with ScalaCheckPropertyChecks with Generators {
 
-  private def removeCommas(value: String) =
-    value.filterNot(_ == ',')
-
   def fieldThatBindsValidData(form: Form[_], fieldName: String, validDataGenerator: Gen[String]): Unit =
     "bind" should {
       "bind valid data" in {
