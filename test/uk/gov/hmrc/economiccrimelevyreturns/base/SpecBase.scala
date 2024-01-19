@@ -24,9 +24,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterEach, OptionValues, TryValues}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc._
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits}
 import play.api.test.Helpers.{stubBodyParser, stubControllerComponents}
@@ -63,18 +61,6 @@ trait SpecBase
   val eclRegistrationReference: String                 = "test-ecl-registration-reference"
   val config: Config                                   = app.injector.instanceOf[Config]
   val actorSystem: ActorSystem                         = ActorSystem("actor")
-
-  val additionalAppConfig: Map[String, Any] = Map(
-    "create-internal-auth-token-on-start" -> false,
-    "metrics.enabled"                     -> false,
-    "auditing.enabled"                    -> false,
-    "http-verbs.retries.intervals"        -> List("1ms", "1ms", "1ms")
-  )
-
-  override def fakeApplication(): Application =
-    GuiceApplicationBuilder()
-      .configure(additionalAppConfig)
-      .build()
 
   def fakeAuthorisedAction(internalId: String) = new FakeAuthorisedAction(internalId, bodyParsers)
 
