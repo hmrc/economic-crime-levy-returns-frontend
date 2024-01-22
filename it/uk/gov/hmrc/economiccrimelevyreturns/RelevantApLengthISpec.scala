@@ -12,10 +12,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantApLengthDataCleanup
 class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
-//  val dataCleanup: RelevantApLengthDataCleanup = new RelevantApLengthDataCleanup {
-//    override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
-//  }
-
   val dataCleanup = new RelevantApLengthDataCleanup
   s"GET ${routes.RelevantApLengthController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.RelevantApLengthController.onPageLoad(NormalMode))
