@@ -26,7 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactEmailPageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactEmailView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ContactEmailView, ErrorTemplate}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -42,7 +42,7 @@ class ContactEmailController @Inject() (
   formProvider: ContactEmailFormProvider,
   pageNavigator: ContactEmailPageNavigator,
   view: ContactEmailView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorView: ErrorTemplate)
     extends FrontendBaseController
     with BaseController
     with ErrorHandler
@@ -51,7 +51,10 @@ class ContactEmailController @Inject() (
   val form: Form[String] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.contactEmailAddress), contactName(request), mode, request.startAmendUrl))
+    getContactNameFromRequest.fold(
+      err => routeError(err),
+      name => Ok(view(form.prepare(request.eclReturn.contactEmailAddress), name, mode, request.startAmendUrl))
+    )
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
@@ -60,7 +63,10 @@ class ContactEmailController @Inject() (
       .bindFromRequest()
       .fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, contactName(request), mode, request.startAmendUrl))),
+          getContactNameFromRequest.fold(
+            err => Future.successful(routeError(err)),
+            name => Future.successful(BadRequest(view(formWithErrors, name, mode, request.startAmendUrl)))
+          ),
         email => {
           val eclReturn = request.eclReturn.copy(contactEmailAddress = Some(email))
           (for {

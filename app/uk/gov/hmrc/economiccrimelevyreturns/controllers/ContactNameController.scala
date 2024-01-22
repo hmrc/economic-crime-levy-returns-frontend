@@ -26,7 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactNamePageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactNameView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ContactNameView, ErrorTemplate}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -42,7 +42,7 @@ class ContactNameController @Inject() (
   formProvider: ContactNameFormProvider,
   pageNavigator: ContactNamePageNavigator,
   view: ContactNameView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorView: ErrorTemplate)
     extends FrontendBaseController
     with BaseController
     with ErrorHandler

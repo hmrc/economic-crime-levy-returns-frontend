@@ -31,7 +31,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView, ErrorTemplate}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -53,7 +53,7 @@ class CheckYourAnswersController @Inject() (
   amendReturnPdfView: AmendReturnPdfView,
   val controllerComponents: MessagesControllerComponents,
   view: CheckYourAnswersView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with I18nSupport
     with BaseController
@@ -91,7 +91,7 @@ class CheckYourAnswersController @Inject() (
     (for {
       errors <- returnsService.getReturnValidationErrors(request.internalId)(hc).asResponseError
     } yield errors).fold(
-      error => Status(error.code.statusCode)(Json.toJson(error)),
+      error => routeError(error),
       {
         case Some(_) => Redirect(routes.NotableErrorController.answersAreInvalid())
         case None    => Ok(view(amendReasonDetails(), eclDetails(), contactDetails(), request.startAmendUrl))
@@ -144,7 +144,7 @@ class CheckYourAnswersController @Inject() (
         )
     }
 
-  def checkOptionalVal[T](value: Option[T]) =
+  private def checkOptionalVal[T](value: Option[T]) =
     if (value.isDefined) {
       Right(value.get)
     } else {

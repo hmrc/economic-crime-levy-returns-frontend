@@ -27,23 +27,14 @@ object ErrorCode {
 
   case object NotFound extends ErrorCode("NOT_FOUND", NOT_FOUND)
 
-  case object Forbidden extends ErrorCode("FORBIDDEN", FORBIDDEN)
-
   case object InternalServerError extends ErrorCode("INTERNAL_SERVER_ERROR", INTERNAL_SERVER_ERROR)
-
-  case object GatewayTimeout extends ErrorCode("GATEWAY_TIMEOUT", GATEWAY_TIMEOUT)
-
-  case object UnsupportedMediaType extends ErrorCode("UNSUPPORTED_MEDIA_TYPE", UNSUPPORTED_MEDIA_TYPE)
 
   case object Unauthorized extends ErrorCode("UNAUTHORIZED", UNAUTHORIZED)
 
   lazy val errorCodes: Seq[ErrorCode] = Seq(
     BadRequest,
     NotFound,
-    Forbidden,
     InternalServerError,
-    GatewayTimeout,
-    UnsupportedMediaType,
     Unauthorized
   )
 

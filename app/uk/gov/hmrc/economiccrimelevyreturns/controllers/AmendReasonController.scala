@@ -18,7 +18,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmendReasonFormProvider
@@ -26,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmendReasonPageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmendReasonView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReasonView, ErrorTemplate}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -41,7 +40,7 @@ class AmendReasonController @Inject() (
   formProvider: AmendReasonFormProvider,
   pageNavigator: AmendReasonPageNavigator,
   view: AmendReasonView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with I18nSupport
     with BaseController
@@ -65,7 +64,7 @@ class AmendReasonController @Inject() (
                       .upsertReturn(updatedReturn)
                       .asResponseError
           } yield updatedReturn).fold(
-            err => Status(err.code.statusCode)(Json.toJson(err)),
+            err => routeError(err),
             eclReturn => Redirect(pageNavigator.nextPage(mode, eclReturn))
           )
         }

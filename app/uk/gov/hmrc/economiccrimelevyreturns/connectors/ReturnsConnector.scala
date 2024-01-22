@@ -17,6 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import akka.actor.ActorSystem
+import cats.data.OptionT
 import com.typesafe.config.Config
 import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.Json
@@ -62,12 +63,11 @@ class ReturnsConnector @Inject() (
       .post(url"$eclReturnsUrl/calculate-liability")
       .withBody(Json.toJson(calculatedLiabilityRequest))
       .executeAndDeserialise[CalculatedLiability]
-
   }
-  //TBD: Update to a case class
+
   def validateEclReturn(
     internalId: String
-  )(implicit hc: HeaderCarrier): Future[Option[String]]                          =
+  )(implicit hc: HeaderCarrier): OptionT[Future, String] =
     httpClient
       .get(url"$eclReturnsUrl/returns/$internalId/validation-errors")
       .executeAndDeserialiseOpt[String]

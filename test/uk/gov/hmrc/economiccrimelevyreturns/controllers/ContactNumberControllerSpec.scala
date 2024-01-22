@@ -72,17 +72,14 @@ class ContactNumberControllerSpec extends SpecBase {
         }
     }
 
-    "throw an IllegalStateException when there is no contact name in the returns data" in forAll {
-      (eclReturn: EclReturn) =>
-        val updatedReturn = eclReturn.copy(contactName = None)
+    "return InternalServerError when there is no contact name in the returns data" in forAll { (eclReturn: EclReturn) =>
+      val updatedReturn = eclReturn.copy(contactName = None)
 
-        new TestContext(updatedReturn) {
-          val result: IllegalStateException = intercept[IllegalStateException] {
-            await(controller.onPageLoad(NormalMode)(fakeRequest))
-          }
+      new TestContext(updatedReturn) {
+        val result = controller.onPageLoad(NormalMode)(fakeRequest)
 
-          result.getMessage shouldBe "No contact name found in returns data"
-        }
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+      }
     }
 
     "populate the view correctly when the question has previously been answered" in forAll {

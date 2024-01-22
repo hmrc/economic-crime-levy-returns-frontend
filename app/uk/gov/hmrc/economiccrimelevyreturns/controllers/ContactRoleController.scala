@@ -26,7 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactRolePageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactRoleView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ContactRoleView, ErrorTemplate}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -42,7 +42,7 @@ class ContactRoleController @Inject() (
   formProvider: ContactRoleFormProvider,
   pageNavigator: ContactRolePageNavigator,
   view: ContactRoleView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorView: ErrorTemplate)
     extends FrontendBaseController
     with BaseController
     with ErrorHandler
@@ -51,7 +51,10 @@ class ContactRoleController @Inject() (
   val form: Form[String] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.contactRole), contactName(request), mode, request.startAmendUrl))
+    getContactNameFromRequest.fold(
+      err => routeError(err),
+      name => Ok(view(form.prepare(request.eclReturn.contactRole), name, mode, request.startAmendUrl))
+    )
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
@@ -60,7 +63,10 @@ class ContactRoleController @Inject() (
       .bindFromRequest()
       .fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, contactName(request), mode, request.startAmendUrl))),
+          getContactNameFromRequest.fold(
+            err => Future.successful(routeError(err)),
+            name => Future.successful(BadRequest(view(formWithErrors, name, mode, request.startAmendUrl)))
+          ),
         role => {
           val eclReturn = request.eclReturn.copy(contactRole = Some(role))
           (for {

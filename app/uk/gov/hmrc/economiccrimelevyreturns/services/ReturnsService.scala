@@ -120,6 +120,7 @@ class ReturnsService @Inject() (
     EitherT {
       eclReturnsConnector
         .validateEclReturn(internalId)
+        .value
         .map(str => Right(str.map(x => DataValidationError(x))))
         .recover {
           case error @ UpstreamErrorResponse(message, code, _, _)

@@ -55,7 +55,7 @@ class EclAccountConnectorSpec extends SpecBase {
           .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(Json.toJson(obligationData)))))
 
         val result = await(
-          connector.getObligations()
+          connector.getObligations().value
         )
 
         result shouldBe obligationData
@@ -69,7 +69,7 @@ class EclAccountConnectorSpec extends SpecBase {
       when(mockRequestBuilder.execute[HttpResponse](any(), any()))
         .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
-      Try(await(connector.getObligations())) match {
+      Try(await(connector.getObligations().value)) match {
         case Failure(UpstreamErrorResponse(_, code, _, _)) =>
           code shouldEqual errorCode
         case _                                             => fail("expected UpstreamErrorResponse when an error is received from the account service")

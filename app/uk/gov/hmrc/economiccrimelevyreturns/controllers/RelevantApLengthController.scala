@@ -18,7 +18,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantApLengthDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
@@ -28,7 +27,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantApLengthView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ErrorTemplate, RelevantApLengthView}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -45,7 +44,7 @@ class RelevantApLengthController @Inject() (
   formProvider: RelevantApLengthFormProvider,
   dataCleanup: RelevantApLengthDataCleanup,
   view: RelevantApLengthView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with BaseController
     with ErrorHandler
@@ -69,20 +68,20 @@ class RelevantApLengthController @Inject() (
             .upsertReturn(eclReturn)
             .asResponseError
             .foldF(
-              error => Future.successful(Status(error.code.statusCode)(Json.toJson(error))),
-              _ => processByMode(mode, eclReturn).map(Redirect)
+              error => Future.successful(routeError(error)),
+              _ => navigateByMode(mode, eclReturn).map(Redirect)
             )
         }
       )
   }
 
-  private def processByMode(mode: Mode, eclReturn: EclReturn)(implicit request: RequestHeader) =
+  private def navigateByMode(mode: Mode, eclReturn: EclReturn)(implicit request: RequestHeader) =
     mode match {
       case NormalMode => Future.successful(routes.UkRevenueController.onPageLoad(NormalMode))
-      case CheckMode  => processCheckMode(eclReturn)
+      case CheckMode  => navigateInCheckMode(eclReturn)
     }
 
-  private def processCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader) =
+  private def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader) =
     (for {
       calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
       updatedReturn        = eclReturn.copy(calculatedLiability = Some(calculatedLiability))

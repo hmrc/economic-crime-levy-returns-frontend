@@ -26,9 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
-import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}

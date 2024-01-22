@@ -17,6 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import akka.actor.ActorSystem
+import cats.data.OptionT
 import com.typesafe.config.Config
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models._
@@ -38,11 +39,14 @@ class EclAccountConnector @Inject() (
 
   private val eclAccountUrl: String = s"${appConfig.eclAccountBaseUrl}/economic-crime-levy-account"
 
-  def getObligations()(implicit hc: HeaderCarrier): Future[Option[ObligationData]] =
-    retryFor[Option[ObligationData]]("ECL Account Connector - get obligations")(retryCondition) {
-      httpClient
-        .get(url"$eclAccountUrl/obligation-data")
-        .executeAndDeserialiseOpt[ObligationData]
+  def getObligations()(implicit hc: HeaderCarrier): OptionT[Future, ObligationData] =
+    OptionT {
+      retryFor[Option[ObligationData]]("ECL Account Connector - get obligations")(retryCondition) {
+        httpClient
+          .get(url"$eclAccountUrl/obligation-data")
+          .executeAndDeserialiseOpt[ObligationData]
+          .value
+      }
     }
 
 }

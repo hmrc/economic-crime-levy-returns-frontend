@@ -18,7 +18,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
 import play.api.i18n.I18nSupport
-import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models._
@@ -27,7 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EnrolmentStoreProxyService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, NoObligationForPeriodView, StartView}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, ErrorTemplate, NoObligationForPeriodView, StartView}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -45,7 +44,7 @@ class StartController @Inject() (
   noObligationForPeriodView: NoObligationForPeriodView,
   chooseReturnPeriodView: ChooseReturnPeriodView,
   view: StartView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with I18nSupport
     with BaseController
@@ -56,7 +55,7 @@ class StartController @Inject() (
     (for {
       eclReturn <- returnsService.getOrCreateReturn(request.internalId).asResponseError
     } yield eclReturn).fold(
-      error => Status(error.code.statusCode)(Json.toJson(error)),
+      error => routeError(error),
       eclReturn =>
         eclReturn.obligationDetails match {
           case Some(obligationDetails) => Redirect(routes.StartController.onPageLoad(obligationDetails.periodKey))
@@ -73,7 +72,7 @@ class StartController @Inject() (
       obligationData    <- eclAccountService.retrieveObligationData.asResponseError
       obligationDetails <- processObligationDetails(obligationData, periodKey).asResponseError
     } yield (registrationDate, obligationDetails)).fold(
-      error => Status(error.code.statusCode)(Json.toJson(error)),
+      error => routeError(error),
       {
         case (registrationDate, Some(obligationDetails)) =>
           obligationDetails.status match {

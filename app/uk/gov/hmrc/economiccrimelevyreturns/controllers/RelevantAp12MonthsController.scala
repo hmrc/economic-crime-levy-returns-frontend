@@ -18,7 +18,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
@@ -28,7 +27,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ErrorTemplate, RelevantAp12MonthsView}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -45,7 +44,7 @@ class RelevantAp12MonthsController @Inject() (
   formProvider: RelevantAp12MonthsFormProvider,
   dataCleanup: RelevantAp12MonthsDataCleanup,
   view: RelevantAp12MonthsView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with BaseController
     with ErrorHandler
@@ -69,14 +68,14 @@ class RelevantAp12MonthsController @Inject() (
             .upsertReturn(eclReturn)
             .asResponseError
             .foldF(
-              error => Future.successful(Status(error.code.statusCode)(Json.toJson(error))),
-              _ => processByMode(mode, relevantAp12Months, eclReturn).map(Redirect)
+              error => Future.successful(routeError(error)),
+              _ => navigateByMode(mode, relevantAp12Months, eclReturn).map(Redirect)
             )
         }
       )
   }
 
-  private def processByMode(mode: Mode, relevantAp12Months: Boolean, eclReturn: EclReturn)(implicit
+  private def navigateByMode(mode: Mode, relevantAp12Months: Boolean, eclReturn: EclReturn)(implicit
     request: RequestHeader
   ) =
     mode match {

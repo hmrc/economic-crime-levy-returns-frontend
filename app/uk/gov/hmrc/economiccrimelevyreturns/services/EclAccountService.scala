@@ -34,7 +34,7 @@ class EclAccountService @Inject() (
     hc: HeaderCarrier
   ): EitherT[Future, EclAccountError, Option[ObligationData]] =
     EitherT {
-      eclAccountConnector.getObligations().map(Right(_)).recover {
+      eclAccountConnector.getObligations().value.map(Right(_)).recover {
         case error @ UpstreamErrorResponse(message, code, _, _)
             if UpstreamErrorResponse.Upstream5xxResponse
               .unapply(error)

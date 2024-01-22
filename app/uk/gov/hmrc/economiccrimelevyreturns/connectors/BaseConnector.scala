@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
+import cats.data.OptionT
 import play.api.http.Status.{ACCEPTED, CREATED, OK}
 import play.api.libs.json.{JsResult, Reads}
 import uk.gov.hmrc.http.client.RequestBuilder
@@ -59,16 +60,18 @@ trait BaseConnector {
           }
         }
 
-    def executeAndDeserialiseOpt[T](implicit ec: ExecutionContext, reads: Reads[T]): Future[Option[T]] =
-      requestBuilder
-        .execute[HttpResponse]
-        .flatMap { response =>
-          response.status match {
-            case OK | CREATED | ACCEPTED => response.asOption[T]
-            case _                       =>
-              response.error
+    def executeAndDeserialiseOpt[T](implicit ec: ExecutionContext, reads: Reads[T]): OptionT[Future, T] =
+      OptionT {
+        requestBuilder
+          .execute[HttpResponse]
+          .flatMap { response =>
+            response.status match {
+              case OK | CREATED | ACCEPTED => response.asOption[T]
+              case _                       =>
+                response.error
+            }
           }
-        }
+      }
 
     def executeAndExpect(expected: Int)(implicit ec: ExecutionContext): Future[Unit] =
       requestBuilder

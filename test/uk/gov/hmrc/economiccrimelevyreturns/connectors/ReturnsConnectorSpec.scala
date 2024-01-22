@@ -156,7 +156,7 @@ class ReturnsConnectorSpec extends SpecBase {
       when(mockRequestBuilder.execute[HttpResponse](any(), any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(JsNull))))
 
-      val result = await(connector.validateEclReturn(internalId))
+      val result = await(connector.validateEclReturn(internalId).value)
 
       result shouldBe None
     }
@@ -170,7 +170,7 @@ class ReturnsConnectorSpec extends SpecBase {
         when(mockRequestBuilder.execute[HttpResponse](any(), any()))
           .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(Json.toJson(dataValidationError)))))
 
-        val result = await(connector.validateEclReturn(internalId))
+        val result = await(connector.validateEclReturn(internalId).value)
 
         result shouldBe Some(dataValidationError)
     }
@@ -185,7 +185,7 @@ class ReturnsConnectorSpec extends SpecBase {
       when(mockRequestBuilder.execute[HttpResponse](any(), any()))
         .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
-      Try(await(connector.validateEclReturn(internalId))) match {
+      Try(await(connector.validateEclReturn(internalId).value)) match {
         case Failure(UpstreamErrorResponse(_, code, _, _)) =>
           code shouldEqual errorCode
         case _                                             => fail("expected UpstreamErrorResponse when an error is received from the returns service")
