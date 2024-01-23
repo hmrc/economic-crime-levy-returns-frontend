@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 import cats.data.EitherT
 import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, ReturnType, SubmitEclReturnResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, GetEclReturnSubmissionResponse, ReturnType, SubmitEclReturnResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, DataValidationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, UpstreamErrorResponse}
@@ -133,4 +133,23 @@ class ReturnsService @Inject() (
         }
     }
 
+  def getEclReturnSubmission(periodKey: String, eclReference: String)(implicit
+    hc: HeaderCarrier
+  ): EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse] =
+    EitherT {
+      eclReturnsConnector
+        .getEclReturnSubmission(periodKey, eclReference)
+        .map { getEclReturnSubmissionResponse =>
+          Right(getEclReturnSubmissionResponse)
+        }
+        .recover {
+          case error @ UpstreamErrorResponse(message, code, _, _)
+              if UpstreamErrorResponse.Upstream5xxResponse
+                .unapply(error)
+                .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
+            Left(DataHandlingError.BadGateway(reason = message, code = code))
+
+          case NonFatal(thr) => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
+        }
+    }
 }
