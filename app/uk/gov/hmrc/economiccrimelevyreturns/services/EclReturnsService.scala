@@ -61,4 +61,8 @@ class EclReturnsService @Inject() (
       updatedEclReturn <- eclReturnsConnector.upsertReturn(eclReturn.copy(returnType = Some(returnType)))
     } yield updatedEclReturn
 
+  def deleteEclReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] =
+    for {
+      _ <- eclReturnsConnector.deleteReturn(internalId)
+    } yield ()
 }

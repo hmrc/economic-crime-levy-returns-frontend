@@ -78,3 +78,6 @@ GET         /can-you-provide-more-detail                                  uk.gov
 POST        /can-you-provide-more-detail                                  uk.gov.hmrc.economiccrimelevyreturns.controllers.AmendReasonController.onSubmit(mode: Mode = NormalMode)
 GET         /change-answer/can-you-provide-more-detail                    uk.gov.hmrc.economiccrimelevyreturns.controllers.AmendReasonController.onPageLoad(mode: Mode = CheckMode)
 POST        /change-answer/can-you-provide-more-detail                    uk.gov.hmrc.economiccrimelevyreturns.controllers.AmendReasonController.onSubmit(mode: Mode = CheckMode)
+
+GET         /cancel-return-amendment	                                  uk.gov.hmrc.economiccrimelevyreturns.controllers.CancelReturnAmendmentController.onPageLoad()
+POST        /cancel-return-amendment	                                  uk.gov.hmrc.economiccrimelevyreturns.controllers.CancelReturnAmendmentController.onSubmit()

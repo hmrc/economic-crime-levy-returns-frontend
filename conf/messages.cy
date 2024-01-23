@@ -333,3 +333,8 @@ amendReason.title = Pam ydych yn gwneud cais i ddiwygio’ch datganiad?
 amendReason.h1 = Pam ydych yn gwneud cais i ddiwygio’ch datganiad?
 amendReason.p1 = Nodwch unrhyw wybodaeth sy’n berthnasol i’ch cais i ddiwygio’ch cofrestriad. Peidiwch â chynnwys gwybodaeth bersonol nac ariannol, megis eich rhif Yswiriant Gwladol neu fanylion eich cerdyn credyd.
 amendReason.error.required = Nodwch y rheswm pam yr ydych yn gwneud cais i newid eich datganiad
+
+cancelReturnAmendment.title = A ydych yn siŵr eich bod am ganslo’ch cais i ddiwygio’ch datganiad?
+cancelReturnAmendment.heading = A ydych yn siŵr eich bod am ganslo’ch cais i ddiwygio’ch datganiad?
+cancelReturnAmendment.body = Bydd eich atebion yn cael eu dileu.
+cancelReturnAmendment.error.required = Dewiswch ‘Iawn’ os hoffech ganslo’ch cais i ddiwygio’ch datganiad
