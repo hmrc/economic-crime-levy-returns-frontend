@@ -101,7 +101,9 @@ class StartAmendController @Inject() (
       }
       eclReturn           <- returnsService.getReturn(request.internalId).asResponseError
       updatedReturn       <-
-        returnsService.updateReturnFromSubmission(eclReturnSubmission, eclReturn, calculatedLiability).asResponseError
+        returnsService
+          .transformSubmissionToEclReturn(eclReturnSubmission, eclReturn, calculatedLiability)
+          .asResponseError
       unit                <- returnsService.upsertReturn(updatedReturn).asResponseError
     } yield unit).fold(
       error => routeError(error),

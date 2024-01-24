@@ -61,8 +61,9 @@ trait ErrorHandler extends Logging {
   implicit val dataHandlingErrorConverter: Converter[DataHandlingError] =
     new Converter[DataHandlingError] {
       override def convert(error: DataHandlingError): ResponseError = error match {
-        case DataHandlingError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
         case DataHandlingError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
+        case DataHandlingError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
+        case DataHandlingError.NotFound(message)                 => ResponseError.internalServiceError(message)
       }
     }
 

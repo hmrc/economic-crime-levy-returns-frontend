@@ -19,12 +19,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND}
-import uk.gov.hmrc.economiccrimelevyreturns.ValidGetEclReturnSubmissionResponse
+import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
@@ -38,7 +38,7 @@ class ReturnsServiceSpec extends SpecBase {
     mockAuditService
   )
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockAuditService)
     reset(mockEclReturnsConnector)
   }
@@ -135,6 +135,34 @@ class ReturnsServiceSpec extends SpecBase {
         await(service.getEclReturnSubmission(periodKey, eclRegistrationReference).value)
 
       result shouldBe Left(DataHandlingError.InternalUnexpectedError(Some(throwable), None))
+    }
+  }
+
+  "transformSubmissionToEclReturn" should {
+    "return a transformed valid submission to a valid ecl return" in {
+      (
+        validEclReturn: ValidEclReturn,
+        validGetEclReturnSubmissionResponse: ValidGetEclReturnSubmissionResponse,
+        calculatedLiability: CalculatedLiability
+      ) =>
+        val result = await(
+          service
+            .transformSubmissionToEclReturn(
+              validGetEclReturnSubmissionResponse.response,
+              Some(validEclReturn.eclReturn),
+              calculatedLiability
+            )
+            .value
+        )
+
+        result shouldBe Right
+    }
+
+    "return DataHandlingError.NotFound when EclReturn is None" in {
+
+      val result = await(service.transformSubmissionToEclReturn(null, None, null).value)
+
+      result shouldBe Left(DataHandlingError.NotFound("Ecl return not found"))
     }
   }
 }

@@ -154,14 +154,14 @@ class ReturnsService @Inject() (
         }
     }
 
-  def updateReturnFromSubmission(
+  def transformSubmissionToEclReturn(
     submission: GetEclReturnSubmissionResponse,
-    eclReturnOpt: Option[EclReturn],
+    eclReturnOption: Option[EclReturn],
     calculatedLiability: CalculatedLiability
   ): EitherT[Future, DataHandlingError, EclReturn] =
     EitherT {
-      eclReturnOpt match {
-        case None            => Future.successful(Left(DataHandlingError.BadGateway(reason = "message", code = 1)))
+      Future.successful(eclReturnOption match {
+        case None            => Left(DataHandlingError.NotFound(message = "Ecl return not found"))
         case Some(eclReturn) =>
           val declarationDetails = submission.declarationDetails
           val returnDetails      = submission.returnDetails
@@ -182,7 +182,7 @@ class ReturnsService @Inject() (
             contactTelephoneNumber = Some(declarationDetails.telephoneNumber)
           )
 
-          Future.successful(Right(updatedReturn))
-      }
+          Right(updatedReturn)
+      })
     }
 }

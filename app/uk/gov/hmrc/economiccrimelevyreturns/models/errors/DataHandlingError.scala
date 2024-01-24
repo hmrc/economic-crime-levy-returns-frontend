@@ -21,4 +21,5 @@ trait DataHandlingError
 object DataHandlingError {
   case class InternalUnexpectedError(cause: Option[Throwable], message: Option[String] = None) extends DataHandlingError
   case class BadGateway(reason: String, code: Int) extends DataHandlingError
+  case class NotFound(message: String) extends DataHandlingError
 }
