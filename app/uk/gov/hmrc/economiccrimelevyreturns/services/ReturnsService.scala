@@ -152,4 +152,17 @@ class ReturnsService @Inject() (
           case NonFatal(thr) => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
         }
     }
+
+  def updateReturnFromSubmission(eclReturnSubmission: GetEclReturnSubmissionResponse, eclReturnOpt: Option[EclReturn])(
+    implicit hc: HeaderCarrier
+  ): EitherT[Future, DataHandlingError, EclReturn] =
+    EitherT {
+      eclReturnOpt match {
+        case None            => Future.successful(Left(DataHandlingError.BadGateway(reason = "message", code = 1)))
+        case Some(eclReturn) =>
+          val updatedReturn = eclReturn.copy(
+          )
+          Future.successful(Right(updatedReturn))
+      }
+    }
 }

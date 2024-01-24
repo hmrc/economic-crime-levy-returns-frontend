@@ -23,7 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, ResponseError}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html._
@@ -55,35 +55,35 @@ class StartAmendController @Inject() (
     (for {
       obligationData    <- eclAccountService.retrieveObligationData.asResponseError
       obligationDetails <- processObligationDetails(obligationData, periodKey).asResponseError
-    } yield obligationDetails).fold(
-      err => routeError(err),
-      {
-        case Some(obligationData) =>
-          if (appConfig.getEclReturnEnabled) {
-            routeToCheckYourAnswers(periodKey, request.eclRegistrationReference)
-          } else {
-            startAmendJourney(periodKey, returnNumber, obligationData)
-          }
-        case None                 => Ok(noObligationForPeriodView())
-      }
-    )
+    } yield obligationDetails)
+      .fold(
+        err => Future.successful(routeError(err)),
+        {
+          case Some(obligationData) =>
+            if (appConfig.getEclReturnEnabled) {
+              routeToCheckYourAnswers(periodKey, request.eclRegistrationReference)
+            } else {
+              Future.successful(startAmendJourney(periodKey, returnNumber, obligationData))
+            }
+          case None                 => Future.successful(Ok(noObligationForPeriodView()))
+        }
+      )
+      .flatten
   }
 
-  private def routeToCheckYourAnswers(periodKey: String, eclRegistrationReference: String)(implicit hc: HeaderCarrier, request: AuthorisedRequest[AnyContent]): Result = {
+  private def routeToCheckYourAnswers(periodKey: String, eclRegistrationReference: String)(implicit
+    hc: HeaderCarrier,
+    request: AuthorisedRequest[AnyContent]
+  ): Future[Result] =
     (for {
       eclReturnSubmission <- returnsService.getEclReturnSubmission(periodKey, eclRegistrationReference).asResponseError
-      eclReturn <- returnsService.getReturn(request.internalId).asResponseError
-      updatedReturn = mapSubmissionToReturn(eclReturnSubmission, eclReturn)
-    } yield eclReturn)
-      .fold(
-        err => routeError(err),
-        response => Redirect(routes.CheckYourAnswersController.onPageLoad())
-      )
-  }
-
-  private def mapSubmissionToReturn(eclReturnSubmission: GetEclReturnSubmissionResponse, eclReturn: Option[EclReturn]): Option[EclReturn] = {
-
-  }
+      eclReturn           <- returnsService.getReturn(request.internalId).asResponseError
+      updatedReturn       <- returnsService.updateReturnFromSubmission(eclReturnSubmission, eclReturn).asResponseError
+      unit                <- returnsService.upsertReturn(updatedReturn).asResponseError
+    } yield unit).fold(
+      error => routeError(error),
+      _ => Redirect(routes.CheckYourAnswersController.onPageLoad().url)
+    )
 
   private def startAmendJourney(periodKey: String, returnNumber: String, value: ObligationDetails)(implicit
     hc: HeaderCarrier,
