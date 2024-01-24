@@ -19,16 +19,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.CancelReturnAmendmentFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
-import uk.gov.hmrc.economiccrimelevyreturns.forms.{CancelReturnAmendmentFormProvider, RelevantAp12MonthsFormProvider}
-import uk.gov.hmrc.economiccrimelevyreturns.models.{Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.RelevantAp12MonthsPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{CancelReturnAmendmentView, RelevantAp12MonthsView}
+import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.CancelReturnAmendmentView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -39,13 +35,15 @@ class CancelReturnAmendmentController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsService: EclReturnsService,
+  returnsService: ReturnsService,
   formProvider: CancelReturnAmendmentFormProvider,
   appConfig: AppConfig,
   view: CancelReturnAmendmentView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with BaseController
+    with ErrorHandler {
 
   val form: Form[Boolean] = formProvider()
 
@@ -60,7 +58,12 @@ class CancelReturnAmendmentController @Inject() (
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, request.startAmendUrl))),
         cancelReturnAmendment =>
           if (cancelReturnAmendment) {
-            eclReturnsService.deleteEclReturn(request.eclReturn.internalId).map(_ => Redirect(appConfig.eclAccountUrl))
+            (for {
+              _ <- returnsService.deleteReturn(request.eclReturn.internalId).asResponseError
+            } yield ()).fold(
+              _ => Redirect(routes.NotableErrorController.answersAreInvalid()),
+              _ => Redirect(appConfig.eclAccountUrl)
+            )
           } else {
             Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad()))
           }

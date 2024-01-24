@@ -35,18 +35,16 @@ class CancelReturnAmendmentISpec extends ISpecBase with AuthorisedBehaviour {
   s"POST ${routes.CancelReturnAmendmentController.onSubmit().url}"  should {
     behave like authorisedActionRoute(routes.CancelReturnAmendmentController.onSubmit())
 
-    "save the selected option then redirect to the UK revenue page when the Yes option is selected" in {
+    "redirect to ECL Account home page when the Yes option is selected" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
+      val eclReturn = random[EclReturn].copy(
+        internalId = testInternalId
+      )
 
       stubGetReturn(eclReturn)
       stubGetSessionEmpty()
-
-      val updatedReturn =
-        eclReturn.copy(relevantAp12Months = Some(true), relevantApLength = None, calculatedLiability = None)
-
-      stubUpsertReturn(updatedReturn)
+      stubDeleteReturn()
 
       val result = callRoute(
         FakeRequest(routes.CancelReturnAmendmentController.onSubmit())
@@ -56,28 +54,6 @@ class CancelReturnAmendmentISpec extends ISpecBase with AuthorisedBehaviour {
       status(result) shouldBe SEE_OTHER
 
       redirectLocation(result) shouldBe Some(appConfig.eclAccountUrl)
-    }
-
-    "save the selected option then redirect to the relevant AP length page when the No option is selected" in {
-      stubAuthorised()
-
-      val eclReturn = random[EclReturn]
-
-      stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
-
-      val updatedReturn = eclReturn.copy(relevantAp12Months = Some(false), calculatedLiability = None)
-
-      stubUpsertReturn(updatedReturn)
-
-      val result = callRoute(
-        FakeRequest(routes.RelevantAp12MonthsController.onSubmit(NormalMode))
-          .withFormUrlEncodedBody(("value", "false"))
-      )
-
-      status(result) shouldBe SEE_OTHER
-
-      redirectLocation(result) shouldBe Some(routes.RelevantApLengthController.onPageLoad(NormalMode).url)
     }
   }
 }

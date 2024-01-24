@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers.{any, anyString}
 import play.api.data.Form
 import play.api.http.Status.OK
@@ -25,7 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.forms.CancelReturnAmendmentFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.CancelReturnAmendmentView
 
 import scala.concurrent.Future
@@ -43,7 +44,7 @@ class CancelReturnAmendmentControllerSpec extends SpecBase {
       (routes.CheckYourAnswersController.onPageLoad().url, 0)
     }
 
-  val mockEclReturnsService: EclReturnsService = mock[EclReturnsService]
+  val mockEclReturnsService: ReturnsService = mock[ReturnsService]
 
   class TestContext(returnData: EclReturn) {
     val controller = new CancelReturnAmendmentController(
@@ -74,10 +75,10 @@ class CancelReturnAmendmentControllerSpec extends SpecBase {
       (eclReturn: EclReturn, cancelReturnAmendment: Boolean) =>
         new TestContext(eclReturn) {
           when(mockEclReturnsService.getOrCreateReturn(anyString(), any())(any(), any()))
-            .thenReturn(Future.successful(eclReturn))
+            .thenReturn(EitherT.fromEither[Future](Right(eclReturn)))
 
-          when(mockEclReturnsService.deleteEclReturn(anyString())(any()))
-            .thenReturn(Future.successful())
+          when(mockEclReturnsService.deleteReturn(anyString())(any()))
+            .thenReturn(EitherT.fromEither[Future](Right()))
 
           val expected = getExpectedValues(cancelReturnAmendment)
 
@@ -90,7 +91,7 @@ class CancelReturnAmendmentControllerSpec extends SpecBase {
 
           redirectLocation(result) shouldBe Some(expected._1)
 
-          verify(mockEclReturnsService, times(expected._2)).deleteEclReturn(anyString())(any())
+          verify(mockEclReturnsService, times(expected._2)).deleteReturn(anyString())(any())
 
           reset(mockEclReturnsService)
         }
