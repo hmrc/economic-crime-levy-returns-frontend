@@ -2,10 +2,10 @@ package uk.gov.hmrc.economiccrimelevyreturns.base
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.http.Status.{BAD_REQUEST, OK}
-import play.api.libs.json.Json
+import play.api.http.Status.{BAD_REQUEST, NO_CONTENT, OK}
+import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SubmitEclReturnResponse}
 
 import java.time.Instant
@@ -27,28 +27,26 @@ trait EclReturnsStubs { self: WireMockStubs =>
           equalToJson(Json.toJson(eclReturn).toString(), true, true)
         ),
       aResponse()
-        .withStatus(OK)
-        .withBody(Json.toJson(eclReturn).toString())
+        .withStatus(NO_CONTENT)
     )
 
   def stubUpsertReturnWithoutRequestMatching(eclReturn: EclReturn): StubMapping =
     stub(
       put(urlEqualTo("/economic-crime-levy-returns/returns")),
       aResponse()
-        .withStatus(OK)
-        .withBody(Json.toJson(eclReturn).toString())
+        .withStatus(NO_CONTENT)
     )
 
-  def stubGetReturnValidationErrors(valid: Boolean, errors: DataValidationErrors): StubMapping =
+  def stubGetReturnValidationErrors(valid: Boolean, error: DataValidationError): StubMapping =
     stub(
       get(urlEqualTo(s"/economic-crime-levy-returns/returns/$testInternalId/validation-errors")),
       if (valid) {
         aResponse()
-          .withStatus(OK)
+          .withStatus(OK) withBody (Json.stringify(Json.toJson(JsNull)))
       } else {
         aResponse()
-          .withStatus(BAD_REQUEST)
-          .withBody(Json.toJson(errors).toString())
+          .withStatus(OK)
+          .withBody(Json.toJson(error.message).toString())
       }
     )
 
@@ -64,7 +62,7 @@ trait EclReturnsStubs { self: WireMockStubs =>
     stub(
       delete(urlEqualTo(s"/economic-crime-levy-returns/returns/$testInternalId")),
       aResponse()
-        .withStatus(OK)
+        .withStatus(NO_CONTENT)
     )
 
 }

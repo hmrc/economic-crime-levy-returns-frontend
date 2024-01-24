@@ -16,37 +16,38 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
-import play.api.Logging
+import akka.actor.ActorSystem
+import com.typesafe.config.Config
+import play.api.http.Status.OK
+import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
-
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SessionDataConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit
+class SessionDataConnector @Inject() (
+  appConfig: AppConfig,
+  httpClient: HttpClientV2,
+  override val configuration: Config,
+  override val actorSystem: ActorSystem
+)(implicit
   ec: ExecutionContext
-) extends Logging {
+) extends BaseConnector
+    with Retries {
 
   private val eclReturnsUrl: String =
     s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns"
 
   def get(internalId: String)(implicit hc: HeaderCarrier): Future[SessionData] =
-    httpClient.GET[SessionData](
-      s"$eclReturnsUrl/session/$internalId"
-    )
+    httpClient.get(url"$eclReturnsUrl/session/$internalId").executeAndDeserialise[SessionData]
 
   def upsert(session: SessionData)(implicit hc: HeaderCarrier): Future[Unit] =
-    httpClient.PUT[SessionData, Unit](
-      s"$eclReturnsUrl/session",
-      session
-    )
+    httpClient.put(url"$eclReturnsUrl/session").withBody(Json.toJson(session)).executeAndExpect(OK)
 
   def delete(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] =
-    httpClient
-      .DELETE[Unit](
-        s"$eclReturnsUrl/session/$internalId"
-      )
+    httpClient.delete(url"$eclReturnsUrl/session/$internalId").executeAndExpect(OK)
+
 }

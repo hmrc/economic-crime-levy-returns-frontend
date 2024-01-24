@@ -19,13 +19,13 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmendReasonFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmendReasonPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmendReasonView
+import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReasonView, ErrorTemplate}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -36,13 +36,15 @@ class AmendReasonController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsConnector: EclReturnsConnector,
+  eclReturnsService: ReturnsService,
   formProvider: AmendReasonFormProvider,
   pageNavigator: AmendReasonPageNavigator,
   view: AmendReasonView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with BaseController
+    with ErrorHandler {
 
   val form: Form[String] = formProvider()
 
@@ -55,12 +57,17 @@ class AmendReasonController @Inject() (
       .bindFromRequest()
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
-        reason =>
-          eclReturnsConnector
-            .upsertReturn(request.eclReturn.copy(amendReason = Some(reason)))
-            .map { updatedReturn =>
-              Redirect(pageNavigator.nextPage(mode, updatedReturn))
-            }
+        reason => {
+          val updatedReturn = request.eclReturn.copy(amendReason = Some(reason))
+          (for {
+            unit <- eclReturnsService
+                      .upsertReturn(updatedReturn)
+                      .asResponseError
+          } yield updatedReturn).fold(
+            err => routeError(err),
+            eclReturn => Redirect(pageNavigator.nextPage(mode, eclReturn))
+          )
+        }
       )
   }
 

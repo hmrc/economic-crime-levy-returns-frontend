@@ -19,13 +19,15 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactNameFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactNamePageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactNameView
+import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ContactNameView, ErrorTemplate}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -36,12 +38,14 @@ class ContactNameController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsConnector: EclReturnsConnector,
+  eclReturnsService: ReturnsService,
   formProvider: ContactNameFormProvider,
   pageNavigator: ContactNamePageNavigator,
   view: ContactNameView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorView: ErrorTemplate)
     extends FrontendBaseController
+    with BaseController
+    with ErrorHandler
     with I18nSupport {
 
   val form: Form[String] = formProvider()
@@ -51,16 +55,18 @@ class ContactNameController @Inject() (
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     form
       .bindFromRequest()
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
-        name =>
-          eclReturnsConnector
-            .upsertReturn(request.eclReturn.copy(contactName = Some(name)))
-            .map { updatedReturn =>
-              Redirect(pageNavigator.nextPage(mode, updatedReturn))
-            }
+        name => {
+          val eclReturn = request.eclReturn.copy(contactName = Some(name))
+          (for {
+            _ <- eclReturnsService.upsertReturn(eclReturn).asResponseError
+          } yield eclReturn)
+            .convertToResult(mode, pageNavigator)
+        }
       )
   }
 

@@ -18,9 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.cleanup
 
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 
-import javax.inject.Inject
-
-class RelevantApLengthDataCleanup @Inject() () extends DataCleanup {
+class RelevantApLengthDataCleanup() extends DataCleanup {
   def cleanup(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(calculatedLiability = None)
 

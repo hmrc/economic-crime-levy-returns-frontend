@@ -22,6 +22,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EnrolmentStoreProxyConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.KeyValue
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.{EclEnrolment, Enrolment, QueryKnownFactsResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -46,12 +47,12 @@ class EnrolmentStoreProxyServiceSpec extends SpecBase {
         when(mockEnrolmentStoreProxyConnector.queryKnownFacts(ArgumentMatchers.eq(eclRegistrationReference))(any()))
           .thenReturn(Future.successful(queryKnownFactsResponse))
 
-        val result = await(service.getEclRegistrationDate(eclRegistrationReference))
+        val result = await(service.getEclRegistrationDate(eclRegistrationReference).value)
 
-        result shouldBe LocalDate.parse("2023-01-31")
+        result shouldBe Right(LocalDate.parse("2023-01-31"))
     }
 
-    "throw an IllegalStateException if the ECL registration date could not be found in the enrolment" in forAll {
+    "return InternalUnexpectedError if the ECL registration date could not be found in the enrolment" in forAll {
       eclRegistrationReference: String =>
         val queryKnownFactsResponse = QueryKnownFactsResponse(
           service = EclEnrolment.ServiceName,
@@ -61,11 +62,13 @@ class EnrolmentStoreProxyServiceSpec extends SpecBase {
         when(mockEnrolmentStoreProxyConnector.queryKnownFacts(ArgumentMatchers.eq(eclRegistrationReference))(any()))
           .thenReturn(Future.successful(queryKnownFactsResponse))
 
-        val result = intercept[IllegalStateException] {
-          await(service.getEclRegistrationDate(eclRegistrationReference))
-        }
+        val result =
+          await(service.getEclRegistrationDate(eclRegistrationReference).value)
 
-        result.getMessage shouldBe "ECL registration date could not be found in the enrolment"
+        result shouldBe Left(
+          DataHandlingError
+            .InternalUnexpectedError(None, Some("ECL registration date could not be found in the enrolment"))
+        )
     }
   }
 

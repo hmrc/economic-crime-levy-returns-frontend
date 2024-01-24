@@ -19,13 +19,15 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactRoleFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactRolePageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactRoleView
+import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
+import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ContactRoleView, ErrorTemplate}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -36,32 +38,42 @@ class ContactRoleController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsConnector: EclReturnsConnector,
+  eclReturnsService: ReturnsService,
   formProvider: ContactRoleFormProvider,
   pageNavigator: ContactRolePageNavigator,
   view: ContactRoleView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorView: ErrorTemplate)
     extends FrontendBaseController
+    with BaseController
+    with ErrorHandler
     with I18nSupport {
 
   val form: Form[String] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.contactRole), contactName(request), mode, request.startAmendUrl))
+    getContactNameFromRequest.fold(
+      err => routeError(err),
+      name => Ok(view(form.prepare(request.eclReturn.contactRole), name, mode, request.startAmendUrl))
+    )
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     form
       .bindFromRequest()
       .fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, contactName(request), mode, request.startAmendUrl))),
-        role =>
-          eclReturnsConnector
-            .upsertReturn(request.eclReturn.copy(contactRole = Some(role)))
-            .map { updatedReturn =>
-              Redirect(pageNavigator.nextPage(mode, updatedReturn))
-            }
+          getContactNameFromRequest.fold(
+            err => Future.successful(routeError(err)),
+            name => Future.successful(BadRequest(view(formWithErrors, name, mode, request.startAmendUrl)))
+          ),
+        role => {
+          val eclReturn = request.eclReturn.copy(contactRole = Some(role))
+          (for {
+            _ <- eclReturnsService.upsertReturn(eclReturn).asResponseError
+          } yield eclReturn)
+            .convertToResult(mode, pageNavigator)
+        }
       )
   }
 

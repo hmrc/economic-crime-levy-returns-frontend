@@ -21,9 +21,9 @@ import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
-import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailParameters
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, ObligationDetails}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.EmailSubmissionError
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 import scala.concurrent.Future
@@ -31,7 +31,7 @@ import scala.concurrent.Future
 class EmailServiceSpec extends SpecBase {
 
   val mockEmailConnector: EmailConnector = mock[EmailConnector]
-  val service                            = new EmailService(mockEmailConnector, appConfig)
+  val service                            = new EmailService(mockEmailConnector)
 
   "sendReturnSubmittedEmail" should {
     "send an email to the contact in the return" in forAll {
@@ -69,10 +69,10 @@ class EmailServiceSpec extends SpecBase {
         )
           .thenReturn(Future.successful(()))
 
-        val result: Unit =
-          await(service.sendReturnSubmittedEmail(validEclReturn.eclReturn, chargeReference)(hc, messages))
+        val result =
+          await(service.sendReturnSubmittedEmail(validEclReturn.eclReturn, chargeReference)(hc, messages).value)
 
-        result shouldBe ()
+        result shouldBe Right(())
 
         verify(mockEmailConnector, times(1))
           .sendReturnSubmittedEmail(any(), any())(any())
@@ -80,34 +80,16 @@ class EmailServiceSpec extends SpecBase {
         reset(mockEmailConnector)
     }
 
-    "throw an IllegalStateException when there are no obligation details in the return data" in forAll {
+    "return an internal unexpected error when unable to send email due to insufficient input data" in forAll {
       (internalId: String, chargeReference: Option[String]) =>
-        val result = intercept[IllegalStateException] {
-          await(service.sendReturnSubmittedEmail(EclReturn.empty(internalId, None), chargeReference)(hc, messages))
-        }
+        val result = await(
+          service.sendReturnSubmittedEmail(EclReturn.empty(internalId, None), chargeReference)(hc, messages).value
+        )
 
-        result.getMessage shouldBe "No obligation details found in return data"
-    }
-
-    "throw an IllegalStateException when the contact details are missing" in forAll {
-      (
-        internalId: String,
-        chargeReference: Option[String],
-        obligationDetails: ObligationDetails,
-        calculatedLiability: CalculatedLiability
-      ) =>
-        val result = intercept[IllegalStateException] {
-          await(
-            service.sendReturnSubmittedEmail(
-              EclReturn
-                .empty(internalId, None)
-                .copy(obligationDetails = Some(obligationDetails), calculatedLiability = Some(calculatedLiability)),
-              chargeReference
-            )(hc, messages)
-          )
-        }
-
-        result.getMessage shouldBe "Invalid contact details"
+        result shouldBe Left(
+          EmailSubmissionError
+            .InternalUnexpectedError(None, Some("Missing required input data for sending return email."))
+        )
     }
   }
 

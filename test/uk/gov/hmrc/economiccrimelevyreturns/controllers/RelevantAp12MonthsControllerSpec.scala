@@ -16,20 +16,20 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.data.Form
 import play.api.http.Status.OK
-import play.api.mvc.{Call, RequestHeader, Result}
+import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.RelevantAp12MonthsPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
 
 import scala.concurrent.Future
@@ -40,17 +40,8 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
   val formProvider: RelevantAp12MonthsFormProvider = new RelevantAp12MonthsFormProvider()
   val form: Form[Boolean]                          = formProvider()
 
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
-  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
-
-  val pageNavigator: RelevantAp12MonthsPageNavigator =
-    new RelevantAp12MonthsPageNavigator(mockEclLiabilityService, mockEclReturnsConnector) {
-      override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-        Future.successful(onwardRoute)
-
-      override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-        Future.successful(onwardRoute)
-    }
+  val mockEclReturnsService: ReturnsService         = mock[ReturnsService]
+  val mockEclLiabilityService: EclCalculatorService = mock[EclCalculatorService]
 
   val dataCleanup: RelevantAp12MonthsDataCleanup = new RelevantAp12MonthsDataCleanup {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
@@ -61,9 +52,9 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
       mcc,
       fakeAuthorisedAction(returnData.internalId),
       fakeDataRetrievalAction(returnData),
-      mockEclReturnsConnector,
+      mockEclReturnsService,
+      mockEclLiabilityService,
       formProvider,
-      pageNavigator,
       dataCleanup,
       view
     )
@@ -98,23 +89,24 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
   }
 
   "onSubmit" should {
-    "save the selected answer then redirect to the next page" in forAll {
-      (eclReturn: EclReturn, relevantAp12Months: Boolean, mode: Mode) =>
+    "save the selected answer then redirect to the UK Revenue page in Normal mode and relevantAp12Months is set to true" in forAll {
+      (eclReturn: EclReturn) =>
+        val relevantAp12Months = true
         new TestContext(eclReturn) {
           val updatedReturn: EclReturn =
-            eclReturn.copy(relevantAp12Months = Some(relevantAp12Months))
+            dataCleanup.cleanup(eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
 
-          when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
-            .thenReturn(Future.successful(updatedReturn))
+          when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           val result: Future[Result] =
-            controller.onSubmit(mode)(
+            controller.onSubmit(NormalMode)(
               fakeRequest.withFormUrlEncodedBody(("value", relevantAp12Months.toString))
             )
 
           status(result) shouldBe SEE_OTHER
 
-          redirectLocation(result) shouldBe Some(onwardRoute.url)
+          redirectLocation(result) shouldBe Some(routes.UkRevenueController.onPageLoad(NormalMode).url)
         }
     }
 

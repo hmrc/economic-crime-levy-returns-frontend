@@ -16,31 +16,52 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
+import cats.data.EitherT
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EnrolmentStoreProxyConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.{EclEnrolment, Enrolment}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 class EnrolmentStoreProxyService @Inject() (enrolmentStoreProxyConnector: EnrolmentStoreProxyConnector)(implicit
   ec: ExecutionContext
 ) {
 
-  def getEclRegistrationDate(eclRegistrationReference: String)(implicit hc: HeaderCarrier): Future[LocalDate] =
-    enrolmentStoreProxyConnector.queryKnownFacts(eclRegistrationReference).map { queryKnownFactsResponse =>
-      val enrolment: Option[Enrolment] =
-        queryKnownFactsResponse.enrolments.find(_.identifiers.exists(_.value == eclRegistrationReference))
+  def getEclRegistrationDate(
+    eclRegistrationReference: String
+  )(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, LocalDate] =
+    EitherT {
+      enrolmentStoreProxyConnector
+        .queryKnownFacts(eclRegistrationReference)
+        .map { queryKnownFactsResponse =>
+          val enrolment: Option[Enrolment] =
+            queryKnownFactsResponse.enrolments.find(_.identifiers.exists(_.value == eclRegistrationReference))
 
-      val eclRegistrationDateString: String =
-        enrolment
-          .flatMap(_.verifiers.find(_.key == EclEnrolment.VerifierKey))
-          .map(_.value)
-          .getOrElse(throw new IllegalStateException("ECL registration date could not be found in the enrolment"))
-
-      LocalDate.parse(eclRegistrationDateString, DateTimeFormatter.BASIC_ISO_DATE)
+          enrolment
+            .flatMap(_.verifiers.find(_.key == EclEnrolment.VerifierKey))
+            .map(eclRegistrationDate =>
+              Right(LocalDate.parse(eclRegistrationDate.value, DateTimeFormatter.BASIC_ISO_DATE))
+            )
+            .getOrElse(
+              Left(
+                DataHandlingError
+                  .InternalUnexpectedError(None, Some("ECL registration date could not be found in the enrolment"))
+              )
+            )
+        }
+        .recover {
+          case error @ UpstreamErrorResponse(message, code, _, _)
+              if UpstreamErrorResponse.Upstream5xxResponse
+                .unapply(error)
+                .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
+            Left(DataHandlingError.BadGateway(reason = message, code = code))
+          case NonFatal(thr) => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
+        }
     }
 
 }

@@ -19,14 +19,14 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.cleanup.AmlRegulatedActivityLengthDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmlRegulatedActivityLengthPageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityLengthView
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -37,13 +37,14 @@ class AmlRegulatedActivityLengthController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsConnector: EclReturnsConnector,
   formProvider: AmlRegulatedActivityLengthFormProvider,
-  pageNavigator: AmlRegulatedActivityLengthPageNavigator,
-  dataCleanup: AmlRegulatedActivityLengthDataCleanup,
-  view: AmlRegulatedActivityLengthView
+  view: AmlRegulatedActivityLengthView,
+  eclLiabilityService: EclCalculatorService,
+  eclReturnsService: ReturnsService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
+    with BaseController
+    with ErrorHandler
     with I18nSupport {
 
   val form: Form[Int] = formProvider()
@@ -53,18 +54,25 @@ class AmlRegulatedActivityLengthController @Inject() (
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     form
       .bindFromRequest()
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
-        amlRegulatedActivityLength =>
-          eclReturnsConnector
-            .upsertReturn(
-              dataCleanup.cleanup(request.eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength)))
-            )
-            .flatMap { updatedReturn =>
-              pageNavigator.nextPage(mode, updatedReturn).map(Redirect)
-            }
+        amlRegulatedActivityLength => {
+          val eclReturn = request.eclReturn.copy(
+            amlRegulatedActivityLength = Some(amlRegulatedActivityLength)
+          )
+          (for {
+            calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
+            calculatedReturn     = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
+            _                   <- eclReturnsService.upsertReturn(calculatedReturn).asResponseError
+          } yield calculatedReturn).fold(
+            err => Redirect(routes.NotableErrorController.answersAreInvalid()),
+            _ => Redirect(routes.AmountDueController.onPageLoad(mode))
+          )
+
+        }
       )
   }
 

@@ -25,6 +25,7 @@
 @(form: Form[String], mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @errorMessage = @{
+
     if(form.errors.nonEmpty) {
         Some(ErrorMessage(
             id = Some("amendReason.error.required"),

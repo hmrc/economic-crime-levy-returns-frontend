@@ -38,17 +38,16 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn           = random[EclReturn]
+        .copy(amlRegulatedActivityLength = Some(365), relevantAp12Months = Some(true), calculatedLiability = None)
       val ukRevenue           = bigDecimalInRange(UkRevenueThreshold, MinMaxValues.RevenueMax.toDouble).sample.get
       val calculatedLiability = random[CalculatedLiability].copy(calculatedBand = Large)
 
-      stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true), calculatedLiability = None))
+      stubGetReturn(eclReturn)
       stubGetSessionEmpty()
 
       val updatedReturn = eclReturn.copy(
-        relevantAp12Months = Some(true),
         relevantApRevenue = Some(ukRevenue),
-        carriedOutAmlRegulatedActivityForFullFy = None,
-        calculatedLiability = None
+        carriedOutAmlRegulatedActivityForFullFy = None
       )
 
       stubUpsertReturn(updatedReturn)
@@ -69,10 +68,12 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn           = random[EclReturn]
+        .copy(amlRegulatedActivityLength = Some(365), relevantAp12Months = Some(true), calculatedLiability = None)
       val ukRevenue           = bigDecimalInRange(MinMaxValues.RevenueMin.toDouble, UkRevenueThreshold).sample.get
-      val calculatedLiability = random[CalculatedLiability].copy(calculatedBand = Small)
+      val calculatedLiability =
+        random[CalculatedLiability].copy(calculatedBand = Small)
 
-      stubGetReturn(eclReturn.copy(relevantAp12Months = Some(true), calculatedLiability = None))
+      stubGetReturn(eclReturn)
       stubGetSessionEmpty()
 
       val updatedReturn = eclReturn.copy(

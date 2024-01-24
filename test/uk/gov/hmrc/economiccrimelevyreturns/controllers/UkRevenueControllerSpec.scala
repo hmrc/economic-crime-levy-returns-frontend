@@ -16,23 +16,23 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.data.Form
 import play.api.http.Status.OK
-import play.api.mvc.{Call, RequestHeader, Result}
-import play.api.test.Helpers._
+import play.api.mvc.Result
+import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.UkRevenueDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.UkRevenuePageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, CalculatedLiability, CheckMode, EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band._
 
 import scala.concurrent.Future
 
@@ -42,20 +42,16 @@ class UkRevenueControllerSpec extends SpecBase {
   val formProvider: UkRevenueFormProvider = new UkRevenueFormProvider()
   val form: Form[BigDecimal]              = formProvider()
 
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
-  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
-
-  val pageNavigator: UkRevenuePageNavigator =
-    new UkRevenuePageNavigator(mockEclLiabilityService, mockEclReturnsConnector) {
-      override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-        Future.successful(onwardRoute)
-
-      override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-        Future.successful(onwardRoute)
-    }
+  val mockEclReturnsService: ReturnsService         = mock[ReturnsService]
+  val mockEclLiabilityService: EclCalculatorService = mock[EclCalculatorService]
 
   val dataCleanup: UkRevenueDataCleanup = new UkRevenueDataCleanup {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
+  }
+
+  override def beforeEach() = {
+    reset(mockEclReturnsService)
+    reset(mockEclLiabilityService)
   }
 
   class TestContext(eclReturnData: EclReturn) {
@@ -63,9 +59,9 @@ class UkRevenueControllerSpec extends SpecBase {
       mcc,
       fakeAuthorisedAction(internalId),
       fakeDataRetrievalAction(eclReturnData),
-      mockEclReturnsConnector,
+      mockEclReturnsService,
+      mockEclLiabilityService,
       formProvider,
-      pageNavigator,
       dataCleanup,
       view
     )
@@ -101,24 +97,199 @@ class UkRevenueControllerSpec extends SpecBase {
   }
 
   "onSubmit" should {
-    "save the provided UK revenue then redirect to the next page" in forAll(
-      Arbitrary.arbitrary[EclReturn],
-      arbRevenue.arbitrary,
-      Arbitrary.arbitrary[Mode]
-    ) { (eclReturn: EclReturn, ukRevenue: BigDecimal, mode: Mode) =>
+    "return a Call to the Aml regulated activity for full financial year page in NormalMode when the calculated band size is not Small" in forAll(
+      arbEclReturn.arbitrary,
+      arbCalculatedLiability.arbitrary,
+      Gen.oneOf[Band](Medium, Large, VeryLarge),
+      bigDecimalInRange(1, 1000)
+    ) { (eclReturn: EclReturn, calculatedLiability: CalculatedLiability, calculatedBand: Band, ukRevenue: BigDecimal) =>
       new TestContext(eclReturn) {
-        val updatedReturn: EclReturn = eclReturn.copy(relevantApRevenue = Some(ukRevenue))
+        val updatedReturn = dataCleanup.cleanup(eclReturn.copy(relevantApRevenue = Some(ukRevenue)))
 
-        when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Future.successful(updatedReturn))
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+        val liability = calculatedLiability.copy(calculatedBand = calculatedBand)
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(
+            EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+              Future.successful(Right(liability))
+            )
+          )
+
+        val calculatedReturn = updatedReturn.copy(calculatedLiability = Some(liability))
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(calculatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         val result: Future[Result] =
-          controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString)))
+          controller.onSubmit(NormalMode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString())))
 
         status(result) shouldBe SEE_OTHER
 
-        redirectLocation(result) shouldBe Some(onwardRoute.url)
+        redirectLocation(result) shouldBe Some(routes.AmlRegulatedActivityController.onPageLoad(NormalMode).url)
       }
+    }
+
+    "return a Call to the Aml regulated activity for full financial year page in CheckMode when the calculated band size is not Small and the AML activity answer has not been provided" in forAll(
+      arbEclReturn.arbitrary,
+      arbCalculatedLiability.arbitrary,
+      Gen.oneOf[Band](Medium, Large, VeryLarge),
+      bigDecimalInRange(1, 1000)
+    ) { (eclReturn: EclReturn, calculatedLiability: CalculatedLiability, calculatedBand: Band, ukRevenue: BigDecimal) =>
+      val eclReturnNoAmlActivity =
+        eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, relevantAp12Months = Some(true))
+      new TestContext(eclReturnNoAmlActivity) {
+        val updatedReturn = dataCleanup.cleanup(
+          eclReturnNoAmlActivity.copy(
+            relevantApRevenue = Some(ukRevenue)
+          )
+        )
+
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+        val liability = calculatedLiability.copy(calculatedBand = calculatedBand)
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(
+            EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+              Future.successful(Right(liability))
+            )
+          )
+
+        val calculatedReturn = updatedReturn.copy(calculatedLiability = Some(liability))
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(calculatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+        val result: Future[Result] =
+          controller.onSubmit(CheckMode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString)))
+
+        status(result) shouldBe SEE_OTHER
+
+        redirectLocation(result) shouldBe Some(routes.AmlRegulatedActivityController.onPageLoad(CheckMode).url)
+      }
+    }
+
+    "return a Call to the ECL amount due page in CheckMode when the calculated band size is not Small and the AML activity answer has been provided" in forAll(
+      arbEclReturn.arbitrary,
+      bigDecimalInRange(1, 1000),
+      arbCalculatedLiability.arbitrary,
+      Gen.oneOf[Band](Medium, Large, VeryLarge)
+    ) { (eclReturn: EclReturn, ukRevenue: BigDecimal, calculatedLiability: CalculatedLiability, calculatedBand: Band) =>
+      val eclReturnNoAmlActivity =
+        eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(true), relevantAp12Months = Some(true))
+      new TestContext(eclReturnNoAmlActivity) {
+        val updatedReturn = dataCleanup.cleanup(
+          eclReturnNoAmlActivity.copy(
+            relevantApRevenue = Some(ukRevenue)
+          )
+        )
+
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+        val liability = calculatedLiability.copy(calculatedBand = calculatedBand)
+        when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(
+            EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+              Future.successful(Right(liability))
+            )
+          )
+
+        val calculatedReturn = updatedReturn.copy(calculatedLiability = Some(liability))
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(calculatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+        val result: Future[Result] =
+          controller.onSubmit(CheckMode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString)))
+
+        status(result) shouldBe SEE_OTHER
+
+        redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(CheckMode).url)
+      }
+    }
+
+    "return a Call to the ECL amount due page in either mode when the calculated band size is Small (nil return)" in forAll {
+      (eclReturn: EclReturn, calculatedLiability: CalculatedLiability, mode: Mode) =>
+        val ukRevenue     = bigDecimalInRange(1, 1000).sample.get
+        val updatedReturn = eclReturn.copy(relevantAp12Months = Some(true))
+        val liability     = calculatedLiability.copy(calculatedBand = Small)
+
+        new TestContext(updatedReturn) {
+          val cleansedReturn = dataCleanup.cleanup(
+            updatedReturn.copy(
+              relevantApRevenue = Some(ukRevenue)
+            )
+          )
+
+          when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(cleansedReturn))(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(cleansedReturn))(any()))
+            .thenReturn(
+              EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+                Future.successful(Right(liability))
+              )
+            )
+
+          when(
+            mockEclReturnsService.upsertReturn(
+              ArgumentMatchers.eq(cleansedReturn.copy(calculatedLiability = Some(liability)))
+            )(any())
+          )
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          val nilReturn =
+            cleansedReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
+
+          when(
+            mockEclReturnsService.upsertReturn(
+              ArgumentMatchers.eq(nilReturn)
+            )(any())
+          )
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(nilReturn))(any()))
+            .thenReturn(
+              EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+                Future.successful(Right(liability))
+              )
+            )
+
+          val result: Future[Result] =
+            controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString)))
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(mode).url)
+        }
+    }
+
+    "return a Call to the answers are invalid page in either mode when the ECL return data is invalid" in forAll {
+      (eclReturn: EclReturn, mode: Mode) =>
+        new TestContext(eclReturn) {
+          val ukRevenue     = bigDecimalInRange(1, 1000).sample.get
+          val updatedReturn = dataCleanup.cleanup(
+            eclReturn.copy(
+              relevantApRevenue = Some(ukRevenue)
+            )
+          )
+          when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(
+              EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+                Future.successful(Left(LiabilityCalculationError.BadRequest("ECL Return data is invalid")))
+              )
+            )
+
+          val result: Future[Result] =
+            controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString)))
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(routes.NotableErrorController.answersAreInvalid().url)
+        }
     }
 
     "return a Bad Request with form errors when invalid data is submitted" in forAll(

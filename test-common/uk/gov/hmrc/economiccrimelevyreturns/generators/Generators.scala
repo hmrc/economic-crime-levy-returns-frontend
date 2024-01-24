@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.generators
 
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
-import org.scalacheck.{Arbitrary, Gen, Shrink}
+import org.scalacheck.{Gen, Shrink}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import wolfendale.scalacheck.regexp.RegexpGen
 
@@ -128,7 +128,7 @@ trait Generators {
   def stringsLongerThan(minLength: Int): Gen[String] = for {
     maxLength <- (minLength * 2).max(100)
     length    <- Gen.chooseNum(minLength + 1, maxLength)
-    chars     <- listOfN(length, arbitrary[Char])
+    chars     <- listOfN(length, Gen.alphaNumChar)
   } yield chars.mkString
 
   def stringsExceptSpecificValues(excluded: Seq[String]): Gen[String] =

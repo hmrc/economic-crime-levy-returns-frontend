@@ -16,20 +16,22 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers.any
 import play.api.mvc.{AnyContentAsEmpty, Request, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 
 import scala.concurrent.Future
 
 class DataRetrievalActionSpec extends SpecBase {
 
-  val mockEclReturnService: EclReturnsService = mock[EclReturnsService]
-  val mockSessionService: SessionService      = mock[SessionService]
+  val mockEclReturnService: ReturnsService = mock[ReturnsService]
+  val mockSessionService: SessionService   = mock[SessionService]
 
   class TestDataRetrievalAction extends ReturnDataRetrievalAction(mockEclReturnService, mockSessionService) {
     override def transform[A](request: AuthorisedRequest[A]): Future[ReturnDataRequest[A]] =
@@ -46,7 +48,8 @@ class DataRetrievalActionSpec extends SpecBase {
   "transform" should {
     "transform an AuthorisedRequest into a ReturnDataRequest" in forAll {
       eclReturn: EclReturn => (internalId: String, eclReferenceNumber: String) =>
-        when(mockEclReturnService.getOrCreateReturn(any())(any(), any())).thenReturn(Future(eclReturn))
+        when(mockEclReturnService.getOrCreateReturn(any())(any(), any()))
+          .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
         when(mockSessionService.get(any(), any(), any())(any())).thenReturn(Future.successful(None))
 
         val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =

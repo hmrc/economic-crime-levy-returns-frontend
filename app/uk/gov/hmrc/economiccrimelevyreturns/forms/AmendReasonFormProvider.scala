@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.forms
 
 import play.api.data.Form
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{Mappings, MinMaxValues, Regex}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.Mappings
 
 import javax.inject.Inject
 

@@ -9,8 +9,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationErrors
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Languages}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationError
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Languages, SessionData}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
@@ -22,11 +22,12 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val validEclReturn = random[ValidEclReturn]
-      val errors         = random[DataValidationErrors]
+      val errors         = random[DataValidationError]
+      val sessionData    = random[SessionData]
 
       stubGetReturn(validEclReturn.eclReturn)
       stubGetReturnValidationErrors(valid = true, errors)
-      stubGetSessionEmpty()
+      stubGetSession(sessionData)
 
       val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onPageLoad()))
 
@@ -39,7 +40,7 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn = random[EclReturn]
-      val errors    = random[DataValidationErrors]
+      val errors    = random[DataValidationError]
 
       stubGetReturn(eclReturn)
       stubGetReturnValidationErrors(valid = false, errors)
@@ -106,6 +107,7 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       )
 
       stubDeleteReturn()
+      stubDeleteSession()
 
       val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onSubmit()))
 

@@ -16,89 +16,94 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
+import cats.data.EitherT
 import play.api.Logging
 import play.api.i18n.Messages
-import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, ObligationDetails}
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedParameters, ReturnSubmittedEmailParameters}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.EmailSubmissionError
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class EmailService @Inject() (emailConnector: EmailConnector, appConfig: AppConfig)(implicit ec: ExecutionContext)
-    extends Logging {
+class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: ExecutionContext) extends Logging {
 
   def sendReturnSubmittedEmail(eclReturn: EclReturn, chargeReference: Option[String])(implicit
     hc: HeaderCarrier,
     messages: Messages
-  ): Future[Unit] = {
-    val obligationDetails   = eclReturn.obligationDetails.getOrElse(
-      throw new IllegalStateException("No obligation details found in return data")
-    )
-    val calculatedLiability = eclReturn.calculatedLiability.getOrElse(
-      throw new IllegalStateException("No calculated liability details found in return data")
-    )
+  ): EitherT[Future, EmailSubmissionError, Unit] =
+    EitherT {
+      (
+        eclReturn.obligationDetails,
+        eclReturn.calculatedLiability,
+        eclReturn.contactName,
+        eclReturn.contactEmailAddress
+      ) match {
+        case (Some(obligationDetails), Some(calculatedLiability), Some(name), Some(emailAddress)) =>
+          val eclDueDate      = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate, translate = false)
+          val dateSubmitted   = ViewUtils.formatToday(translate = false)
+          val periodStartDate =
+            ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate, translate = false)
+          val periodEndDate   =
+            ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)
+          val fyStartYear     = obligationDetails.inboundCorrespondenceFromDate.getYear.toString
+          val fyEndYear       = obligationDetails.inboundCorrespondenceToDate.getYear.toString
+          val amountDue       = ViewUtils.formatMoney(calculatedLiability.amountDue.amount)
+          val datePaymentDue  = if (chargeReference.isDefined) Some(eclDueDate) else None
 
-    val eclDueDate      = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate, translate = false)
-    val dateSubmitted   = ViewUtils.formatToday(translate = false)
-    val periodStartDate = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate, translate = false)
-    val periodEndDate   = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)
-    val fyStartYear     = obligationDetails.inboundCorrespondenceFromDate.getYear.toString
-    val fyEndYear       = obligationDetails.inboundCorrespondenceToDate.getYear.toString
-    val amountDue       = ViewUtils.formatMoney(calculatedLiability.amountDue.amount)
-
-    ((
-      eclReturn.contactName,
-      eclReturn.contactEmailAddress
-    ) match {
-      case (Some(name), Some(emailAddress)) =>
-        emailConnector.sendReturnSubmittedEmail(
-          emailAddress,
-          ReturnSubmittedEmailParameters(
-            name = name,
-            dateSubmitted = dateSubmitted,
-            periodStartDate = periodStartDate,
-            periodEndDate = periodEndDate,
-            chargeReference = chargeReference,
-            fyStartYear = fyStartYear,
-            fyEndYear = fyEndYear,
-            datePaymentDue = if (chargeReference.isDefined) Some(eclDueDate) else None,
-            amountDue = amountDue
+          emailConnector
+            .sendReturnSubmittedEmail(
+              emailAddress,
+              ReturnSubmittedEmailParameters(
+                name,
+                dateSubmitted,
+                periodStartDate,
+                periodEndDate,
+                chargeReference,
+                fyStartYear,
+                fyEndYear,
+                datePaymentDue,
+                amountDue
+              )
+            )
+            .map(Right(_))
+        case _                                                                                    =>
+          Future.successful(
+            Left(
+              EmailSubmissionError
+                .InternalUnexpectedError(None, Some("Missing required input data for sending return email."))
+            )
           )
-        )
-      case _                                => throw new IllegalStateException("Invalid contact details")
-    }).recover { case e: Throwable =>
-      logger.error(s"Failed to send email: ${e.getMessage}")
-      throw e
+      }
     }
-  }
 
   def sendAmendReturnConfirmationEmail(eclReturn: EclReturn)(implicit
     hc: HeaderCarrier,
     messages: Messages
-  ): Future[Unit] = {
-    val obligationDetails: ObligationDetails = eclReturn.obligationDetails.getOrElse(
-      throw new IllegalStateException("No obligation details found in return data")
-    )
-    val dateSubmitted                        = ViewUtils.formatToday(translate = false)
-    val periodStartDate                      = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate)
-    val periodToDate                         = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate)
+  ): EitherT[Future, EmailSubmissionError, Unit] =
+    EitherT {
+      (eclReturn.contactName, eclReturn.contactEmailAddress, eclReturn.obligationDetails) match {
+        case (Some(name), Some(emailAddress), Some(obligationDetails)) =>
+          val dateSubmitted   = ViewUtils.formatToday(translate = false)
+          val periodStartDate = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate)
+          val periodToDate    = ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate)
 
-    (eclReturn.contactName, eclReturn.contactEmailAddress) match {
-      case (Some(name), Some(emailAddress)) =>
-        emailConnector.sendAmendReturnSubmittedEmail(
-          emailAddress,
-          AmendReturnSubmittedParameters(
-            name = name,
-            dateSubmitted = dateSubmitted,
-            periodStartDate = periodStartDate,
-            periodEndDate = periodToDate
+          emailConnector
+            .sendAmendReturnSubmittedEmail(
+              emailAddress,
+              AmendReturnSubmittedParameters(name, dateSubmitted, periodStartDate, periodToDate)
+            )
+            .map(Right(_))
+        case _                                                         =>
+          Future.successful(
+            Left(
+              EmailSubmissionError
+                .InternalUnexpectedError(None, Some("Missing required input data for amend return email."))
+            )
           )
-        )
-      case _                                => throw new IllegalStateException("Invalid contact details")
+      }
     }
-  }
 }

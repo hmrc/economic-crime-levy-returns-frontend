@@ -16,24 +16,37 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
-import play.api.Logging
+import akka.actor.ActorSystem
+import cats.data.OptionT
+import com.typesafe.config.Config
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EclAccountConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext)
-    extends Logging {
+class EclAccountConnector @Inject() (
+  appConfig: AppConfig,
+  httpClient: HttpClientV2,
+  override val configuration: Config,
+  override val actorSystem: ActorSystem
+)(implicit ec: ExecutionContext)
+    extends BaseConnector
+    with Retries {
 
   private val eclAccountUrl: String = s"${appConfig.eclAccountBaseUrl}/economic-crime-levy-account"
 
-  def getObligations()(implicit hc: HeaderCarrier): Future[Option[ObligationData]] =
-    httpClient.GET[Option[ObligationData]](
-      s"$eclAccountUrl/obligation-data"
-    )
+  def getObligations()(implicit hc: HeaderCarrier): OptionT[Future, ObligationData] =
+    OptionT {
+      retryFor[Option[ObligationData]]("ECL Account Connector - get obligations")(retryCondition) {
+        httpClient
+          .get(url"$eclAccountUrl/obligation-data")
+          .executeAndDeserialiseOpt[ObligationData]
+          .value
+      }
+    }
 
 }
