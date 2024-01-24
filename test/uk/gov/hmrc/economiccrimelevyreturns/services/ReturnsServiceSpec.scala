@@ -139,7 +139,7 @@ class ReturnsServiceSpec extends SpecBase {
   }
 
   "transformSubmissionToEclReturn" should {
-    "return a transformed valid submission to a valid ecl return" in {
+    "return a transformed valid submission to a valid ecl return" in forAll {
       (
         validEclReturn: ValidEclReturn,
         validGetEclReturnSubmissionResponse: ValidGetEclReturnSubmissionResponse,
@@ -155,7 +155,7 @@ class ReturnsServiceSpec extends SpecBase {
             .value
         )
 
-        result shouldBe Right
+        result.isRight shouldBe true
     }
 
     "return DataHandlingError.NotFound when EclReturn is None" in {
