@@ -50,31 +50,36 @@ class StartAmendController @Inject() (
 
   def onPageLoad(periodKey: String, returnNumber: String): Action[AnyContent] = authorise.async { implicit request =>
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
-    (for {
-      obligationData    <- eclAccountService.retrieveObligationData.asResponseError
-      obligationDetails <- processObligationDetails(obligationData, periodKey).asResponseError
-    } yield obligationDetails).fold(
-      err => routeError(err),
-      {
-        case Some(value) =>
-          val startAmendUrl = routes.StartAmendController.onPageLoad(periodKey, returnNumber).url
-          sessionService.upsert(
-            SessionData(
-              request.internalId,
-              Map(SessionKeys.StartAmendUrl -> startAmendUrl)
-            )
+
+    val startAmendUrl = routes.StartAmendController.onPageLoad(periodKey, returnNumber).url
+    sessionService
+      .upsert(
+        SessionData(
+          request.internalId,
+          Map(SessionKeys.StartAmendUrl -> startAmendUrl)
+        )
+      )
+      .flatMap { _ =>
+        (for {
+          obligationData    <- eclAccountService.retrieveObligationData.asResponseError
+          obligationDetails <- processObligationDetails(obligationData, periodKey).asResponseError
+        } yield obligationDetails)
+          .fold(
+            _ => Redirect(routes.NotableErrorController.answersAreInvalid()),
+            {
+              case Some(obligationData) =>
+                Ok(
+                  view(
+                    returnNumber,
+                    obligationData.inboundCorrespondenceFromDate,
+                    obligationData.inboundCorrespondenceToDate,
+                    Some(startAmendUrl)
+                  )
+                )
+              case None                 => Ok(noObligationForPeriodView())
+            }
           )
-          Ok(
-            view(
-              returnNumber,
-              value.inboundCorrespondenceFromDate,
-              value.inboundCorrespondenceToDate,
-              Some(startAmendUrl)
-            )
-          )
-        case None        => Ok(noObligationForPeriodView())
       }
-    )
   }
 
   private def validatePeriodKey(eclReturn: EclReturn, obligationDetails: ObligationDetails, periodKey: String)(implicit
