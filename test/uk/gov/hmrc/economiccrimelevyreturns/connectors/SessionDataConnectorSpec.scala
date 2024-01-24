@@ -18,158 +18,105 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND, NO_CONTENT}
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
-import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HttpClient, HttpResponse, InternalServerException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
+import uk.gov.hmrc.http.{HttpResponse, StringContextOps, UpstreamErrorResponse}
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 class SessionDataConnectorSpec extends SpecBase {
-  val mockHttpClient: HttpClient = mock[HttpClient]
-  val connector                  = new SessionDataConnector(appConfig, mockHttpClient)
-  val eclSessionDataUrl          = "http://localhost:14003/economic-crime-levy-returns"
+  val mockHttpClient: HttpClientV2       = mock[HttpClientV2]
+  val mockRequestBuilder: RequestBuilder = mock[RequestBuilder]
+  val connector                          = new SessionDataConnector(appConfig, mockHttpClient, config, actorSystem)
+  val eclSessionDataUrl                  = "http://localhost:14003/economic-crime-levy-returns"
+
+  override def beforeEach() = {
+    reset(mockHttpClient)
+    reset(mockRequestBuilder)
+  }
 
   "get" should {
 
     "return SessionData data when request succeeds" in forAll { (internalId: String, sessionData: SessionData) =>
-      val expectedUrl = s"$eclSessionDataUrl/session/$internalId"
+      val expectedUrl = url"$eclSessionDataUrl/session/$internalId"
 
-      when(
-        mockHttpClient.GET[SessionData](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any())
-      )
-        .thenReturn(Future.successful(sessionData))
+      when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(Json.toJson(sessionData)))))
 
       val result = await(connector.get(internalId))
 
       result shouldBe sessionData
-
-      verify(mockHttpClient, times(1))
-        .GET[SessionData](
-          ArgumentMatchers.eq(expectedUrl),
-          any(),
-          any()
-        )(any(), any(), any())
-
-      reset(mockHttpClient)
     }
 
-    "return none when the http client returns none" in forAll { internalId: String =>
-      val expectedUrl = s"$eclSessionDataUrl/session/$internalId"
-      val msg         = "not found"
-      when(
-        mockHttpClient.GET[SessionData](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any())
-      )
-        .thenReturn(Future.failed(new BadGatewayException(msg)))
-
-      Try(await(connector.get(internalId))) match {
-        case Failure(thr) => thr.getMessage shouldBe msg
-        case Success(_)   => fail("expected exception to be thrown")
-      }
-
-      verify(mockHttpClient, times(1))
-        .GET[SessionData](
-          ArgumentMatchers.eq(expectedUrl),
-          any(),
-          any()
-        )(any(), any(), any())
-
-      reset(mockHttpClient)
-    }
   }
 
   "delete" should {
     "return unit when the http client successfully returns a http response" in forAll { internalId: String =>
-      val expectedUrl = s"$eclSessionDataUrl/session/$internalId"
+      val expectedUrl = url"$eclSessionDataUrl/session/$internalId"
 
-      when(
-        mockHttpClient.DELETE[Unit](ArgumentMatchers.eq(expectedUrl), any())(
-          any(),
-          any(),
-          any()
-        )
-      )
-        .thenReturn(Future.successful(()))
+      when(mockHttpClient.delete(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(OK, "")))
 
       val result: Unit = await(connector.delete(internalId))
       result shouldBe ()
 
-      verify(mockHttpClient, times(1))
-        .DELETE[Either[UpstreamErrorResponse, HttpResponse]](
-          ArgumentMatchers.eq(expectedUrl),
-          any()
-        )(any(), any(), any())
+      verify(mockHttpClient, times(1)).delete(ArgumentMatchers.eq(expectedUrl))(any())
 
       reset(mockHttpClient)
     }
+    "return UpstreamErrorResponse when call to delete session data returns an error " in forAll { internalId: String =>
+      val expectedUrl = url"$eclSessionDataUrl/session/$internalId"
+      val errorCode   = INTERNAL_SERVER_ERROR
 
-    "return a failed future when the http client returns an error response" in forAll { internalId: String =>
-      val expectedUrl = s"$eclSessionDataUrl/session/$internalId"
-      val msg         = "timeout error"
-
-      when(
-        mockHttpClient.DELETE[Unit](ArgumentMatchers.eq(expectedUrl), any())(
-          any(),
-          any(),
-          any()
-        )
-      )
-        .thenReturn(Future.failed(new GatewayTimeoutException(msg)))
+      when(mockHttpClient.delete(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
       Try(await(connector.delete(internalId))) match {
-        case Failure(thr) => thr.getMessage shouldBe msg
-        case Success(_)   => fail("expected exception to be thrown")
+        case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+          code shouldEqual errorCode
+        case _                                             => fail("expected UpstreamErrorResponse when an error is received from the session data service")
       }
-
-      verify(mockHttpClient, times(1))
-        .DELETE[Unit](
-          ArgumentMatchers.eq(expectedUrl),
-          any()
-        )(any(), any(), any())
-
-      reset(mockHttpClient)
     }
   }
 
   "upsert" should {
-    val expectedUrl = s"$eclSessionDataUrl/session"
-    "return unit when request succeds" in forAll { sessionData: SessionData =>
-      when(
-        mockHttpClient
-          .PUT[SessionData, Unit](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any(), any())
-      )
-        .thenReturn(Future.successful(()))
+    val expectedUrl = url"$eclSessionDataUrl/session"
+    "return unit when request succeeds" in forAll { sessionData: SessionData =>
+      when(mockHttpClient.put(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody(ArgumentMatchers.eq(Json.toJson(sessionData)))(any(), any(), any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(OK, "")))
 
-      val result = await(connector.upsert(sessionData))
-      result shouldBe ()
-
-      verify(mockHttpClient, times(1))
-        .PUT[SessionData, Unit](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any(), any())
-
-      reset(mockHttpClient)
+      await(connector.upsert(sessionData)) shouldBe ()
     }
 
     "return a failed future when the http client returns an error response" in forAll { sessionData: SessionData =>
-      val expectedUrl = s"$eclSessionDataUrl/session"
-      val msg         = "internal server error"
+      val errorCode = INTERNAL_SERVER_ERROR
 
-      when(
-        mockHttpClient
-          .PUT[SessionData, Unit](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any(), any())
-      )
-        .thenReturn(Future.failed(new InternalServerException(msg)))
+      when(mockHttpClient.put(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody(ArgumentMatchers.eq(Json.toJson(sessionData)))(any(), any(), any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
       Try(await(connector.upsert(sessionData))) match {
-        case Failure(thr) => thr.getMessage shouldBe msg
-        case Success(_)   => fail("expected exception to be thrown")
+        case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+          code shouldEqual errorCode
+        case _                                             => fail("expected UpstreamErrorResponse when an error is received from the session data service")
       }
-
-      verify(mockHttpClient, times(1))
-        .PUT[SessionData, Unit](ArgumentMatchers.eq(expectedUrl), any(), any())(any(), any(), any(), any())
-
-      reset(mockHttpClient)
     }
   }
 

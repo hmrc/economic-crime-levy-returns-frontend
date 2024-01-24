@@ -16,15 +16,16 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.OK
 import play.api.mvc.Result
 import play.api.test.Helpers.{contentAsString, status}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclAccountConnector, EclReturnsConnector}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, EclAccountError}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{NoObligationForPeriodView, StartAmendView}
 
 import scala.concurrent.Future
@@ -32,10 +33,9 @@ import scala.concurrent.Future.unit
 
 class StartAmendControllerSpec extends SpecBase {
 
-  val mockEclAccountConnector: EclAccountConnector = mock[EclAccountConnector]
-  val mockEclReturnsService: EclReturnsService     = mock[EclReturnsService]
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
-  val mockSessionService: SessionService           = mock[SessionService]
+  val mockEclAccountService: EclAccountService = mock[EclAccountService]
+  val mockEclReturnsService: ReturnsService    = mock[ReturnsService]
+  val mockSessionService: SessionService       = mock[SessionService]
 
   val view: StartAmendView                                 = app.injector.instanceOf[StartAmendView]
   val noObligationForPeriodView: NoObligationForPeriodView = app.injector.instanceOf[NoObligationForPeriodView]
@@ -43,10 +43,9 @@ class StartAmendControllerSpec extends SpecBase {
   val controller = new StartAmendController(
     controllerComponents = mcc,
     authorise = fakeAuthorisedAction(internalId),
-    eclAccountConnector = mockEclAccountConnector,
-    eclReturnsService = mockEclReturnsService,
+    eclAccountService = mockEclAccountService,
+    returnsService = mockEclReturnsService,
     sessionService = mockSessionService,
-    eclReturnsConnector = mockEclReturnsConnector,
     noObligationForPeriodView = noObligationForPeriodView,
     view = view
   )
@@ -57,24 +56,24 @@ class StartAmendControllerSpec extends SpecBase {
         (internalId: String, obligationDetails: ObligationDetails, returnNumber: String) =>
           val openObligation = obligationDetails.copy(status = Open)
           val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
-          val updatedReturn  = EclReturn
-            .empty(internalId = internalId, returnType = Some(AmendReturn))
-            .copy(obligationDetails = Some(obligationDetails))
 
-          when(mockEclAccountConnector.getObligations()(any()))
-            .thenReturn(Future.successful(Some(obligationData)))
+          when(mockEclAccountService.retrieveObligationData(any()))
+            .thenReturn(
+              EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(Some(obligationData))))
+            )
 
           when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
-            .thenReturn(Future.successful(EclReturn.empty(internalId = internalId, returnType = Some(AmendReturn))))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, EclReturn](
+                Future.successful(Right(EclReturn.empty(internalId = internalId, returnType = Some(AmendReturn))))
+              )
+            )
 
-          when(mockEclReturnsService.upsertEclReturnType(any(), any())(any()))
-            .thenReturn(Future.successful(EclReturn.empty(internalId = internalId, returnType = Some(AmendReturn))))
-
-          when(mockEclReturnsConnector.upsertReturn(any())(any()))
-            .thenReturn(Future.successful(updatedReturn))
+          when(mockEclReturnsService.upsertReturn(any())(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           when(mockSessionService.upsert(any())(any()))
-            .thenReturn(Future.successful(unit))
+            .thenReturn(unit)
 
           val result: Future[Result] =
             controller.onPageLoad(periodKey = openObligation.periodKey, returnNumber = returnNumber)(fakeRequest)
@@ -92,16 +91,13 @@ class StartAmendControllerSpec extends SpecBase {
             )
           )(fakeRequest, messages).toString()
 
-          verify(mockEclReturnsService, times(1))
-            .upsertEclReturnType(any(), any())(any())
-
           reset(mockEclReturnsService)
       }
 
     "return No Obligation view when there is no obligation returned" in forAll {
       (periodKey: String, returnNumber: String) =>
-        when(mockEclAccountConnector.getObligations()(any()))
-          .thenReturn(Future.successful(None))
+        when(mockEclAccountService.retrieveObligationData(any()))
+          .thenReturn(EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(None))))
 
         val result: Future[Result] = controller.onPageLoad(periodKey, returnNumber)(fakeRequest)
 

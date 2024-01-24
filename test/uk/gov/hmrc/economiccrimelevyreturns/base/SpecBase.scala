@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.base
 
+import akka.actor.ActorSystem
+import com.typesafe.config.Config
 import org.mockito.MockitoSugar
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -31,6 +33,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{FakeAuthorisedAction, FakeDataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.ErrorTemplate
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
@@ -57,6 +60,9 @@ trait SpecBase
   val messages: Messages                               = messagesApi.preferred(fakeRequest)
   val bodyParsers: PlayBodyParsers                     = app.injector.instanceOf[PlayBodyParsers]
   val eclRegistrationReference: String                 = "test-ecl-registration-reference"
+  val config: Config                                   = app.injector.instanceOf[Config]
+  val actorSystem: ActorSystem                         = ActorSystem("actor")
+  implicit val errorTemplate: ErrorTemplate            = app.injector.instanceOf[ErrorTemplate]
 
   def fakeAuthorisedAction(internalId: String) = new FakeAuthorisedAction(internalId, bodyParsers)
 

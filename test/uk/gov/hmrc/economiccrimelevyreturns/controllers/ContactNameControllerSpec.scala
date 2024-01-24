@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.scalacheck.Arbitrary
@@ -24,12 +25,13 @@ import play.api.http.Status.OK
 import play.api.mvc.{Call, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactNameFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactNamePageNavigator
+import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactNameView
 
 import scala.concurrent.Future
@@ -44,14 +46,14 @@ class ContactNameControllerSpec extends SpecBase {
     override protected def navigateInNormalMode(eclReturn: EclReturn): Call = onwardRoute
   }
 
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
+  val mockEclReturnsService: ReturnsService = mock[ReturnsService]
 
   class TestContext(returnsData: EclReturn) {
     val controller = new ContactNameController(
       mcc,
       fakeAuthorisedAction(returnsData.internalId),
       fakeDataRetrievalAction(returnsData),
-      mockEclReturnsConnector,
+      mockEclReturnsService,
       formProvider,
       pageNavigator,
       view
@@ -92,8 +94,8 @@ class ContactNameControllerSpec extends SpecBase {
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(contactName = Some(name.strip()))
 
-        when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Future.successful(updatedReturn))
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         val result: Future[Result] =
           controller.onSubmit(NormalMode)(fakeRequest.withFormUrlEncodedBody(("value", name)))

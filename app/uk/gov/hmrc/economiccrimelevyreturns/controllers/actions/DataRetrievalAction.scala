@@ -16,10 +16,13 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 
+import cats.data.EitherT
 import play.api.mvc.{ActionTransformer, Session}
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, FirstTimeReturn, ReturnType, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.ErrorHandler
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, ReturnType, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
@@ -27,33 +30,41 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ReturnDataRetrievalAction @Inject() (
-  val eclReturnService: EclReturnsService,
+  val eclReturnService: ReturnsService,
   val sessionService: SessionService
 )(implicit val executionContext: ExecutionContext)
     extends DataRetrievalAction
-    with FrontendHeaderCarrierProvider {
+    with FrontendHeaderCarrierProvider
+    with ErrorHandler {
 
   override protected def transform[A](request: AuthorisedRequest[A]): Future[ReturnDataRequest[A]] =
-    eclReturnService.getOrCreateReturn(request.internalId)(hc(request), request).flatMap { eclReturn =>
-      getStartAmendUrl(eclReturn.returnType, request.session, request.internalId)(hc(request)).map { startAmendUrl =>
-        ReturnDataRequest(
-          request.request,
-          request.internalId,
-          eclReturn,
-          startAmendUrl,
-          request.eclRegistrationReference
+    (for {
+      eclReturn     <- eclReturnService.getOrCreateReturn(request.internalId)(hc(request), request).asResponseError
+      startAmendUrl <- getStartAmendUrl(eclReturn.returnType, request.session, request.internalId)(hc(request))
+    } yield (eclReturn, startAmendUrl)).foldF(
+      error => Future.failed(new Exception(error.message)),
+      eclReturnAndAmendUrl =>
+        Future.successful(
+          ReturnDataRequest(
+            request.request,
+            request.internalId,
+            eclReturnAndAmendUrl._1,
+            eclReturnAndAmendUrl._2,
+            request.eclRegistrationReference
+          )
         )
-      }
-    }
+    )
 
   private def getStartAmendUrl(returnType: Option[ReturnType], session: Session, internalId: String)(implicit
     hc: HeaderCarrier
-  ): Future[Option[String]] =
-    returnType match {
-      case Some(AmendReturn) =>
-        sessionService.get(session, internalId, SessionKeys.StartAmendUrl)
-      case _                 =>
-        Future.successful(None)
+  ): EitherT[Future, ResponseError, Option[String]] =
+    EitherT {
+      returnType match {
+        case Some(AmendReturn) =>
+          sessionService.get(session, internalId, SessionKeys.StartAmendUrl).map(Right(_))
+        case _                 =>
+          Future.successful(Right(None))
+      }
     }
 }
 

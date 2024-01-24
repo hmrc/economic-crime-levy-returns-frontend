@@ -16,10 +16,8 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.forms
 
-import org.scalacheck.Arbitrary
-import play.api.data.{Form, FormError}
+import play.api.data.FormError
 import uk.gov.hmrc.economiccrimelevyreturns.forms.behaviours.StringFieldBehaviours
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 
 class AmendReasonFormProviderSpec extends StringFieldBehaviours {
 

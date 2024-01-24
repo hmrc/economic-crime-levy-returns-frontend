@@ -18,24 +18,25 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
+import org.scalacheck.Gen
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.{EclCalculatorConnector, EclReturnsConnector}
+import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclCalculatorConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 
 import scala.concurrent.Future
 
 class EclLiabilityServiceSpec extends SpecBase {
-  private val mockEclReturnsConnector    = mock[EclReturnsConnector]
   private val mockEclCalculatorConnector = mock[EclCalculatorConnector]
-  private val service                    = new EclLiabilityService(mockEclReturnsConnector, mockEclCalculatorConnector)
+  private val service                    = new EclCalculatorService(mockEclCalculatorConnector)
 
   "calculateLiability" should {
     "return an updated ECL return containing the calculated liability" in forAll {
       (validEclReturn: ValidEclReturn, calculatedLiability: CalculatedLiability) =>
-        val updatedReturn = validEclReturn.eclReturn.copy(calculatedLiability = Some(calculatedLiability))
-
         when(
           mockEclCalculatorConnector.calculateLiability(
             ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength),
@@ -44,39 +45,67 @@ class EclLiabilityServiceSpec extends SpecBase {
           )(any())
         ).thenReturn(Future.successful(calculatedLiability))
 
-        when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Future.successful(updatedReturn))
-
         val result = await(service.calculateLiability(validEclReturn.eclReturn)(fakeRequest).value)
 
-        result shouldBe updatedReturn
+        result shouldBe Right(calculatedLiability)
     }
 
-    "return None when the ECL return does not contain any of the required AP and/or AML answers" in forAll {
+    "return InternalUnexpectedError when the ECL return does not contain any of the required AP and/or AML answers" in forAll {
       eclReturn: EclReturn =>
-        val updatedReturn = eclReturn.copy(
-          relevantAp12Months = None,
-          relevantApLength = None,
-          relevantApRevenue = None,
-          carriedOutAmlRegulatedActivityForFullFy = None,
-          amlRegulatedActivityLength = None
+        val returnWithoutAp12Months = eclReturn.copy(
+          relevantAp12Months = None
         )
 
-        val result = service.calculateLiability(updatedReturn)(fakeRequest)
+        val returnWithoutApLength = eclReturn.copy(
+          relevantAp12Months = Some(false),
+          relevantApLength = None
+        )
 
-        result shouldBe None
+        val returnWithoutApRevenue = eclReturn.copy(
+          relevantAp12Months = Some(true),
+          relevantApRevenue = None
+        )
+
+        Seq(returnWithoutApRevenue, returnWithoutAp12Months, returnWithoutApLength).map(updatedReturn =>
+          await(service.calculateLiability(updatedReturn)(fakeRequest).value) shouldBe Left(
+            LiabilityCalculationError.InternalUnexpectedError(None, Some("Missing expected value."))
+          )
+        )
     }
 
-    "return Some of 0 when user hasn't provided AML regulated activity length yet" in {
+    "return 5xx UpstreamErrorResponse when unable to get calculated liability" in { (validEclReturn: ValidEclReturn) =>
+      val errorCode = INTERNAL_SERVER_ERROR
+
+      when(
+        mockEclCalculatorConnector.calculateLiability(
+          ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength),
+          ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApLength),
+          ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue)
+        )(any())
+      ).thenReturn(Future.failed(UpstreamErrorResponse("Internal server error", errorCode)))
+
+      val result = await(service.calculateLiability(validEclReturn.eclReturn)(fakeRequest).value)
+
+      result shouldBe Left(LiabilityCalculationError.BadGateway(reason = "Internal server error", code = errorCode))
+    }
+
+    "return 0 when user hasn't provided AML regulated activity length yet" in {
       val amlRegulatedActivityLength = service.calculateAmlRegulatedActivityLength(false, None)
 
-      amlRegulatedActivityLength shouldBe Some(0)
+      amlRegulatedActivityLength shouldBe 0
     }
 
     "return Some of full year regulated activity when user answered Yes" in {
       val amlRegulatedActivityLength = service.calculateAmlRegulatedActivityLength(true, None)
 
-      amlRegulatedActivityLength shouldBe Some(FullYear)
+      amlRegulatedActivityLength shouldBe FullYear
+    }
+
+    "return amlRegulatedActivityLength when the user hasn't yet provided a length" in forAll(Gen.chooseNum(1, 364)) {
+      days =>
+        val amlRegulatedActivityLength = service.calculateAmlRegulatedActivityLength(false, Some(days))
+
+        amlRegulatedActivityLength shouldBe days
     }
   }
 

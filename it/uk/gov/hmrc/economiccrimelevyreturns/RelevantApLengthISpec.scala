@@ -9,9 +9,10 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
-
+import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantApLengthDataCleanup
 class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
+  val dataCleanup = new RelevantApLengthDataCleanup
   s"GET ${routes.RelevantApLengthController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.RelevantApLengthController.onPageLoad(NormalMode))
 
@@ -44,7 +45,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetSessionEmpty()
 
       val updatedReturn =
-        eclReturn.copy(relevantApLength = Some(relevantApLength), calculatedLiability = None)
+        dataCleanup.cleanup(eclReturn.copy(relevantApLength = Some(relevantApLength)))
 
       stubUpsertReturn(updatedReturn)
 

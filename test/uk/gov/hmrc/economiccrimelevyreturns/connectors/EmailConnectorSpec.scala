@@ -19,126 +19,155 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
+import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.email.{ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
-import uk.gov.hmrc.http.{HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models.email.AmendReturnSubmittedRequest.AmendReturnTemplateId
+import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailRequest.{NilReturnTemplateId, ReturnTemplateId}
+import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedParameters, AmendReturnSubmittedRequest, ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
+import uk.gov.hmrc.http.{HttpResponse, StringContextOps, UpstreamErrorResponse}
 
 import scala.concurrent.Future
+import scala.util.{Failure, Try}
 
 class EmailConnectorSpec extends SpecBase {
 
-  val mockHttpClient: HttpClient = mock[HttpClient]
-  val connector                  = new EmailConnector(appConfig, mockHttpClient)
-  val sendEmailUrl: String       = s"${appConfig.emailBaseUrl}/hmrc/email"
+  val mockHttpClient: HttpClientV2       = mock[HttpClientV2]
+  val mockRequestBuilder: RequestBuilder = mock[RequestBuilder]
+  val connector                          = new EmailConnector(appConfig, mockHttpClient, config, actorSystem)
+  private val expectedUrl                = url"${appConfig.emailBaseUrl}/hmrc/email"
+
+  override def beforeEach() = {
+    reset(mockHttpClient)
+    reset(mockRequestBuilder)
+  }
 
   "sendReturnSubmittedEmail" should {
-    val expectedUrl = sendEmailUrl
+    "return unit when the http client returns ACCEPTED for the return submitted email template" in forAll {
+      (to: String, returnSubmittedEmailParameters: ReturnSubmittedEmailParameters) =>
+        val templateId =
+          if (returnSubmittedEmailParameters.chargeReference.isDefined) ReturnTemplateId else NilReturnTemplateId
 
-    "return unit when the http client returns a successful http response for the return submitted email template" in forAll {
-      (to: String, returnSubmittedEmailParameters: ReturnSubmittedEmailParameters, chargeReference: String) =>
-        val response = HttpResponse(ACCEPTED, "")
-
-        val parametersWithChargeReference = returnSubmittedEmailParameters.copy(chargeReference = Some(chargeReference))
-
+        when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any())).thenReturn(mockRequestBuilder)
         when(
-          mockHttpClient
-            .POST[ReturnSubmittedEmailRequest, Either[UpstreamErrorResponse, HttpResponse]](
-              ArgumentMatchers.eq(expectedUrl),
-              ArgumentMatchers.eq(
+          mockRequestBuilder.withBody(
+            ArgumentMatchers.eq(
+              Json.toJson(
                 ReturnSubmittedEmailRequest(
                   Seq(to),
-                  templateId = ReturnSubmittedEmailRequest.ReturnTemplateId,
-                  parametersWithChargeReference,
+                  templateId = templateId,
+                  returnSubmittedEmailParameters
+                )
+              )
+            )
+          )(any(), any(), any())
+        ).thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+          .thenReturn(Future.successful(HttpResponse.apply(ACCEPTED, "")))
+
+        val result: Unit = await(connector.sendReturnSubmittedEmail(to, returnSubmittedEmailParameters))
+
+        result shouldBe ()
+    }
+
+    "return 5xx UpstreamErrorResponse when call to account service returns an error and executes retry" in forAll {
+      (to: String, returnSubmittedEmailParameters: ReturnSubmittedEmailParameters) =>
+        beforeEach()
+
+        val errorCode = INTERNAL_SERVER_ERROR
+
+        val templateId =
+          if (returnSubmittedEmailParameters.chargeReference.isDefined) ReturnTemplateId else NilReturnTemplateId
+
+        when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any()))
+          .thenReturn(mockRequestBuilder)
+        when(
+          mockRequestBuilder.withBody(
+            ArgumentMatchers.eq(
+              Json.toJson(
+                ReturnSubmittedEmailRequest(
+                  Seq(to),
+                  templateId = templateId,
+                  returnSubmittedEmailParameters,
                   force = false,
                   None
                 )
-              ),
-              any()
-            )(any(), any(), any(), any())
-        )
-          .thenReturn(Future.successful(Right(response)))
+              )
+            )
+          )(any(), any(), any())
+        ).thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+          .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
-        val result: Unit = await(connector.sendReturnSubmittedEmail(to, parametersWithChargeReference))
-
-        result shouldBe ()
-
-        verify(mockHttpClient, times(1))
-          .POST[ReturnSubmittedEmailRequest, Either[UpstreamErrorResponse, HttpResponse]](
-            ArgumentMatchers.eq(expectedUrl),
-            any(),
-            any()
-          )(any(), any(), any(), any())
-
-        reset(mockHttpClient)
-    }
-
-    "return unit when the http client returns a successful http response for the nil return submitted email template" in forAll {
-      (to: String, returnSubmittedEmailParameters: ReturnSubmittedEmailParameters) =>
-        val response = HttpResponse(ACCEPTED, "")
-
-        val parametersWithoutChargeReference = returnSubmittedEmailParameters.copy(chargeReference = None)
-
-        when(
-          mockHttpClient
-            .POST[ReturnSubmittedEmailRequest, Either[UpstreamErrorResponse, HttpResponse]](
-              ArgumentMatchers.eq(expectedUrl),
-              ArgumentMatchers.eq(
-                ReturnSubmittedEmailRequest(
-                  Seq(to),
-                  templateId = ReturnSubmittedEmailRequest.NilReturnTemplateId,
-                  parametersWithoutChargeReference,
-                  force = false,
-                  None
-                )
-              ),
-              any()
-            )(any(), any(), any(), any())
-        )
-          .thenReturn(Future.successful(Right(response)))
-
-        val result: Unit = await(connector.sendReturnSubmittedEmail(to, parametersWithoutChargeReference))
-
-        result shouldBe ()
-
-        verify(mockHttpClient, times(1))
-          .POST[ReturnSubmittedEmailRequest, Either[UpstreamErrorResponse, HttpResponse]](
-            ArgumentMatchers.eq(expectedUrl),
-            any(),
-            any()
-          )(any(), any(), any(), any())
-
-        reset(mockHttpClient)
-    }
-
-    "throw an exception when the http client returns an upstream error response" in forAll {
-      (to: String, returnSubmittedEmailParameters: ReturnSubmittedEmailParameters) =>
-        val response = UpstreamErrorResponse("Internal server error", INTERNAL_SERVER_ERROR)
-
-        when(
-          mockHttpClient
-            .POST[ReturnSubmittedEmailRequest, Either[UpstreamErrorResponse, HttpResponse]](
-              ArgumentMatchers.eq(expectedUrl),
-              any(),
-              any()
-            )(any(), any(), any(), any())
-        )
-          .thenReturn(Future.successful(Left(response)))
-
-        val result: UpstreamErrorResponse = intercept[UpstreamErrorResponse] {
-          await(connector.sendReturnSubmittedEmail(to, returnSubmittedEmailParameters))
+        Try(await(connector.sendReturnSubmittedEmail(to, returnSubmittedEmailParameters))) match {
+          case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+            code shouldEqual errorCode
+          case _                                             => fail("expected UpstreamErrorResponse when an error is received from the account service")
         }
 
-        result.getMessage shouldBe "Internal server error"
+        verify(mockRequestBuilder, times(4))
+          .execute(any(), any())
+    }
+  }
 
-        verify(mockHttpClient, times(1))
-          .POST[ReturnSubmittedEmailRequest, Either[UpstreamErrorResponse, HttpResponse]](
-            ArgumentMatchers.eq(expectedUrl),
-            any(),
-            any()
-          )(any(), any(), any(), any())
+  "sendAmendReturnSubmittedEmail" should {
+    "return unit when the http client returns ACCEPTED for the return submitted email template" in forAll {
+      (to: String, amendSubmittedEmailParameters: AmendReturnSubmittedParameters) =>
+        when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any())).thenReturn(mockRequestBuilder)
+        when(
+          mockRequestBuilder.withBody(
+            ArgumentMatchers.eq(
+              Json.toJson(
+                AmendReturnSubmittedRequest(
+                  Seq(to),
+                  templateId = AmendReturnTemplateId,
+                  amendSubmittedEmailParameters
+                )
+              )
+            )
+          )(any(), any(), any())
+        ).thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+          .thenReturn(Future.successful(HttpResponse.apply(ACCEPTED, "")))
 
-        reset(mockHttpClient)
+        val result: Unit = await(connector.sendAmendReturnSubmittedEmail(to, amendSubmittedEmailParameters))
+
+        result shouldBe ()
+    }
+
+    "return 5xx UpstreamErrorResponse when call to account service returns an error and executes retry" in forAll {
+      (to: String, amendSubmittedEmailParameters: AmendReturnSubmittedParameters) =>
+        beforeEach()
+
+        val errorCode = INTERNAL_SERVER_ERROR
+
+        when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any()))
+          .thenReturn(mockRequestBuilder)
+        when(
+          mockRequestBuilder.withBody(
+            ArgumentMatchers.eq(
+              Json.toJson(
+                AmendReturnSubmittedRequest(
+                  Seq(to),
+                  templateId = AmendReturnTemplateId,
+                  amendSubmittedEmailParameters
+                )
+              )
+            )
+          )(any(), any(), any())
+        ).thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+          .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
+
+        Try(await(connector.sendAmendReturnSubmittedEmail(to, amendSubmittedEmailParameters))) match {
+          case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+            code shouldEqual errorCode
+          case _                                             => fail("expected UpstreamErrorResponse when an error is received from the account service")
+        }
+
+        verify(mockRequestBuilder, times(4))
+          .execute(any(), any())
     }
   }
 }

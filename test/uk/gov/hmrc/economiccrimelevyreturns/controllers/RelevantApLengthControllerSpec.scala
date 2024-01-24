@@ -16,22 +16,22 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.data.Form
 import play.api.http.Status.OK
-import play.api.mvc.{Call, RequestHeader, Result}
+import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantApLengthDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.RelevantApLengthPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.services.EclLiabilityService
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantApLengthView
 
 import scala.concurrent.Future
@@ -42,22 +42,16 @@ class RelevantApLengthControllerSpec extends SpecBase {
   val formProvider: RelevantApLengthFormProvider = new RelevantApLengthFormProvider()
   val form: Form[Int]                            = formProvider()
 
-  val mockEclReturnsConnector: EclReturnsConnector = mock[EclReturnsConnector]
-  val mockEclLiabilityService: EclLiabilityService = mock[EclLiabilityService]
-
-  val pageNavigator: RelevantApLengthPageNavigator = new RelevantApLengthPageNavigator(
-    mockEclLiabilityService,
-    mockEclReturnsConnector
-  ) {
-    override protected def navigateInNormalMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-      Future.successful(onwardRoute)
-
-    override protected def navigateInCheckMode(eclReturn: EclReturn)(implicit request: RequestHeader): Future[Call] =
-      Future.successful(onwardRoute)
-  }
+  val mockEclReturnsService: ReturnsService         = mock[ReturnsService]
+  val mockEclLiabilityService: EclCalculatorService = mock[EclCalculatorService]
 
   val dataCleanup: RelevantApLengthDataCleanup = new RelevantApLengthDataCleanup {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
+  }
+
+  override def beforeEach() = {
+    reset(mockEclLiabilityService)
+    reset(mockEclReturnsService)
   }
 
   class TestContext(eclReturnData: EclReturn) {
@@ -65,9 +59,9 @@ class RelevantApLengthControllerSpec extends SpecBase {
       mcc,
       fakeAuthorisedAction(eclReturnData.internalId),
       fakeDataRetrievalAction(eclReturnData),
-      mockEclReturnsConnector,
+      mockEclReturnsService,
+      mockEclLiabilityService,
       formProvider,
-      pageNavigator,
       dataCleanup,
       view
     )
@@ -103,24 +97,22 @@ class RelevantApLengthControllerSpec extends SpecBase {
   }
 
   "onSubmit" should {
-    "save the provided relevant AP length then redirect to the next page" in forAll(
+    "save the provided relevant AP length then redirect to the UK revenue page in NormalMode" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax),
-      Arbitrary.arbitrary[Mode]
-    ) { (eclReturn: EclReturn, relevantApLength: Int, mode: Mode) =>
+      Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
+    ) { (eclReturn: EclReturn, relevantApLength: Int) =>
       new TestContext(eclReturn) {
-        val updatedReturn: EclReturn =
-          eclReturn.copy(relevantApLength = Some(relevantApLength))
+        val updatedReturn = dataCleanup.cleanup(eclReturn.copy(relevantApLength = Some(relevantApLength)))
 
-        when(mockEclReturnsConnector.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(Future.successful(updatedReturn))
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         val result: Future[Result] =
-          controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", relevantApLength.toString)))
+          controller.onSubmit(NormalMode)(fakeRequest.withFormUrlEncodedBody(("value", relevantApLength.toString)))
 
         status(result) shouldBe SEE_OTHER
 
-        redirectLocation(result) shouldBe Some(onwardRoute.url)
+        redirectLocation(result) shouldBe Some(routes.UkRevenueController.onPageLoad(NormalMode).url)
       }
     }
 

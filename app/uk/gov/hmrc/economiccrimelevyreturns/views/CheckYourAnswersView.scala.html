@@ -15,41 +15,39 @@
  *@
 
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukSummaryList: GovukSummaryList,
-    govukButton: GovukButton
+layout: templates.Layout,
+formHelper: FormWithCSRF,
+govukSummaryList: GovukSummaryList,
+govukButton: GovukButton
 )
 
 @(amendReason: SummaryList, eclDetails: SummaryList, contactDetails: SummaryList, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(messages("checkYourAnswers.title")), startAmendUrl = startAmendUrl) {
-    @formHelper(action = CheckYourAnswersController.onSubmit()) {
+ @formHelper(action = CheckYourAnswersController.onSubmit()) {
 
-        <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
+   <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
 
-        @if(amendReason.rows.nonEmpty) {
+   @if(amendReason.rows.nonEmpty) {
 
-            <h2 class="govuk-heading-m">@messages("checkYourAnswers.amendReason.title")</h2>
+     <h2 class="govuk-heading-m">@messages("checkYourAnswers.amendReason.title")</h2>
 
-            @govukSummaryList(amendReason)
+     @govukSummaryList(amendReason)
 
-        }
+   }
 
-        <h2 class="govuk-heading-m">@messages("checkYourAnswers.eclDetails")</h2>
+   <h2 class="govuk-heading-m">@messages("checkYourAnswers.eclDetails")</h2>
 
-        @govukSummaryList(eclDetails)
+   @govukSummaryList(eclDetails)
 
-        <h2 class="govuk-heading-m">@messages("checkYourAnswers.contactDetails")</h2>
+   <h2 class="govuk-heading-m">@messages("checkYourAnswers.contactDetails")</h2>
 
-        @govukSummaryList(contactDetails)
+   @govukSummaryList(contactDetails)
 
-        <h2 class="govuk-heading-m">@messages("checkYourAnswers.nowSend")</h2>
+   <h2 class="govuk-heading-m">@messages("checkYourAnswers.nowSend")</h2>
 
-        <div class="govuk-body">@messages("checkYourAnswers.bySubmitting")</div>
+   <div class="govuk-body">@messages("checkYourAnswers.bySubmitting")</div>
 
-        @govukButton(
-            ButtonViewModel(messages("checkYourAnswers.confirmAndSend"))
-        )
-    }
+   @govukButton(ButtonViewModel(messages("checkYourAnswers.confirmAndSend")))
+ }
 }

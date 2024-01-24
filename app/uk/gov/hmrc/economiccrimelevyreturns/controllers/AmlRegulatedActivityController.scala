@@ -18,15 +18,16 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.AmlRegulatedActivityDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
-import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
-import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmlRegulatedActivityPageNavigator
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityView
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmlRegulatedActivityView, ErrorTemplate}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -37,13 +38,15 @@ class AmlRegulatedActivityController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
-  eclReturnsConnector: EclReturnsConnector,
+  eclReturnsService: ReturnsService,
+  eclLiabilityService: EclCalculatorService,
   formProvider: AmlRegulatedActivityFormProvider,
-  pageNavigator: AmlRegulatedActivityPageNavigator,
   dataCleanup: AmlRegulatedActivityDataCleanup,
   view: AmlRegulatedActivityView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
+    with BaseController
+    with ErrorHandler
     with I18nSupport {
 
   val form: Form[Boolean] = formProvider()
@@ -53,19 +56,44 @@ class AmlRegulatedActivityController @Inject() (
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     form
       .bindFromRequest()
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
-        amlRegulatedActivity =>
-          eclReturnsConnector
-            .upsertReturn(
-              dataCleanup
-                .cleanup(request.eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(amlRegulatedActivity)))
+        carriedOutAmlRegulatedActivityForFullFy => {
+          val eclReturn =
+            dataCleanup.cleanup(
+              request.eclReturn.copy(
+                carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy)
+              )
             )
-            .flatMap { updatedReturn =>
-              pageNavigator.nextPage(mode, updatedReturn).map(Redirect)
-            }
+
+          (for {
+            unit <- eclReturnsService.upsertReturn(eclReturn).asResponseError
+          } yield unit)
+            .foldF(
+              err => Future.successful(routeError(err)),
+              _ => route(eclReturn, carriedOutAmlRegulatedActivityForFullFy, mode).map(Redirect)
+            )
+        }
       )
   }
+
+  private def route(eclReturn: EclReturn, carriedOutAmlRegulatedActivityForFullFy: Boolean, mode: Mode)(implicit
+    requestHeader: RequestHeader
+  ) =
+    carriedOutAmlRegulatedActivityForFullFy match {
+      case true  =>
+        (for {
+          calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
+          calculatedReturn     = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
+          _                   <- eclReturnsService.upsertReturn(calculatedReturn).asResponseError
+        } yield calculatedLiability).fold(
+          error => routes.NotableErrorController.answersAreInvalid(),
+          _ => routes.AmountDueController.onPageLoad(mode)
+        )
+      case false => Future.successful(routes.AmlRegulatedActivityLengthController.onPageLoad(mode))
+    }
+
 }
