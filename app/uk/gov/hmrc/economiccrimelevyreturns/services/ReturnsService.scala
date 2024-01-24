@@ -19,7 +19,8 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 import cats.data.EitherT
 import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, GetEclReturnSubmissionResponse, ReturnType, SubmitEclReturnResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
+import uk.gov.hmrc.economiccrimelevyreturns.models.{Bands, CalculatedLiability, EclAmount, EclReturn, FirstTimeReturn, GetEclReturnSubmissionResponse, ReturnType, SubmitEclReturnResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, DataValidationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, UpstreamErrorResponse}
@@ -153,15 +154,34 @@ class ReturnsService @Inject() (
         }
     }
 
-  def updateReturnFromSubmission(eclReturnSubmission: GetEclReturnSubmissionResponse, eclReturnOpt: Option[EclReturn])(
-    implicit hc: HeaderCarrier
+  def updateReturnFromSubmission(
+    submission: GetEclReturnSubmissionResponse,
+    eclReturnOpt: Option[EclReturn],
+    calculatedLiability: CalculatedLiability
   ): EitherT[Future, DataHandlingError, EclReturn] =
     EitherT {
       eclReturnOpt match {
         case None            => Future.successful(Left(DataHandlingError.BadGateway(reason = "message", code = 1)))
         case Some(eclReturn) =>
+          val declarationDetails = submission.declarationDetails
+          val returnDetails      = submission.returnDetails
+
           val updatedReturn = eclReturn.copy(
+            relevantAp12Months = Some(returnDetails.accountingPeriodLength == MinMaxValues.AmlDaysMax),
+            relevantApLength = Some(returnDetails.accountingPeriodLength),
+            relevantApRevenue = Some(returnDetails.accountingPeriodRevenue),
+            carriedOutAmlRegulatedActivityForFullFy = returnDetails.numberOfDaysRegulatedActivityTookPlace match {
+              case None               => None
+              case Some(numberOfDays) => Some(numberOfDays == MinMaxValues.AmlDaysMax)
+            },
+            amlRegulatedActivityLength = returnDetails.numberOfDaysRegulatedActivityTookPlace,
+            calculatedLiability = Some(calculatedLiability),
+            contactName = Some(declarationDetails.name),
+            contactRole = Some(declarationDetails.positionInCompany),
+            contactEmailAddress = Some(declarationDetails.emailAddress),
+            contactTelephoneNumber = Some(declarationDetails.telephoneNumber)
           )
+
           Future.successful(Right(updatedReturn))
       }
     }

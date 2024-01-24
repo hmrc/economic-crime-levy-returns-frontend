@@ -56,7 +56,7 @@ class EclCalculatorService @Inject() (
                                                 )
     } yield response
 
-  private def getCalculatedLiability(
+  def getCalculatedLiability(
     relevantApLength: Int,
     relevantApRevenue: BigDecimal,
     amlRegulatedActivityLength: Int
