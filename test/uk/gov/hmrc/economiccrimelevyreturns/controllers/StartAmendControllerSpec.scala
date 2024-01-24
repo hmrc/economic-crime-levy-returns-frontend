@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, EclAccountError}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EclCalculatorService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{NoObligationForPeriodView, StartAmendView}
 
 import scala.concurrent.Future
@@ -33,9 +33,10 @@ import scala.concurrent.Future.unit
 
 class StartAmendControllerSpec extends SpecBase {
 
-  val mockEclAccountService: EclAccountService = mock[EclAccountService]
-  val mockEclReturnsService: ReturnsService    = mock[ReturnsService]
-  val mockSessionService: SessionService       = mock[SessionService]
+  val mockEclAccountService: EclAccountService      = mock[EclAccountService]
+  val mockEclReturnsService: ReturnsService         = mock[ReturnsService]
+  val mockSessionService: SessionService            = mock[SessionService]
+  val mockEclLiabilityService: EclCalculatorService = mock[EclCalculatorService]
 
   val view: StartAmendView                                 = app.injector.instanceOf[StartAmendView]
   val noObligationForPeriodView: NoObligationForPeriodView = app.injector.instanceOf[NoObligationForPeriodView]
@@ -47,7 +48,9 @@ class StartAmendControllerSpec extends SpecBase {
     returnsService = mockEclReturnsService,
     sessionService = mockSessionService,
     noObligationForPeriodView = noObligationForPeriodView,
-    view = view
+    view = view,
+    appConfig,
+    mockEclLiabilityService
   )
 
   "onPageLoad" should {
