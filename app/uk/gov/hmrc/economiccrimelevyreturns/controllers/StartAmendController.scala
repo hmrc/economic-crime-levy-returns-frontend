@@ -101,8 +101,11 @@ class StartAmendController @Inject() (
       }
       eclReturn           <- returnsService.getReturn(request.internalId).asResponseError
       updatedReturn       <-
-        returnsService
-          .transformSubmissionToEclReturn(eclReturnSubmission, eclReturn, calculatedLiability)
+        EitherT
+          .fromEither[Future](
+            returnsService
+              .transformSubmissionToEclReturn(eclReturnSubmission, eclReturn, calculatedLiability)
+          )
           .asResponseError
       unit                <- returnsService.upsertReturn(updatedReturn).asResponseError
     } yield unit).fold(

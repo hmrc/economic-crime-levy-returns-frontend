@@ -158,31 +158,29 @@ class ReturnsService @Inject() (
     submission: GetEclReturnSubmissionResponse,
     eclReturnOption: Option[EclReturn],
     calculatedLiability: CalculatedLiability
-  ): EitherT[Future, DataHandlingError, EclReturn] =
-    EitherT {
-      Future.successful(eclReturnOption match {
-        case None            => Left(DataHandlingError.NotFound(message = "Ecl return not found"))
-        case Some(eclReturn) =>
-          val declarationDetails = submission.declarationDetails
-          val returnDetails      = submission.returnDetails
+  ): Either[DataHandlingError, EclReturn] =
+    eclReturnOption match {
+      case None            => Left(DataHandlingError.NotFound(message = "Ecl return not found"))
+      case Some(eclReturn) =>
+        val declarationDetails = submission.declarationDetails
+        val returnDetails      = submission.returnDetails
 
-          val updatedReturn = eclReturn.copy(
-            relevantAp12Months = Some(returnDetails.accountingPeriodLength == MinMaxValues.AmlDaysMax),
-            relevantApLength = Some(returnDetails.accountingPeriodLength),
-            relevantApRevenue = Some(returnDetails.accountingPeriodRevenue),
-            carriedOutAmlRegulatedActivityForFullFy = returnDetails.numberOfDaysRegulatedActivityTookPlace match {
-              case None               => None
-              case Some(numberOfDays) => Some(numberOfDays == MinMaxValues.AmlDaysMax)
-            },
-            amlRegulatedActivityLength = returnDetails.numberOfDaysRegulatedActivityTookPlace,
-            calculatedLiability = Some(calculatedLiability),
-            contactName = Some(declarationDetails.name),
-            contactRole = Some(declarationDetails.positionInCompany),
-            contactEmailAddress = Some(declarationDetails.emailAddress),
-            contactTelephoneNumber = Some(declarationDetails.telephoneNumber)
-          )
+        val updatedReturn = eclReturn.copy(
+          relevantAp12Months = Some(returnDetails.accountingPeriodLength == MinMaxValues.AmlDaysMax),
+          relevantApLength = Some(returnDetails.accountingPeriodLength),
+          relevantApRevenue = Some(returnDetails.accountingPeriodRevenue),
+          carriedOutAmlRegulatedActivityForFullFy = returnDetails.numberOfDaysRegulatedActivityTookPlace match {
+            case None               => None
+            case Some(numberOfDays) => Some(numberOfDays == MinMaxValues.AmlDaysMax)
+          },
+          amlRegulatedActivityLength = returnDetails.numberOfDaysRegulatedActivityTookPlace,
+          calculatedLiability = Some(calculatedLiability),
+          contactName = Some(declarationDetails.name),
+          contactRole = Some(declarationDetails.positionInCompany),
+          contactEmailAddress = Some(declarationDetails.emailAddress),
+          contactTelephoneNumber = Some(declarationDetails.telephoneNumber)
+        )
 
-          Right(updatedReturn)
-      })
+        Right(updatedReturn)
     }
 }

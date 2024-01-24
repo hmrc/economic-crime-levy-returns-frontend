@@ -145,22 +145,20 @@ class ReturnsServiceSpec extends SpecBase {
         validGetEclReturnSubmissionResponse: ValidGetEclReturnSubmissionResponse,
         calculatedLiability: CalculatedLiability
       ) =>
-        val result = await(
+        val result =
           service
             .transformSubmissionToEclReturn(
               validGetEclReturnSubmissionResponse.response,
               Some(validEclReturn.eclReturn),
               calculatedLiability
             )
-            .value
-        )
 
         result.isRight shouldBe true
     }
 
     "return DataHandlingError.NotFound when EclReturn is None" in {
 
-      val result = await(service.transformSubmissionToEclReturn(null, None, null).value)
+      val result = service.transformSubmissionToEclReturn(null, None, null)
 
       result shouldBe Left(DataHandlingError.NotFound("Ecl return not found"))
     }
