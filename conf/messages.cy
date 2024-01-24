@@ -230,6 +230,7 @@ checkYourAnswers.amendReason.label = Gwybodaeth ychwanegol
 checkYourAnswers.nowSend = Cyflwynwch eich datganiad nawr
 checkYourAnswers.bySubmitting = Drwy gyflwyno’r datganiad hwn, rydych yn cadarnhau, hyd eithaf eich gwybodaeth, fod y manylion a rowch yn gywir.
 checkYourAnswers.confirmAndSend = Cadarnhau ac anfon
+checkYourAnswers.cancel = <a href="{0}" class="govuk-link"></a>
 
 submitted.title = Datganiad wedi’i gyflwyno
 submitted.heading = Datganiad wedi’i gyflwyno

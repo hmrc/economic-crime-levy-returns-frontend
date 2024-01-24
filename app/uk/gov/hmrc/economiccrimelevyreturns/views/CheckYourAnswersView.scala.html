@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+
 @this(
 layout: templates.Layout,
 formHelper: FormWithCSRF,
@@ -21,7 +23,7 @@ govukSummaryList: GovukSummaryList,
 govukButton: GovukButton
 )
 
-@(amendReason: SummaryList, eclDetails: SummaryList, contactDetails: SummaryList, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
+@(amendReason: SummaryList, eclDetails: SummaryList, contactDetails: SummaryList, isAmendment: Boolean, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(messages("checkYourAnswers.title")), startAmendUrl = startAmendUrl) {
  @formHelper(action = CheckYourAnswersController.onSubmit()) {
@@ -49,5 +51,9 @@ govukButton: GovukButton
    <div class="govuk-body">@messages("checkYourAnswers.bySubmitting")</div>
 
    @govukButton(ButtonViewModel(messages("checkYourAnswers.confirmAndSend")))
+
+  @if(isAmendment) {
+<p class="govuk-body">@Html(messages("checkYourAnswers.cancel", s"${routes.CancelReturnAmendmentController.onPageLoad().url}"))</p>
+  }
  }
 }

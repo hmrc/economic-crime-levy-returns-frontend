@@ -88,13 +88,14 @@ class CheckYourAnswersController @Inject() (
   ).withCssClass("govuk-!-margin-bottom-9")
 
   def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    val isAmendment = request.eclReturn.returnType.contains(AmendReturn)
     (for {
       errors <- returnsService.getReturnValidationErrors(request.internalId)(hc).asResponseError
     } yield errors).fold(
       error => routeError(error),
       {
         case Some(_) => Redirect(routes.NotableErrorController.answersAreInvalid())
-        case None    => Ok(view(amendReasonDetails(), eclDetails(), contactDetails(), request.startAmendUrl))
+        case None    => Ok(view(amendReasonDetails(), eclDetails(), contactDetails(), isAmendment, request.startAmendUrl))
       }
     )
   }
@@ -102,7 +103,8 @@ class CheckYourAnswersController @Inject() (
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
 
-    val htmlView = view(amendReasonDetails(), eclDetails(), contactDetails())
+    val isAmendment = request.eclReturn.returnType.contains(AmendReturn)
+    val htmlView    = view(amendReasonDetails(), eclDetails(), contactDetails(), isAmendment)
 
     val base64EncodedHtmlView: String = base64EncodeHtmlView(htmlView.body)
 
