@@ -89,29 +89,39 @@ class StartAmendController @Inject() (
   ): Future[Result] =
     (for {
       eclReturnSubmission <- returnsService.getEclReturnSubmission(periodKey, eclRegistrationReference).asResponseError
-      calculatedLiability <- {
-        val returnDetails = eclReturnSubmission.returnDetails
-        eclCalculatorService
-          .getCalculatedLiability(
-            relevantApLength = returnDetails.accountingPeriodLength,
-            relevantApRevenue = returnDetails.accountingPeriodRevenue,
-            amlRegulatedActivityLength = returnDetails.numberOfDaysRegulatedActivityTookPlace.getOrElse(0)
-          )
-          .asResponseError
-      }
+      calculatedLiability <- getCalculatedLiability(eclReturnSubmission)
       eclReturn           <- returnsService.getReturn(request.internalId).asResponseError
-      updatedReturn       <-
-        EitherT
-          .fromEither[Future](
-            returnsService
-              .transformSubmissionToEclReturn(eclReturnSubmission, eclReturn, calculatedLiability)
-          )
-          .asResponseError
+      updatedReturn       <- transformEclSubmissionToEclReturn(eclReturnSubmission, calculatedLiability, eclReturn)
       unit                <- returnsService.upsertReturn(updatedReturn).asResponseError
     } yield unit).fold(
       error => routeError(error),
       _ => Redirect(routes.CheckYourAnswersController.onPageLoad().url)
     )
+
+  private def transformEclSubmissionToEclReturn(
+    eclReturnSubmission: GetEclReturnSubmissionResponse,
+    calculatedLiability: CalculatedLiability,
+    eclReturn: Option[EclReturn]
+  ): EitherT[Future, ResponseError, EclReturn] =
+    EitherT
+      .fromEither[Future](
+        returnsService
+          .transformSubmissionToEclReturn(eclReturnSubmission, eclReturn, calculatedLiability)
+      )
+      .asResponseError
+
+  private def getCalculatedLiability(
+    eclReturnSubmission: GetEclReturnSubmissionResponse
+  )(implicit hc: HeaderCarrier): EitherT[Future, ResponseError, CalculatedLiability] = {
+    val returnDetails = eclReturnSubmission.returnDetails
+    eclCalculatorService
+      .getCalculatedLiability(
+        relevantApLength = returnDetails.accountingPeriodLength,
+        relevantApRevenue = returnDetails.accountingPeriodRevenue,
+        amlRegulatedActivityLength = returnDetails.numberOfDaysRegulatedActivityTookPlace.getOrElse(0)
+      )
+      .asResponseError
+  }
 
   private def startAmendJourney(
     periodKey: String,
