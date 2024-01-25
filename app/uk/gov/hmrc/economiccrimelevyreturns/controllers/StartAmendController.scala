@@ -74,7 +74,7 @@ class StartAmendController @Inject() (
                 if (appConfig.getEclReturnEnabled) {
                   routeToCheckYourAnswers(periodKey, request.eclRegistrationReference)
                 } else {
-                  Future.successful(startAmendJourney(periodKey, returnNumber, obligationData, startAmendUrl))
+                  Future.successful(startAmendJourney(returnNumber, obligationData, startAmendUrl))
                 }
               case None                 => Future.successful(Ok(noObligationForPeriodView()))
             }
@@ -124,7 +124,6 @@ class StartAmendController @Inject() (
   }
 
   private def startAmendJourney(
-    periodKey: String,
     returnNumber: String,
     value: ObligationDetails,
     startAmendUrl: String
