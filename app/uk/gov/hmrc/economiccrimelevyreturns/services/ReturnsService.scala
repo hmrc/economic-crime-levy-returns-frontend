@@ -154,7 +154,7 @@ class ReturnsService @Inject() (
         }
     }
 
-  def transformSubmissionToEclReturn(
+  def transformEclReturnSubmissionToEclReturn(
     submission: GetEclReturnSubmissionResponse,
     eclReturnOption: Option[EclReturn],
     calculatedLiability: CalculatedLiability

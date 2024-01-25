@@ -91,14 +91,14 @@ class StartAmendController @Inject() (
       eclReturnSubmission <- returnsService.getEclReturnSubmission(periodKey, eclRegistrationReference).asResponseError
       calculatedLiability <- getCalculatedLiability(eclReturnSubmission)
       eclReturn           <- returnsService.getReturn(request.internalId).asResponseError
-      updatedReturn       <- transformEclSubmissionToEclReturn(eclReturnSubmission, calculatedLiability, eclReturn)
+      updatedReturn       <- transformEclReturnSubmissionToEclReturn(eclReturnSubmission, calculatedLiability, eclReturn)
       unit                <- returnsService.upsertReturn(updatedReturn).asResponseError
     } yield unit).fold(
       error => routeError(error),
       _ => Redirect(routes.CheckYourAnswersController.onPageLoad().url)
     )
 
-  private def transformEclSubmissionToEclReturn(
+  private def transformEclReturnSubmissionToEclReturn(
     eclReturnSubmission: GetEclReturnSubmissionResponse,
     calculatedLiability: CalculatedLiability,
     eclReturn: Option[EclReturn]
@@ -106,7 +106,7 @@ class StartAmendController @Inject() (
     EitherT
       .fromEither[Future](
         returnsService
-          .transformSubmissionToEclReturn(eclReturnSubmission, eclReturn, calculatedLiability)
+          .transformEclReturnSubmissionToEclReturn(eclReturnSubmission, eclReturn, calculatedLiability)
       )
       .asResponseError
 

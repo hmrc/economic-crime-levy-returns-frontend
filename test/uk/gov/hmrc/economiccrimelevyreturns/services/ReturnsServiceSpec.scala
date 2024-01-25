@@ -147,7 +147,7 @@ class ReturnsServiceSpec extends SpecBase {
       ) =>
         val result =
           service
-            .transformSubmissionToEclReturn(
+            .transformEclReturnSubmissionToEclReturn(
               validGetEclReturnSubmissionResponse.response,
               Some(validEclReturn.eclReturn),
               calculatedLiability
@@ -158,7 +158,7 @@ class ReturnsServiceSpec extends SpecBase {
 
     "return DataHandlingError.NotFound when EclReturn is None" in {
 
-      val result = service.transformSubmissionToEclReturn(null, None, null)
+      val result = service.transformEclReturnSubmissionToEclReturn(null, None, null)
 
       result shouldBe Left(DataHandlingError.NotFound("Ecl return not found"))
     }
