@@ -128,7 +128,6 @@ class StartAmendController @Inject() (
     value: ObligationDetails,
     startAmendUrl: String
   )(implicit
-    hc: HeaderCarrier,
     request: AuthorisedRequest[_]
   ): Result =
     Ok(
