@@ -72,7 +72,7 @@ class StartAmendController @Inject() (
             {
               case Some(obligationData) =>
                 if (appConfig.getEclReturnEnabled) {
-                  routeToCheckYourAnswers(periodKey, request.eclRegistrationReference)
+                  routeToAmendReason(periodKey, request.eclRegistrationReference)
                 } else {
                   Future.successful(startAmendJourney(returnNumber, obligationData, startAmendUrl))
                 }
@@ -83,7 +83,7 @@ class StartAmendController @Inject() (
       }
   }
 
-  private def routeToCheckYourAnswers(periodKey: String, eclRegistrationReference: String)(implicit
+  private def routeToAmendReason(periodKey: String, eclRegistrationReference: String)(implicit
     hc: HeaderCarrier,
     request: AuthorisedRequest[AnyContent]
   ): Future[Result] =
@@ -95,7 +95,7 @@ class StartAmendController @Inject() (
       unit                <- returnsService.upsertReturn(updatedReturn).asResponseError
     } yield unit).fold(
       error => routeError(error),
-      _ => Redirect(routes.CheckYourAnswersController.onPageLoad().url)
+      _ => Redirect(routes.AmendReasonController.onPageLoad(CheckMode).url)
     )
 
   private def transformEclReturnSubmissionToEclReturn(

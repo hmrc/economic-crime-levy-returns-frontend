@@ -70,6 +70,7 @@ trait SpecBase
   val messages: Messages                               = messagesApi.preferred(fakeRequest)
   val bodyParsers: PlayBodyParsers                     = app.injector.instanceOf[PlayBodyParsers]
   val eclRegistrationReference: String                 = "test-ecl-registration-reference"
+  val eclReturnReference: String                       = "test-ecl-return-reference"
   val config: Config                                   = app.injector.instanceOf[Config]
   val actorSystem: ActorSystem                         = ActorSystem("actor")
   val periodKey: String                                = "22XY"
