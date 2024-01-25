@@ -49,6 +49,8 @@ abstract class ISpecBase
   implicit lazy val materializer: Materializer = Materializer(system)
   implicit def ec: ExecutionContext            = global
 
+  def configOverrides: Map[String, Any] = Map()
+
   val additionalAppConfig: Map[String, Any] = Map(
     "metrics.enabled"  -> false,
     "auditing.enabled" -> false
@@ -59,7 +61,7 @@ abstract class ISpecBase
     "economic-crime-levy-account",
     "email",
     "enrolment-store-proxy"
-  )
+  ) ++ configOverrides
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()

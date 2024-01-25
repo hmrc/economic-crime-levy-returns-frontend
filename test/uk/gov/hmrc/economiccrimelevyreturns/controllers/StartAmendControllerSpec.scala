@@ -62,18 +62,19 @@ class StartAmendControllerSpec extends SpecBase {
 
   "onPageLoad" should {
     "redirect to amend reason screen" in forAll {
-      (obligationDetails: ObligationDetails,
-       validEclReturn: ValidEclReturn,
-       validGetEclReturnSubmission: ValidGetEclReturnSubmissionResponse,
-       calculatedLiability: CalculatedLiability,
+      (
+        obligationDetails: ObligationDetails,
+        validEclReturn: ValidEclReturn,
+        validGetEclReturnSubmission: ValidGetEclReturnSubmissionResponse,
+        calculatedLiability: CalculatedLiability
       ) =>
-
         val openObligation = obligationDetails.copy(status = Open, periodKey = periodKey)
         val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
 
         val validAmendReturn = validEclReturn.copy(
-          eclReturn = validEclReturn.eclReturn.copy(obligationDetails = Some(openObligation),
-            returnType = Some(AmendReturn)))
+          eclReturn =
+            validEclReturn.eclReturn.copy(obligationDetails = Some(openObligation), returnType = Some(AmendReturn))
+        )
 
         when(mockEclAccountService.retrieveObligationData(any()))
           .thenReturn(
@@ -98,19 +99,31 @@ class StartAmendControllerSpec extends SpecBase {
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
-          .thenReturn(EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](Future.successful(Right(validGetEclReturnSubmission.response))))
+          .thenReturn(
+            EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
+              Future.successful(Right(validGetEclReturnSubmission.response))
+            )
+          )
 
-        when(mockEclReturnsService.transformEclReturnSubmissionToEclReturn(any(), any(),any()))
+        when(mockEclReturnsService.transformEclReturnSubmissionToEclReturn(any(), any(), any()))
           .thenReturn(Right(validEclReturn.eclReturn))
 
         when(mockSessionService.upsert(any())(any()))
           .thenReturn(unit)
 
         when(mockEclLiabilityService.getCalculatedLiability(any(), any(), any())(any()))
-          .thenReturn(EitherT[Future, LiabilityCalculationError, CalculatedLiability](Future.successful(Right(calculatedLiability))))
+          .thenReturn(
+            EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+              Future.successful(Right(calculatedLiability))
+            )
+          )
 
         val authorisedRequest: AuthorisedRequest[AnyContent] =
-          AuthorisedRequest.apply(fakeRequest, validEclReturn.eclReturn.internalId, validGetEclReturnSubmission.response.eclReference)
+          AuthorisedRequest.apply(
+            fakeRequest,
+            validEclReturn.eclReturn.internalId,
+            validGetEclReturnSubmission.response.eclReference
+          )
 
         val result: Future[Result] =
           controller.onPageLoad(periodKey = openObligation.periodKey, returnNumber = "ABC")(authorisedRequest)
@@ -170,13 +183,13 @@ class StartAmendControllerSpec extends SpecBase {
 
     "return INTERNAL_SERVER_ERROR when returnsService.getEclReturnSubmission fails" in forAll {
       (obligationDetails: ObligationDetails, validEclReturn: ValidEclReturn) =>
-
         val openObligation = obligationDetails.copy(status = Open, periodKey = periodKey)
         val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
 
         val validAmendReturn = validEclReturn.copy(
-          eclReturn = validEclReturn.eclReturn.copy(obligationDetails = Some(openObligation),
-            returnType = Some(AmendReturn)))
+          eclReturn =
+            validEclReturn.eclReturn.copy(obligationDetails = Some(openObligation), returnType = Some(AmendReturn))
+        )
 
         when(mockEclAccountService.retrieveObligationData(any()))
           .thenReturn(
@@ -213,16 +226,18 @@ class StartAmendControllerSpec extends SpecBase {
     }
 
     "return INTERNAL_SERVER_ERROR when eclCalculatorService.getCalculatedLiability fails" in forAll {
-      (obligationDetails: ObligationDetails,
-       validEclReturn: ValidEclReturn,
-       validGetEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
-
+      (
+        obligationDetails: ObligationDetails,
+        validEclReturn: ValidEclReturn,
+        validGetEclReturnSubmission: ValidGetEclReturnSubmissionResponse
+      ) =>
         val openObligation = obligationDetails.copy(status = Open, periodKey = periodKey)
         val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
 
         val validAmendReturn = validEclReturn.copy(
-          eclReturn = validEclReturn.eclReturn.copy(obligationDetails = Some(openObligation),
-            returnType = Some(AmendReturn)))
+          eclReturn =
+            validEclReturn.eclReturn.copy(obligationDetails = Some(openObligation), returnType = Some(AmendReturn))
+        )
 
         when(mockEclAccountService.retrieveObligationData(any()))
           .thenReturn(
@@ -247,10 +262,18 @@ class StartAmendControllerSpec extends SpecBase {
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
-          .thenReturn(EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](Future.successful(Right(validGetEclReturnSubmission.response))))
+          .thenReturn(
+            EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
+              Future.successful(Right(validGetEclReturnSubmission.response))
+            )
+          )
 
         when(mockEclLiabilityService.getCalculatedLiability(any(), any(), any())(any()))
-          .thenReturn(EitherT[Future, LiabilityCalculationError, CalculatedLiability](Future.successful(Left(LiabilityCalculationError.InternalUnexpectedError(None, None)))))
+          .thenReturn(
+            EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+              Future.successful(Left(LiabilityCalculationError.InternalUnexpectedError(None, None)))
+            )
+          )
 
         val result = controller.onPageLoad(periodKey, eclReturnReference)(fakeRequest)
 
@@ -258,17 +281,19 @@ class StartAmendControllerSpec extends SpecBase {
     }
 
     "return INTERNAL_SERVER_ERROR when returnsService.upsertReturn fails" in forAll {
-      (obligationDetails: ObligationDetails,
-       validEclReturn: ValidEclReturn,
-       validGetEclReturnSubmission: ValidGetEclReturnSubmissionResponse,
-       calculatedLiability: CalculatedLiability) =>
-
+      (
+        obligationDetails: ObligationDetails,
+        validEclReturn: ValidEclReturn,
+        validGetEclReturnSubmission: ValidGetEclReturnSubmissionResponse,
+        calculatedLiability: CalculatedLiability
+      ) =>
         val openObligation = obligationDetails.copy(status = Open, periodKey = periodKey)
         val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
 
         val validAmendReturn = validEclReturn.copy(
-          eclReturn = validEclReturn.eclReturn.copy(obligationDetails = Some(openObligation),
-            returnType = Some(AmendReturn)))
+          eclReturn =
+            validEclReturn.eclReturn.copy(obligationDetails = Some(openObligation), returnType = Some(AmendReturn))
+        )
 
         when(mockEclAccountService.retrieveObligationData(any()))
           .thenReturn(
@@ -293,13 +318,25 @@ class StartAmendControllerSpec extends SpecBase {
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
-          .thenReturn(EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](Future.successful(Right(validGetEclReturnSubmission.response))))
+          .thenReturn(
+            EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
+              Future.successful(Right(validGetEclReturnSubmission.response))
+            )
+          )
 
         when(mockEclLiabilityService.getCalculatedLiability(any(), any(), any())(any()))
-          .thenReturn(EitherT[Future, LiabilityCalculationError, CalculatedLiability](Future.successful(Right(calculatedLiability))))
+          .thenReturn(
+            EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+              Future.successful(Right(calculatedLiability))
+            )
+          )
 
         when(mockEclReturnsService.upsertReturn(any())(any()))
-          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))))
+          .thenReturn(
+            EitherT[Future, DataHandlingError, Unit](
+              Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
+            )
+          )
 
         val result = controller.onPageLoad(periodKey, eclReturnReference)(fakeRequest)
 
