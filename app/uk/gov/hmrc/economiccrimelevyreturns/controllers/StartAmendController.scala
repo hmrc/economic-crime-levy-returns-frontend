@@ -19,11 +19,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import cats.data.EitherT
 import play.api.i18n.I18nSupport
 import play.api.mvc._
+import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, ResponseError}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EclCalculatorService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -41,7 +42,9 @@ class StartAmendController @Inject() (
   returnsService: ReturnsService,
   sessionService: SessionService,
   noObligationForPeriodView: NoObligationForPeriodView,
-  view: StartAmendView
+  view: StartAmendView,
+  appConfig: AppConfig,
+  eclCalculatorService: EclCalculatorService
 )(implicit ex: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with I18nSupport
@@ -50,32 +53,91 @@ class StartAmendController @Inject() (
 
   def onPageLoad(periodKey: String, returnNumber: String): Action[AnyContent] = authorise.async { implicit request =>
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
-    (for {
-      obligationData    <- eclAccountService.retrieveObligationData.asResponseError
-      obligationDetails <- processObligationDetails(obligationData, periodKey).asResponseError
-    } yield obligationDetails).fold(
-      err => routeError(err),
-      {
-        case Some(value) =>
-          val startAmendUrl = routes.StartAmendController.onPageLoad(periodKey, returnNumber).url
-          sessionService.upsert(
-            SessionData(
-              request.internalId,
-              Map(SessionKeys.StartAmendUrl -> startAmendUrl)
-            )
+
+    val startAmendUrl = routes.StartAmendController.onPageLoad(periodKey, returnNumber).url
+    sessionService
+      .upsert(
+        SessionData(
+          request.internalId,
+          Map(SessionKeys.StartAmendUrl -> startAmendUrl)
+        )
+      )
+      .flatMap { _ =>
+        (for {
+          obligationData    <- eclAccountService.retrieveObligationData.asResponseError
+          obligationDetails <- processObligationDetails(obligationData, periodKey).asResponseError
+        } yield obligationDetails)
+          .fold(
+            err => Future.successful(routeError(err)),
+            {
+              case Some(obligationData) =>
+                if (appConfig.getEclReturnEnabled) {
+                  routeToAmendReason(periodKey, request.eclRegistrationReference)
+                } else {
+                  Future.successful(startAmendJourney(returnNumber, obligationData, startAmendUrl))
+                }
+              case None                 => Future.successful(Ok(noObligationForPeriodView()))
+            }
           )
-          Ok(
-            view(
-              returnNumber,
-              value.inboundCorrespondenceFromDate,
-              value.inboundCorrespondenceToDate,
-              Some(startAmendUrl)
-            )
-          )
-        case None        => Ok(noObligationForPeriodView())
+          .flatten
       }
-    )
   }
+
+  private def routeToAmendReason(periodKey: String, eclRegistrationReference: String)(implicit
+    hc: HeaderCarrier,
+    request: AuthorisedRequest[AnyContent]
+  ): Future[Result] =
+    (for {
+      eclReturnSubmission <- returnsService.getEclReturnSubmission(periodKey, eclRegistrationReference).asResponseError
+      calculatedLiability <- getCalculatedLiability(eclReturnSubmission)
+      eclReturn           <- returnsService.getReturn(request.internalId).asResponseError
+      updatedReturn       <- transformEclReturnSubmissionToEclReturn(eclReturnSubmission, calculatedLiability, eclReturn)
+      unit                <- returnsService.upsertReturn(updatedReturn).asResponseError
+    } yield unit).fold(
+      error => routeError(error),
+      _ => Redirect(routes.AmendReasonController.onPageLoad(CheckMode).url)
+    )
+
+  private def transformEclReturnSubmissionToEclReturn(
+    eclReturnSubmission: GetEclReturnSubmissionResponse,
+    calculatedLiability: CalculatedLiability,
+    eclReturn: Option[EclReturn]
+  ): EitherT[Future, ResponseError, EclReturn] =
+    EitherT
+      .fromEither[Future](
+        returnsService
+          .transformEclReturnSubmissionToEclReturn(eclReturnSubmission, eclReturn, calculatedLiability)
+      )
+      .asResponseError
+
+  private def getCalculatedLiability(
+    eclReturnSubmission: GetEclReturnSubmissionResponse
+  )(implicit hc: HeaderCarrier): EitherT[Future, ResponseError, CalculatedLiability] = {
+    val returnDetails = eclReturnSubmission.returnDetails
+    eclCalculatorService
+      .getCalculatedLiability(
+        relevantApLength = returnDetails.accountingPeriodLength,
+        relevantApRevenue = returnDetails.accountingPeriodRevenue,
+        amlRegulatedActivityLength = returnDetails.numberOfDaysRegulatedActivityTookPlace.getOrElse(0)
+      )
+      .asResponseError
+  }
+
+  private def startAmendJourney(
+    returnNumber: String,
+    value: ObligationDetails,
+    startAmendUrl: String
+  )(implicit
+    request: AuthorisedRequest[_]
+  ): Result =
+    Ok(
+      view(
+        returnNumber,
+        value.inboundCorrespondenceFromDate,
+        value.inboundCorrespondenceToDate,
+        Some(startAmendUrl)
+      )
+    )
 
   private def validatePeriodKey(eclReturn: EclReturn, obligationDetails: ObligationDetails, periodKey: String)(implicit
     request: AuthorisedRequest[_]

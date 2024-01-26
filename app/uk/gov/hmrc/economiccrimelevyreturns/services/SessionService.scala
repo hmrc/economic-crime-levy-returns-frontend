@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
-import play.api.http.Status.NOT_FOUND
 import play.api.mvc.Session
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.SessionDataConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -56,7 +55,7 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
         sessionRetrievalConnector
           .upsert(newSessionData)
       }
-      .recoverWith { case UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
+      .recoverWith { case _: NotFoundException =>
         sessionRetrievalConnector
           .upsert(sessionData)
       }

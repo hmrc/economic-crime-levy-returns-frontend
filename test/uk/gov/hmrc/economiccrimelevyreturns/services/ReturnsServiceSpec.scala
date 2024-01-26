@@ -18,11 +18,13 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
-import play.api.http.Status.NOT_FOUND
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND}
+import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
@@ -36,7 +38,7 @@ class ReturnsServiceSpec extends SpecBase {
     mockAuditService
   )
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockAuditService)
     reset(mockEclReturnsConnector)
   }
@@ -80,4 +82,85 @@ class ReturnsServiceSpec extends SpecBase {
     }
   }
 
+  "getEclReturnSubmission" should {
+    "return a return submission response when call to returns connector succeeds" in forAll {
+      (
+        validResponse: ValidGetEclReturnSubmissionResponse
+      ) =>
+        when(
+          mockEclReturnsConnector
+            .getEclReturnSubmission(ArgumentMatchers.eq(periodKey), ArgumentMatchers.eq(eclRegistrationReference))(
+              any()
+            )
+        )
+          .thenReturn(Future.successful(validResponse.response))
+
+        val result = await(service.getEclReturnSubmission(periodKey, eclRegistrationReference).value)
+
+        result shouldBe Right(validResponse.response)
+    }
+
+    "return DataHandlingError.BadGateway when when call to returns connector fails with 5xx error" in {
+
+      val errorCode = INTERNAL_SERVER_ERROR
+      val message   = "INTERNAL_SERVER_ERROR"
+
+      when(
+        mockEclReturnsConnector
+          .getEclReturnSubmission(ArgumentMatchers.eq(periodKey), ArgumentMatchers.eq(eclRegistrationReference))(
+            any()
+          )
+      )
+        .thenReturn(Future.failed(UpstreamErrorResponse.apply(message, errorCode)))
+
+      val result =
+        await(service.getEclReturnSubmission(periodKey, eclRegistrationReference).value)
+
+      result shouldBe Left(DataHandlingError.BadGateway(message, errorCode))
+    }
+
+    "return DataHandlingError.InternalUnexpectedError when when call to returns connector fails with an unexpected error" in {
+
+      val throwable: Exception = new Exception()
+
+      when(
+        mockEclReturnsConnector
+          .getEclReturnSubmission(ArgumentMatchers.eq(periodKey), ArgumentMatchers.eq(eclRegistrationReference))(
+            any()
+          )
+      )
+        .thenReturn(Future.failed(throwable))
+
+      val result =
+        await(service.getEclReturnSubmission(periodKey, eclRegistrationReference).value)
+
+      result shouldBe Left(DataHandlingError.InternalUnexpectedError(Some(throwable), None))
+    }
+  }
+
+  "transformSubmissionToEclReturn" should {
+    "return a transformed valid submission to a valid ecl return" in forAll {
+      (
+        validEclReturn: ValidEclReturn,
+        validGetEclReturnSubmissionResponse: ValidGetEclReturnSubmissionResponse,
+        calculatedLiability: CalculatedLiability
+      ) =>
+        val result =
+          service
+            .transformEclReturnSubmissionToEclReturn(
+              validGetEclReturnSubmissionResponse.response,
+              Some(validEclReturn.eclReturn),
+              calculatedLiability
+            )
+
+        result.isRight shouldBe true
+    }
+
+    "return DataHandlingError.NotFound when EclReturn is None" in {
+
+      val result = service.transformEclReturnSubmissionToEclReturn(null, None, null)
+
+      result shouldBe Left(DataHandlingError.NotFound("Ecl return not found"))
+    }
+  }
 }

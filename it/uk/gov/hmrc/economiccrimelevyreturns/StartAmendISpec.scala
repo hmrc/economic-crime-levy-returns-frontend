@@ -12,6 +12,8 @@ import java.time.LocalDate
 
 class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
 
+  override def configOverrides: Map[String, Any] = Map("features.getEclReturnEnabled" -> "false")
+
   s"GET ${routes.StartAmendController.onPageLoad(":periodKey", ":chargeRef").url}" should {
     behave like authorisedActionRoute(routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference))
 
@@ -36,7 +38,14 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
       val startAmendUrl = routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference).url
       stubGetSession(
         SessionData(
-          internalId = emptyReturn.internalId,
+          internalId = testInternalId,
+          values = Map(SessionKeys.StartAmendUrl -> startAmendUrl)
+        )
+      )
+
+      stubUpsertSession(
+        SessionData(
+          internalId = testInternalId,
           values = Map(SessionKeys.StartAmendUrl -> startAmendUrl)
         )
       )
@@ -56,6 +65,15 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
       val obligationData = ObligationData(obligations = Seq.empty)
 
       stubGetObligations(obligationData)
+
+      val startAmendUrl = routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference).url
+      val emptyReturn   = EclReturn.empty(testInternalId, Some(AmendReturn))
+      stubUpsertSession(
+        SessionData(
+          internalId = emptyReturn.internalId,
+          values = Map(SessionKeys.StartAmendUrl -> startAmendUrl)
+        )
+      )
 
       val result = callRoute(FakeRequest(routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference)))
 

@@ -22,7 +22,7 @@ import com.typesafe.config.Config
 import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, SubmitEclReturnResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, GetEclReturnSubmissionResponse, SubmitEclReturnResponse}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
 
@@ -75,4 +75,10 @@ class ReturnsConnector @Inject() (
   def submitReturn(internalId: String)(implicit hc: HeaderCarrier): Future[SubmitEclReturnResponse] =
     httpClient.post(url"$eclReturnsUrl/submit-return/$internalId").executeAndDeserialise[SubmitEclReturnResponse]
 
+  def getEclReturnSubmission(periodKey: String, eclReference: String)(implicit
+    hc: HeaderCarrier
+  ): Future[GetEclReturnSubmissionResponse] =
+    httpClient
+      .get(url"$eclReturnsUrl/submission/$periodKey/$eclReference")
+      .executeAndDeserialise[GetEclReturnSubmissionResponse]
 }
