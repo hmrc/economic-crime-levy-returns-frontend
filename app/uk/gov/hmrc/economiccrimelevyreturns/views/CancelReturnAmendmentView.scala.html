@@ -26,15 +26,6 @@
 
 @(form: Form[Boolean], startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
-@accPeriod = {
-    @messages("relevantAp12Months.hidden1")
-}
-
-@accPeriodDetails = {
-    <p class="govuk-body">@messages("relevantAp12Months.hidden2")</p>
-    <p class="govuk-body">@messages("relevantAp12Months.hidden3")</p>
-}
-
 @layout(pageTitle = titleWithForm(form, messages("cancelReturnAmendment.title")), startAmendUrl = startAmendUrl) {
     @if(form.errors.nonEmpty) {
         @errorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "yes")))
