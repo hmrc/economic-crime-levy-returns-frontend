@@ -109,4 +109,54 @@ class EclLiabilityServiceSpec extends SpecBase {
     }
   }
 
+  "getCalculatedLiability" should {
+    "calculated liability when valid return" in {
+      (validEclReturn: ValidEclReturn, calculatedLiability: CalculatedLiability) =>
+        when(
+          mockEclCalculatorConnector.calculateLiability(
+            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength),
+            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApLength),
+            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue)
+          )(any())
+        ).thenReturn(Future.successful(calculatedLiability))
+
+        val result = await(
+          service
+            .getCalculatedLiability(
+              validEclReturn.eclLiabilityCalculationData.relevantApLength,
+              validEclReturn.eclLiabilityCalculationData.relevantApRevenue,
+              validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength
+            )
+            .value
+        )
+
+        result shouldBe Right(calculatedLiability)
+    }
+
+    "return 5xx UpstreamErrorResponse when unable to get calculated liability" in { (validEclReturn: ValidEclReturn) =>
+      val errorCode = INTERNAL_SERVER_ERROR
+
+      when(
+        when(
+          mockEclCalculatorConnector.calculateLiability(
+            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength),
+            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApLength),
+            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue)
+          )(any())
+        ).thenReturn(Future.failed(UpstreamErrorResponse("Internal server error", errorCode)))
+      )
+
+      val result = await(
+        service
+          .getCalculatedLiability(
+            validEclReturn.eclLiabilityCalculationData.relevantApLength,
+            validEclReturn.eclLiabilityCalculationData.relevantApRevenue,
+            validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength
+          )
+          .value
+      )
+
+      result shouldBe Left(LiabilityCalculationError.BadGateway(reason = "Internal server error", code = errorCode))
+    }
+  }
 }

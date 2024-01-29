@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns
 
+import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
@@ -23,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Medium
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn, ObligationDetails, SessionData}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn, GetEclReturnChargeDetails, GetEclReturnDeclarationDetails, GetEclReturnDetails, GetEclReturnSubmissionResponse, ObligationDetails, SessionData}
 
 import java.time.{Instant, LocalDate}
 import scala.math.BigDecimal.RoundingMode
@@ -42,9 +43,13 @@ final case class EclLiabilityCalculationData(
 
 final case class ValidEclReturn(eclReturn: EclReturn, eclLiabilityCalculationData: EclLiabilityCalculationData)
 
+final case class ValidGetEclReturnSubmissionResponse(response: GetEclReturnSubmissionResponse)
+
 trait EclTestData { self: Generators =>
 
   val FullYear: Int              = 365
+  private val MinRevenue: Double = 0.00
+  private val MaxRevenue: Double = 99999999999.99
   private val MinAmountDue       = 0
   private val MaxAmountDue       = 250000
   private val PeriodKeyLength    = 4
@@ -153,4 +158,27 @@ trait EclTestData { self: Generators =>
         values <- Arbitrary.arbitrary[Map[String, String]]
       } yield SessionData(id.toString, values, None)
     }
+
+  implicit val arbValidGetEclReturnSubmissionResponse: Arbitrary[ValidGetEclReturnSubmissionResponse] = Arbitrary {
+    for {
+      accountingPeriodRevenue <- bigDecimalInRange(MinRevenue, MaxRevenue)
+      amountOfEclDutyLiable   <- bigDecimalInRange(MinAmountDue, MaxAmountDue)
+      chargeDetails           <- Arbitrary.arbitrary[GetEclReturnChargeDetails]
+      declarationDetails      <- Arbitrary.arbitrary[GetEclReturnDeclarationDetails]
+      eclReference            <- Arbitrary.arbitrary[String]
+      processingDateTime      <- Arbitrary.arbitrary[String]
+      returnDetails           <- Arbitrary.arbitrary[GetEclReturnDetails]
+      submissionId            <- Arbitrary.arbitrary[String]
+    } yield ValidGetEclReturnSubmissionResponse(
+      GetEclReturnSubmissionResponse(
+        chargeDetails = chargeDetails,
+        declarationDetails = declarationDetails,
+        eclReference = eclReference,
+        processingDateTime = processingDateTime,
+        returnDetails = returnDetails
+          .copy(accountingPeriodRevenue = accountingPeriodRevenue, amountOfEclDutyLiable = amountOfEclDutyLiable),
+        submissionId = Some(submissionId)
+      )
+    )
+  }
 }

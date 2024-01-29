@@ -20,6 +20,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
 import play.api.libs.json.{JsNull, Json}
+import uk.gov.hmrc.economiccrimelevyreturns.ValidGetEclReturnSubmissionResponse
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SubmitEclReturnResponse}
@@ -218,6 +219,51 @@ class ReturnsConnectorSpec extends SpecBase {
         .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
       Try(await(connector.submitReturn(internalId))) match {
+        case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+          code shouldEqual errorCode
+        case _                                             => fail("expected UpstreamErrorResponse when an error is received from the returns service")
+      }
+    }
+  }
+
+  "getEclReturnSubmission" should {
+
+    val periodKey    = "22XY"
+    val eclReference = "AAA"
+
+    "return a Get ECL return submission response when the http client returns an Get ECL return submission response" in forAll {
+      (
+        validResponse: ValidGetEclReturnSubmissionResponse
+      ) =>
+        beforeEach()
+
+        when(mockHttpClient.get(any())(any())).thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.withBody(any())(any(), any(), any())).thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+          .thenReturn(
+            Future.successful(
+              HttpResponse.apply(OK, Json.stringify(Json.toJson(validResponse.response)))
+            )
+          )
+
+        val result = await(connector.getEclReturnSubmission(periodKey, eclRegistrationReference))
+
+        result shouldBe validResponse.response
+    }
+
+    "return UpstreamErrorResponse when call to returns service returns an error" in {
+      beforeEach()
+
+      val expectedUrl = url"$eclReturnsUrl/submission/$periodKey/$eclReference"
+      val errorCode   = INTERNAL_SERVER_ERROR
+
+      when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(errorCode, "INTERNAL_SERVER_ERROR")))
+
+      Try(await(connector.getEclReturnSubmission(periodKey, eclReference))) match {
         case Failure(UpstreamErrorResponse(_, code, _, _)) =>
           code shouldEqual errorCode
         case _                                             => fail("expected UpstreamErrorResponse when an error is received from the returns service")
