@@ -230,6 +230,7 @@ checkYourAnswers.amendReason.label = Additional Information
 checkYourAnswers.nowSend = Now submit your return
 checkYourAnswers.bySubmitting = By submitting this return, you are confirming that, to the best of your knowledge, the details you are providing are correct.
 checkYourAnswers.confirmAndSend = Confirm and send
+checkYourAnswers.cancel = <a href="{0}" class="govuk-link">Cancel this amendment</a>
 
 submitted.title = Return submitted
 submitted.heading = Return submitted
@@ -333,3 +334,8 @@ amendReason.title = Why are you requesting to amend your return?
 amendReason.h1 = Why are you requesting to amend your return?
 amendReason.p1 = Enter any information relating to your request to amend your return. Do not include personal or financial information, like your National Insurance number or credit card details.
 amendReason.error.required = Enter the reason why you are requesting to amend your return
+
+cancelReturnAmendment.title = Are you sure you want to cancel your request to amend your return?
+cancelReturnAmendment.heading = Are you sure you want to cancel your request to amend your return?
+cancelReturnAmendment.body = Your answers will be deleted.
+cancelReturnAmendment.error.required = Select yes if you want to cancel your request to amend your return

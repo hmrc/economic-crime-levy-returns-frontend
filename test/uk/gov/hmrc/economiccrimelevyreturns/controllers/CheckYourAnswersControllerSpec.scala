@@ -28,7 +28,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, DataValidationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SessionKeys, SubmitEclReturnResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, SessionKeys, SubmitEclReturnResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
@@ -107,8 +107,10 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           ).flatten
         ).withCssClass("govuk-!-margin-bottom-9")
 
+        val isAmendment = validEclReturn.eclReturn.returnType.contains(AmendReturn)
+
         status(result)          shouldBe OK
-        contentAsString(result) shouldBe view(amendReasonDetails, eclDetails, contactDetails)(
+        contentAsString(result) shouldBe view(amendReasonDetails, eclDetails, contactDetails, isAmendment)(
           fakeRequest,
           messages
         ).toString
