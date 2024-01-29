@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedActio
 import uk.gov.hmrc.economiccrimelevyreturns.forms.CancelReturnAmendmentFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.CancelReturnAmendmentView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{CancelReturnAmendmentView, ErrorTemplate}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
@@ -39,7 +39,7 @@ class CancelReturnAmendmentController @Inject() (
   formProvider: CancelReturnAmendmentFormProvider,
   appConfig: AppConfig,
   view: CancelReturnAmendmentView
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with I18nSupport
     with BaseController
@@ -61,7 +61,7 @@ class CancelReturnAmendmentController @Inject() (
             (for {
               _ <- returnsService.deleteReturn(request.eclReturn.internalId).asResponseError
             } yield ()).fold(
-              _ => Redirect(routes.NotableErrorController.answersAreInvalid()),
+              err => routeError(err),
               _ => Redirect(appConfig.eclAccountUrl)
             )
           } else {
