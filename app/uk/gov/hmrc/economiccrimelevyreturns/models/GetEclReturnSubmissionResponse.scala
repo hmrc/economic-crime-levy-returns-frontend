@@ -18,13 +18,13 @@ package uk.gov.hmrc.economiccrimelevyreturns.models
 
 import play.api.libs.json.{Json, OFormat}
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 
 final case class GetEclReturnSubmissionResponse(
   chargeDetails: GetEclReturnChargeDetails,
   declarationDetails: GetEclReturnDeclarationDetails,
   eclReference: String,
-  processingDateTime: String,
+  processingDateTime: Instant,
   returnDetails: GetEclReturnDetails,
   submissionId: Option[String]
 )
@@ -36,7 +36,7 @@ object GetEclReturnSubmissionResponse {
 final case class GetEclReturnChargeDetails(
   chargeReference: Option[String],
   periodKey: String,
-  receiptDate: LocalDate,
+  receiptDate: Instant,
   returnType: String
 )
 
@@ -60,7 +60,7 @@ final case class GetEclReturnDetails(
   accountingPeriodRevenue: BigDecimal,
   amountOfEclDutyLiable: BigDecimal,
   numberOfDaysRegulatedActivityTookPlace: Option[Int],
-  returnDate: String,
+  returnDate: LocalDate,
   revenueBand: Band
 )
 
