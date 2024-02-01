@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers
 
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.AmlDaysMax
 import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, FirstTimeReturn, GetEclReturnSubmissionResponse}
 
 trait TrackEclReturnChanges {
@@ -30,8 +31,8 @@ trait TrackEclReturnChanges {
   val hasRelevantAp12MonthsChanged: Boolean = eclReturnSubmission match {
     case Some(submission) =>
       submission.returnDetails.numberOfDaysRegulatedActivityTookPlace match {
-        case Some(numOfDays) => numOfDays <= 0 && eclReturn.relevantAp12Months.contains(true)
-        case None            => eclReturn.relevantAp12Months.contains(false)
+        case Some(_) => eclReturn.relevantAp12Months.isEmpty || eclReturn.relevantAp12Months.contains(false)
+        case None    => eclReturn.relevantAp12Months.contains(true)
       }
     case None             => false
   }
@@ -39,7 +40,7 @@ trait TrackEclReturnChanges {
   val hasRelevantApLengthChanged: Boolean = eclReturnSubmission match {
     case Some(submission) =>
       submission.returnDetails.numberOfDaysRegulatedActivityTookPlace match {
-        case Some(numOfDays) => eclReturn.relevantApLength.contains(numOfDays)
+        case Some(numOfDays) => !eclReturn.relevantApLength.contains(numOfDays)
         case None            => false
       }
     case None             => false
@@ -99,4 +100,46 @@ trait TrackEclReturnChanges {
       }
     case None             => false
   }
+
+  val hasContactNameChanged: Boolean = eclReturnSubmission match {
+    case Some(submission) =>
+      eclReturn.contactName match {
+        case Some(contactName) => !submission.declarationDetails.name.contains(contactName)
+        case None              => true
+      }
+    case None             => false
+  }
+
+  val hasContactRoleChanged: Boolean = eclReturnSubmission match {
+    case Some(submission) =>
+      eclReturn.contactRole match {
+        case Some(contactRole) => !submission.declarationDetails.positionInCompany.contains(contactRole)
+        case None              => true
+      }
+    case None             => false
+  }
+
+  val hasContactEmailAddressChanged: Boolean = eclReturnSubmission match {
+    case Some(submission) =>
+      eclReturn.contactEmailAddress match {
+        case Some(contactEmailAddress) => !submission.declarationDetails.emailAddress.contains(contactEmailAddress)
+        case None                      => true
+      }
+    case None             => false
+  }
+
+  val hasContactTelephoneNumberChanged: Boolean = eclReturnSubmission match {
+    case Some(submission) =>
+      eclReturn.contactTelephoneNumber match {
+        case Some(contactTelephoneNumber) =>
+          !submission.declarationDetails.telephoneNumber.contains(contactTelephoneNumber)
+        case None                         => true
+      }
+    case None             => false
+  }
+
+  val hasAllContactDetailsChanged: Boolean = hasContactNameChanged && hasContactRoleChanged &&
+    hasContactEmailAddressChanged && hasContactTelephoneNumberChanged
+
+  val hasAmendReason = eclReturn.amendReason.isDefined
 }

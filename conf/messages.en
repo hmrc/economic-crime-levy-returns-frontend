@@ -231,6 +231,9 @@ checkYourAnswers.nowSend = Now submit your return
 checkYourAnswers.bySubmitting = By submitting this return, you are confirming that, to the best of your knowledge, the details you are providing are correct.
 checkYourAnswers.confirmAndSend = Confirm and send
 checkYourAnswers.cancel = <a href="{0}" class="govuk-link">Cancel this amendment</a>
+checkYourAnswers.amendedAnswers = Amended answers
+checkYourAnswers.nowSendAmend = Now send your amended return
+checkYourAnswers.bySendingAmend = By sending this request to amend your return, you are confirming that, to the best of your knowledge, the details you are providing are correct.
 
 submitted.title = Return submitted
 submitted.heading = Return submitted

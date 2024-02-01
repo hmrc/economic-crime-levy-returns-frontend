@@ -20,7 +20,7 @@ import play.api.http.{ContentTypeOf, ContentTypes, Writeable}
 import play.api.i18n.Messages
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, FirstTimeReturn, GetEclReturnSubmissionResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetEclReturnSubmissionResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 
@@ -30,29 +30,81 @@ final case class CheckYourAnswersViewModel(
   startAmendUrl: Option[String]
 ) extends TrackEclReturnChanges {
 
-  private def addIf[T](condition: Boolean, value: T): Seq[T] = if (condition) Seq(value) else Seq.empty
-
-  def amendedAnswersDetails()(implicit request: ReturnDataRequest[_], messages: Messages): SummaryList =
+  def amendedAnswersDetails()(implicit messages: Messages): SummaryList =
     SummaryListViewModel(
-      rows = (addIf(
-        hasAmlRegulatedActivityLengthChanged,
-        AmlRegulatedActivityLengthSummary.row(eclReturn.amlRegulatedActivityLength)
-      )).flatten
-    ).withCssClass("govuk-!-margin-bottom-9")
-
-  def amendReasonDetails()(implicit request: ReturnDataRequest[_], messages: Messages): SummaryList =
-    SummaryListViewModel(
-      rows = Seq(
-        AmendReasonSummary.row(request.eclReturn.amendReason)
+      rows = (
+        addIf(
+          hasAmlRegulatedActivityLengthChanged,
+          AmlRegulatedActivityLengthSummary.row(eclReturn.amlRegulatedActivityLength)
+        ) ++
+          addIf(
+            hasRelevantApLengthChanged,
+            RelevantApLengthSummary.row(eclReturn.relevantApLength)
+          ) ++
+          addIf(
+            hasUkRevenueChanged,
+            UkRevenueSummary.row(eclReturn.relevantApRevenue)
+          ) ++
+          addIf(
+            hasCarriedOutAmlRegulatedActivityForFullFyChanged,
+            RelevantAp12MonthsSummary.row(eclReturn.carriedOutAmlRegulatedActivityForFullFy)
+          ) ++
+          addIf(
+            hasAmlRegulatedActivityLengthChanged,
+            AmlRegulatedActivityLengthSummary.row(eclReturn.amlRegulatedActivityLength)
+          ) ++
+          addIf(
+            hasCalculatedBandSummaryChanged,
+            CalculatedBandSummary.row(eclReturn.calculatedLiability)
+          ) ++
+          addIf(
+            hasAmountDueSummaryChanged,
+            AmountDueSummary.row(eclReturn.calculatedLiability)
+          ) ++
+          addIf(
+            hasContactNameChanged,
+            ContactNameSummary.row(eclReturn.contactName)
+          ) ++
+          addIf(
+            hasContactRoleChanged,
+            ContactRoleSummary.row(eclReturn.contactRole)
+          ) ++
+          addIf(
+            hasContactEmailAddressChanged,
+            ContactEmailSummary.row(eclReturn.contactEmailAddress)
+          ) ++
+          addIf(
+            hasContactTelephoneNumberChanged,
+            ContactNumberSummary.row(eclReturn.contactTelephoneNumber)
+          )
       ).flatten
     ).withCssClass("govuk-!-margin-bottom-9")
 
-  def contactDetails()(implicit request: ReturnDataRequest[_], messages: Messages): SummaryList = SummaryListViewModel(
-    rows = Seq(
-      ContactNameSummary.row(request.eclReturn.contactName),
-      ContactRoleSummary.row(request.eclReturn.contactRole),
-      ContactEmailSummary.row(request.eclReturn.contactEmailAddress),
-      ContactNumberSummary.row(request.eclReturn.contactTelephoneNumber)
+  def amendReasonDetails()(implicit messages: Messages): SummaryList =
+    SummaryListViewModel(
+      rows = Seq(
+        AmendReasonSummary.row(eclReturn.amendReason)
+      ).flatten
+    ).withCssClass("govuk-!-margin-bottom-9")
+
+  def contactDetails()(implicit messages: Messages): SummaryList = SummaryListViewModel(
+    rows = (
+      addIf(
+        isAmendReturnAndNot(hasContactNameChanged),
+        ContactNameSummary.row(eclReturn.contactName)
+      ) ++
+        addIf(
+          isAmendReturnAndNot(hasContactRoleChanged),
+          ContactRoleSummary.row(eclReturn.contactRole)
+        ) ++
+        addIf(
+          isAmendReturnAndNot(hasContactEmailAddressChanged),
+          ContactEmailSummary.row(eclReturn.contactEmailAddress)
+        ) ++
+        addIf(
+          isAmendReturnAndNot(hasContactTelephoneNumberChanged),
+          ContactNumberSummary.row(eclReturn.contactTelephoneNumber)
+        )
     ).flatten
   ).withCssClass("govuk-!-margin-bottom-9")
 
@@ -61,35 +113,40 @@ final case class CheckYourAnswersViewModel(
       rows = (
         Seq(EclReferenceNumberSummary.row(request.eclRegistrationReference)) ++
           addIf(
-            isFirstTimeReturn || !hasRelevantAp12MonthsChanged,
+            isAmendReturnAndNot(hasRelevantAp12MonthsChanged),
             RelevantAp12MonthsSummary.row(eclReturn.relevantAp12Months)
           ) ++
           addIf(
-            isFirstTimeReturn || !hasRelevantApLengthChanged,
+            isAmendReturnAndNot(hasRelevantApLengthChanged),
             RelevantApLengthSummary.row(eclReturn.relevantApLength)
           ) ++
           addIf(
-            isFirstTimeReturn || !hasUkRevenueChanged,
+            isAmendReturnAndNot(hasUkRevenueChanged),
             UkRevenueSummary.row(eclReturn.relevantApRevenue)
           ) ++
           addIf(
-            isFirstTimeReturn || !hasCarriedOutAmlRegulatedActivityForFullFyChanged,
+            isAmendReturnAndNot(hasCarriedOutAmlRegulatedActivityForFullFyChanged),
             AmlRegulatedActivitySummary.row(eclReturn.carriedOutAmlRegulatedActivityForFullFy)
           ) ++
           addIf(
-            isFirstTimeReturn || !hasAmlRegulatedActivityLengthChanged,
+            isAmendReturnAndNot(hasAmlRegulatedActivityLengthChanged),
             AmlRegulatedActivityLengthSummary.row(eclReturn.amlRegulatedActivityLength)
           ) ++
           addIf(
-            isFirstTimeReturn || !hasCalculatedBandSummaryChanged,
+            isAmendReturnAndNot(hasCalculatedBandSummaryChanged),
             CalculatedBandSummary.row(eclReturn.calculatedLiability)
           ) ++
           addIf(
-            isFirstTimeReturn || !hasAmountDueSummaryChanged,
+            isAmendReturnAndNot(hasAmountDueSummaryChanged),
             AmountDueSummary.row(eclReturn.calculatedLiability)
           )
       ).flatten
     ).withCssClass("govuk-!-margin-bottom-9")
+
+  private def addIf[T](condition: Boolean, value: T): Seq[T] = if (condition) Seq(value) else Seq.empty
+
+  private def isAmendReturnAndNot(condition: Boolean): Boolean =
+    isAmendReturn && !condition
 }
 
 object CheckYourAnswersViewModel {

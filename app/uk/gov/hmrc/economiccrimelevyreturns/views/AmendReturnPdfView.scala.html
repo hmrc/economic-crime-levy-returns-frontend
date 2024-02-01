@@ -14,26 +14,28 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 @import uk.gov.hmrc.economiccrimelevyreturns.views.html.templates.PdfLayout
 @import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers.AmendReturnPdfViewModel
 
 @this(pdfLayout: PdfLayout, govukSummaryList: GovukSummaryList)
 
-@(viewModel: AmendReturnPdfViewModel)(implicit request: Request[_], messages: Messages)
+@(viewModel: AmendReturnPdfViewModel)(implicit request: ReturnDataRequest[_], messages: Messages)
 
-@*    @pdfLayout(messages("otherRegistration.pdfHtml.title")) {*@
-@*        <p class="govuk-body" align="right">@messages("otherRegistration.pdfHtml.submissionDate", date)</p>*@
+@pdfLayout(messages("otherRegistration.pdfHtml.title")) {
+    <p class="govuk-body" align="right">@messages("otherRegistration.pdfHtml.submissionDate", viewModel.date)</p>
 
+    <h2>@messages("checkYourAnswers.amendReason.title")</h2>
+    @govukSummaryList(viewModel.amendReasonDetails())
 
-@*        <h2>@messages("checkYourAnswers.amendReason.title")</h2>*@
+    <h2>@messages("checkYourAnswers.organisationDetails")</h2>
+    @govukSummaryList(viewModel.organisationDetails())
 
-@*        @govukSummaryList(amendReason)*@
+    @if(!viewModel.hasAllContactDetailsChanged) {
+        <h2>@messages("checkYourAnswers.contactDetails")</h2>
+        @govukSummaryList(viewModel.contactDetails())
+    }
 
-@*        <h2>@messages("checkYourAnswers.organisationDetails")</h2>*@
-
-@*        @govukSummaryList(organisationDetails)*@
-
-@*        <h2>@messages("checkYourAnswers.contactDetails")</h2>*@
-
-@*        @govukSummaryList(contactDetails)*@
-@*    }*@
+    <h2 class="govuk-heading-m">@messages("checkYourAnswers.amendedAnswers")</h2>
+    @govukSummaryList(viewModel.amendedAnswersDetails())
+}
