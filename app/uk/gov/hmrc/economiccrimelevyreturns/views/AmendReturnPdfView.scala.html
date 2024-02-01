@@ -15,24 +15,25 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.views.html.templates.PdfLayout
+@import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers.AmendReturnPdfViewModel
 
 @this(pdfLayout: PdfLayout, govukSummaryList: GovukSummaryList)
 
-@(date: String, organisationDetails: SummaryList, contactDetails: SummaryList, amendReason: SummaryList)(implicit request: Request[_], messages: Messages)
+@(viewModel: AmendReturnPdfViewModel)(implicit request: Request[_], messages: Messages)
 
-    @pdfLayout(messages("otherRegistration.pdfHtml.title")) {
-        <p class="govuk-body" align="right">@messages("otherRegistration.pdfHtml.submissionDate", date)</p>
+@*    @pdfLayout(messages("otherRegistration.pdfHtml.title")) {*@
+@*        <p class="govuk-body" align="right">@messages("otherRegistration.pdfHtml.submissionDate", date)</p>*@
 
 
-        <h2>@messages("checkYourAnswers.amendReason.title")</h2>
+@*        <h2>@messages("checkYourAnswers.amendReason.title")</h2>*@
 
-        @govukSummaryList(amendReason)
+@*        @govukSummaryList(amendReason)*@
 
-        <h2>@messages("checkYourAnswers.organisationDetails")</h2>
+@*        <h2>@messages("checkYourAnswers.organisationDetails")</h2>*@
 
-        @govukSummaryList(organisationDetails)
+@*        @govukSummaryList(organisationDetails)*@
 
-        <h2>@messages("checkYourAnswers.contactDetails")</h2>
+@*        <h2>@messages("checkYourAnswers.contactDetails")</h2>*@
 
-        @govukSummaryList(contactDetails)
-    }
+@*        @govukSummaryList(contactDetails)*@
+@*    }*@

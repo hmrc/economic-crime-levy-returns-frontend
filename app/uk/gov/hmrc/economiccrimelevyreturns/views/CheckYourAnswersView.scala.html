@@ -15,22 +15,43 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+@import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 @import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers.CheckYourAnswersViewModel
 
 @this(
-layout: templates.Layout,
-formHelper: FormWithCSRF,
-govukSummaryList: GovukSummaryList,
-govukButton: GovukButton
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukSummaryList: GovukSummaryList,
+        govukButton: GovukButton
 )
 
-@(viewModel: CheckYourAnswersViewModel)(implicit request: Request[_], messages: Messages)
+@(viewModel: CheckYourAnswersViewModel)(implicit request: ReturnDataRequest[_], messages: Messages)
 
 @layout(pageTitle = title(messages("checkYourAnswers.title")), startAmendUrl = viewModel.startAmendUrl) {
     @formHelper(action = CheckYourAnswersController.onSubmit()) {
-    }
+        <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
 
-    @if(viewModel.isAmendment) {
-        <p class="govuk-body">@Html(messages("checkYourAnswers.cancel", s"${routes.CancelReturnAmendmentController.onPageLoad().url}"))</p>
+        @if(viewModel.amendReasonDetails().rows.nonEmpty) {
+            <h2 class="govuk-heading-m">@messages("checkYourAnswers.amendReason.title")</h2>
+            @govukSummaryList(viewModel.amendReasonDetails())
+        }
+
+        <h2 class="govuk-heading-m">@messages("checkYourAnswers.eclDetails")</h2>
+        @govukSummaryList(viewModel.eclDetails())
+
+        <h2 class="govuk-heading-m">@messages("checkYourAnswers.contactDetails")</h2>
+        @govukSummaryList(viewModel.contactDetails())
+
+        <h2 class="govuk-heading-m">Amended Answers</h2>
+        @govukSummaryList(viewModel.amendedAnswersDetails())
+
+        <h2 class="govuk-heading-m">@messages("checkYourAnswers.nowSend")</h2>
+        <div class="govuk-body">@messages("checkYourAnswers.bySubmitting")</div>
+
+        @govukButton(ButtonViewModel(messages("checkYourAnswers.confirmAndSend")))
+
+        @if(viewModel.isAmendReturn) {
+            <p class="govuk-body">@Html(messages("checkYourAnswers.cancel", s"${routes.CancelReturnAmendmentController.onPageLoad().url}"))</p>
+        }
     }
 }

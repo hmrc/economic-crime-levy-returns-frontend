@@ -31,10 +31,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
-import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
-import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView, ErrorTemplate}
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -51,7 +48,7 @@ class CheckYourAnswersController @Inject() (
   returnsService: ReturnsService,
   sessionService: SessionService,
   emailService: EmailService,
-  amendReturnPdfView: AmendReturnPdfView,
+  pdfView: AmendReturnPdfView,
   val controllerComponents: MessagesControllerComponents,
   view: CheckYourAnswersView,
   appConfig: AppConfig
@@ -60,34 +57,6 @@ class CheckYourAnswersController @Inject() (
     with I18nSupport
     with BaseController
     with ErrorHandler {
-
-  private def eclDetails()(implicit request: ReturnDataRequest[_]): SummaryList = SummaryListViewModel(
-    rows = Seq(
-      EclReferenceNumberSummary.row(),
-      RelevantAp12MonthsSummary.row(),
-      RelevantApLengthSummary.row(),
-      UkRevenueSummary.row(),
-      AmlRegulatedActivitySummary.row(),
-      AmlRegulatedActivityLengthSummary.row(),
-      CalculatedBandSummary.row(),
-      AmountDueSummary.row()
-    ).flatten
-  ).withCssClass("govuk-!-margin-bottom-9")
-
-  private def contactDetails()(implicit request: ReturnDataRequest[_]): SummaryList = SummaryListViewModel(
-    rows = Seq(
-      ContactNameSummary.row(),
-      ContactRoleSummary.row(),
-      ContactEmailSummary.row(),
-      ContactNumberSummary.row()
-    ).flatten
-  ).withCssClass("govuk-!-margin-bottom-9")
-
-  private def amendReasonDetails()(implicit request: ReturnDataRequest[_]): SummaryList = SummaryListViewModel(
-    rows = Seq(
-      AmendReasonSummary.row()
-    ).flatten
-  ).withCssClass("govuk-!-margin-bottom-9")
 
   def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     (for {
@@ -119,7 +88,7 @@ class CheckYourAnswersController @Inject() (
           val base64EncodedHtmlView: String = base64EncodeHtmlView(viewHtml.body)
 
           (for {
-            pdfViewHtml <- pdfViewHtmlOrError
+            pdfViewHtml <- pdfViewHtmlOrError()
           } yield pdfViewHtml)
             .fold(
               error => Future.successful(routeError(error)),
@@ -148,13 +117,37 @@ class CheckYourAnswersController @Inject() (
       .flatten
   }
 
-  private def pdfViewHtmlOrError()(implicit request: ReturnDataRequest[AnyContent]): EitherT[Future, ResponseError, Option[String]] = {
-    request.eclReturn.returnType match {
-      case Some(AmendReturn)     => {
-
-      }
+  private def pdfViewHtmlOrError()(implicit
+    request: ReturnDataRequest[AnyContent]
+  ): EitherT[Future, ResponseError, Option[String]] = {
+    val view = request.eclReturn.returnType match {
+      case Some(AmendReturn)     =>
+        if (appConfig.getEclReturnEnabled) {
+          EitherT {
+            request.periodKey match {
+              case None            =>
+                Future.successful(Left(ResponseError.internalServiceError("Unable to find period key")))
+              case Some(periodKey) =>
+                pdfViewModelWithEclReturnSubmission(periodKey).fold(
+                  error => Left(error),
+                  viewModel => Right(pdfView(viewModel))
+                )
+            }
+          }
+        } else {
+          EitherT[Future, ResponseError, HtmlFormat.Appendable] {
+            Future.successful(Right(pdfView(pdfViewModelWithoutEclReturnSubmission())))
+          }
+        }
       case Some(FirstTimeReturn) =>
         EitherT[Future, ResponseError, Option[String]](Future.successful(Right(None)))
+      case None                  =>
+        EitherT[Future, ResponseError, Option[String]](
+          Future.successful(Left(ResponseError.badRequestError("Return type is empty")))
+        )
+    }
+    EitherT {
+      view.fold(error => Left(error), view => Right(Some(base64EncodeHtmlView(view.toString))))
     }
   }
 
@@ -223,24 +216,6 @@ class CheckYourAnswersController @Inject() (
   private def base64EncodeHtmlView(html: String): String = Base64.getEncoder
     .encodeToString(html.getBytes)
 
-  private def createAndEncodeHtmlForPdf()(implicit request: ReturnDataRequest[_]): String = {
-    val date         = LocalDate.now
-    val organisation = eclDetails()
-    val contact      = contactDetails()
-    val amendReason  = amendReasonDetails()
-    base64EncodeHtmlView(
-      amendReturnPdfView(
-        ViewUtils.formatLocalDate(date),
-        organisation.copy(rows = organisation.rows.map(_.copy(actions = None))),
-        contact.copy(rows = contact.rows.map(_.copy(actions = None))),
-        amendReason.copy(
-          rows = amendReason.rows.map(_.copy(actions = None)),
-          attributes = Map("id" -> "amendReason")
-        )
-      ).toString()
-    )
-  }
-
   private def viewHtmlOrError()(implicit
     request: ReturnDataRequest[AnyContent]
   ): EitherT[Future, ResponseError, HtmlFormat.Appendable] =
@@ -261,6 +236,36 @@ class CheckYourAnswersController @Inject() (
         Future.successful(Right(view(viewModelWithoutEclReturnSubmission())))
       }
     }
+
+  private def pdfViewModelWithEclReturnSubmission(periodKey: String)(implicit
+    hc: HeaderCarrier,
+    request: ReturnDataRequest[AnyContent]
+  ): EitherT[Future, ResponseError, AmendReturnPdfViewModel] =
+    EitherT {
+      (for {
+        eclReturnSubmission <-
+          returnsService.getEclReturnSubmission(periodKey, request.eclRegistrationReference).asResponseError
+      } yield eclReturnSubmission).fold(
+        error => Left(error),
+        eclReturnSubmission =>
+          Right(
+            AmendReturnPdfViewModel(
+              date = LocalDate.now(),
+              eclReturn = request.eclReturn,
+              eclReturnSubmission = Some(eclReturnSubmission)
+            )
+          )
+      )
+    }
+
+  private def pdfViewModelWithoutEclReturnSubmission()(implicit
+    request: ReturnDataRequest[AnyContent]
+  ): AmendReturnPdfViewModel =
+    AmendReturnPdfViewModel(
+      date = LocalDate.now(),
+      eclReturn = request.eclReturn,
+      eclReturnSubmission = None
+    )
 
   private def viewModelWithEclReturnSubmission(periodKey: String)(implicit
     hc: HeaderCarrier,
