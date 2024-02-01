@@ -141,5 +141,8 @@ trait TrackEclReturnChanges {
   val hasAllContactDetailsChanged: Boolean = hasContactNameChanged && hasContactRoleChanged &&
     hasContactEmailAddressChanged && hasContactTelephoneNumberChanged
 
-  val hasAmendReason = eclReturn.amendReason.isDefined
+  val hasAmendReason: Boolean = eclReturn.amendReason.isDefined
+
+  def isAmendReturnAndNot(condition: Boolean): Boolean =
+    isAmendReturn && !condition
 }

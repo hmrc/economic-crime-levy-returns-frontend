@@ -148,9 +148,6 @@ case class AmendReturnPdfViewModel(
   private def addIf[T](condition: Boolean, value: T): Seq[T] = if (condition) Seq(value) else Seq.empty
 
   private def formatRow(row: Option[SummaryListRow]): Option[SummaryListRow] = row.map(_.copy(actions = None))
-
-  private def isAmendReturnAndNot(condition: Boolean): Boolean =
-    isAmendReturn && !condition
 }
 
 object AmendReturnPdfViewModel {

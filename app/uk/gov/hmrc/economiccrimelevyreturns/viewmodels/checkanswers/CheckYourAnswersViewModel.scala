@@ -144,9 +144,6 @@ final case class CheckYourAnswersViewModel(
     ).withCssClass("govuk-!-margin-bottom-9")
 
   private def addIf[T](condition: Boolean, value: T): Seq[T] = if (condition) Seq(value) else Seq.empty
-
-  private def isAmendReturnAndNot(condition: Boolean): Boolean =
-    isAmendReturn && !condition
 }
 
 object CheckYourAnswersViewModel {
