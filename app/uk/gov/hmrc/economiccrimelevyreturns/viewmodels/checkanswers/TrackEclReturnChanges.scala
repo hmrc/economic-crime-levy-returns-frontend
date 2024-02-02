@@ -90,7 +90,7 @@ trait TrackEclReturnChanges {
     case Some(submission) =>
       eclReturn.calculatedLiability match {
         case Some(calculatedLiability) => submission.returnDetails.revenueBand != calculatedLiability.calculatedBand
-        case None                      => false
+        case None                      => true
       }
     case None             => false
   }

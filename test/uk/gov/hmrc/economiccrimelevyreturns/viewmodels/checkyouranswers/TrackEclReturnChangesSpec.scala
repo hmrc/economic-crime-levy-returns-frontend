@@ -516,7 +516,27 @@ class TrackEclReturnChangesSpec extends SpecBase {
   }
 
   "hasCalculatedBandSummaryChanged" should {
-    "return true when changed" in forAll {
+    "return true when calculatedLiability is set to None and revenueBand is set to a value" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(calculatedLiability = None)
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              revenueBand = Band.Medium
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasCalculatedBandSummaryChanged shouldBe true
+    }
+
+    "return true when calculatedBand and revenueBand are set to different values" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val calculatedLiability: CalculatedLiability = defaultEclReturn(validEclReturn).calculatedLiability.get
 
@@ -536,6 +556,28 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasCalculatedBandSummaryChanged shouldBe true
+    }
+
+    "return true when calculatedBand and revenueBand are set to the same value" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val calculatedLiability: CalculatedLiability = defaultEclReturn(validEclReturn).calculatedLiability.get
+
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(calculatedLiability = Some(calculatedLiability.copy(calculatedBand = Band.Large)))
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              revenueBand = Band.Large
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasCalculatedBandSummaryChanged shouldBe false
     }
   }
 
