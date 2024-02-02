@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkyouranswers
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.ApDaysMax
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.{AmlDaysMax, ApDaysMax}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, CalculatedLiability, EclAmount, EclReturn, GetEclReturnSubmissionResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers.TrackEclReturnChanges
 import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
@@ -31,7 +31,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
     validEclReturn.eclReturn.copy(relevantAp12Months = Some(true))
 
   "hasRelevantAp12MonthsChanged" should {
-    "return true when changed" in forAll {
+    "return true when relevantAp12Months is true and numberOfDaysRegulatedActivityTookPlace is None" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantAp12Months = Some(true))
@@ -51,7 +51,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasRelevantAp12MonthsChanged shouldBe true
     }
 
-    "return false when not changed" in forAll {
+    "return true when relevantAp12Months is false and numberOfDaysRegulatedActivityTookPlace is set" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantAp12Months = Some(false))
@@ -59,7 +59,67 @@ class TrackEclReturnChangesSpec extends SpecBase {
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
+              numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasRelevantAp12MonthsChanged shouldBe true
+    }
+
+    "return true when relevantAp12Months is None and numberOfDaysRegulatedActivityTookPlace is set" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(relevantAp12Months = None)
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasRelevantAp12MonthsChanged shouldBe true
+    }
+
+    "return false when relevantAp12Months is None and numberOfDaysRegulatedActivityTookPlace is None" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(relevantAp12Months = None)
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
               numberOfDaysRegulatedActivityTookPlace = None
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasRelevantAp12MonthsChanged shouldBe false
+    }
+
+    "return false when relevantAp12Months is true and numberOfDaysRegulatedActivityTookPlace is set" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(relevantAp12Months = Some(true))
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
             )
           )
 
