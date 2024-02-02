@@ -24,6 +24,7 @@ trait TrackEclReturnChanges {
 
   val eclReturnSubmission: Option[GetEclReturnSubmissionResponse]
 
+  val hasAmendReason: Boolean    = eclReturn.amendReason.isDefined
   val isAmendReturn: Boolean     = eclReturn.returnType.contains(AmendReturn)
   val isFirstTimeReturn: Boolean = eclReturn.returnType.contains(FirstTimeReturn)
 
@@ -57,17 +58,16 @@ trait TrackEclReturnChanges {
   val hasCarriedOutAmlRegulatedActivityForFullFyChanged: Boolean = eclReturnSubmission match {
     case Some(submission) =>
       eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
-        case Some(_) =>
+        case Some(true) =>
           submission.returnDetails.numberOfDaysRegulatedActivityTookPlace match {
-            case Some(numberOfDays) =>
-              eclReturn.amlRegulatedActivityLength match {
-                case Some(length) => numberOfDays != length
-                case None         => true
-              }
-            case None               => true
+            case Some(numOfDays) => numOfDays != submission.returnDetails.accountingPeriodLength
+            case None            => true
           }
-        case None    =>
-          eclReturn.amlRegulatedActivityLength != submission.returnDetails.numberOfDaysRegulatedActivityTookPlace
+        case _          =>
+          submission.returnDetails.numberOfDaysRegulatedActivityTookPlace match {
+            case Some(numOfDays) => numOfDays == submission.returnDetails.accountingPeriodLength
+            case None            => true
+          }
       }
     case None             => false
   }
@@ -162,8 +162,6 @@ trait TrackEclReturnChanges {
     hasContactEmailAddressChanged,
     hasContactTelephoneNumberChanged
   ).forall(_ == true)
-
-  val hasAmendReason: Boolean = eclReturn.amendReason.isDefined
 
   def isAmendReturnAndNot(condition: Boolean): Boolean =
     isAmendReturn && !condition

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkyouranswers
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.{AmlDaysMax, AmlDaysMin, ApDaysMax}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.{AmlDaysMax, AmlDaysMin, ApDaysMax, ApDaysMin}
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers.TrackEclReturnChanges
 import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
@@ -235,7 +235,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
   }
 
   "hasUkRevenueChanged" should {
-    "return true when relevantApRevenue is set and accountingPeriodRevenue is set" in forAll {
+    "return true when relevantApRevenue is set and accountingPeriodRevenue is set to a value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantApRevenue = Some(RevenueMin))
@@ -255,7 +255,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasUkRevenueChanged shouldBe true
     }
 
-    "return true when relevantApRevenue is set to None and accountingPeriodRevenue is set" in forAll {
+    "return true when relevantApRevenue is set to None and accountingPeriodRevenue is set to a value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantApRevenue = None)
@@ -297,25 +297,115 @@ class TrackEclReturnChangesSpec extends SpecBase {
   }
 
   "hasCarriedOutAmlRegulatedActivityForFullFyChanged" should {
-    "return true when changed" in forAll {
-      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
-        val eclReturn = defaultEclReturn(validEclReturn)
-          .copy(carriedOutAmlRegulatedActivityForFullFy = None)
+    "return true when carriedOutAmlRegulatedActivityForFullFy is None and " +
+      "numberOfDaysRegulatedActivityTookPlace is set to accountingPeriodLength" in forAll {
+        (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+          val eclReturn = defaultEclReturn(validEclReturn)
+            .copy(carriedOutAmlRegulatedActivityForFullFy = None)
 
-        val eclReturnSubmission = validEclReturnSubmission.response
-          .copy(returnDetails =
-            validEclReturnSubmission.response.returnDetails.copy(
-              numberOfDaysRegulatedActivityTookPlace = Some(365)
+          val eclReturnSubmission = validEclReturnSubmission.response
+            .copy(returnDetails =
+              validEclReturnSubmission.response.returnDetails.copy(
+                accountingPeriodLength = ApDaysMax,
+                numberOfDaysRegulatedActivityTookPlace = Some(ApDaysMax)
+              )
             )
+
+          val sut = TestTrackEclReturnChanges(
+            eclReturn = eclReturn,
+            eclReturnSubmission = Some(eclReturnSubmission)
           )
 
-        val sut = TestTrackEclReturnChanges(
-          eclReturn = eclReturn,
-          eclReturnSubmission = Some(eclReturnSubmission)
-        )
+          sut.hasCarriedOutAmlRegulatedActivityForFullFyChanged shouldBe true
+      }
 
-        sut.hasCarriedOutAmlRegulatedActivityForFullFyChanged shouldBe true
-    }
+    "return true when carriedOutAmlRegulatedActivityForFullFy is false and " +
+      "numberOfDaysRegulatedActivityTookPlace is set to accountingPeriodLength" in forAll {
+        (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+          val eclReturn = defaultEclReturn(validEclReturn)
+            .copy(carriedOutAmlRegulatedActivityForFullFy = Some(false))
+
+          val eclReturnSubmission = validEclReturnSubmission.response
+            .copy(returnDetails =
+              validEclReturnSubmission.response.returnDetails.copy(
+                accountingPeriodLength = ApDaysMax,
+                numberOfDaysRegulatedActivityTookPlace = Some(ApDaysMax)
+              )
+            )
+
+          val sut = TestTrackEclReturnChanges(
+            eclReturn = eclReturn,
+            eclReturnSubmission = Some(eclReturnSubmission)
+          )
+
+          sut.hasCarriedOutAmlRegulatedActivityForFullFyChanged shouldBe true
+      }
+
+    "return true when carriedOutAmlRegulatedActivityForFullFy is true and " +
+      "numberOfDaysRegulatedActivityTookPlace is set to not matching accountingPeriodLength" in forAll {
+        (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+          val eclReturn = defaultEclReturn(validEclReturn)
+            .copy(carriedOutAmlRegulatedActivityForFullFy = Some(true))
+
+          val eclReturnSubmission = validEclReturnSubmission.response
+            .copy(returnDetails =
+              validEclReturnSubmission.response.returnDetails.copy(
+                accountingPeriodLength = ApDaysMax,
+                numberOfDaysRegulatedActivityTookPlace = Some(ApDaysMin)
+              )
+            )
+
+          val sut = TestTrackEclReturnChanges(
+            eclReturn = eclReturn,
+            eclReturnSubmission = Some(eclReturnSubmission)
+          )
+
+          sut.hasCarriedOutAmlRegulatedActivityForFullFyChanged shouldBe true
+      }
+
+    "return false when carriedOutAmlRegulatedActivityForFullFy is false and " +
+      "accountingPeriodLength is not the same value as numberOfDaysRegulatedActivityTookPlace" in forAll {
+        (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+          val eclReturn = defaultEclReturn(validEclReturn)
+            .copy(carriedOutAmlRegulatedActivityForFullFy = Some(false))
+
+          val eclReturnSubmission = validEclReturnSubmission.response
+            .copy(returnDetails =
+              validEclReturnSubmission.response.returnDetails.copy(
+                accountingPeriodLength = ApDaysMax,
+                numberOfDaysRegulatedActivityTookPlace = Some(ApDaysMin)
+              )
+            )
+
+          val sut = TestTrackEclReturnChanges(
+            eclReturn = eclReturn,
+            eclReturnSubmission = Some(eclReturnSubmission)
+          )
+
+          sut.hasCarriedOutAmlRegulatedActivityForFullFyChanged shouldBe false
+      }
+
+    "return false when carriedOutAmlRegulatedActivityForFullFy is true and " +
+      "numberOfDaysRegulatedActivityTookPlace is set to matching accountingPeriodLength" in forAll {
+        (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+          val eclReturn = defaultEclReturn(validEclReturn)
+            .copy(carriedOutAmlRegulatedActivityForFullFy = Some(true))
+
+          val eclReturnSubmission = validEclReturnSubmission.response
+            .copy(returnDetails =
+              validEclReturnSubmission.response.returnDetails.copy(
+                accountingPeriodLength = ApDaysMax,
+                numberOfDaysRegulatedActivityTookPlace = Some(ApDaysMax)
+              )
+            )
+
+          val sut = TestTrackEclReturnChanges(
+            eclReturn = eclReturn,
+            eclReturnSubmission = Some(eclReturnSubmission)
+          )
+
+          sut.hasCarriedOutAmlRegulatedActivityForFullFyChanged shouldBe false
+      }
   }
 
   "hasAmlRegulatedActivityLengthChanged" should {
