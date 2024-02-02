@@ -262,6 +262,7 @@ amend.submitted.p3 = Gallwch dalu’r ardoll drwy ddarllen yr <a href="https://w
 amend.submitted.h2 = Yr hyn sy’n digwydd nesaf
 amend.submitted.p4 = Byddwn yn adolygu’ch atebion. Os oes angen rhagor o wybodaeth arnom mae’n bosibl byddwn yn cysylltu â chi drwy ddefnyddio’r manylion yr ydych wedi eu rhoi. Bydd y broses hon yn cymryd 15 diwrnod gwaith.
 amend.submitted.p5 = Byddwn yn anfon llythyr atoch ar ôl i ni ddiwygio’ch datganiad. Ni fyddwch y gallu bwrw golwg dros y newidiadau hyn nes eich bod wedi cael y llythyr hwn.
+amend.submitted.address.heading = Byddwn yn anfon llythyr at:
 
 exit.survey.link = <a href="{0}" class="govuk-link">Beth oedd eich barn am y gwasanaeth hwn?</a>
 exit.survey = {0} (mae’n cymryd 30 eiliad) i adael yr arolwg.

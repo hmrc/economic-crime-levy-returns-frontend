@@ -17,6 +17,8 @@
 @import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 @import java.time.LocalDate
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+@import uk.gov.hmrc.economiccrimelevyreturns.models.EclAddress
+@import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.AddressViewModel
 
 @this(
         layout: templates.Layout,
@@ -24,7 +26,7 @@
         appConfig: AppConfig
 )
 
-@(fyStart: LocalDate, fyEnd: LocalDate, confirmationEmail: String)(implicit request: Request[_], messages: Messages)
+@(fyStart: LocalDate, fyEnd: LocalDate, confirmationEmail: String, contactAddress: Option[EckAddress])(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle = title(messages("amend.submitted.title")),
@@ -48,5 +50,14 @@
 
     <p class="govuk-body">@(messages("amend.submitted.p4"))</p>
     <p class="govuk-body">@messages("amend.submitted.p5")</p>
+
+    <p class="govuk-body">@messages("amend.submitted.address.heading")</p>
+
+    <p class="govuk-body">
+        @{contactAddress.map { answer =>
+            Html(AddressViewModel.html(answer))
+        }}
+    </p>
+
     <p class="govuk-body">@Html(messages("exit.survey", messages("exit.survey.link", appConfig.exitSurveyUrl)))</p>
 }
