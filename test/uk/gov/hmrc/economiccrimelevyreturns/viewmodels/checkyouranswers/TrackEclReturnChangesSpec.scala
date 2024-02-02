@@ -582,19 +582,15 @@ class TrackEclReturnChangesSpec extends SpecBase {
   }
 
   "hasAmountDueSummaryChanged" should {
-    "return true when changed" in forAll {
+    "return true when calculatedLiability is None and amountOfEclDutyLiable is set to a value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
-        val calculatedLiability: CalculatedLiability = defaultEclReturn(validEclReturn).calculatedLiability.get
-
         val eclReturn = defaultEclReturn(validEclReturn)
-          .copy(calculatedLiability =
-            Some(calculatedLiability.copy(amountDue = EclAmount(BigDecimal(1), apportioned = false)))
-          )
+          .copy(calculatedLiability = None)
 
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              amountOfEclDutyLiable = BigDecimal(2)
+              amountOfEclDutyLiable = BigDecimal(RevenueMax)
             )
           )
 
@@ -605,10 +601,78 @@ class TrackEclReturnChangesSpec extends SpecBase {
 
         sut.hasAmountDueSummaryChanged shouldBe true
     }
+
+    "return true when amountDue and amountOfEclDutyLiable have different values set" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val calculatedLiability: CalculatedLiability = defaultEclReturn(validEclReturn).calculatedLiability.get
+
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(calculatedLiability =
+            Some(calculatedLiability.copy(amountDue = EclAmount(BigDecimal(RevenueMin), apportioned = false)))
+          )
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              amountOfEclDutyLiable = BigDecimal(RevenueMax)
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasAmountDueSummaryChanged shouldBe true
+    }
+
+    "return false when amountDue and amountOfEclDutyLiable have the same value set" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val calculatedLiability: CalculatedLiability = defaultEclReturn(validEclReturn).calculatedLiability.get
+
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(calculatedLiability =
+            Some(calculatedLiability.copy(amountDue = EclAmount(BigDecimal(RevenueMax), apportioned = false)))
+          )
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              amountOfEclDutyLiable = BigDecimal(RevenueMax)
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasAmountDueSummaryChanged shouldBe false
+    }
   }
 
   "hasContactNameChanged" should {
-    "return true when changed" in forAll {
+    "return true when contactName is None and name is set to a value" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(contactName = None)
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(declarationDetails =
+            validEclReturnSubmission.response.declarationDetails.copy(
+              name = testString
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasContactNameChanged shouldBe true
+    }
+
+    "return true when contactName and name are set to different values" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(contactName = Some(testString))
@@ -628,7 +692,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasContactNameChanged shouldBe true
     }
 
-    "return false when not changed" in forAll {
+    "return false contactName and name are set to the same values" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(contactName = Some(testString))
@@ -650,7 +714,27 @@ class TrackEclReturnChangesSpec extends SpecBase {
   }
 
   "hasContactRoleChanged" should {
-    "return true when changed" in forAll {
+    "return true when contactRole is None and positionInCompany is set to a value" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(contactRole = None)
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(declarationDetails =
+            validEclReturnSubmission.response.declarationDetails.copy(
+              positionInCompany = testString
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasContactRoleChanged shouldBe true
+    }
+
+    "return true when contactRole and positionInCompany are set to different values" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(contactRole = Some(testString))
@@ -670,7 +754,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasContactRoleChanged shouldBe true
     }
 
-    "return false when not changed" in forAll {
+    "return false contactRole and positionInCompany are set to the same values" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(contactRole = Some(testString))
@@ -692,7 +776,27 @@ class TrackEclReturnChangesSpec extends SpecBase {
   }
 
   "hasContactEmailAddressChanged" should {
-    "return true when changed" in forAll {
+    "return true when contactEmailAddress is None and emailAddress is set to a value" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(contactEmailAddress = None)
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(declarationDetails =
+            validEclReturnSubmission.response.declarationDetails.copy(
+              emailAddress = testString
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasContactEmailAddressChanged shouldBe true
+    }
+
+    "return true when contactEmailAddress and emailAddress are set to different values" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(contactEmailAddress = Some(testString))
@@ -712,7 +816,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasContactEmailAddressChanged shouldBe true
     }
 
-    "return false when not changed" in forAll {
+    "return false contactEmailAddress and emailAddress are set to the same values" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(contactEmailAddress = Some(testString))
@@ -734,7 +838,27 @@ class TrackEclReturnChangesSpec extends SpecBase {
   }
 
   "hasContactTelephoneNumberChanged" should {
-    "return true when changed" in forAll {
+    "return true when contactTelephoneNumber is None and telephoneNumber is set to a value" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(contactTelephoneNumber = None)
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(declarationDetails =
+            validEclReturnSubmission.response.declarationDetails.copy(
+              telephoneNumber = testString
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasContactTelephoneNumberChanged shouldBe true
+    }
+
+    "return true when contactTelephoneNumber and telephoneNumber are set to different values" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(contactTelephoneNumber = Some(testString))
@@ -754,7 +878,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasContactTelephoneNumberChanged shouldBe true
     }
 
-    "return false when not changed" in forAll {
+    "return false contactTelephoneNumber and telephoneNumber are set to the same values" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(contactTelephoneNumber = Some(testString))

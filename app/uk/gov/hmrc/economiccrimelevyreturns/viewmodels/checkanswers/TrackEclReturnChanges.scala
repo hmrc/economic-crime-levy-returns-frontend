@@ -100,7 +100,7 @@ trait TrackEclReturnChanges {
       eclReturn.calculatedLiability match {
         case Some(calculatedLiability) =>
           submission.returnDetails.amountOfEclDutyLiable != calculatedLiability.amountDue.amount
-        case None                      => false
+        case None                      => true
       }
     case None             => false
   }
@@ -108,7 +108,7 @@ trait TrackEclReturnChanges {
   val hasContactNameChanged: Boolean = eclReturnSubmission match {
     case Some(submission) =>
       eclReturn.contactName match {
-        case Some(contactName) => !submission.declarationDetails.name.contains(contactName)
+        case Some(contactName) => !(contactName == submission.declarationDetails.name)
         case None              => true
       }
     case None             => false
@@ -117,7 +117,7 @@ trait TrackEclReturnChanges {
   val hasContactRoleChanged: Boolean = eclReturnSubmission match {
     case Some(submission) =>
       eclReturn.contactRole match {
-        case Some(contactRole) => !submission.declarationDetails.positionInCompany.contains(contactRole)
+        case Some(contactRole) => !(contactRole == submission.declarationDetails.positionInCompany)
         case None              => true
       }
     case None             => false
@@ -126,7 +126,7 @@ trait TrackEclReturnChanges {
   val hasContactEmailAddressChanged: Boolean = eclReturnSubmission match {
     case Some(submission) =>
       eclReturn.contactEmailAddress match {
-        case Some(contactEmailAddress) => !submission.declarationDetails.emailAddress.contains(contactEmailAddress)
+        case Some(contactEmailAddress) => !(contactEmailAddress == submission.declarationDetails.emailAddress)
         case None                      => true
       }
     case None             => false
@@ -135,8 +135,7 @@ trait TrackEclReturnChanges {
   val hasContactTelephoneNumberChanged: Boolean = eclReturnSubmission match {
     case Some(submission) =>
       eclReturn.contactTelephoneNumber match {
-        case Some(contactTelephoneNumber) =>
-          !submission.declarationDetails.telephoneNumber.contains(contactTelephoneNumber)
+        case Some(contactTelephoneNumber) => !(contactTelephoneNumber == submission.declarationDetails.telephoneNumber)
         case None                         => true
       }
     case None             => false
