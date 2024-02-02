@@ -28,7 +28,107 @@ class TrackEclReturnChangesSpec extends SpecBase {
   private val alternateTestString = "alternate" + testString
 
   def defaultEclReturn(validEclReturn: ValidEclReturn): EclReturn =
-    validEclReturn.eclReturn.copy(relevantAp12Months = Some(true))
+    validEclReturn.eclReturn.copy(returnType = Some(AmendReturn))
+
+  "hasAmendReason" should {
+    "return true when amendReason has value set" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+        .copy(amendReason = Some(testString))
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.hasAmendReason shouldBe true
+    }
+
+    "return false when amendReason is set to None" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+        .copy(amendReason = None)
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.hasAmendReason shouldBe false
+    }
+  }
+
+  "isAmendReturn" should {
+    "return true when returnType is AmendReturn" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.isAmendReturn shouldBe true
+    }
+
+    "return false when returnType is FirstTimeReturn" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+        .copy(returnType = Some(FirstTimeReturn))
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.isAmendReturn shouldBe false
+    }
+
+    "return false when returnType is None" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+        .copy(returnType = None)
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.isAmendReturn shouldBe false
+    }
+  }
+
+  "isFirstTimeReturn" should {
+    "return true when returnType is FirstTimeReturn" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+        .copy(returnType = Some(FirstTimeReturn))
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.isFirstTimeReturn shouldBe true
+    }
+
+    "return false when returnType is AmendReturn" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.isFirstTimeReturn shouldBe false
+    }
+
+    "return true when returnType is None" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+        .copy(returnType = None)
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.isFirstTimeReturn shouldBe false
+    }
+  }
 
   "hasRelevantAp12MonthsChanged" should {
     "return true when relevantAp12Months is true and numberOfDaysRegulatedActivityTookPlace is None" in forAll {
@@ -49,6 +149,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasRelevantAp12MonthsChanged shouldBe true
+        sut.hasAnyAmendments             shouldBe true
     }
 
     "return true when relevantAp12Months is false and numberOfDaysRegulatedActivityTookPlace is set to a value" in forAll {
@@ -69,6 +170,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasRelevantAp12MonthsChanged shouldBe true
+        sut.hasAnyAmendments             shouldBe true
     }
 
     "return true when relevantAp12Months is None and numberOfDaysRegulatedActivityTookPlace is set to a value" in forAll {
@@ -89,6 +191,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasRelevantAp12MonthsChanged shouldBe true
+        sut.hasAnyAmendments             shouldBe true
     }
 
     "return false when relevantAp12Months and numberOfDaysRegulatedActivityTookPlace are set to None" in forAll {
@@ -151,6 +254,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasRelevantApLengthChanged shouldBe true
+        sut.hasAnyAmendments           shouldBe true
     }
 
     "return true when relevantApLength is set to a value and numberOfDaysRegulatedActivityTookPlace is set to None" in forAll {
@@ -171,6 +275,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasRelevantApLengthChanged shouldBe true
+        sut.hasAnyAmendments           shouldBe true
     }
 
     "return true when relevantApLength is set to None and numberOfDaysRegulatedActivityTookPlace is set to a value" in forAll {
@@ -191,6 +296,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasRelevantApLengthChanged shouldBe true
+        sut.hasAnyAmendments           shouldBe true
     }
 
     "return false when relevantApLength and numberOfDaysRegulatedActivityTookPlace is set to the same value" in forAll {
@@ -253,6 +359,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasUkRevenueChanged shouldBe true
+        sut.hasAnyAmendments    shouldBe true
     }
 
     "return true when relevantApRevenue is set to None and accountingPeriodRevenue is set to a value" in forAll {
@@ -273,6 +380,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasUkRevenueChanged shouldBe true
+        sut.hasAnyAmendments    shouldBe true
     }
 
     "return false when relevantApRevenue and accountingPeriodRevenue is set to the same value" in forAll {
@@ -317,6 +425,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
           )
 
           sut.hasCarriedOutAmlRegulatedActivityForFullFyChanged shouldBe true
+          sut.hasAnyAmendments                                  shouldBe true
       }
 
     "return true when carriedOutAmlRegulatedActivityForFullFy is false and " +
@@ -339,6 +448,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
           )
 
           sut.hasCarriedOutAmlRegulatedActivityForFullFyChanged shouldBe true
+          sut.hasAnyAmendments                                  shouldBe true
       }
 
     "return true when carriedOutAmlRegulatedActivityForFullFy is true and " +
@@ -361,6 +471,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
           )
 
           sut.hasCarriedOutAmlRegulatedActivityForFullFyChanged shouldBe true
+          sut.hasAnyAmendments                                  shouldBe true
       }
 
     "return false when carriedOutAmlRegulatedActivityForFullFy is false and " +
@@ -428,6 +539,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
           )
 
           sut.hasAmlRegulatedActivityLengthChanged shouldBe true
+          sut.hasAnyAmendments                     shouldBe true
       }
 
     "return true amlRegulatedActivityLength is None and " +
@@ -449,6 +561,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
           )
 
           sut.hasAmlRegulatedActivityLengthChanged shouldBe true
+          sut.hasAnyAmendments                     shouldBe true
       }
 
     "return true amlRegulatedActivityLength is set to a value and " +
@@ -470,6 +583,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
           )
 
           sut.hasAmlRegulatedActivityLengthChanged shouldBe true
+          sut.hasAnyAmendments                     shouldBe true
       }
 
     "return false when amlRegulatedActivityLength and " +
@@ -534,6 +648,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasCalculatedBandSummaryChanged shouldBe true
+        sut.hasAnyAmendments                shouldBe true
     }
 
     "return true when calculatedBand and revenueBand are set to different values" in forAll {
@@ -556,6 +671,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasCalculatedBandSummaryChanged shouldBe true
+        sut.hasAnyAmendments                shouldBe true
     }
 
     "return true when calculatedBand and revenueBand are set to the same value" in forAll {
@@ -600,6 +716,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasAmountDueSummaryChanged shouldBe true
+        sut.hasAnyAmendments           shouldBe true
     }
 
     "return true when amountDue and amountOfEclDutyLiable have different values set" in forAll {
@@ -624,6 +741,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasAmountDueSummaryChanged shouldBe true
+        sut.hasAnyAmendments           shouldBe true
     }
 
     "return false when amountDue and amountOfEclDutyLiable have the same value set" in forAll {
@@ -670,6 +788,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasContactNameChanged shouldBe true
+        sut.hasAnyAmendments      shouldBe true
     }
 
     "return true when contactName and name are set to different values" in forAll {
@@ -690,6 +809,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasContactNameChanged shouldBe true
+        sut.hasAnyAmendments      shouldBe true
     }
 
     "return false contactName and name are set to the same values" in forAll {
@@ -732,6 +852,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasContactRoleChanged shouldBe true
+        sut.hasAnyAmendments      shouldBe true
     }
 
     "return true when contactRole and positionInCompany are set to different values" in forAll {
@@ -752,6 +873,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasContactRoleChanged shouldBe true
+        sut.hasAnyAmendments      shouldBe true
     }
 
     "return false contactRole and positionInCompany are set to the same values" in forAll {
@@ -794,6 +916,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasContactEmailAddressChanged shouldBe true
+        sut.hasAnyAmendments              shouldBe true
     }
 
     "return true when contactEmailAddress and emailAddress are set to different values" in forAll {
@@ -814,6 +937,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasContactEmailAddressChanged shouldBe true
+        sut.hasAnyAmendments              shouldBe true
     }
 
     "return false contactEmailAddress and emailAddress are set to the same values" in forAll {
@@ -856,6 +980,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasContactTelephoneNumberChanged shouldBe true
+        sut.hasAnyAmendments                 shouldBe true
     }
 
     "return true when contactTelephoneNumber and telephoneNumber are set to different values" in forAll {
@@ -876,6 +1001,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasContactTelephoneNumberChanged shouldBe true
+        sut.hasAnyAmendments                 shouldBe true
     }
 
     "return false contactTelephoneNumber and telephoneNumber are set to the same values" in forAll {
@@ -896,6 +1022,185 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasContactTelephoneNumberChanged shouldBe false
+    }
+  }
+
+  "hasAllContactDetailsChanged" should {
+    "return true when all contact fields are set to None and have changed" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(
+            contactName = None,
+            contactRole = None,
+            contactEmailAddress = None,
+            contactTelephoneNumber = None
+          )
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(declarationDetails =
+            validEclReturnSubmission.response.declarationDetails.copy(
+              name = testString,
+              positionInCompany = testString,
+              emailAddress = testString,
+              telephoneNumber = testString
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasAllContactDetailsChanged shouldBe true
+        sut.hasAnyAmendments            shouldBe true
+    }
+
+    "return true when all contact fields are set to values and have changed" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(
+            contactName = Some(testString),
+            contactRole = Some(testString),
+            contactEmailAddress = Some(testString),
+            contactTelephoneNumber = Some(testString)
+          )
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(declarationDetails =
+            validEclReturnSubmission.response.declarationDetails.copy(
+              name = alternateTestString,
+              positionInCompany = alternateTestString,
+              emailAddress = alternateTestString,
+              telephoneNumber = alternateTestString
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasAllContactDetailsChanged shouldBe true
+        sut.hasAnyAmendments            shouldBe true
+    }
+
+    "return false when all contact fields are set to values and have one of the fields has not changed" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(
+            contactName = Some(alternateTestString),
+            contactRole = Some(testString),
+            contactEmailAddress = Some(testString),
+            contactTelephoneNumber = Some(testString)
+          )
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(declarationDetails =
+            validEclReturnSubmission.response.declarationDetails.copy(
+              name = alternateTestString,
+              positionInCompany = alternateTestString,
+              emailAddress = alternateTestString,
+              telephoneNumber = alternateTestString
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasAllContactDetailsChanged shouldBe false
+        sut.hasAnyAmendments            shouldBe true
+    }
+
+    "return false when all contact fields are set to values and have all of the fields have not changed" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(
+            contactName = Some(testString),
+            contactRole = Some(testString),
+            contactEmailAddress = Some(testString),
+            contactTelephoneNumber = Some(testString)
+          )
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(declarationDetails =
+            validEclReturnSubmission.response.declarationDetails.copy(
+              name = testString,
+              positionInCompany = testString,
+              emailAddress = testString,
+              telephoneNumber = testString
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasAllContactDetailsChanged shouldBe false
+        sut.hasAnyAmendments            shouldBe true
+    }
+  }
+
+  "isAmendReturnAndNot" should {
+    "return true when returnType is AmendReturn and value is false" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.isAmendReturnAndNot(false) shouldBe true
+    }
+
+    "return false when returnType is FirstTimeReturn and value is false" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+        .copy(returnType = Some(FirstTimeReturn))
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.isAmendReturnAndNot(false) shouldBe false
+    }
+
+    "return false when returnType is FirstTimeReturn and value is true" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+        .copy(returnType = Some(FirstTimeReturn))
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.isAmendReturnAndNot(true) shouldBe false
+    }
+
+    "return false when returnType is false and value is false" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+        .copy(returnType = None)
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.isAmendReturnAndNot(false) shouldBe false
+    }
+
+    "return false when returnType is false and value is true" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn = defaultEclReturn(validEclReturn)
+        .copy(returnType = None)
+
+      val sut = TestTrackEclReturnChanges(
+        eclReturn = eclReturn,
+        eclReturnSubmission = None
+      )
+
+      sut.isAmendReturnAndNot(true) shouldBe false
     }
   }
 }
