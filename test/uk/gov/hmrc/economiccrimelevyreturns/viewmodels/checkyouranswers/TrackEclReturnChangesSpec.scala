@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkyouranswers
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.{AmlDaysMax, AmlDaysMin}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.{AmlDaysMax, AmlDaysMin, ApDaysMax}
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers.TrackEclReturnChanges
 import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
@@ -51,7 +51,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasRelevantAp12MonthsChanged shouldBe true
     }
 
-    "return true when relevantAp12Months is false and numberOfDaysRegulatedActivityTookPlace is set" in forAll {
+    "return true when relevantAp12Months is false and numberOfDaysRegulatedActivityTookPlace is set to a value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantAp12Months = Some(false))
@@ -71,7 +71,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasRelevantAp12MonthsChanged shouldBe true
     }
 
-    "return true when relevantAp12Months is None and numberOfDaysRegulatedActivityTookPlace is set" in forAll {
+    "return true when relevantAp12Months is None and numberOfDaysRegulatedActivityTookPlace is set to a value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantAp12Months = None)
@@ -91,7 +91,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasRelevantAp12MonthsChanged shouldBe true
     }
 
-    "return false when relevantAp12Months is None and numberOfDaysRegulatedActivityTookPlace is None" in forAll {
+    "return false when relevantAp12Months and numberOfDaysRegulatedActivityTookPlace are set to None" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantAp12Months = None)
@@ -111,7 +111,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasRelevantAp12MonthsChanged shouldBe false
     }
 
-    "return false when relevantAp12Months is true and numberOfDaysRegulatedActivityTookPlace is set" in forAll {
+    "return false when relevantAp12Months is true and numberOfDaysRegulatedActivityTookPlace is set to a value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantAp12Months = Some(true))
@@ -133,7 +133,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
   }
 
   "hasRelevantApLengthChanged" should {
-    "return true when relevantApLength is set to AmlDaysMin and numberOfDaysRegulatedActivityTookPlace is set to AmlDaysMax" in forAll {
+    "return true when relevantApLength and numberOfDaysRegulatedActivityTookPlace are set to different values" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantApLength = Some(AmlDaysMin))
@@ -153,7 +153,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasRelevantApLengthChanged shouldBe true
     }
 
-    "return true when relevantApLength is set to AmlDaysMax and numberOfDaysRegulatedActivityTookPlace is set to None" in forAll {
+    "return true when relevantApLength is set to a value and numberOfDaysRegulatedActivityTookPlace is set to None" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantApLength = Some(AmlDaysMax))
@@ -173,7 +173,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasRelevantApLengthChanged shouldBe true
     }
 
-    "return true when relevantApLength is set to None and numberOfDaysRegulatedActivityTookPlace is set to AmlDaysMax" in forAll {
+    "return true when relevantApLength is set to None and numberOfDaysRegulatedActivityTookPlace is set to a value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantApLength = None)
@@ -193,7 +193,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasRelevantApLengthChanged shouldBe true
     }
 
-    "return false when relevantApLength is set to AmlDaysMax and numberOfDaysRegulatedActivityTookPlace is set to AmlDaysMax" in forAll {
+    "return false when relevantApLength and numberOfDaysRegulatedActivityTookPlace is set to the same value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantApLength = Some(AmlDaysMax))
@@ -213,7 +213,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasRelevantApLengthChanged shouldBe false
     }
 
-    "return false when relevantApLength is set to None and numberOfDaysRegulatedActivityTookPlace is set to None" in forAll {
+    "return false when relevantApLength and numberOfDaysRegulatedActivityTookPlace are both set to None" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantApLength = None)
@@ -235,7 +235,27 @@ class TrackEclReturnChangesSpec extends SpecBase {
   }
 
   "hasUkRevenueChanged" should {
-    "return true when changed" in forAll {
+    "return true when relevantApRevenue is set and accountingPeriodRevenue is set" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(relevantApRevenue = Some(RevenueMin))
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              accountingPeriodRevenue = BigDecimal(RevenueMax)
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasUkRevenueChanged shouldBe true
+    }
+
+    "return true when relevantApRevenue is set to None and accountingPeriodRevenue is set" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantApRevenue = None)
@@ -252,10 +272,10 @@ class TrackEclReturnChangesSpec extends SpecBase {
           eclReturnSubmission = Some(eclReturnSubmission)
         )
 
-        sut.hasRelevantApLengthChanged shouldBe true
+        sut.hasUkRevenueChanged shouldBe true
     }
 
-    "return false when not changed" in forAll {
+    "return false when relevantApRevenue and accountingPeriodRevenue is set to the same value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(relevantApRevenue = Some(RevenueMax))
@@ -272,7 +292,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
           eclReturnSubmission = Some(eclReturnSubmission)
         )
 
-        sut.hasRelevantApLengthChanged shouldBe false
+        sut.hasUkRevenueChanged shouldBe false
     }
   }
 

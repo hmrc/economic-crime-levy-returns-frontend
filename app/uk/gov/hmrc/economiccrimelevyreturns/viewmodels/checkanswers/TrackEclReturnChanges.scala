@@ -48,8 +48,8 @@ trait TrackEclReturnChanges {
   val hasUkRevenueChanged: Boolean = eclReturnSubmission match {
     case Some(submission) =>
       eclReturn.relevantApRevenue match {
-        case Some(relevantApRevenue) => relevantApRevenue == submission.returnDetails.accountingPeriodRevenue
-        case None                    => false
+        case Some(relevantApRevenue) => relevantApRevenue != submission.returnDetails.accountingPeriodRevenue
+        case None                    => true
       }
     case None             => false
   }
