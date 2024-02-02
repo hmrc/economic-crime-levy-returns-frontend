@@ -234,6 +234,8 @@ checkYourAnswers.cancel = <a href="{0}" class="govuk-link">Cancel this amendment
 checkYourAnswers.amendedAnswers = Amended answers
 checkYourAnswers.nowSendAmend = Now send your amended return
 checkYourAnswers.bySendingAmend = By sending this request to amend your return, you are confirming that, to the best of your knowledge, the details you are providing are correct.
+checkYourAnswers.submittingYourRequest = Submitting your request to amend your return
+checkYourAnswers.youCannotSubmit = You cannot submit this request as you have not made any changes.
 
 submitted.title = Return submitted
 submitted.heading = Return submitted

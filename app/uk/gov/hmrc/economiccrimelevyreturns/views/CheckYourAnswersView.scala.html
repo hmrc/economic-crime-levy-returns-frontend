@@ -50,16 +50,18 @@
         }
 
         @if(viewModel.isAmendReturn) {
-            <h2 class="govuk-heading-m">@messages("checkYourAnswers.amendedAnswers")</h2>
-            @govukSummaryList(viewModel.amendedAnswersDetails())
+            @if(viewModel.hasAnyAmendments) {
+                <h2 class="govuk-heading-m">@messages("checkYourAnswers.amendedAnswers")</h2>
+                @govukSummaryList(viewModel.amendedAnswersDetails())
 
-            <h2 class="govuk-heading-m">@messages("checkYourAnswers.nowSendAmend")</h2>
-            <div class="govuk-body">@messages("checkYourAnswers.bySendingAmend")</div>
-        }
+                <h2 class="govuk-heading-m">@messages("checkYourAnswers.nowSendAmend")</h2>
+                <div class="govuk-body">@messages("checkYourAnswers.bySendingAmend")</div>
+                @govukButton(ButtonViewModel(messages("checkYourAnswers.confirmAndSend")))
+            } else {
+                <h2 class="govuk-heading-m">@messages("checkYourAnswers.submittingYourRequest")</h2>
+                <div class="govuk-body">@messages("checkYourAnswers.youCannotSubmit")</div>
+            }
 
-        @govukButton(ButtonViewModel(messages("checkYourAnswers.confirmAndSend")))
-
-        @if(viewModel.isAmendReturn) {
             <p class="govuk-body">@Html(messages("checkYourAnswers.cancel", s"${routes.CancelReturnAmendmentController.onPageLoad().url}"))</p>
         }
     }

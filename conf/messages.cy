@@ -234,6 +234,8 @@ checkYourAnswers.cancel = <a href="{0}" class="govuk-link">Canslo’r diwygiad h
 checkYourAnswers.amendedAnswers = Atebion sydd wedi’u diwygio
 checkYourAnswers.nowSendAmend = Anfonwch eich datganiad diwygiedig nawr
 checkYourAnswers.bySendingAmend = Drwy gyflwyno’r cais hwn i ddiwygio’ch datganiad, rydych yn cadarnhau, hyd eithaf eich gwybodaeth, fod y manylion a rowch yn gywir.
+checkYourAnswers.submittingYourRequest = Cyflwyno’ch cais i ddiwygio’ch datganiad
+checkYourAnswers.youCannotSubmit = Ni allwch gyflwyno’r cais hwn gan nad ydych wedi gwneud unrhyw newidiadau.
 
 submitted.title = Datganiad wedi’i gyflwyno
 submitted.heading = Datganiad wedi’i gyflwyno

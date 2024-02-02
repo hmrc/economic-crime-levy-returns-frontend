@@ -142,8 +142,26 @@ trait TrackEclReturnChanges {
     case None             => false
   }
 
-  val hasAllContactDetailsChanged: Boolean = hasContactNameChanged && hasContactRoleChanged &&
-    hasContactEmailAddressChanged && hasContactTelephoneNumberChanged
+  val hasAnyAmendments: Boolean = Seq(
+    hasRelevantAp12MonthsChanged,
+    hasRelevantApLengthChanged,
+    hasUkRevenueChanged,
+    hasCarriedOutAmlRegulatedActivityForFullFyChanged,
+    hasAmlRegulatedActivityLengthChanged,
+    hasCalculatedBandSummaryChanged,
+    hasAmountDueSummaryChanged,
+    hasContactNameChanged,
+    hasContactRoleChanged,
+    hasContactEmailAddressChanged,
+    hasContactTelephoneNumberChanged
+  ).contains(true)
+
+  val hasAllContactDetailsChanged: Boolean = Seq(
+    hasContactNameChanged,
+    hasContactRoleChanged,
+    hasContactEmailAddressChanged,
+    hasContactTelephoneNumberChanged
+  ).forall(_ == true)
 
   val hasAmendReason: Boolean = eclReturn.amendReason.isDefined
 
