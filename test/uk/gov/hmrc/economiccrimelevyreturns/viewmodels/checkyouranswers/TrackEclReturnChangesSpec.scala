@@ -409,25 +409,110 @@ class TrackEclReturnChangesSpec extends SpecBase {
   }
 
   "hasAmlRegulatedActivityLengthChanged" should {
-    "return true when changed" in forAll {
-      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
-        val eclReturn = defaultEclReturn(validEclReturn)
-          .copy(amlRegulatedActivityLength = Some(365))
+    "return true when amlRegulatedActivityLength and " +
+      "numberOfDaysRegulatedActivityTookPlace are set to different values" in forAll {
+        (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+          val eclReturn = defaultEclReturn(validEclReturn)
+            .copy(amlRegulatedActivityLength = Some(AmlDaysMax))
 
-        val eclReturnSubmission = validEclReturnSubmission.response
-          .copy(returnDetails =
-            validEclReturnSubmission.response.returnDetails.copy(
-              numberOfDaysRegulatedActivityTookPlace = Some(364)
+          val eclReturnSubmission = validEclReturnSubmission.response
+            .copy(returnDetails =
+              validEclReturnSubmission.response.returnDetails.copy(
+                numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax - 1)
+              )
             )
+
+          val sut = TestTrackEclReturnChanges(
+            eclReturn = eclReturn,
+            eclReturnSubmission = Some(eclReturnSubmission)
           )
 
-        val sut = TestTrackEclReturnChanges(
-          eclReturn = eclReturn,
-          eclReturnSubmission = Some(eclReturnSubmission)
-        )
+          sut.hasAmlRegulatedActivityLengthChanged shouldBe true
+      }
 
-        sut.hasAmlRegulatedActivityLengthChanged shouldBe true
-    }
+    "return true amlRegulatedActivityLength is None and " +
+      "numberOfDaysRegulatedActivityTookPlace is set to a value" in forAll {
+        (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+          val eclReturn = defaultEclReturn(validEclReturn)
+            .copy(amlRegulatedActivityLength = None)
+
+          val eclReturnSubmission = validEclReturnSubmission.response
+            .copy(returnDetails =
+              validEclReturnSubmission.response.returnDetails.copy(
+                numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+              )
+            )
+
+          val sut = TestTrackEclReturnChanges(
+            eclReturn = eclReturn,
+            eclReturnSubmission = Some(eclReturnSubmission)
+          )
+
+          sut.hasAmlRegulatedActivityLengthChanged shouldBe true
+      }
+
+    "return true amlRegulatedActivityLength is set to a value and " +
+      "numberOfDaysRegulatedActivityTookPlace is set to None" in forAll {
+        (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+          val eclReturn = defaultEclReturn(validEclReturn)
+            .copy(amlRegulatedActivityLength = Some(AmlDaysMax))
+
+          val eclReturnSubmission = validEclReturnSubmission.response
+            .copy(returnDetails =
+              validEclReturnSubmission.response.returnDetails.copy(
+                numberOfDaysRegulatedActivityTookPlace = None
+              )
+            )
+
+          val sut = TestTrackEclReturnChanges(
+            eclReturn = eclReturn,
+            eclReturnSubmission = Some(eclReturnSubmission)
+          )
+
+          sut.hasAmlRegulatedActivityLengthChanged shouldBe true
+      }
+
+    "return false when amlRegulatedActivityLength and " +
+      "numberOfDaysRegulatedActivityTookPlace are both set to the same value" in forAll {
+        (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+          val eclReturn = defaultEclReturn(validEclReturn)
+            .copy(amlRegulatedActivityLength = Some(AmlDaysMax))
+
+          val eclReturnSubmission = validEclReturnSubmission.response
+            .copy(returnDetails =
+              validEclReturnSubmission.response.returnDetails.copy(
+                numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+              )
+            )
+
+          val sut = TestTrackEclReturnChanges(
+            eclReturn = eclReturn,
+            eclReturnSubmission = Some(eclReturnSubmission)
+          )
+
+          sut.hasAmlRegulatedActivityLengthChanged shouldBe false
+      }
+
+    "return false when amlRegulatedActivityLength and " +
+      "numberOfDaysRegulatedActivityTookPlace are both set to None" in forAll {
+        (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+          val eclReturn = defaultEclReturn(validEclReturn)
+            .copy(amlRegulatedActivityLength = None)
+
+          val eclReturnSubmission = validEclReturnSubmission.response
+            .copy(returnDetails =
+              validEclReturnSubmission.response.returnDetails.copy(
+                numberOfDaysRegulatedActivityTookPlace = None
+              )
+            )
+
+          val sut = TestTrackEclReturnChanges(
+            eclReturn = eclReturn,
+            eclReturnSubmission = Some(eclReturnSubmission)
+          )
+
+          sut.hasAmlRegulatedActivityLengthChanged shouldBe false
+      }
   }
 
   "hasCalculatedBandSummaryChanged" should {
