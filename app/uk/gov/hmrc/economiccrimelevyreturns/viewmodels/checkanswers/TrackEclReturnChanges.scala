@@ -40,7 +40,7 @@ trait TrackEclReturnChanges {
     case Some(submission) =>
       submission.returnDetails.numberOfDaysRegulatedActivityTookPlace match {
         case Some(numOfDays) => !eclReturn.relevantApLength.contains(numOfDays)
-        case None            => false
+        case None            => eclReturn.relevantApLength.isDefined
       }
     case None             => false
   }
