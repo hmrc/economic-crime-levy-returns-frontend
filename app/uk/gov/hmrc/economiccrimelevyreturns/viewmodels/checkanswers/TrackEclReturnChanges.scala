@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers
 
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.AmlDaysMax
 import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, FirstTimeReturn, GetEclReturnSubmissionResponse}
 
 trait TrackEclReturnChanges {
@@ -57,13 +56,18 @@ trait TrackEclReturnChanges {
 
   val hasCarriedOutAmlRegulatedActivityForFullFyChanged: Boolean = eclReturnSubmission match {
     case Some(submission) =>
-      eclReturn.amlRegulatedActivityLength match {
-        case Some(length) =>
+      eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
+        case Some(_) =>
           submission.returnDetails.numberOfDaysRegulatedActivityTookPlace match {
-            case Some(numOfDays) => numOfDays != length
-            case None            => true
+            case Some(numberOfDays) =>
+              eclReturn.amlRegulatedActivityLength match {
+                case Some(length) => numberOfDays != length
+                case None         => true
+              }
+            case None               => true
           }
-        case None         => submission.returnDetails.numberOfDaysRegulatedActivityTookPlace.isDefined
+        case None    =>
+          eclReturn.amlRegulatedActivityLength != submission.returnDetails.numberOfDaysRegulatedActivityTookPlace
       }
     case None             => false
   }

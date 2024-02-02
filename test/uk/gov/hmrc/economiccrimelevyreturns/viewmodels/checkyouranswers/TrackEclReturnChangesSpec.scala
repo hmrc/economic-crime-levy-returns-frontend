@@ -16,21 +16,16 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkyouranswers
 
-import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.{AmlDaysMax, ApDaysMax}
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, CalculatedLiability, EclReturn, GetEclReturnSubmissionResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.ApDaysMax
+import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, CalculatedLiability, EclAmount, EclReturn, GetEclReturnSubmissionResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers.TrackEclReturnChanges
+import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
 
 class TrackEclReturnChangesSpec extends SpecBase {
 
   private val testString          = alphaNumericString
   private val alternateTestString = "alternate" + alphaNumericString
-
-  final case class TestTrackEclReturnChanges(
-    eclReturn: EclReturn,
-    eclReturnSubmission: Option[GetEclReturnSubmissionResponse]
-  ) extends TrackEclReturnChanges
 
   def defaultEclReturn(validEclReturn: ValidEclReturn): EclReturn =
     validEclReturn.eclReturn.copy(relevantAp12Months = Some(true))
@@ -116,6 +111,142 @@ class TrackEclReturnChangesSpec extends SpecBase {
         )
 
         sut.hasRelevantApLengthChanged shouldBe false
+    }
+  }
+
+  "hasUkRevenueChanged" should {
+    "return true when changed" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(relevantApRevenue = None)
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              accountingPeriodRevenue = BigDecimal(RevenueMax)
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasRelevantApLengthChanged shouldBe true
+    }
+
+    "return false when not changed" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(relevantApRevenue = Some(RevenueMax))
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              accountingPeriodRevenue = RevenueMax
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasRelevantApLengthChanged shouldBe false
+    }
+  }
+
+  "hasCarriedOutAmlRegulatedActivityForFullFyChanged" should {
+    "return true when changed" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(carriedOutAmlRegulatedActivityForFullFy = None)
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              numberOfDaysRegulatedActivityTookPlace = Some(365)
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasCarriedOutAmlRegulatedActivityForFullFyChanged shouldBe true
+    }
+  }
+
+  "hasAmlRegulatedActivityLengthChanged" should {
+    "return true when changed" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(amlRegulatedActivityLength = Some(365))
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              numberOfDaysRegulatedActivityTookPlace = Some(364)
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasAmlRegulatedActivityLengthChanged shouldBe true
+    }
+  }
+
+  "hasCalculatedBandSummaryChanged" should {
+    "return true when changed" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val calculatedLiability: CalculatedLiability = defaultEclReturn(validEclReturn).calculatedLiability.get
+
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(calculatedLiability = Some(calculatedLiability.copy(calculatedBand = Band.Large)))
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              revenueBand = Band.Medium
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasCalculatedBandSummaryChanged shouldBe true
+    }
+  }
+
+  "hasAmountDueSummaryChanged" should {
+    "return true when changed" in forAll {
+      (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
+        val calculatedLiability: CalculatedLiability = defaultEclReturn(validEclReturn).calculatedLiability.get
+
+        val eclReturn = defaultEclReturn(validEclReturn)
+          .copy(calculatedLiability =
+            Some(calculatedLiability.copy(amountDue = EclAmount(BigDecimal(1), apportioned = false)))
+          )
+
+        val eclReturnSubmission = validEclReturnSubmission.response
+          .copy(returnDetails =
+            validEclReturnSubmission.response.returnDetails.copy(
+              amountOfEclDutyLiable = BigDecimal(2)
+            )
+          )
+
+        val sut = TestTrackEclReturnChanges(
+          eclReturn = eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
+
+        sut.hasAmountDueSummaryChanged shouldBe true
     }
   }
 
@@ -286,11 +417,9 @@ class TrackEclReturnChangesSpec extends SpecBase {
         sut.hasContactTelephoneNumberChanged shouldBe false
     }
   }
-
-// hasRelevantApLengthChanged
-// hasUkRevenueChanged
-// hasCarriedOutAmlRegulatedActivityForFullFyChanged
-// hasAmlRegulatedActivityLengthChanged
-// hasCalculatedBandSummaryChanged
-// hasAmountDueSummaryChanged
 }
+
+final case class TestTrackEclReturnChanges(
+  eclReturn: EclReturn,
+  eclReturnSubmission: Option[GetEclReturnSubmissionResponse]
+) extends TrackEclReturnChanges
