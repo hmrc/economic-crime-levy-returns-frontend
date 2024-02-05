@@ -21,10 +21,12 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, 
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeDataRetrievalAction(data: EclReturn) extends DataRetrievalAction {
+class FakeDataRetrievalAction(data: EclReturn, periodKey: Option[String] = None) extends DataRetrievalAction {
 
   override protected def transform[A](request: AuthorisedRequest[A]): Future[ReturnDataRequest[A]] =
-    Future(ReturnDataRequest(request.request, request.internalId, data, None, request.eclRegistrationReference, None))
+    Future(
+      ReturnDataRequest(request.request, request.internalId, data, None, request.eclRegistrationReference, periodKey)
+    )
 
   override protected implicit val executionContext: ExecutionContext =
     scala.concurrent.ExecutionContext.Implicits.global
