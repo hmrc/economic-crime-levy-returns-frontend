@@ -90,19 +90,19 @@ final case class CheckYourAnswersViewModel(
   def contactDetails()(implicit messages: Messages): SummaryList = SummaryListViewModel(
     rows = (
       addIf(
-        isAmendReturnAndNot(hasContactNameChanged),
+        isFirstTimeReturn || isAmendReturnAndNot(hasContactNameChanged),
         ContactNameSummary.row(eclReturn.contactName)
       ) ++
         addIf(
-          isAmendReturnAndNot(hasContactRoleChanged),
+          isFirstTimeReturn || isAmendReturnAndNot(hasContactRoleChanged),
           ContactRoleSummary.row(eclReturn.contactRole)
         ) ++
         addIf(
-          isAmendReturnAndNot(hasContactEmailAddressChanged),
+          isFirstTimeReturn || isAmendReturnAndNot(hasContactEmailAddressChanged),
           ContactEmailSummary.row(eclReturn.contactEmailAddress)
         ) ++
         addIf(
-          isAmendReturnAndNot(hasContactTelephoneNumberChanged),
+          isFirstTimeReturn || isAmendReturnAndNot(hasContactTelephoneNumberChanged),
           ContactNumberSummary.row(eclReturn.contactTelephoneNumber)
         )
     ).flatten
@@ -113,31 +113,31 @@ final case class CheckYourAnswersViewModel(
       rows = (
         Seq(EclReferenceNumberSummary.row(request.eclRegistrationReference)) ++
           addIf(
-            isAmendReturnAndNot(hasRelevantAp12MonthsChanged),
+            isFirstTimeReturn || isAmendReturnAndNot(hasRelevantAp12MonthsChanged),
             RelevantAp12MonthsSummary.row(eclReturn.relevantAp12Months)
           ) ++
           addIf(
-            isAmendReturnAndNot(hasRelevantApLengthChanged),
+            isFirstTimeReturn || isAmendReturnAndNot(hasRelevantApLengthChanged),
             RelevantApLengthSummary.row(eclReturn.relevantApLength)
           ) ++
           addIf(
-            isAmendReturnAndNot(hasUkRevenueChanged),
+            isFirstTimeReturn || isAmendReturnAndNot(hasUkRevenueChanged),
             UkRevenueSummary.row(eclReturn.relevantApRevenue)
           ) ++
           addIf(
-            isAmendReturnAndNot(hasCarriedOutAmlRegulatedActivityForFullFyChanged),
+            isFirstTimeReturn || isAmendReturnAndNot(hasCarriedOutAmlRegulatedActivityForFullFyChanged),
             AmlRegulatedActivitySummary.row(eclReturn.carriedOutAmlRegulatedActivityForFullFy)
           ) ++
           addIf(
-            isAmendReturnAndNot(hasAmlRegulatedActivityLengthChanged),
+            isFirstTimeReturn || isAmendReturnAndNot(hasAmlRegulatedActivityLengthChanged),
             AmlRegulatedActivityLengthSummary.row(eclReturn.amlRegulatedActivityLength)
           ) ++
           addIf(
-            isAmendReturnAndNot(hasCalculatedBandSummaryChanged),
+            isFirstTimeReturn || isAmendReturnAndNot(hasCalculatedBandSummaryChanged),
             CalculatedBandSummary.row(eclReturn.calculatedLiability)
           ) ++
           addIf(
-            isAmendReturnAndNot(hasAmountDueSummaryChanged),
+            isFirstTimeReturn || isAmendReturnAndNot(hasAmountDueSummaryChanged),
             AmountDueSummary.row(eclReturn.calculatedLiability)
           )
       ).flatten

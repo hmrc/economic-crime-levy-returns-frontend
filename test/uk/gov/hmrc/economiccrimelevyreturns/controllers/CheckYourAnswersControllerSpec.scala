@@ -175,12 +175,14 @@ class CheckYourAnswersControllerSpec extends SpecBase {
     }
 
     "return InternalServerError (500) when periodKey is missing" in forAll { validEclReturn: ValidEclReturn =>
-      new TestContext(validEclReturn.eclReturn) {
+      val eclReturn = validEclReturn.eclReturn.copy(returnType = Some(AmendReturn))
+
+      new TestContext(eclReturn) {
         implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
           ReturnDataRequest(
             fakeRequest,
-            validEclReturn.eclReturn.internalId,
-            validEclReturn.eclReturn,
+            eclReturn.internalId,
+            eclReturn,
             None,
             eclRegistrationReference,
             None
@@ -197,7 +199,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
     "return InternalServerError (500) when getEclReturnSubmission errors" in forAll {
       (validEclReturn: ValidEclReturn) =>
-        val eclReturn: EclReturn = validEclReturn.eclReturn
+        val eclReturn = validEclReturn.eclReturn.copy(returnType = Some(AmendReturn))
 
         new TestContext(eclReturn, Some(periodKey)) {
           implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
@@ -362,12 +364,14 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
     "return InternalServerError (500) when periodKey is missing for viewHtml" in forAll {
       validEclReturn: ValidEclReturn =>
-        new TestContext(validEclReturn.eclReturn) {
+        val eclReturn = validEclReturn.eclReturn.copy(returnType = Some(AmendReturn))
+
+        new TestContext(eclReturn) {
           implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
             ReturnDataRequest(
               fakeRequest,
-              validEclReturn.eclReturn.internalId,
-              validEclReturn.eclReturn,
+              eclReturn.internalId,
+              eclReturn,
               None,
               eclRegistrationReference,
               None
@@ -562,7 +566,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
         }
     }
 
-    "redirect to answers are invalid page when return type is not set" in forAll {
+    "return InternalServerError (500) when return type is not set" in forAll {
       (
         validEclReturn: ValidEclReturn,
         validEclSubmission: ValidGetEclReturnSubmissionResponse
@@ -592,8 +596,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
           val result: Future[Result] = controller.onSubmit()(returnDataRequest)
 
-          status(result)           shouldBe SEE_OTHER
-          redirectLocation(result) shouldBe Some(routes.NotableErrorController.answersAreInvalid().url)
+          status(result) shouldBe INTERNAL_SERVER_ERROR
         }
     }
   }

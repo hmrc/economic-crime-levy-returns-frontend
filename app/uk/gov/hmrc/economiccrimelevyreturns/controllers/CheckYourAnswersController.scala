@@ -120,10 +120,11 @@ class CheckYourAnswersController @Inject() (
   private def pdfViewHtmlOrError()(implicit
     request: ReturnDataRequest[AnyContent]
   ): EitherT[Future, ResponseError, Option[String]] = {
-    val view = request.eclReturn.returnType match {
-      case Some(AmendReturn)     =>
-        if (appConfig.getEclReturnEnabled) {
-          EitherT {
+    val view = EitherT {
+      request.eclReturn.returnType match {
+        case Some(FirstTimeReturn) => Future.successful(Right(None))
+        case Some(AmendReturn)     =>
+          if (appConfig.getEclReturnEnabled) {
             request.periodKey match {
               case None            =>
                 Future.successful(Left(ResponseError.internalServiceError("Unable to find period key")))
@@ -133,18 +134,11 @@ class CheckYourAnswersController @Inject() (
                   viewModel => Right(pdfView(viewModel))
                 )
             }
-          }
-        } else {
-          EitherT[Future, ResponseError, HtmlFormat.Appendable] {
+          } else {
             Future.successful(Right(pdfView(pdfViewModelWithoutEclReturnSubmission())))
           }
-        }
-      case Some(FirstTimeReturn) =>
-        EitherT[Future, ResponseError, Option[String]](Future.successful(Right(None)))
-      case None                  =>
-        EitherT[Future, ResponseError, Option[String]](
-          Future.successful(Left(ResponseError.badRequestError("Return type is empty")))
-        )
+        case None                  => Future.successful(Left(ResponseError.badRequestError("Return type is empty")))
+      }
     }
     EitherT {
       view.fold(error => Left(error), view => Right(Some(base64EncodeHtmlView(view.toString))))
@@ -219,21 +213,24 @@ class CheckYourAnswersController @Inject() (
   private def viewHtmlOrError()(implicit
     request: ReturnDataRequest[AnyContent]
   ): EitherT[Future, ResponseError, HtmlFormat.Appendable] =
-    if (appConfig.getEclReturnEnabled) {
-      EitherT {
-        request.periodKey match {
-          case None            =>
-            Future.successful(Left(ResponseError.internalServiceError("Unable to find period key")))
-          case Some(periodKey) =>
-            viewModelWithEclReturnSubmission(periodKey).fold(
-              error => Left(error),
-              viewModel => Right(view(viewModel, appConfig))
-            )
-        }
-      }
-    } else {
-      EitherT[Future, ResponseError, HtmlFormat.Appendable] {
-        Future.successful(Right(view(viewModelWithoutEclReturnSubmission(), appConfig)))
+    EitherT {
+      request.eclReturn.returnType match {
+        case Some(FirstTimeReturn) => Future.successful(Right(view(viewModelWithoutEclReturnSubmission(), appConfig)))
+        case Some(AmendReturn)     =>
+          if (appConfig.getEclReturnEnabled) {
+            request.periodKey match {
+              case None            =>
+                Future.successful(Left(ResponseError.internalServiceError("Unable to find period key")))
+              case Some(periodKey) =>
+                viewModelWithEclReturnSubmission(periodKey).fold(
+                  error => Left(error),
+                  viewModel => Right(view(viewModel, appConfig))
+                )
+            }
+          } else {
+            Future.successful(Right(view(viewModelWithoutEclReturnSubmission(), appConfig)))
+          }
+        case None                  => Future.successful(Left(ResponseError.internalServiceError("Unable to find return type")))
       }
     }
 

@@ -41,7 +41,7 @@ class ReturnDataRetrievalAction @Inject() (
     (for {
       eclReturn     <- eclReturnService.getOrCreateReturn(request.internalId)(hc(request), request).asResponseError
       startAmendUrl <- getStartAmendUrl(eclReturn.returnType, request.session, request.internalId)(hc(request))
-      periodKey     <- getPeriodKey(request.session, request.internalId)(hc(request))
+      periodKey     <- getPeriodKey(eclReturn.returnType, request.session, request.internalId)(hc(request))
     } yield (eclReturn, startAmendUrl, periodKey)).foldF(
       error => Future.failed(new Exception(error.message)),
       tuple =>
@@ -69,11 +69,16 @@ class ReturnDataRetrievalAction @Inject() (
       }
     }
 
-  private def getPeriodKey(session: Session, internalId: String)(implicit
+  private def getPeriodKey(returnType: Option[ReturnType], session: Session, internalId: String)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, ResponseError, Option[String]] =
-    EitherT[Future, ResponseError, Option[String]] {
-      sessionService.get(session, internalId, SessionKeys.PeriodKey).map(Right(_))
+    EitherT {
+      returnType match {
+        case Some(AmendReturn) =>
+          sessionService.get(session, internalId, SessionKeys.PeriodKey).map(Right(_))
+        case _                 =>
+          Future.successful(Right(None))
+      }
     }
 }
 
