@@ -14,13 +14,14 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 @import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 @import uk.gov.hmrc.economiccrimelevyreturns.views.html.templates.PdfLayout
 @import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers.AmendReturnPdfViewModel
 
 @this(pdfLayout: PdfLayout, govukSummaryList: GovukSummaryList)
 
-@(viewModel: AmendReturnPdfViewModel)(implicit request: ReturnDataRequest[_], messages: Messages)
+@(viewModel: AmendReturnPdfViewModel, config: AppConfig)(implicit request: ReturnDataRequest[_], messages: Messages)
 
 @pdfLayout(messages("otherRegistration.pdfHtml.title")) {
     <p class="govuk-body" align="right">@messages("otherRegistration.pdfHtml.submissionDate", viewModel.date)</p>
@@ -36,6 +37,9 @@
         @govukSummaryList(viewModel.contactDetails())
     }
 
-    <h2 class="govuk-heading-m">@messages("checkYourAnswers.amendedAnswers")</h2>
-    @govukSummaryList(viewModel.amendedAnswersDetails())
+    @if(config.getEclReturnEnabled){
+        <h2 class="govuk-heading-m">@messages("checkYourAnswers.amendedAnswers")</h2>
+        @govukSummaryList(viewModel.amendedAnswersDetails())
+    }
+
 }

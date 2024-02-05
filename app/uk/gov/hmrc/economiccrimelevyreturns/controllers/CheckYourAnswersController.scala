@@ -131,11 +131,11 @@ class CheckYourAnswersController @Inject() (
               case Some(periodKey) =>
                 pdfViewModelWithEclReturnSubmission(periodKey).fold(
                   error => Left(error),
-                  viewModel => Right(pdfView(viewModel))
+                  viewModel => Right(pdfView(viewModel, appConfig))
                 )
             }
           } else {
-            Future.successful(Right(pdfView(pdfViewModelWithoutEclReturnSubmission())))
+            Future.successful(Right(pdfView(pdfViewModelWithoutEclReturnSubmission(), appConfig)))
           }
         case None                  => Future.successful(Left(ResponseError.badRequestError("Return type is empty")))
       }
