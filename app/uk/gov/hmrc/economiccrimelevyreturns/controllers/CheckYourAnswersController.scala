@@ -227,13 +227,13 @@ class CheckYourAnswersController @Inject() (
           case Some(periodKey) =>
             viewModelWithEclReturnSubmission(periodKey).fold(
               error => Left(error),
-              viewModel => Right(view(viewModel))
+              viewModel => Right(view(viewModel, appConfig))
             )
         }
       }
     } else {
       EitherT[Future, ResponseError, HtmlFormat.Appendable] {
-        Future.successful(Right(view(viewModelWithoutEclReturnSubmission())))
+        Future.successful(Right(view(viewModelWithoutEclReturnSubmission(), appConfig)))
       }
     }
 
