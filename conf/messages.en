@@ -262,7 +262,6 @@ amend.submitted.p3 = You can pay the levy by reading the <a href="https://www.go
 amend.submitted.h2 = What happens next
 amend.submitted.p4 = We will review your answers. We may contact you using the details you provided if we need any more information. This process will take 15 working days.
 amend.submitted.p5 = We will send you a letter once we''ve amended your return. You won''t be able to view these changes until after you''ve received this letter.
-amend.submitted.address.heading = We will send the letter to:
 
 exit.survey.link = <a href="{0}" class="govuk-link">What did you think of this service?</a>
 exit.survey = {0} (takes 30 seconds) to exit survey.
