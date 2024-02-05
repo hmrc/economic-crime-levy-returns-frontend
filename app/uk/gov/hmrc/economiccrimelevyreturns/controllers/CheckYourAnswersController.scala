@@ -106,7 +106,7 @@ class CheckYourAnswersController @Inject() (
                   _        <- returnsService.deleteReturn(request.internalId).asResponseError
                   _         = sessionService.delete(request.internalId)
                 } yield response).fold(
-                  _ => Redirect(routes.NotableErrorController.answersAreInvalid()),
+                  error => routeError(error),
                   response => getRedirectionRoute(request, response)
                 )
               }

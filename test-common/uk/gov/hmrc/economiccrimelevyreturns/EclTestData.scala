@@ -148,8 +148,8 @@ trait EclTestData { self: Generators =>
   val testInternalId: String               = alphaNumericString
   val testEclRegistrationReference: String = alphaNumericString
   val testChargeReference: String          = alphaNumericString
+  val testPeriodKey: String                = arbPeriodKey.arbitrary.sample.get.periodKey
   val UkRevenueThreshold: Long             = 10200000L
-  val validPeriodKey: String               = arbPeriodKey.arbitrary.sample.get.periodKey
 
   implicit val arbSessionData: Arbitrary[SessionData] =
     Arbitrary {

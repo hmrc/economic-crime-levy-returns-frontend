@@ -15,7 +15,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
   override def configOverrides: Map[String, Any] = Map("features.getEclReturnEnabled" -> "false")
 
   s"GET ${routes.StartAmendController.onPageLoad(":periodKey", ":chargeRef").url}" should {
-    behave like authorisedActionRoute(routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference))
+    behave like authorisedActionRoute(routes.StartAmendController.onPageLoad(testPeriodKey, testChargeReference))
 
     "respond with 200 status and amend start HTML view if period key is valid" in {
       stubAuthorised()
@@ -24,7 +24,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
         status = Open,
         inboundCorrespondenceFromDate = LocalDate.parse("2022-04-01"),
         inboundCorrespondenceToDate = LocalDate.parse("2023-03-31"),
-        periodKey = validPeriodKey
+        periodKey = testPeriodKey
       )
       val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
       val emptyReturn    = EclReturn.empty(testInternalId, Some(AmendReturn))
@@ -35,7 +35,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetObligations(obligationData)
       stubUpsertReturn(emptyReturn.copy(obligationDetails = Some(openObligation), returnType = Some(AmendReturn)))
 
-      val startAmendUrl = routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference).url
+      val startAmendUrl = routes.StartAmendController.onPageLoad(testPeriodKey, testChargeReference).url
       stubGetSession(
         SessionData(
           internalId = testInternalId,
@@ -50,7 +50,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
         )
       )
 
-      val result = callRoute(FakeRequest(routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference)))
+      val result = callRoute(FakeRequest(routes.StartAmendController.onPageLoad(testPeriodKey, testChargeReference)))
 
       status(result) shouldBe OK
       html(result)     should include("Amend your Economic Crime Levy return for 2022 to 2023")
@@ -66,7 +66,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetObligations(obligationData)
 
-      val startAmendUrl = routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference).url
+      val startAmendUrl = routes.StartAmendController.onPageLoad(testPeriodKey, testChargeReference).url
       val emptyReturn   = EclReturn.empty(testInternalId, Some(AmendReturn))
       stubUpsertSession(
         SessionData(
@@ -75,7 +75,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
         )
       )
 
-      val result = callRoute(FakeRequest(routes.StartAmendController.onPageLoad(validPeriodKey, testChargeReference)))
+      val result = callRoute(FakeRequest(routes.StartAmendController.onPageLoad(testPeriodKey, testChargeReference)))
 
       status(result) shouldBe OK
       html(result)     should include("You cannot submit a return for this financial year")

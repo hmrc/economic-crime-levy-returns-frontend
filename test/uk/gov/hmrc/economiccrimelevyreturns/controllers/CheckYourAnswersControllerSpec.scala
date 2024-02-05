@@ -23,15 +23,15 @@ import play.api.i18n.Messages
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
-import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, DataValidationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetEclReturnDeclarationDetails, GetEclReturnSubmissionResponse, SessionKeys, SubmitEclReturnResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView}
+import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
 
 import scala.concurrent.Future
 
@@ -118,7 +118,63 @@ class CheckYourAnswersControllerSpec extends SpecBase {
         }
     }
 
-    "return INTERNAL_SERVER_ERROR (500) when periodKey is missing" in forAll { validEclReturn: ValidEclReturn =>
+    "return answers are invalid page when answers are invalid" in forAll { (validEclReturn: ValidEclReturn) =>
+      val eclReturn: EclReturn = validEclReturn.eclReturn
+
+      new TestContext(eclReturn, Some(periodKey)) {
+        implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+          ReturnDataRequest(
+            fakeRequest,
+            eclReturn.internalId,
+            eclReturn,
+            None,
+            eclRegistrationReference,
+            Some(periodKey)
+          )
+
+        val validationErrors: DataValidationError = DataValidationError.apply("Error")
+
+        when(mockEclReturnsService.getReturnValidationErrors(any())(any()))
+          .thenReturn(
+            EitherT[Future, DataHandlingError, Option[DataValidationError]](
+              Future.successful(Right(Some(validationErrors)))
+            )
+          )
+
+        val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
+
+        status(result)           shouldBe SEE_OTHER
+        redirectLocation(result) shouldBe Some(routes.NotableErrorController.answersAreInvalid().url)
+      }
+    }
+
+    "return InternalServerError (500) when getReturnValidationErrors errors" in forAll {
+      validEclReturn: ValidEclReturn =>
+        new TestContext(validEclReturn.eclReturn) {
+          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+            ReturnDataRequest(
+              fakeRequest,
+              validEclReturn.eclReturn.internalId,
+              validEclReturn.eclReturn,
+              None,
+              eclRegistrationReference,
+              None
+            )
+
+          when(mockEclReturnsService.getReturnValidationErrors(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Option[DataValidationError]](
+                Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
+              )
+            )
+
+          val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
+
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+        }
+    }
+
+    "return InternalServerError (500) when periodKey is missing" in forAll { validEclReturn: ValidEclReturn =>
       new TestContext(validEclReturn.eclReturn) {
         implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
           ReturnDataRequest(
@@ -137,6 +193,37 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
+    }
+
+    "return InternalServerError (500) when getEclReturnSubmission errors" in forAll {
+      (validEclReturn: ValidEclReturn) =>
+        val eclReturn: EclReturn = validEclReturn.eclReturn
+
+        new TestContext(eclReturn, Some(periodKey)) {
+          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+            ReturnDataRequest(
+              fakeRequest,
+              eclReturn.internalId,
+              eclReturn,
+              None,
+              eclRegistrationReference,
+              Some(periodKey)
+            )
+
+          when(mockEclReturnsService.getReturnValidationErrors(any())(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Option[DataValidationError]](Future.successful(Right(None))))
+
+          when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
+                Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
+              )
+            )
+
+          val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
+
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+        }
     }
   }
 
@@ -273,27 +360,241 @@ class CheckYourAnswersControllerSpec extends SpecBase {
         }
     }
 
-    "return INTERNAL_SERVER_ERROR (500) when periodKey is missing" in forAll { validEclReturn: ValidEclReturn =>
-      new TestContext(validEclReturn.eclReturn) {
-        implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
-          ReturnDataRequest(
-            fakeRequest,
-            validEclReturn.eclReturn.internalId,
-            validEclReturn.eclReturn,
-            None,
-            eclRegistrationReference,
-            None
-          )
+    "return InternalServerError (500) when periodKey is missing for viewHtml" in forAll {
+      validEclReturn: ValidEclReturn =>
+        new TestContext(validEclReturn.eclReturn) {
+          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+            ReturnDataRequest(
+              fakeRequest,
+              validEclReturn.eclReturn.internalId,
+              validEclReturn.eclReturn,
+              None,
+              eclRegistrationReference,
+              None
+            )
 
-        when(mockEclReturnsService.getReturnValidationErrors(any())(any()))
-          .thenReturn(
-            EitherT[Future, DataHandlingError, Option[DataValidationError]](Future.successful(Right(None)))
-          )
+          when(mockEclReturnsService.getReturnValidationErrors(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Option[DataValidationError]](Future.successful(Right(None)))
+            )
 
-        val result: Future[Result] = controller.onSubmit()(returnDataRequest)
+          val result: Future[Result] = controller.onSubmit()(returnDataRequest)
 
-        status(result) shouldBe INTERNAL_SERVER_ERROR
-      }
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+        }
+    }
+
+    "return InternalServerError (500) when getEclReturnSubmission fails for pdfViewHtml" in forAll {
+      (
+        validEclReturn: ValidEclReturn,
+        validEclSubmission: ValidGetEclReturnSubmissionResponse
+      ) =>
+        val eclReturn: EclReturn                                = validEclReturn.eclReturn
+          .copy(returnType = Some(AmendReturn))
+        val eclReturnSubmission: GetEclReturnSubmissionResponse =
+          createTestEclReturnSubmission(validEclReturn, validEclSubmission)
+
+        new TestContext(eclReturn, Some(periodKey)) {
+          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+            ReturnDataRequest(
+              fakeRequest,
+              eclReturn.internalId,
+              eclReturn,
+              None,
+              eclRegistrationReference,
+              Some(periodKey)
+            )
+
+          when(mockEclReturnsService.getReturnValidationErrors(any())(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Option[DataValidationError]](Future.successful(Right(None))))
+
+          when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
+                Future.successful(Right(eclReturnSubmission))
+              ),
+              EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
+                Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
+              )
+            )
+
+          val result: Future[Result] = controller.onSubmit()(returnDataRequest)
+
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+        }
+    }
+
+    "return InternalServerError (500) when returnsService.upsertReturn fails" in forAll {
+      (
+        validEclReturn: ValidEclReturn,
+        validEclSubmission: ValidGetEclReturnSubmissionResponse
+      ) =>
+        val eclReturn: EclReturn                                = validEclReturn.eclReturn
+        val eclReturnSubmission: GetEclReturnSubmissionResponse =
+          createTestEclReturnSubmission(validEclReturn, validEclSubmission)
+
+        new TestContext(eclReturn, Some(periodKey)) {
+          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+            ReturnDataRequest(
+              fakeRequest,
+              eclReturn.internalId,
+              eclReturn,
+              None,
+              eclRegistrationReference,
+              Some(periodKey)
+            )
+
+          when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
+                Future.successful(Right(eclReturnSubmission))
+              )
+            )
+
+          when(mockEclReturnsService.upsertReturn(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Unit](
+                Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
+              )
+            )
+
+          val result: Future[Result] = controller.onSubmit()(returnDataRequest)
+
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+        }
+    }
+
+    "return InternalServerError (500) when returnsService.submitReturn fails" in forAll {
+      (
+        validEclReturn: ValidEclReturn,
+        validEclSubmission: ValidGetEclReturnSubmissionResponse
+      ) =>
+        val eclReturn: EclReturn                                = validEclReturn.eclReturn
+        val eclReturnSubmission: GetEclReturnSubmissionResponse =
+          createTestEclReturnSubmission(validEclReturn, validEclSubmission)
+
+        new TestContext(eclReturn, Some(periodKey)) {
+          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+            ReturnDataRequest(
+              fakeRequest,
+              eclReturn.internalId,
+              eclReturn,
+              None,
+              eclRegistrationReference,
+              Some(periodKey)
+            )
+
+          when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
+                Future.successful(Right(eclReturnSubmission))
+              )
+            )
+
+          when(mockEclReturnsService.upsertReturn(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Unit](Future.successful(Right(())))
+            )
+
+          when(mockEclReturnsService.submitReturn(ArgumentMatchers.eq(eclReturn.internalId))(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, SubmitEclReturnResponse](
+                Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
+              )
+            )
+
+          val result: Future[Result] = controller.onSubmit()(returnDataRequest)
+
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+        }
+    }
+
+    "return InternalServerError (500) when sessionService.delete fails" in forAll {
+      (
+        validEclReturn: ValidEclReturn,
+        validEclSubmission: ValidGetEclReturnSubmissionResponse,
+        submitEclReturnResponse: SubmitEclReturnResponse
+      ) =>
+        val eclReturn: EclReturn                                = validEclReturn.eclReturn
+        val eclReturnSubmission: GetEclReturnSubmissionResponse =
+          createTestEclReturnSubmission(validEclReturn, validEclSubmission)
+
+        new TestContext(eclReturn, Some(periodKey)) {
+          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+            ReturnDataRequest(
+              fakeRequest,
+              eclReturn.internalId,
+              eclReturn,
+              None,
+              eclRegistrationReference,
+              Some(periodKey)
+            )
+
+          when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
+                Future.successful(Right(eclReturnSubmission))
+              )
+            )
+
+          when(mockEclReturnsService.upsertReturn(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Unit](Future.successful(Right(())))
+            )
+
+          when(mockEclReturnsService.submitReturn(ArgumentMatchers.eq(eclReturn.internalId))(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, SubmitEclReturnResponse](
+                Future.successful(Right(submitEclReturnResponse))
+              )
+            )
+
+          when(mockEclReturnsService.deleteReturn(ArgumentMatchers.eq(eclReturn.internalId))(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Unit](
+                Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
+              )
+            )
+
+          val result: Future[Result] = controller.onSubmit()(returnDataRequest)
+
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+        }
+    }
+
+    "redirect to answers are invalid page when return type is not set" in forAll {
+      (
+        validEclReturn: ValidEclReturn,
+        validEclSubmission: ValidGetEclReturnSubmissionResponse
+      ) =>
+        val eclReturn: EclReturn                                = validEclReturn.eclReturn
+          .copy(returnType = None)
+        val eclReturnSubmission: GetEclReturnSubmissionResponse =
+          createTestEclReturnSubmission(validEclReturn, validEclSubmission)
+
+        new TestContext(eclReturn, Some(periodKey)) {
+          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+            ReturnDataRequest(
+              fakeRequest,
+              eclReturn.internalId,
+              eclReturn,
+              None,
+              eclRegistrationReference,
+              Some(periodKey)
+            )
+
+          when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
+                Future.successful(Right(eclReturnSubmission))
+              )
+            )
+
+          val result: Future[Result] = controller.onSubmit()(returnDataRequest)
+
+          status(result)           shouldBe SEE_OTHER
+          redirectLocation(result) shouldBe Some(routes.NotableErrorController.answersAreInvalid().url)
+        }
     }
   }
 }

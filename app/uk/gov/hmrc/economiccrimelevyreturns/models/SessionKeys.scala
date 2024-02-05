@@ -24,7 +24,7 @@ object SessionKeys {
   val Email: String             = "email"
   val AmountDue: String         = "amountDue"
   val ObligationDetails: String = "obligationDetails"
-  val PeriodKey: String         = "obligationDetails"
+  val PeriodKey: String         = "periodKey"
   val StartAmendUrl: String     = "StartAmendUrl"
 
   implicit class SessionOps(s: Session) {

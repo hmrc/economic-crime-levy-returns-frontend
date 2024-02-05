@@ -2,6 +2,7 @@ package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo, verify}
+import org.scalacheck.ScalacheckShapeless.derivedArbitrary
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
@@ -10,7 +11,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Languages, SessionData}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetEclReturnSubmissionResponse, Languages, SessionData, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
@@ -21,13 +22,17 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the Check your answers HTML view when the ECL return data is valid" in {
       stubAuthorised()
 
-      val validEclReturn = random[ValidEclReturn]
-      val errors         = random[DataValidationError]
-      val sessionData    = random[SessionData]
+      val validEclReturn           = random[ValidEclReturn]
+      val validEclReturnSubmission = random[GetEclReturnSubmissionResponse]
+      val errors                   = random[DataValidationError]
+      val sessionData              = random[SessionData]
 
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+
+      stubGetEclReturnSubmission(testPeriodKey, testEclRegistrationReference, validEclReturnSubmission)
       stubGetReturn(validEclReturn.eclReturn)
       stubGetReturnValidationErrors(valid = true, errors)
-      stubGetSession(sessionData)
+      stubGetSession(validSessionData)
 
       val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onPageLoad()))
 
@@ -60,15 +65,21 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
     "redirect to the ECL return submitted page after submitting the ECL return successfully" in {
       stubAuthorised()
 
-      val validEclReturn      = random[ValidEclReturn]
-      val chargeReference     = random[Option[String]]
+      val validEclReturn           = random[ValidEclReturn]
+      val validEclReturnSubmission = random[GetEclReturnSubmissionResponse]
+      val chargeReference          = random[Option[String]]
+      val sessionData              = random[SessionData]
+
       val obligationDetails   = validEclReturn.eclReturn.obligationDetails.get
       val calculatedLiability = validEclReturn.eclReturn.calculatedLiability.get
 
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+
+      stubGetEclReturnSubmission(testPeriodKey, testEclRegistrationReference, validEclReturnSubmission)
       stubGetReturn(validEclReturn.eclReturn)
       stubUpsertReturnWithoutRequestMatching(validEclReturn.eclReturn)
       stubSubmitReturn(chargeReference)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val eclDueDate      =
         ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate, translate = false)(
