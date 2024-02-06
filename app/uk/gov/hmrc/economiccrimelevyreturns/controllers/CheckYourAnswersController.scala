@@ -80,38 +80,21 @@ class CheckYourAnswersController @Inject() (
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
 
     (for {
-      viewHtml <- viewHtmlOrError()
-    } yield viewHtml)
-      .fold(
-        error => Future.successful(routeError(error)),
-        viewHtml =>
-          (for {
-            pdfViewHtml <- pdfViewHtmlOrError()
-          } yield pdfViewHtml)
-            .fold(
-              error => Future.successful(routeError(error)),
-              pdfViewHtml => {
-
-                val updatedReturn = request.eclReturn.copy(
-                  base64EncodedNrsSubmissionHtml = Some(base64EncodeHtmlView(viewHtml.body)),
-                  base64EncodedDmsSubmissionHtml = pdfViewHtml.map(html => base64EncodeHtmlView(html.body))
-                )
-
-                (for {
-                  _        <- returnsService.upsertReturn(eclReturn = updatedReturn).asResponseError
-                  response <- returnsService.submitReturn(request.internalId).asResponseError
-                  _         = sendConfirmationMail(request.eclReturn, response)
-                  _        <- returnsService.deleteReturn(request.internalId).asResponseError
-                  _         = sessionService.delete(request.internalId)
-                } yield response).fold(
-                  error => routeError(error),
-                  response => getRedirectionRoute(request, response)
-                )
-              }
-            )
-            .flatten
-      )
-      .flatten
+      viewHtml     <- viewHtmlOrError()
+      pdfViewHtml  <- pdfViewHtmlOrError()
+      updatedReturn = request.eclReturn.copy(
+                        base64EncodedNrsSubmissionHtml = Some(base64EncodeHtmlView(viewHtml.body)),
+                        base64EncodedDmsSubmissionHtml = pdfViewHtml.map(html => base64EncodeHtmlView(html.body))
+                      )
+      _            <- returnsService.upsertReturn(eclReturn = updatedReturn).asResponseError
+      response     <- returnsService.submitReturn(request.internalId).asResponseError
+      _             = sendConfirmationMail(request.eclReturn, response)
+      _            <- returnsService.deleteReturn(request.internalId).asResponseError
+      _             = sessionService.delete(request.internalId)
+    } yield response).fold(
+      error => routeError(error),
+      response => getRedirectionRoute(request, response)
+    )
   }
 
   private def pdfViewHtmlOrError()(implicit
