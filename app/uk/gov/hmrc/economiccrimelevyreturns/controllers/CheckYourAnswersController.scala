@@ -94,10 +94,7 @@ class CheckYourAnswersController @Inject() (
 
                 val updatedReturn = request.eclReturn.copy(
                   base64EncodedNrsSubmissionHtml = Some(base64EncodeHtmlView(viewHtml.body)),
-                  base64EncodedDmsSubmissionHtml = pdfViewHtml match {
-                    case Some(html) => Some(base64EncodeHtmlView(html.body))
-                    case None       => None
-                  }
+                  base64EncodedDmsSubmissionHtml = pdfViewHtml.map(html => base64EncodeHtmlView(html.body))
                 )
 
                 (for {
