@@ -84,7 +84,7 @@ class CheckYourAnswersController @Inject() (
     } yield viewHtml)
       .fold(
         error => Future.successful(routeError(error)),
-        viewHtml => {
+        viewHtml =>
           (for {
             pdfViewHtml <- pdfViewHtmlOrError()
           } yield pdfViewHtml)
@@ -113,7 +113,6 @@ class CheckYourAnswersController @Inject() (
               }
             )
             .flatten
-        }
       )
       .flatten
   }
