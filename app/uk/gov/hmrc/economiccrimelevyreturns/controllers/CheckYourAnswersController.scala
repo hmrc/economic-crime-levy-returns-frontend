@@ -231,22 +231,16 @@ class CheckYourAnswersController @Inject() (
     hc: HeaderCarrier,
     request: ReturnDataRequest[AnyContent]
   ): EitherT[Future, ResponseError, AmendReturnPdfViewModel] =
-    EitherT {
-      (for {
-        eclReturnSubmission <-
-          returnsService.getEclReturnSubmission(periodKey, request.eclRegistrationReference).asResponseError
-      } yield eclReturnSubmission).fold(
-        error => Left(error),
-        eclReturnSubmission =>
-          Right(
-            AmendReturnPdfViewModel(
-              date = LocalDate.now(),
-              eclReturn = request.eclReturn,
-              eclReturnSubmission = Some(eclReturnSubmission)
-            )
-          )
+    returnsService
+      .getEclReturnSubmission(periodKey, request.eclRegistrationReference)
+      .map(eclReturnSubmission =>
+        AmendReturnPdfViewModel(
+          date = LocalDate.now(),
+          eclReturn = request.eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
+        )
       )
-    }
+      .asResponseError
 
   private def pdfViewModelWithoutEclReturnSubmission()(implicit
     request: ReturnDataRequest[AnyContent]
@@ -261,22 +255,16 @@ class CheckYourAnswersController @Inject() (
     hc: HeaderCarrier,
     request: ReturnDataRequest[AnyContent]
   ): EitherT[Future, ResponseError, CheckYourAnswersViewModel] =
-    EitherT {
-      (for {
-        eclReturnSubmission <-
-          returnsService.getEclReturnSubmission(periodKey, request.eclRegistrationReference).asResponseError
-      } yield eclReturnSubmission).fold(
-        error => Left(error),
-        eclReturnSubmission =>
-          Right(
-            CheckYourAnswersViewModel(
-              eclReturn = request.eclReturn,
-              eclReturnSubmission = Some(eclReturnSubmission),
-              startAmendUrl = request.startAmendUrl
-            )
-          )
+    returnsService
+      .getEclReturnSubmission(periodKey, request.eclRegistrationReference)
+      .map(eclReturnSubmission =>
+        CheckYourAnswersViewModel(
+          eclReturn = request.eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission),
+          startAmendUrl = request.startAmendUrl
+        )
       )
-    }
+      .asResponseError
 
   private def viewModelWithoutEclReturnSubmission()(implicit
     request: ReturnDataRequest[AnyContent]
