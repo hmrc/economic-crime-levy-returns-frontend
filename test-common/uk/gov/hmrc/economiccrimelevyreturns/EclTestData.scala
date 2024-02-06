@@ -47,14 +47,14 @@ final case class ValidGetEclReturnSubmissionResponse(response: GetEclReturnSubmi
 
 trait EclTestData { self: Generators =>
 
-  val FullYear: Int              = 365
-  private val MinRevenue: Double = 0.00
-  private val MaxRevenue: Double = 99999999999.99
-  private val MinAmountDue       = 0
-  private val MaxAmountDue       = 250000
-  private val PeriodKeyLength    = 4
-  private val RevenueMin: Double = 0.0
-  private val RevenueMax: Double = 99999999999.99
+  val FullYear: Int      = 365
+  val MinRevenue: Double = 0.00
+  val MaxRevenue: Double = 99999999999.99
+  val MinAmountDue       = 0
+  val MaxAmountDue       = 250000
+  val PeriodKeyLength    = 4
+  val RevenueMin: Double = 0.0
+  val RevenueMax: Double = 99999999999.99
 
   implicit val arbInstant: Arbitrary[Instant] = Arbitrary {
     Instant.now()
@@ -148,8 +148,8 @@ trait EclTestData { self: Generators =>
   val testInternalId: String               = alphaNumericString
   val testEclRegistrationReference: String = alphaNumericString
   val testChargeReference: String          = alphaNumericString
+  val testPeriodKey: String                = arbPeriodKey.arbitrary.sample.get.periodKey
   val UkRevenueThreshold: Long             = 10200000L
-  val validPeriodKey: String               = arbPeriodKey.arbitrary.sample.get.periodKey
 
   implicit val arbSessionData: Arbitrary[SessionData] =
     Arbitrary {

@@ -20,7 +20,6 @@ import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.CheckMode
-import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.implicits._
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -28,8 +27,8 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListR
 
 object AmendReasonSummary {
 
-  def row()(implicit messages: Messages, request: ReturnDataRequest[_]): Option[SummaryListRow] =
-    request.eclReturn.amendReason.map { answer =>
+  def row(amendReason: Option[String])(implicit messages: Messages): Option[SummaryListRow] =
+    amendReason.map { answer =>
       SummaryListRowViewModel(
         key = Key("checkYourAnswers.amendReason.label"),
         value = ValueViewModel(HtmlContent(HtmlFormat.escape(answer))),

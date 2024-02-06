@@ -20,7 +20,6 @@ import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.CheckMode
-import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.implicits._
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
@@ -29,8 +28,8 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListR
 
 object UkRevenueSummary {
 
-  def row()(implicit messages: Messages, request: ReturnDataRequest[_]): Option[SummaryListRow] =
-    request.eclReturn.relevantApRevenue.map { answer =>
+  def row(relevantApRevenue: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] =
+    relevantApRevenue.map { answer =>
       SummaryListRowViewModel(
         key = Key("checkYourAnswers.ukRevenue.label"),
         value = ValueViewModel(HtmlContent(HtmlFormat.raw(ViewUtils.formatMoney(answer)))),

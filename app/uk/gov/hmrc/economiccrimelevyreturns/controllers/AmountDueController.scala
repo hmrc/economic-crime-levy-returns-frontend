@@ -41,13 +41,14 @@ class AmountDueController @Inject() (
     with I18nSupport {
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
+    val eclReturn                      = request.eclReturn
     val accountingDetails: SummaryList = SummaryListViewModel(
       rows = Seq(
-        RelevantAp12MonthsSummary.row(),
-        RelevantApLengthSummary.row(),
-        UkRevenueSummary.row(),
-        AmlRegulatedActivitySummary.row(),
-        AmlRegulatedActivityLengthSummary.row()
+        RelevantAp12MonthsSummary.row(eclReturn.relevantAp12Months),
+        RelevantApLengthSummary.row(eclReturn.relevantApLength),
+        UkRevenueSummary.row(eclReturn.relevantApRevenue),
+        AmlRegulatedActivitySummary.row(eclReturn.carriedOutAmlRegulatedActivityForFullFy),
+        AmlRegulatedActivityLengthSummary.row(eclReturn.amlRegulatedActivityLength)
       ).flatten
     ).withCssClass("govuk-!-margin-bottom-9")
 

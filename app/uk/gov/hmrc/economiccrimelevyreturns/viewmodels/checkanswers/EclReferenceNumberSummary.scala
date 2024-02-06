@@ -18,7 +18,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers
 
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.implicits._
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -26,11 +25,11 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListR
 
 object EclReferenceNumberSummary {
 
-  def row()(implicit messages: Messages, request: ReturnDataRequest[_]): Option[SummaryListRow] =
+  def row(eclRegistrationReference: String)(implicit messages: Messages): Option[SummaryListRow] =
     Some(
       SummaryListRowViewModel(
         key = Key("checkYourAnswers.eclReferenceNumber.label"),
-        value = ValueViewModel(HtmlContent(HtmlFormat.escape(request.eclRegistrationReference)))
+        value = ValueViewModel(HtmlContent(HtmlFormat.escape(eclRegistrationReference)))
       )
     )
 

@@ -19,15 +19,14 @@ package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers
 import play.api.i18n.Messages
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.CheckMode
-import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.implicits._
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
 
 object RelevantAp12MonthsSummary {
 
-  def row()(implicit messages: Messages, request: ReturnDataRequest[_]): Option[SummaryListRow] =
-    request.eclReturn.relevantAp12Months.map { answer =>
+  def row(relevantAp12Months: Option[Boolean])(implicit messages: Messages): Option[SummaryListRow] =
+    relevantAp12Months.map { answer =>
       val value = if (answer) "site.yes" else "site.no"
 
       SummaryListRowViewModel(

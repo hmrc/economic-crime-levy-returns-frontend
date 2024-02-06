@@ -76,7 +76,7 @@ class ContactNumberControllerSpec extends SpecBase {
       val updatedReturn = eclReturn.copy(contactName = None)
 
       new TestContext(updatedReturn) {
-        val result = controller.onPageLoad(NormalMode)(fakeRequest)
+        val result: Future[Result] = controller.onSubmit(NormalMode)(fakeRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }

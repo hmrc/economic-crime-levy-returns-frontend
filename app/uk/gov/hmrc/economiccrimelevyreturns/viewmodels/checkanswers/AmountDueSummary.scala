@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers
 
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
+import uk.gov.hmrc.economiccrimelevyreturns.models.CalculatedLiability
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.implicits._
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
@@ -27,8 +27,8 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListR
 
 object AmountDueSummary {
 
-  def row()(implicit messages: Messages, request: ReturnDataRequest[_]): Option[SummaryListRow] =
-    request.eclReturn.calculatedLiability.map { calculatedLiability =>
+  def row(calculatedLiability: Option[CalculatedLiability])(implicit messages: Messages): Option[SummaryListRow] =
+    calculatedLiability.map { calculatedLiability =>
       SummaryListRowViewModel(
         key = Key("checkYourAnswers.amountDue.label"),
         value = ValueViewModel(

@@ -61,7 +61,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
   }
 
   s"GET ${routes.StartController.onPageLoad(":periodKey").url}" should {
-    behave like authorisedActionRoute(routes.StartController.onPageLoad(validPeriodKey))
+    behave like authorisedActionRoute(routes.StartController.onPageLoad(testPeriodKey))
 
     "respond with 200 status and the start HTML view if the period key is for an open obligation" in {
       stubAuthorised()
@@ -70,7 +70,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
         status = Open,
         inboundCorrespondenceFromDate = LocalDate.parse("2022-04-01"),
         inboundCorrespondenceToDate = LocalDate.parse("2023-03-31"),
-        periodKey = validPeriodKey
+        periodKey = testPeriodKey
       )
 
       val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
@@ -118,7 +118,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
         inboundCorrespondenceFromDate = LocalDate.parse("2022-04-01"),
         inboundCorrespondenceToDate = LocalDate.parse("2023-03-31"),
         inboundCorrespondenceDateReceived = Some(LocalDate.parse("2023-04-01")),
-        periodKey = validPeriodKey
+        periodKey = testPeriodKey
       )
 
       val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))

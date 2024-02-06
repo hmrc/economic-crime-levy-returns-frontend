@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.EitherT
 import play.api.Logging
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{BadGateway, DataHandlingError, EclAccountError, InternalServiceError, LiabilityCalculationError, ResponseError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors._
 
 trait ErrorHandler extends Logging {
 

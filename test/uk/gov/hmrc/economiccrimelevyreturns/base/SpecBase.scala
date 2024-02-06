@@ -83,7 +83,8 @@ trait SpecBase
 
   def fakeAuthorisedAction(internalId: String) = new FakeAuthorisedAction(internalId, bodyParsers)
 
-  def fakeDataRetrievalAction(data: EclReturn) = new FakeDataRetrievalAction(data)
+  def fakeDataRetrievalAction(data: EclReturn, periodKey: Option[String] = None) =
+    new FakeDataRetrievalAction(data, periodKey)
 
   def onwardRoute: Call = Call("GET", "/foo")
 

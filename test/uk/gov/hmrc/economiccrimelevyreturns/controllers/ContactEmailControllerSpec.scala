@@ -114,6 +114,16 @@ class ContactEmailControllerSpec extends SpecBase {
       }
     }
 
+    "return InternalServerError when there is no contact name in the returns data" in forAll { (eclReturn: EclReturn) =>
+      val updatedReturn = eclReturn.copy(contactName = None)
+
+      new TestContext(updatedReturn) {
+        val result: Future[Result] = controller.onSubmit(NormalMode)(fakeRequest)
+
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+      }
+    }
+
     "return a Bad Request with form errors when invalid data is submitted" in forAll {
       (eclReturn: EclReturn, name: String) =>
         new TestContext(eclReturn.copy(contactName = Some(name))) {

@@ -21,25 +21,23 @@ import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
-import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.EmailSubmissionError
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{EmailSubmissionError, ResponseError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
-import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
-import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView, ErrorTemplate}
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import java.time.LocalDate
 import java.util.Base64
 import javax.inject.Singleton
-import scala.Left
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -50,85 +48,78 @@ class CheckYourAnswersController @Inject() (
   returnsService: ReturnsService,
   sessionService: SessionService,
   emailService: EmailService,
-  amendReturnPdfView: AmendReturnPdfView,
+  pdfView: AmendReturnPdfView,
   val controllerComponents: MessagesControllerComponents,
-  view: CheckYourAnswersView
+  view: CheckYourAnswersView,
+  appConfig: AppConfig
 )(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with I18nSupport
     with BaseController
     with ErrorHandler {
 
-  private def eclDetails()(implicit request: ReturnDataRequest[_]): SummaryList = SummaryListViewModel(
-    rows = Seq(
-      EclReferenceNumberSummary.row(),
-      RelevantAp12MonthsSummary.row(),
-      RelevantApLengthSummary.row(),
-      UkRevenueSummary.row(),
-      AmlRegulatedActivitySummary.row(),
-      AmlRegulatedActivityLengthSummary.row(),
-      CalculatedBandSummary.row(),
-      AmountDueSummary.row()
-    ).flatten
-  ).withCssClass("govuk-!-margin-bottom-9")
-
-  private def contactDetails()(implicit request: ReturnDataRequest[_]): SummaryList = SummaryListViewModel(
-    rows = Seq(
-      ContactNameSummary.row(),
-      ContactRoleSummary.row(),
-      ContactEmailSummary.row(),
-      ContactNumberSummary.row()
-    ).flatten
-  ).withCssClass("govuk-!-margin-bottom-9")
-
-  private def amendReasonDetails()(implicit request: ReturnDataRequest[_]): SummaryList = SummaryListViewModel(
-    rows = Seq(
-      AmendReasonSummary.row()
-    ).flatten
-  ).withCssClass("govuk-!-margin-bottom-9")
-
   def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
-    val isAmendment = request.eclReturn.returnType.contains(AmendReturn)
     (for {
       errors <- returnsService.getReturnValidationErrors(request.internalId)(hc).asResponseError
-    } yield errors).fold(
-      error => routeError(error),
-      {
-        case Some(_) => Redirect(routes.NotableErrorController.answersAreInvalid())
-        case None    => Ok(view(amendReasonDetails(), eclDetails(), contactDetails(), isAmendment, request.startAmendUrl))
-      }
-    )
+    } yield errors)
+      .fold(
+        error => Future.successful(routeError(error)),
+        {
+          case Some(_) => Future.successful(Redirect(routes.NotableErrorController.answersAreInvalid()))
+          case None    =>
+            viewHtmlOrError().fold(
+              error => routeError(error),
+              view => Ok(view)
+            )
+        }
+      )
+      .flatten
   }
 
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
 
-    val isAmendment = request.eclReturn.returnType.contains(AmendReturn)
-    val htmlView    = view(amendReasonDetails(), eclDetails(), contactDetails(), isAmendment)
-
-    val base64EncodedHtmlView: String = base64EncodeHtmlView(htmlView.body)
-
-    val base64EncodedDmsSubmissionHtml = request.eclReturn.returnType.flatMap {
-      case AmendReturn     => Some(createAndEncodeHtmlForPdf())
-      case FirstTimeReturn => None
-    }
-
-    val updatedReturn = request.eclReturn.copy(
-      base64EncodedNrsSubmissionHtml = Some(base64EncodedHtmlView),
-      base64EncodedDmsSubmissionHtml = base64EncodedDmsSubmissionHtml
-    )
-
     (for {
-      _        <- returnsService.upsertReturn(eclReturn = updatedReturn).asResponseError
-      response <- returnsService.submitReturn(request.internalId).asResponseError
-      _         = sendConfirmationMail(request.eclReturn, response)
-      _        <- returnsService.deleteReturn(request.internalId).asResponseError
-      _         = sessionService.delete(request.internalId)
+      viewHtml     <- viewHtmlOrError()
+      pdfViewHtml  <- pdfViewHtmlOrError()
+      updatedReturn = request.eclReturn.copy(
+                        base64EncodedNrsSubmissionHtml = Some(base64EncodeHtmlView(viewHtml.body)),
+                        base64EncodedDmsSubmissionHtml = pdfViewHtml.map(html => base64EncodeHtmlView(html.body))
+                      )
+      _            <- returnsService.upsertReturn(eclReturn = updatedReturn).asResponseError
+      response     <- returnsService.submitReturn(request.internalId).asResponseError
+      _             = sendConfirmationMail(request.eclReturn, response)
+      _            <- returnsService.deleteReturn(request.internalId).asResponseError
+      _             = sessionService.delete(request.internalId)
     } yield response).fold(
-      error => Redirect(routes.NotableErrorController.answersAreInvalid()),
+      error => routeError(error),
       response => getRedirectionRoute(request, response)
     )
   }
+
+  private def pdfViewHtmlOrError()(implicit
+    request: ReturnDataRequest[AnyContent]
+  ): EitherT[Future, ResponseError, Option[HtmlFormat.Appendable]] =
+    EitherT {
+      request.eclReturn.returnType match {
+        case Some(FirstTimeReturn) => Future.successful(Right(None))
+        case Some(AmendReturn)     =>
+          if (appConfig.getEclReturnEnabled) {
+            request.periodKey match {
+              case None            =>
+                Future.successful(Left(ResponseError.internalServiceError("Unable to find period key")))
+              case Some(periodKey) =>
+                pdfViewModelWithEclReturnSubmission(periodKey).fold(
+                  error => Left(error),
+                  viewModel => Right(Some(pdfView(viewModel, appConfig)))
+                )
+            }
+          } else {
+            Future.successful(Right(Some(pdfView(pdfViewModelWithoutEclReturnSubmission(), appConfig))))
+          }
+        case None                  => Future.successful(Left(ResponseError.badRequestError("Return type is empty")))
+      }
+    }
 
   private def sendConfirmationMail(eclReturn: EclReturn, response: SubmitEclReturnResponse)(implicit
     messages: Messages,
@@ -195,21 +186,75 @@ class CheckYourAnswersController @Inject() (
   private def base64EncodeHtmlView(html: String): String = Base64.getEncoder
     .encodeToString(html.getBytes)
 
-  private def createAndEncodeHtmlForPdf()(implicit request: ReturnDataRequest[_]): String = {
-    val date         = LocalDate.now
-    val organisation = eclDetails()
-    val contact      = contactDetails()
-    val amendReason  = amendReasonDetails()
-    base64EncodeHtmlView(
-      amendReturnPdfView(
-        ViewUtils.formatLocalDate(date),
-        organisation.copy(rows = organisation.rows.map(_.copy(actions = None))),
-        contact.copy(rows = contact.rows.map(_.copy(actions = None))),
-        amendReason.copy(
-          rows = amendReason.rows.map(_.copy(actions = None)),
-          attributes = Map("id" -> "amendReason")
+  private def viewHtmlOrError()(implicit
+    request: ReturnDataRequest[AnyContent]
+  ): EitherT[Future, ResponseError, HtmlFormat.Appendable] =
+    EitherT {
+      request.eclReturn.returnType match {
+        case Some(FirstTimeReturn) => Future.successful(Right(view(viewModelWithoutEclReturnSubmission(), appConfig)))
+        case Some(AmendReturn)     =>
+          if (appConfig.getEclReturnEnabled) {
+            request.periodKey match {
+              case None            =>
+                Future.successful(Left(ResponseError.internalServiceError("Unable to find period key")))
+              case Some(periodKey) =>
+                viewModelWithEclReturnSubmission(periodKey).fold(
+                  error => Left(error),
+                  viewModel => Right(view(viewModel, appConfig))
+                )
+            }
+          } else {
+            Future.successful(Right(view(viewModelWithoutEclReturnSubmission(), appConfig)))
+          }
+        case None                  => Future.successful(Left(ResponseError.internalServiceError("Unable to find return type")))
+      }
+    }
+
+  private def pdfViewModelWithEclReturnSubmission(periodKey: String)(implicit
+    hc: HeaderCarrier,
+    request: ReturnDataRequest[AnyContent]
+  ): EitherT[Future, ResponseError, AmendReturnPdfViewModel] =
+    returnsService
+      .getEclReturnSubmission(periodKey, request.eclRegistrationReference)
+      .map(eclReturnSubmission =>
+        AmendReturnPdfViewModel(
+          date = LocalDate.now(),
+          eclReturn = request.eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission)
         )
-      ).toString()
+      )
+      .asResponseError
+
+  private def pdfViewModelWithoutEclReturnSubmission()(implicit
+    request: ReturnDataRequest[AnyContent]
+  ): AmendReturnPdfViewModel =
+    AmendReturnPdfViewModel(
+      date = LocalDate.now(),
+      eclReturn = request.eclReturn,
+      eclReturnSubmission = None
     )
-  }
+
+  private def viewModelWithEclReturnSubmission(periodKey: String)(implicit
+    hc: HeaderCarrier,
+    request: ReturnDataRequest[AnyContent]
+  ): EitherT[Future, ResponseError, CheckYourAnswersViewModel] =
+    returnsService
+      .getEclReturnSubmission(periodKey, request.eclRegistrationReference)
+      .map(eclReturnSubmission =>
+        CheckYourAnswersViewModel(
+          eclReturn = request.eclReturn,
+          eclReturnSubmission = Some(eclReturnSubmission),
+          startAmendUrl = request.startAmendUrl
+        )
+      )
+      .asResponseError
+
+  private def viewModelWithoutEclReturnSubmission()(implicit
+    request: ReturnDataRequest[AnyContent]
+  ): CheckYourAnswersViewModel =
+    CheckYourAnswersViewModel(
+      eclReturn = request.eclReturn,
+      eclReturnSubmission = None,
+      startAmendUrl = request.startAmendUrl
+    )
 }

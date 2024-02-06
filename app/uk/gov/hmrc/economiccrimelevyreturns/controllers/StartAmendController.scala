@@ -59,7 +59,7 @@ class StartAmendController @Inject() (
       .upsert(
         SessionData(
           request.internalId,
-          Map(SessionKeys.StartAmendUrl -> startAmendUrl)
+          Map(SessionKeys.StartAmendUrl -> startAmendUrl, SessionKeys.PeriodKey -> periodKey)
         )
       )
       .flatMap { _ =>

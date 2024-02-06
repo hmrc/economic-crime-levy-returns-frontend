@@ -76,7 +76,7 @@ class ContactRoleControllerSpec extends SpecBase {
       val updatedReturn = eclReturn.copy(contactName = None)
 
       new TestContext(updatedReturn) {
-        val result = controller.onPageLoad(NormalMode)(fakeRequest)
+        val result: Future[Result] = controller.onPageLoad(NormalMode)(fakeRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
@@ -111,6 +111,16 @@ class ContactRoleControllerSpec extends SpecBase {
         status(result) shouldBe SEE_OTHER
 
         redirectLocation(result) shouldBe Some(onwardRoute.url)
+      }
+    }
+
+    "return InternalServerError when there is no contact name in the returns data" in forAll { (eclReturn: EclReturn) =>
+      val updatedReturn = eclReturn.copy(contactName = None)
+
+      new TestContext(updatedReturn) {
+        val result: Future[Result] = controller.onSubmit(NormalMode)(fakeRequest)
+
+        status(result) shouldBe INTERNAL_SERVER_ERROR
       }
     }
 

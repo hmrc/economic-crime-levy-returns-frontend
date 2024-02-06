@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,19 +70,26 @@ class AmountDueControllerSpec extends SpecBase {
         )
 
         new TestContext(updatedReturn) {
-          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
-            ReturnDataRequest(fakeRequest, updatedReturn.internalId, updatedReturn, None, eclRegistrationReference)
-          implicit val messages: Messages                                           = messagesApi.preferred(returnDataRequest)
+          val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+            ReturnDataRequest(
+              fakeRequest,
+              updatedReturn.internalId,
+              updatedReturn,
+              None,
+              eclRegistrationReference,
+              Some(periodKey)
+            )
+          implicit val messages: Messages                                  = messagesApi.preferred(returnDataRequest)
 
           val result: Future[Result] = controller.onPageLoad(mode)(returnDataRequest)
 
           val accountingDetails: SummaryList = SummaryListViewModel(
             rows = Seq(
-              RelevantAp12MonthsSummary.row(),
-              RelevantApLengthSummary.row(),
-              UkRevenueSummary.row(),
-              AmlRegulatedActivitySummary.row(),
-              AmlRegulatedActivityLengthSummary.row()
+              RelevantAp12MonthsSummary.row(returnDataRequest.eclReturn.relevantAp12Months),
+              RelevantApLengthSummary.row(returnDataRequest.eclReturn.relevantApLength),
+              UkRevenueSummary.row(returnDataRequest.eclReturn.relevantApRevenue),
+              AmlRegulatedActivitySummary.row(returnDataRequest.eclReturn.carriedOutAmlRegulatedActivityForFullFy),
+              AmlRegulatedActivityLengthSummary.row(returnDataRequest.eclReturn.amlRegulatedActivityLength)
             ).flatten
           ).withCssClass("govuk-!-margin-bottom-9")
 
@@ -102,7 +109,14 @@ class AmountDueControllerSpec extends SpecBase {
 
         new TestContext(updatedReturn) {
           implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
-            ReturnDataRequest(fakeRequest, updatedReturn.internalId, updatedReturn, None, eclRegistrationReference)
+            ReturnDataRequest(
+              fakeRequest,
+              updatedReturn.internalId,
+              updatedReturn,
+              None,
+              eclRegistrationReference,
+              Some(periodKey)
+            )
 
           val result: Future[Result] = controller.onPageLoad(mode)(returnDataRequest)
 
