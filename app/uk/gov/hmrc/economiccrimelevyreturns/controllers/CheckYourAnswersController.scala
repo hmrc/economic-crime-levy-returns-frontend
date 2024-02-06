@@ -96,7 +96,10 @@ class CheckYourAnswersController @Inject() (
 
                 val updatedReturn = request.eclReturn.copy(
                   base64EncodedNrsSubmissionHtml = Some(base64EncodedHtmlView),
-                  base64EncodedDmsSubmissionHtml = pdfViewHtml
+                  base64EncodedDmsSubmissionHtml = pdfViewHtml match {
+                    case Some(html) => Some(base64EncodeHtmlView(html.body))
+                    case None       => None
+                  }
                 )
 
                 (for {
@@ -119,8 +122,8 @@ class CheckYourAnswersController @Inject() (
 
   private def pdfViewHtmlOrError()(implicit
     request: ReturnDataRequest[AnyContent]
-  ): EitherT[Future, ResponseError, Option[String]] = {
-    val view = EitherT {
+  ): EitherT[Future, ResponseError, Option[HtmlFormat.Appendable]] =
+    EitherT {
       request.eclReturn.returnType match {
         case Some(FirstTimeReturn) => Future.successful(Right(None))
         case Some(AmendReturn)     =>
@@ -131,19 +134,15 @@ class CheckYourAnswersController @Inject() (
               case Some(periodKey) =>
                 pdfViewModelWithEclReturnSubmission(periodKey).fold(
                   error => Left(error),
-                  viewModel => Right(pdfView(viewModel, appConfig))
+                  viewModel => Right(Some(pdfView(viewModel, appConfig)))
                 )
             }
           } else {
-            Future.successful(Right(pdfView(pdfViewModelWithoutEclReturnSubmission(), appConfig)))
+            Future.successful(Right(Some(pdfView(pdfViewModelWithoutEclReturnSubmission(), appConfig))))
           }
         case None                  => Future.successful(Left(ResponseError.badRequestError("Return type is empty")))
       }
     }
-    EitherT {
-      view.fold(error => Left(error), view => Right(Some(base64EncodeHtmlView(view.toString))))
-    }
-  }
 
   private def sendConfirmationMail(eclReturn: EclReturn, response: SubmitEclReturnResponse)(implicit
     messages: Messages,
