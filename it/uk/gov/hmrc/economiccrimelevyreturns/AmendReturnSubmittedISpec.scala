@@ -3,14 +3,14 @@ package uk.gov.hmrc.economiccrimelevyreturns
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import uk.gov.hmrc.economiccrimelevyreturns.base.{ISpecBase, RegistrationStubs}
+import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.EmailMaxLength
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetSubscriptionResponse, ObligationDetails, SessionKeys}
 
-class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour with RegistrationStubs {
+class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
   s"GET ${routes.AmendReturnSubmittedController.onPageLoad().url}" should {
     behave like authorisedActionRoute(routes.AmendReturnSubmittedController.onPageLoad())
