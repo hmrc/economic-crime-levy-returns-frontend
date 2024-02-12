@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.EmailMaxLength
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetSubscriptionResponse, ObligationDetails, SessionKeys}
 
 class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -33,14 +33,18 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
     "respond with 200 status and the return submitted HTML view when it is not a nil return" in {
       stubAuthorised()
-
-      val chargeReference   = random[String]
-      val email             = emailAddress(EmailMaxLength).sample.get
-      val obligationDetails = random[ObligationDetails]
-      val amountDue         = "10000"
+      val eclReturn            = random[EclReturn]
+      stubGetSessionEmpty()
+      stubGetReturn(eclReturn)
+      val chargeReference      = random[String]
+      val subscriptionResponse = random[GetSubscriptionResponse]
+      val email                = emailAddress(EmailMaxLength).sample.get
+      val obligationDetails    = random[ObligationDetails]
+      val amountDue            = "10000"
 
       stubDeleteReturn()
       stubDeleteSession()
+      stubGetSubscription(subscriptionResponse, testEclRegistrationReference)
 
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())
@@ -59,13 +63,17 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
     "respond with 200 status and the nil return submitted HTML view when it is a nil return" in {
       stubAuthorised()
-
-      val email             = random[String]
-      val obligationDetails = random[ObligationDetails]
-      val amountDue         = "10000"
+      val eclReturn            = random[EclReturn]
+      stubGetSessionEmpty()
+      stubGetReturn(eclReturn)
+      val subscriptionResponse = random[GetSubscriptionResponse]
+      val email                = random[String]
+      val obligationDetails    = random[ObligationDetails]
+      val amountDue            = "0"
 
       stubDeleteReturn()
       stubDeleteSession()
+      stubGetSubscription(subscriptionResponse, testEclRegistrationReference)
 
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())

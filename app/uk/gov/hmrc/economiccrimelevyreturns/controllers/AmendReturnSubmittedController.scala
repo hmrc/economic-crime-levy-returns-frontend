@@ -61,10 +61,7 @@ class AmendReturnSubmittedController @Inject() (
       obligation <- valueOrError(obligationDetails)
       email      <- valueOrError(email)
     } yield (obligation, email)).foldF(
-      error => {
-        println(error)
-        Future.successful(routeError(error))
-      },
+      error => Future.successful(routeError(error)),
       obligationAndEmail => {
         val obligation = obligationAndEmail._1
         val email      = obligationAndEmail._2

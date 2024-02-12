@@ -79,7 +79,7 @@ trait EclReturnsStubs { self: WireMockStubs =>
 
   def stubGetSubscription(getSubscriptionResponse: GetSubscriptionResponse, eclReference: String): StubMapping =
     stub(
-      get(urlEqualTo(s"/economic-crime-levy-returns/registration/subscription/$eclReference")),
+      get(urlEqualTo(s"/economic-crime-levy-registration/subscription/$eclReference")),
       aResponse()
         .withStatus(OK)
         .withBody(Json.toJson(getSubscriptionResponse).toString())

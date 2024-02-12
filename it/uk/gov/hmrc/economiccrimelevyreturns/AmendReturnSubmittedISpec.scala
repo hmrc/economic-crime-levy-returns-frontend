@@ -18,6 +18,7 @@ class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour with 
     "return 200 status and the amend return submitted HTML view" in {
       stubAuthorised()
       val eclReturn            = random[EclReturn]
+      stubGetSessionEmpty()
       stubGetReturn(eclReturn)
       val subscriptionResponse = random[GetSubscriptionResponse]
       val obligationDetails    = random[ObligationDetails]
