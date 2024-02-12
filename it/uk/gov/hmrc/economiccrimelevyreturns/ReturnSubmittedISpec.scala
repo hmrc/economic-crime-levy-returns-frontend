@@ -22,6 +22,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.EmailMaxLength
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
 
@@ -34,9 +35,12 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val chargeReference   = random[String]
-      val email             = random[String]
+      val email             = emailAddress(EmailMaxLength).sample.get
       val obligationDetails = random[ObligationDetails]
       val amountDue         = "10000"
+
+      stubDeleteReturn()
+      stubDeleteSession()
 
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())
@@ -59,6 +63,9 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val email             = random[String]
       val obligationDetails = random[ObligationDetails]
       val amountDue         = "10000"
+
+      stubDeleteReturn()
+      stubDeleteSession()
 
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())

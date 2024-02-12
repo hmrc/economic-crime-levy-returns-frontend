@@ -259,14 +259,17 @@ nilSubmitted.p1 = Rydych wedi cyflwyno datganiad ar gyfer yr Ardoll Troseddau Ec
 nilSubmitted.p2 = Mae gwybodaeth am eich datganiad ar gael yn eich <a href="{0}" class="govuk-link">Cyfrif ECL</a>.
 nilSubmitted.p3 = Rydym wedi anfon e-bost cadarnhau i {0}. Cadwch hwn ar gyfer eich cofnodion.
 
-amend.submitted.title = Datganiad Ardoll Troseddau Economaidd wedi’i diwygio
-amend.submitted.heading = Datganiad Ardoll Troseddau Economaidd wedi’i diwygio
-amend.submitted.p1 = Rydych wedi diwygio datganiad ar gyfer yr Ardoll Troseddau Economaidd (ECL) ar {0} ar gyfer blwyddyn ariannol {1} | {2}.
-amend.submitted.p2 = Rydym wedi anfon e-bost cadarnhau i {0}. Cadwch hwn ar gyfer eich cofnodion.
-amend.submitted.p3 = Gallwch dalu’r ardoll drwy ddarllen yr <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy">arweiniad ar sut i dalu</a>.
+amend.submitted.title = Cais am ddiwygiad i ddatganiad Ardoll Troseddau Economaidd wedi’i wneud - Diwygio’ch datganiadau Ardoll Troseddau Economaidd - GOV.UK
+amend.submitted.heading = Cais am ddiwygiad i ddatganiad Ardoll Troseddau Economaidd wedi’i wneud
+amend.submitted.p1 = Rydych wedi gwneud cais i ddiwygio datganiad ar gyfer yr Ardoll Troseddau Economaidd (ECL) ar gyfer blwyddyn ariannol {1} i {2}.
+amend.submitted.p2 = Rydym wedi anfon e-bost cadarnhau i
+amend.submitted.p3 = I gael gwybod sut i dalu’r ardoll, darllenwch yr <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy">arweiniad ar sut i dalu</a>.
+amend.submitted.saveEmail = Cadwch hwn ar gyfer eich cofnodion.
 amend.submitted.h2 = Yr hyn sy’n digwydd nesaf
-amend.submitted.p4 = Byddwn yn adolygu’ch atebion. Os oes angen rhagor o wybodaeth arnom mae’n bosibl byddwn yn cysylltu â chi drwy ddefnyddio’r manylion yr ydych wedi eu rhoi. Bydd y broses hon yn cymryd 15 diwrnod gwaith.
-amend.submitted.p5 = Byddwn yn anfon llythyr atoch ar ôl i ni ddiwygio’ch datganiad. Ni fyddwch y gallu bwrw golwg dros y newidiadau hyn nes eich bod wedi cael y llythyr hwn.
+amend.submitted.p4 = Byddwn yn adolygu’ch atebion. Os oes angen rhagor o wybodaeth arnom, mae’n bosibl y byddwn yn cysylltu â chi drwy ddefnyddio’r manylion a roddwyd gennych. Bydd y broses hon yn cymryd hyd at 15 diwrnod gwaith.
+amend.submitted.p5 = Byddwn yn anfon llythyr atoch ar ôl i ni ddiwygio’ch datganiad. Ni fyddwch yn gallu bwrw golwg dros y newidiadau hyn nes eich bod wedi cael y llythyr hwn.
+amend.submitted.p6 = Byddwn yn anfon llythyr at:
+amend.submitted.eclRef = Cyfeirnod ECL:
 
 exit.survey.link = <a href="{0}" class="govuk-link">Beth oedd eich barn am y gwasanaeth hwn?</a>
 exit.survey = {0} (mae’n cymryd 30 eiliad) i adael yr arolwg.

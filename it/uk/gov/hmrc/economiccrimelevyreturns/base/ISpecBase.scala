@@ -60,7 +60,8 @@ abstract class ISpecBase
     "economic-crime-levy-calculator",
     "economic-crime-levy-account",
     "email",
-    "enrolment-store-proxy"
+    "enrolment-store-proxy",
+    "economic-crime-levy-registration"
   ) ++ configOverrides
 
   override def fakeApplication(): Application =

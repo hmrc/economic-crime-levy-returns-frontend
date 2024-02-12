@@ -259,14 +259,18 @@ nilSubmitted.p1 = You have submitted a return for the Economic Crime Levy (ECL) 
 nilSubmitted.p2 = You can find information about your return in your <a href="{0}" class="govuk-link">ECL account</a>.
 nilSubmitted.p3 = We have sent a confirmation email to {0}. Please save this for your records.
 
-amend.submitted.title = Economic Crime Levy return amended
-amend.submitted.heading = Economic Crime Levy return amended
-amend.submitted.p1 = You have amended a return for the Economic Crime Levy (ECL) on {0} for the financial year {1} to {2}.
-amend.submitted.p2 = We have sent a confirmation email to {0}. Please save this for your records
-amend.submitted.p3 = You can pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy">guidance on how to pay</a>
+amend.submitted.title = Economic Crime Levy return amendment requested - Amend your Economic Crime Levy return - GOV.UK
+amend.submitted.heading = Economic Crime Levy return amendment requested
+amend.submitted.p1 = You have requested to amend a return for the Economic Crime Levy (ECL) for the financial year {1} to {2}.
+amend.submitted.p2 = We have sent a confirmation email to
+amend.submitted.saveEmail = Please save this for your records
+amend.submitted.p3 = You can find out how to pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy">guidance on how to pay</a>.
 amend.submitted.h2 = What happens next
-amend.submitted.p4 = We will review your answers. We may contact you using the details you provided if we need any more information. This process will take 15 working days.
+amend.submitted.p4 = We will review your answers. We may contact you using the details you provided if we need any more information. This process will take up to 15 working days.
 amend.submitted.p5 = We will send you a letter once we''ve amended your return. You won''t be able to view these changes until after you''ve received this letter.
+amend.submitted.p6 = We will send the letter to:
+amend.submitted.eclRef = ECL reference number:
+
 
 exit.survey.link = <a href="{0}" class="govuk-link">What did you think of this service?</a>
 exit.survey = {0} (takes 30 seconds) to exit survey.

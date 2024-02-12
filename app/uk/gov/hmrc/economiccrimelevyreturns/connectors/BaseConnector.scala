@@ -55,8 +55,7 @@ trait BaseConnector {
         .flatMap { response =>
           response.status match {
             case OK | CREATED | ACCEPTED => response.as[T]
-            case _                       =>
-              response.error
+            case _                       => response.error
           }
         }
 
