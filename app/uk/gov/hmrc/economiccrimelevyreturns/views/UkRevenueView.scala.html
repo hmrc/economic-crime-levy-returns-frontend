@@ -67,7 +67,7 @@
             value =  form("value").value,
             classes = "govuk-input--width-10",
             hint = Some(Hint(content = messages("ukRevenue.hint"))),
-            label =  LabelViewModel(Empty),
+            label = LabelViewModel(Text(messages("ukRevenue.heading"))).asHiddenPageHeading(),
             errorMessage = form("value").error.map(err => ErrorMessage(content = Text(messages(err.message, err.args:_*))))
         ))
 
