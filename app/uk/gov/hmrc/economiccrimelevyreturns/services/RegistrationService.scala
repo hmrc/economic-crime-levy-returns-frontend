@@ -51,29 +51,4 @@ class RegistrationService @Inject() (
             Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
         }
     }
-
-//  def upsertRegistration(internalId: String)(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, Unit] =
-//    EitherT {
-//      registrationConnector
-//        .upsertRegistration(eclReturn)
-//        .map {
-//          Right(_)
-//        }
-//        .recover {
-//          handleError[Unit]
-//        }
-//    }
-//
-//  def deleteReturn(internalId: String)(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, Unit] =
-//    EitherT {
-//      registrationConnector
-//        .deleteRegistration(internalId)
-//        .map {
-//          Right(_)
-//        }
-//        .recover {
-//          handleError[Unit]
-//        }
-//    }
-
 }
