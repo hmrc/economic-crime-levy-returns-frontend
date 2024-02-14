@@ -25,6 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedPa
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationError
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
+import java.time.LocalDate
 
 object CachedArbitraries extends EclTestData with Generators {
 
@@ -43,5 +44,6 @@ object CachedArbitraries extends EclTestData with Generators {
   implicit lazy val arbObligationData: Arbitrary[ObligationData]                                      = mkArb
   implicit lazy val arbObligationDetails: Arbitrary[ObligationDetails]                                = mkArb
   implicit lazy val arbDataValidationError: Arbitrary[DataValidationError]                            = mkArb
+  implicit lazy val arbGetSubscription: Arbitrary[GetSubscriptionResponse]                            = mkArb
 
 }

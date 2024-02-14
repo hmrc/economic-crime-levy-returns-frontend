@@ -56,6 +56,8 @@ class AppConfig @Inject() (configuration: Configuration, servicesConfig: Service
 
   val eclCalculatorBaseUrl: String = servicesConfig.baseUrl("economic-crime-levy-calculator")
 
+  val eclRegistrationBaseUrl: String = servicesConfig.baseUrl("economic-crime-levy-registration")
+
   val enrolmentStoreProxyBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
 
   val emailBaseUrl: String = servicesConfig.baseUrl("email")
@@ -65,4 +67,6 @@ class AppConfig @Inject() (configuration: Configuration, servicesConfig: Service
   val paymentsEnabled: Boolean = configuration.get[Boolean]("features.paymentsEnabled")
 
   val getEclReturnEnabled: Boolean = configuration.get[Boolean]("features.getEclReturnEnabled")
+
+  val getSubscriptionEnabled: Boolean = configuration.get[Boolean]("features.getSubscriptionEnabled")
 }

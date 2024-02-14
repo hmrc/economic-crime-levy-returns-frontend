@@ -6,8 +6,9 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.EmailMaxLength
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetSubscriptionResponse, ObligationDetails, SessionData, SessionKeys}
 
 class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -16,9 +17,17 @@ class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
     "return 200 status and the amend return submitted HTML view" in {
       stubAuthorised()
+      val eclReturn            = random[EclReturn]
+      stubGetSessionEmpty()
+      stubGetReturn(eclReturn)
+      val subscriptionResponse = random[GetSubscriptionResponse]
+      val obligationDetails    = random[ObligationDetails]
+      val email                = emailAddress(EmailMaxLength).sample.get
 
-      val obligationDetails = random[ObligationDetails]
-      val email             = random[String]
+      stubDeleteReturn()
+      stubDeleteSession()
+
+      stubGetSubscription(subscriptionResponse, testEclRegistrationReference)
 
       val result = callRoute(
         FakeRequest(routes.AmendReturnSubmittedController.onPageLoad()).withSession(
@@ -29,7 +38,7 @@ class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
       status(result) shouldBe OK
 
-      html(result) should include("Economic Crime Levy return amended")
+      html(result) should include("Economic Crime Levy return amendment requested")
     }
   }
 }

@@ -16,33 +16,87 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
-import play.api.i18n.I18nSupport
-import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
-import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
+import cats.data.EitherT
+
+import java.time.LocalDate
+import play.api.i18n.{I18nSupport, Messages}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
+import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
+import uk.gov.hmrc.economiccrimelevyreturns.models.{GetCorrespondenceAddressDetails, ObligationDetails, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{RegistrationService, ReturnsService, SessionService}
 
 import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmendReturnSubmittedView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnSubmittedView, ErrorTemplate}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AmendReturnSubmittedController @Inject() (
+  appConfig: AppConfig,
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
-  view: AmendReturnSubmittedView
-) extends FrontendBaseController
-    with I18nSupport {
+  getReturnData: DataRetrievalAction,
+  registrationService: RegistrationService,
+  view: AmendReturnSubmittedView,
+  sessionService: SessionService,
+  returnsService: ReturnsService
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
+    extends FrontendBaseController
+    with I18nSupport
+    with ErrorHandler
+    with BaseController {
 
-  def onPageLoad: Action[AnyContent] = authorise { implicit request =>
-    val obligationDetails: ObligationDetails = Json
-      .parse(request.session(SessionKeys.ObligationDetails))
-      .as[ObligationDetails]
+  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    val eclReference      = request.eclRegistrationReference
+    val obligationDetails = request.eclReturn.obligationDetails
+    val email             = request.eclReturn.contactEmailAddress
 
-    val fyStart      = obligationDetails.inboundCorrespondenceFromDate
-    val fyEnd        = obligationDetails.inboundCorrespondenceToDate
-    val contactEmail = request.session(SessionKeys.Email)
-
-    Ok(view(fyStart = fyStart, fyEnd = fyEnd, confirmationEmail = contactEmail))
+    (for {
+      _          <- returnsService.deleteReturn(request.internalId).asResponseError
+      _           = sessionService.delete(request.internalId)
+      obligation <- valueOrError(obligationDetails)
+      email      <- valueOrError(email)
+    } yield (obligation, email)).foldF(
+      error => Future.successful(routeError(error)),
+      obligationAndEmail => {
+        val obligation = obligationAndEmail._1
+        val email      = obligationAndEmail._2
+        if (appConfig.getSubscriptionEnabled) {
+          (for {
+            subscription <- registrationService.getSubscription(eclReference).asResponseError
+          } yield subscription).fold(
+            err => routeError(err),
+            subscription =>
+              generateView(obligation, Some(subscription.correspondenceAddressDetails), eclReference, email)
+          )
+        } else {
+          Future.successful(generateView(obligation, None, eclReference, email))
+        }
+      }
+    )
   }
+
+  private def valueOrError[T](value: Option[T]) =
+    EitherT(Future.successful(value.map(Right(_)).getOrElse(Left(ResponseError.internalServiceError()))))
+
+  def generateView(
+    obligationDetails: ObligationDetails,
+    address: Option[GetCorrespondenceAddressDetails],
+    eclReference: String,
+    email: String
+  )(implicit request: Request[_], messages: Messages): Result =
+    Ok(
+      view(
+        fyStart = obligationDetails.inboundCorrespondenceFromDate,
+        fyEnd = obligationDetails.inboundCorrespondenceToDate,
+        confirmationEmail = email,
+        contactAddress = if (address.isEmpty) None else address,
+        eclReference
+      )(request, messages)
+    )
+
 }

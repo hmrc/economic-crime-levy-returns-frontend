@@ -17,6 +17,8 @@
 @import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 @import java.time.LocalDate
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+@import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.AddressViewModel
+
 
 @this(
         layout: templates.Layout,
@@ -24,7 +26,11 @@
         appConfig: AppConfig
 )
 
-@(fyStart: LocalDate, fyEnd: LocalDate, confirmationEmail: String)(implicit request: Request[_], messages: Messages)
+@(fyStart: LocalDate, fyEnd: LocalDate, confirmationEmail: String, contactAddress: Option[GetCorrespondenceAddressDetails], eclReference: String)(implicit request: Request[_], messages: Messages)
+
+@panelContentHtml = {
+<h2 class="govuk-label--m">@messages("amend.submitted.eclRef") @eclReference </h2>
+}
 
 @layout(
     pageTitle = title(messages("amend.submitted.title")),
@@ -33,7 +39,8 @@
 
 
     @govukPanel(Panel(
-        title = HtmlContent(messages("amend.submitted.heading"))
+        title = HtmlContent(messages("amend.submitted.heading")),
+        content = HtmlContent(panelContentHtml)
     ))
 
     <p class="govuk-body">@messages("amend.submitted.p1",
@@ -41,13 +48,25 @@
         ViewUtils.formatLocalDate(fyStart).takeRight(4),
         ViewUtils.formatLocalDate(fyEnd).takeRight(4))</p>
 
-    <p class="govuk-body">@messages("amend.submitted.p2", confirmationEmail)</p>
-    <p class="govuk-body">@Html(messages("amend.submitted.p3", confirmationEmail))</p>
+    <p class="govuk-body">@messages("amend.submitted.p2") <b>@confirmationEmail</b>.
+        @messages("amend.submitted.saveEmail")</p>
+    <p class="govuk-body">@Html(messages("amend.submitted.p3"))</p>
 
     <h2 class="govuk-heading-m">@messages("amend.submitted.h2")</h2>
 
     <p class="govuk-body">@(messages("amend.submitted.p4"))</p>
     <p class="govuk-body">@messages("amend.submitted.p5")</p>
+
+@if(contactAddress.isDefined){
+    <p class="govuk-body">@messages("amend.submitted.p6")</p>
+
+    <p class="govuk-body">
+        @{contactAddress.map { answer =>
+        Html(AddressViewModel.html(answer))
+        }}
+    </p>
+}
+
 
     <p class="govuk-body">@Html(messages("exit.survey", messages("exit.survey.link", appConfig.exitSurveyUrl)))</p>
 }

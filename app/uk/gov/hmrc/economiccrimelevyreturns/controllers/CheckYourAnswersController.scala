@@ -89,8 +89,6 @@ class CheckYourAnswersController @Inject() (
       _            <- returnsService.upsertReturn(eclReturn = updatedReturn).asResponseError
       response     <- returnsService.submitReturn(request.internalId).asResponseError
       _             = sendConfirmationMail(request.eclReturn, response)
-      _            <- returnsService.deleteReturn(request.internalId).asResponseError
-      _             = sessionService.delete(request.internalId)
     } yield response).fold(
       error => routeError(error),
       response => getRedirectionRoute(request, response)
@@ -144,7 +142,9 @@ class CheckYourAnswersController @Inject() (
       Left(Redirect(routes.NotableErrorController.answersAreInvalid()))
     }
 
-  private def getRedirectionRoute(request: ReturnDataRequest[AnyContent], response: SubmitEclReturnResponse) = {
+  private def getRedirectionRoute(request: ReturnDataRequest[AnyContent], response: SubmitEclReturnResponse)(implicit
+    hc: HeaderCarrier
+  ) = {
     val containsEmailAddress = checkOptionalVal(request.eclReturn.contactEmailAddress)
     request.eclReturn.returnType match {
       case Some(AmendReturn) =>
@@ -163,7 +163,7 @@ class CheckYourAnswersController @Inject() (
           case Right(email)    =>
             checkOptionalVal(request.eclReturn.calculatedLiability) match {
               case Right(calculatedLiability) =>
-                val session =
+                val session = {
                   request.session.clearEclValues ++ response.chargeReference.fold(Seq.empty[(String, String)])(c =>
                     Seq(SessionKeys.ChargeReference -> c)
                   ) ++ Seq(
@@ -174,6 +174,9 @@ class CheckYourAnswersController @Inject() (
                     SessionKeys.AmountDue         ->
                       calculatedLiability.amountDue.amount.toString()
                   )
+                }
+                val sessionData = SessionData(request.internalId, session.data)
+                sessionService.upsert(sessionData)
 
                 Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(session)
               case Left(errorPage)            => errorPage

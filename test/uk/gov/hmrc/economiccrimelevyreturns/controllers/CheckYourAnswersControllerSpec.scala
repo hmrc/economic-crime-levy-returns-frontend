@@ -270,16 +270,6 @@ class CheckYourAnswersControllerSpec extends SpecBase {
               )
             )
 
-          when(mockEclReturnsService.deleteReturn(ArgumentMatchers.eq(eclReturn.internalId))(any()))
-            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
-
-          when(
-            mockSessionService.delete(ArgumentMatchers.eq(eclReturn.internalId))(
-              any()
-            )
-          )
-            .thenReturn(Future.successful(()))
-
           val result: Future[Result] = controller.onSubmit()(returnDataRequest)
 
           status(result)                                     shouldBe SEE_OTHER
@@ -341,12 +331,6 @@ class CheckYourAnswersControllerSpec extends SpecBase {
                 Future.successful(Right(submitEclReturnResponse))
               )
             )
-
-          when(mockEclReturnsService.deleteReturn(ArgumentMatchers.eq(eclReturn.internalId))(any()))
-            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
-
-          when(mockSessionService.delete(ArgumentMatchers.eq(eclReturn.internalId))(any()))
-            .thenReturn(Future.successful(()))
 
           val result: Future[Result] = controller.onSubmit()(returnDataRequest)
 
@@ -503,59 +487,6 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           when(mockEclReturnsService.submitReturn(ArgumentMatchers.eq(eclReturn.internalId))(any()))
             .thenReturn(
               EitherT[Future, DataHandlingError, SubmitEclReturnResponse](
-                Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
-              )
-            )
-
-          val result: Future[Result] = controller.onSubmit()(returnDataRequest)
-
-          status(result) shouldBe INTERNAL_SERVER_ERROR
-        }
-    }
-
-    "return InternalServerError (500) when sessionService.delete fails" in forAll {
-      (
-        validEclReturn: ValidEclReturn,
-        validEclSubmission: ValidGetEclReturnSubmissionResponse,
-        submitEclReturnResponse: SubmitEclReturnResponse
-      ) =>
-        val eclReturn: EclReturn                                = validEclReturn.eclReturn
-        val eclReturnSubmission: GetEclReturnSubmissionResponse =
-          createTestEclReturnSubmission(validEclReturn, validEclSubmission)
-
-        new TestContext(eclReturn, Some(periodKey)) {
-          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
-            ReturnDataRequest(
-              fakeRequest,
-              eclReturn.internalId,
-              eclReturn,
-              None,
-              eclRegistrationReference,
-              Some(periodKey)
-            )
-
-          when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
-            .thenReturn(
-              EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
-                Future.successful(Right(eclReturnSubmission))
-              )
-            )
-
-          when(mockEclReturnsService.upsertReturn(any())(any()))
-            .thenReturn(
-              EitherT[Future, DataHandlingError, Unit](Future.successful(Right(())))
-            )
-
-          when(mockEclReturnsService.submitReturn(ArgumentMatchers.eq(eclReturn.internalId))(any()))
-            .thenReturn(
-              EitherT[Future, DataHandlingError, SubmitEclReturnResponse](
-                Future.successful(Right(submitEclReturnResponse))
-              )
-            )
-
-          when(mockEclReturnsService.deleteReturn(ArgumentMatchers.eq(eclReturn.internalId))(any()))
-            .thenReturn(
-              EitherT[Future, DataHandlingError, Unit](
                 Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
               )
             )

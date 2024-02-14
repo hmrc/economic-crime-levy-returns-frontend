@@ -16,63 +16,85 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
+import cats.data.EitherT
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{NilReturnSubmittedView, ReturnSubmittedView}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ErrorTemplate, NilReturnSubmittedView, ReturnSubmittedView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ReturnSubmittedController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   returnSubmittedView: ReturnSubmittedView,
-  nilReturnSubmittedView: NilReturnSubmittedView
-) extends FrontendBaseController
-    with I18nSupport {
+  nilReturnSubmittedView: NilReturnSubmittedView,
+  getReturnData: DataRetrievalAction,
+  returnsService: ReturnsService,
+  sessionService: SessionService
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
+    extends FrontendBaseController
+    with BaseController
+    with I18nSupport
+    with ErrorHandler {
 
-  def onPageLoad: Action[AnyContent] = authorise { implicit request =>
+  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     val chargeReference: Option[String] = request.session.get(SessionKeys.ChargeReference)
+    val amountDue: BigDecimal           = BigDecimal(request.session(SessionKeys.AmountDue))
+    val obligationDetails               = request.eclReturn.obligationDetails
+    val email                           = request.eclReturn.contactEmailAddress
 
-    val email: String = request.session(SessionKeys.Email)
-
-    val obligationDetails: ObligationDetails = Json
-      .parse(request.session(SessionKeys.ObligationDetails))
-      .as[ObligationDetails]
-
-    val amountDue: BigDecimal = BigDecimal(request.session(SessionKeys.AmountDue))
-
-    chargeReference match {
-      case Some(c) =>
-        Ok(
-          returnSubmittedView(
-            c,
-            ViewUtils.formatToday(),
-            ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDueDate),
-            obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
-            obligationDetails.inboundCorrespondenceToDate.getYear.toString,
-            amountDue,
-            email
-          )
-        )
-      case None    =>
-        Ok(
-          nilReturnSubmittedView(
-            ViewUtils.formatToday(),
-            obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
-            obligationDetails.inboundCorrespondenceToDate.getYear.toString,
-            amountDue,
-            email
-          )
-        )
-
-    }
-
+    (for {
+      _          <- returnsService.deleteReturn(request.internalId).asResponseError
+      _           = sessionService.delete(request.internalId)
+      obligation <- valueOrError(obligationDetails)
+      email      <- valueOrError(email)
+    } yield (obligation, email)).foldF(
+      error => Future.successful(routeError(error)),
+      obligationAndEmail => {
+        val obligation = obligationAndEmail._1
+        val email      = obligationAndEmail._2
+        chargeReference match {
+          case Some(c) =>
+            Future.successful(
+              Ok(
+                returnSubmittedView(
+                  c,
+                  ViewUtils.formatToday(),
+                  ViewUtils.formatLocalDate(obligation.inboundCorrespondenceDueDate),
+                  obligation.inboundCorrespondenceFromDate.getYear.toString,
+                  obligation.inboundCorrespondenceToDate.getYear.toString,
+                  amountDue,
+                  email
+                )
+              )
+            )
+          case None    =>
+            Future.successful(
+              Ok(
+                nilReturnSubmittedView(
+                  ViewUtils.formatToday(),
+                  obligation.inboundCorrespondenceFromDate.getYear.toString,
+                  obligation.inboundCorrespondenceToDate.getYear.toString,
+                  amountDue,
+                  email
+                )
+              )
+            )
+        }
+      }
+    )
   }
+
+  private def valueOrError[T](value: Option[T]) =
+    EitherT(Future.successful(value.map(Right(_)).getOrElse(Left(ResponseError.internalServiceError()))))
 
 }
