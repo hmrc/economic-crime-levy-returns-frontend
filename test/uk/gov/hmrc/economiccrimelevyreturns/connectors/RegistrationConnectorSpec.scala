@@ -56,21 +56,22 @@ class RegistrationConnectorSpec extends SpecBase {
         result shouldBe subscription
     }
 
-    "return UpstreamErrorResponse when call to registration service returns an error" in forAll { (eclReference: String) =>
-      beforeEach()
-      val errorCode   = INTERNAL_SERVER_ERROR
-      val expectedUrl = url"$eclRegistrationUrl/$eclReference"
+    "return UpstreamErrorResponse when call to registration service returns an error" in forAll {
+      (eclReference: String) =>
+        beforeEach()
+        val errorCode   = INTERNAL_SERVER_ERROR
+        val expectedUrl = url"$eclRegistrationUrl/$eclReference"
 
-      when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
-        .thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
-        .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
+        when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+          .thenReturn(mockRequestBuilder)
+        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+          .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
-      Try(await(connector.getSubscription(eclReference))) match {
-        case Failure(UpstreamErrorResponse(_, code, _, _)) =>
-          code shouldEqual errorCode
-        case _ => fail("expected UpstreamErrorResponse when an error is received from the returns service")
-      }
+        Try(await(connector.getSubscription(eclReference))) match {
+          case Failure(UpstreamErrorResponse(_, code, _, _)) =>
+            code shouldEqual errorCode
+          case _                                             => fail("expected UpstreamErrorResponse when an error is received from the returns service")
+        }
     }
   }
 

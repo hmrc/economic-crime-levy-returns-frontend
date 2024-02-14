@@ -30,8 +30,8 @@ import scala.concurrent.Future
 
 class RegistrationServiceSpec extends SpecBase {
   val mockEclRegistrationConnector: RegistrationConnector = mock[RegistrationConnector]
-  val mockAuditService: AuditService            = mock[AuditService]
-  val service                                   = new RegistrationService(mockEclRegistrationConnector)
+  val mockAuditService: AuditService                      = mock[AuditService]
+  val service                                             = new RegistrationService(mockEclRegistrationConnector)
 
   override def beforeEach(): Unit = {
     reset(mockAuditService)
@@ -39,32 +39,28 @@ class RegistrationServiceSpec extends SpecBase {
   }
 
   "getRegistration" should {
-    "return a registration" in forAll {
-      (eclReference: String, subscription: GetSubscriptionResponse) =>
-        beforeEach()
+    "return a registration" in forAll { (eclReference: String, subscription: GetSubscriptionResponse) =>
+      beforeEach()
 
-        when(mockEclRegistrationConnector.getSubscription(any())(any()))
-          .thenReturn(Future.successful(subscription))
+      when(mockEclRegistrationConnector.getSubscription(any())(any()))
+        .thenReturn(Future.successful(subscription))
 
+      val result = await(service.getSubscription(eclReference).value)
 
-        val result = await(service.getSubscription(eclReference).value)
-
-        result shouldBe Right(subscription)
+      result shouldBe Right(subscription)
     }
-
 
     "return DataHandlingError.BadGateway when when call to returns connector fails with 5xx error" in forAll {
       eclReference: String =>
         beforeEach()
-      val errorCode = INTERNAL_SERVER_ERROR
-      val message   = "INTERNAL_SERVER_ERROR"
+        val errorCode = INTERNAL_SERVER_ERROR
+        val message   = "INTERNAL_SERVER_ERROR"
 
-      when(mockEclRegistrationConnector.getSubscription(ArgumentMatchers.eq(eclReference))(any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse.apply(message, errorCode)))
+        when(mockEclRegistrationConnector.getSubscription(ArgumentMatchers.eq(eclReference))(any()))
+          .thenReturn(Future.failed(UpstreamErrorResponse.apply(message, errorCode)))
 
-      val result = {
-        await(service.getSubscription(eclReference).value)
-      }
+        val result =
+          await(service.getSubscription(eclReference).value)
 
         result shouldBe Left(DataHandlingError.BadGateway(message, errorCode))
     }
@@ -72,15 +68,15 @@ class RegistrationServiceSpec extends SpecBase {
     "return DataHandlingError.InternalUnexpectedError when when call to returns connector fails with an unexpected error" in forAll {
       eclReference: String =>
         beforeEach()
-      val throwable: Exception = new Exception()
+        val throwable: Exception = new Exception()
 
-      when(mockEclRegistrationConnector.getSubscription(ArgumentMatchers.eq(eclReference))(any()))
-        .thenReturn(Future.failed(throwable))
+        when(mockEclRegistrationConnector.getSubscription(ArgumentMatchers.eq(eclReference))(any()))
+          .thenReturn(Future.failed(throwable))
 
-      val result =
-        await(service.getSubscription(eclReference).value)
+        val result =
+          await(service.getSubscription(eclReference).value)
 
-      result shouldBe Left(DataHandlingError.InternalUnexpectedError(Some(throwable), None))
+        result shouldBe Left(DataHandlingError.InternalUnexpectedError(Some(throwable), None))
     }
   }
 }

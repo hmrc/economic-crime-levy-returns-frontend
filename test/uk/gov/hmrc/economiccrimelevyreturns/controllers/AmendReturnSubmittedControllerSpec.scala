@@ -42,9 +42,8 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
   val formProvider: AmendReasonFormProvider           = new AmendReasonFormProvider()
   val form: Form[String]                              = formProvider()
   val mockEclRegistrationService: RegistrationService = mock[RegistrationService]
-  val mockReturnsService: ReturnsService = mock[ReturnsService]
-  val mockSessionService: SessionService = mock[SessionService]
-
+  val mockReturnsService: ReturnsService              = mock[ReturnsService]
+  val mockSessionService: SessionService              = mock[SessionService]
 
   class TestContext(returnsData: EclReturn) {
     val controller = new AmendReturnSubmittedController(
@@ -65,10 +64,15 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
         eclReturn: EclReturn,
         subscription: GetSubscriptionResponse,
         obligationDetails: ObligationDetails,
-        email: String,
+        email: String
       ) =>
-
-        new TestContext(eclReturn.copy(contactEmailAddress = Some(email), obligationDetails=Some(obligationDetails), returnType = Some(AmendReturn))) {
+        new TestContext(
+          eclReturn.copy(
+            contactEmailAddress = Some(email),
+            obligationDetails = Some(obligationDetails),
+            returnType = Some(AmendReturn)
+          )
+        ) {
           when(mockReturnsService.deleteReturn(anyString())(any()))
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
           when(mockSessionService.delete(anyString())(any()))
@@ -87,28 +91,28 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
             obligationDetails.inboundCorrespondenceToDate,
             email,
             Some(subscription.correspondenceAddressDetails),
-            "test-ecl-registration-reference")(fakeRequest, messages).toString
+            "test-ecl-registration-reference"
+          )(fakeRequest, messages).toString
         }
     }
   }
 
-  "return Internal server error and the correct view" in forAll {
-    (eclReturn: EclReturn) =>
-      new TestContext(eclReturn) {
-        when(mockReturnsService.deleteReturn(anyString())(any()))
-          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
-        when(mockSessionService.delete(anyString())(any()))
-          .thenReturn((Future.successful(Right(()))))
-        when(mockEclRegistrationService.getSubscription(anyString())(any()))
-          .thenReturn(
-            EitherT[Future, DataHandlingError, GetSubscriptionResponse](
-              Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
-            )
+  "return Internal server error and the correct view" in forAll { (eclReturn: EclReturn) =>
+    new TestContext(eclReturn) {
+      when(mockReturnsService.deleteReturn(anyString())(any()))
+        .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+      when(mockSessionService.delete(anyString())(any()))
+        .thenReturn((Future.successful(Right(()))))
+      when(mockEclRegistrationService.getSubscription(anyString())(any()))
+        .thenReturn(
+          EitherT[Future, DataHandlingError, GetSubscriptionResponse](
+            Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
           )
+        )
 
-        val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+      val result: Future[Result] = controller.onPageLoad()(fakeRequest)
 
-        status(result) shouldBe INTERNAL_SERVER_ERROR
-      }
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+    }
   }
 }

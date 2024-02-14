@@ -28,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class RegistrationService @Inject()(
+class RegistrationService @Inject() (
   registrationConnector: RegistrationConnector
 )(implicit
   ec: ExecutionContext
@@ -47,11 +47,10 @@ class RegistrationService @Inject()(
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
             Left(DataHandlingError.BadGateway(reason = message, code = code))
-          case NonFatal(thr)                                   =>
+          case NonFatal(thr) =>
             Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
         }
     }
-
 
 //  def upsertRegistration(internalId: String)(implicit hc: HeaderCarrier): EitherT[Future, DataHandlingError, Unit] =
 //    EitherT {

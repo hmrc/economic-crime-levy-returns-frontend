@@ -28,7 +28,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RegistrationConnector @Inject()(
+class RegistrationConnector @Inject() (
   appConfig: AppConfig,
   httpClient: HttpClientV2,
   override val configuration: Config,
@@ -39,10 +39,9 @@ class RegistrationConnector @Inject()(
 
   private val eclRegistrationUrl: String = s"${appConfig.eclRegistrationBaseUrl}/economic-crime-levy-registration"
 
-  def getSubscription(eclReference: String)(implicit hc: HeaderCarrier): Future[GetSubscriptionResponse] = {
+  def getSubscription(eclReference: String)(implicit hc: HeaderCarrier): Future[GetSubscriptionResponse] =
     httpClient
       .get(url"$eclRegistrationUrl/subscription/$eclReference")
       .executeAndDeserialise[GetSubscriptionResponse]
-  }
 
 }
