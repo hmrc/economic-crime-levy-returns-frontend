@@ -34,13 +34,9 @@ final case class CheckYourAnswersViewModel(
     SummaryListViewModel(
       rows = (
         addIf(
-          hasAmlRegulatedActivityLengthChanged,
-          AmlRegulatedActivityLengthSummary.row(eclReturn.amlRegulatedActivityLength)
+          hasRelevantApLengthChanged,
+          RelevantApLengthSummary.row(eclReturn.relevantApLength)
         ) ++
-          addIf(
-            hasRelevantApLengthChanged,
-            RelevantApLengthSummary.row(eclReturn.relevantApLength)
-          ) ++
           addIf(
             hasUkRevenueChanged,
             UkRevenueSummary.row(eclReturn.relevantApRevenue)
