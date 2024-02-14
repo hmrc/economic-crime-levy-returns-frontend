@@ -36,13 +36,9 @@ case class AmendReturnPdfViewModel(
     SummaryListViewModel(
       rows = (
         addIf(
-          hasAmlRegulatedActivityLengthChanged,
-          formatRow(AmlRegulatedActivityLengthSummary.row(eclReturn.amlRegulatedActivityLength))
+          hasRelevantApLengthChanged,
+          formatRow(RelevantApLengthSummary.row(eclReturn.relevantApLength))
         ) ++
-          addIf(
-            hasRelevantApLengthChanged,
-            formatRow(RelevantApLengthSummary.row(eclReturn.relevantApLength))
-          ) ++
           addIf(
             hasUkRevenueChanged,
             formatRow(UkRevenueSummary.row(eclReturn.relevantApRevenue))
