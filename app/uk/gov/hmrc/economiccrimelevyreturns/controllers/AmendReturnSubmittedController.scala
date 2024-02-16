@@ -18,18 +18,15 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
 
-import java.time.LocalDate
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{GetCorrespondenceAddressDetails, ObligationDetails, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{GetCorrespondenceAddressDetails, ObligationDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{RegistrationService, ReturnsService, SessionService}
-
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnSubmittedView, ErrorTemplate}
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
