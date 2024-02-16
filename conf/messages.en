@@ -264,7 +264,7 @@ amend.submitted.heading = Economic Crime Levy return amendment requested
 amend.submitted.p1 = You have requested to amend a return for the Economic Crime Levy (ECL) for the financial year {1} to {2}.
 amend.submitted.p2 = We have sent a confirmation email to
 amend.submitted.saveEmail = Please save this for your records
-amend.submitted.p3 = You can find out how to pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy">guidance on how to pay</a>.
+amend.submitted.p3 = You can find out how to pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">guidance on how to pay</a>.
 amend.submitted.h2 = What happens next
 amend.submitted.p4 = We will review your answers. We may contact you using the details you provided if we need any more information. This process will take up to 15 working days.
 amend.submitted.p5 = We will send you a letter once we''ve amended your return. You won''t be able to view these changes until after you''ve received this letter.
