@@ -22,7 +22,7 @@ class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val obligationDetails    = random[ObligationDetails]
       val email                = emailAddress(EmailMaxLength).sample.get
       val eclReturn            = random[EclReturn]
-        .copy(contactEmailAddress = Some(email), obligationDetails= Some(obligationDetails))
+        .copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
 
       stubDeleteReturn()
       stubDeleteSession()

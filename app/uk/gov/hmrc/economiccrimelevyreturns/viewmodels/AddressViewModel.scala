@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels
 
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.economiccrimelevyreturns.models.{GetCorrespondenceAddressDetails, GetSubscriptionResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models.GetCorrespondenceAddressDetails
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.insettext.InsetText
 

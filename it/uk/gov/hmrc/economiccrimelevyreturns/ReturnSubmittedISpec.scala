@@ -33,18 +33,19 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
     "respond with 200 status and the return submitted HTML view when it is not a nil return" in {
       stubAuthorised()
-      val eclReturn            = random[EclReturn]
-      stubGetSessionEmpty()
-      stubGetReturn(eclReturn)
       val chargeReference      = random[String]
       val subscriptionResponse = random[GetSubscriptionResponse]
-      val email                = emailAddress(EmailMaxLength).sample.get
+      val email                = random[String]
       val obligationDetails    = random[ObligationDetails]
       val amountDue            = "10000"
+      val eclReturn            =
+        random[EclReturn].copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
 
       stubDeleteReturn()
       stubDeleteSession()
       stubGetSubscription(subscriptionResponse, testEclRegistrationReference)
+      stubGetSessionEmpty()
+      stubGetReturn(eclReturn)
 
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())
@@ -68,7 +69,8 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val email                = random[String]
       val obligationDetails    = random[ObligationDetails]
       val amountDue            = "0"
-      val eclReturn            = random[EclReturn].copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails), )
+      val eclReturn            =
+        random[EclReturn].copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
 
       stubDeleteReturn()
       stubDeleteSession()
