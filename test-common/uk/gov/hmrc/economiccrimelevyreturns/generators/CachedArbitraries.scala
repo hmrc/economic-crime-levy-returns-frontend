@@ -25,7 +25,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedPa
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationError
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
-import java.time.LocalDate
 
 object CachedArbitraries extends EclTestData with Generators {
 
