@@ -3,6 +3,7 @@
 ->          /hmrc-frontend                                                hmrcfrontend.Routes
 
 GET         /                                                             uk.gov.hmrc.economiccrimelevyreturns.controllers.StartController.start()
+POST        /                                                             uk.gov.hmrc.economiccrimelevyreturns.controllers.StartController.onSubmit()
 GET         /period/:periodKey                                            uk.gov.hmrc.economiccrimelevyreturns.controllers.StartController.onPageLoad(periodKey)
 GET         /amend/:periodKey/:returnNumber                               uk.gov.hmrc.economiccrimelevyreturns.controllers.StartAmendController.onPageLoad(periodKey, returnNumber)
 

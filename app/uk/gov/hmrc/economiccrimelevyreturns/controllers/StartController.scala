@@ -26,7 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EnrolmentStoreProxyService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, ErrorTemplate, NoObligationForPeriodView, StartView}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -97,6 +97,12 @@ class StartController @Inject() (
         case (_, None)                                   => Ok(noObligationForPeriodView())
       }
     )
+  }
+
+  def onSubmit(): Action[AnyContent] = authorise.async { implicit request =>
+    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
+
+    Future.successful(Ok(""))
   }
 
   private def processObligationDetails(obligationData: Option[ObligationData], periodKey: String)(implicit
