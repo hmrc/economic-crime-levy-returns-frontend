@@ -29,6 +29,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, GetSubscriptionResponse, ObligationDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{RegistrationService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmendReturnSubmittedView
+
 import scala.concurrent.Future
 
 class AmendReturnSubmittedControllerSpec extends SpecBase {

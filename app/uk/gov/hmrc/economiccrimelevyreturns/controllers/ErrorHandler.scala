@@ -85,4 +85,13 @@ trait ErrorHandler extends Logging {
 
       }
     }
+
+  implicit val sessionErrorConverter: Converter[SessionError] = {
+    case SessionError.BadGateway(cause, statusCode)           =>
+      ResponseError.badGateway(cause, statusCode)
+    case SessionError.InternalUnexpectedError(message, cause) =>
+      ResponseError.internalServiceError(message = message, cause = cause)
+    case SessionError.KeyNotFound(key)                        =>
+      ResponseError.internalServiceError(message = s"Key not found in session: $key", cause = None)
+  }
 }

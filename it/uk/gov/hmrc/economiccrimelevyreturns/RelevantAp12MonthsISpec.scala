@@ -5,7 +5,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, SessionData, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
@@ -16,10 +16,12 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the relevant AP 12 months view" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
+      val eclReturn        = random[EclReturn]
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val result = callRoute(FakeRequest(routes.RelevantAp12MonthsController.onPageLoad(NormalMode)))
 
@@ -35,10 +37,12 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
     "save the selected option then redirect to the UK revenue page when the Yes option is selected" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
+      val eclReturn        = random[EclReturn]
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val updatedReturn =
         eclReturn.copy(relevantAp12Months = Some(true), relevantApLength = None, calculatedLiability = None)
@@ -58,10 +62,12 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
     "save the selected option then redirect to the relevant AP length page when the No option is selected" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
+      val eclReturn        = random[EclReturn]
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val updatedReturn = eclReturn.copy(relevantAp12Months = Some(false), calculatedLiability = None)
 

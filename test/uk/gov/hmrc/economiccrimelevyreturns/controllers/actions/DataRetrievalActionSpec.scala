@@ -50,7 +50,9 @@ class DataRetrievalActionSpec extends SpecBase {
       eclReturn: EclReturn => (internalId: String, eclReferenceNumber: String) =>
         when(mockEclReturnService.getOrCreateReturn(any())(any(), any()))
           .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
-        when(mockSessionService.get(any(), any(), any())(any())).thenReturn(Future.successful(None))
+
+        when(mockSessionService.get(any(), any(), any())(any()))
+          .thenReturn(EitherT.rightT(alphaNumericString))
 
         val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
           dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))

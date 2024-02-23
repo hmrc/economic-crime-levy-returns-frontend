@@ -109,7 +109,7 @@ class StartAmendControllerSpec extends SpecBase {
           .thenReturn(Right(validEclReturn.eclReturn))
 
         when(mockSessionService.upsert(any())(any()))
-          .thenReturn(unit)
+          .thenReturn(EitherT.right(unit))
 
         when(mockEclLiabilityService.getCalculatedLiability(any(), any(), any())(any()))
           .thenReturn(
@@ -137,7 +137,7 @@ class StartAmendControllerSpec extends SpecBase {
           .thenReturn(EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(None))))
 
         when(mockSessionService.upsert(any())(any()))
-          .thenReturn(unit)
+          .thenReturn(EitherT.right(unit))
 
         val result: Future[Result] = controller.onPageLoad(periodKey, returnNumber)(fakeRequest)
 

@@ -8,7 +8,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, NormalMode, SessionData, SessionKeys}
 
 class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -18,10 +18,12 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
     "respond with 200 status and the AML regulated activity length view" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
+      val eclReturn        = random[EclReturn]
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val result = callRoute(FakeRequest(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode)))
 
@@ -45,9 +47,11 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
         carriedOutAmlRegulatedActivityForFullFy = Some(false)
       )
       val calculatedLiability        = random[CalculatedLiability]
+      val sessionData                = random[SessionData]
+      val validSessionData           = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val updatedReturn =
         eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength), calculatedLiability = None)

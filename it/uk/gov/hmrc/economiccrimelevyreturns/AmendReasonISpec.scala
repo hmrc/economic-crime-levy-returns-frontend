@@ -6,7 +6,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, SessionData, SessionKeys}
 
 class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -16,10 +16,12 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the amendment reason HTML view" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
+      val eclReturn        = random[EclReturn]
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val result = callRoute(FakeRequest(routes.AmendReasonController.onPageLoad(NormalMode)))
 
@@ -35,11 +37,13 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
     "save the provided reason then redirect to the contact role page" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
-      val reason    = nonEmptyString.sample.get.trim
+      val eclReturn        = random[EclReturn]
+      val reason           = nonEmptyString.sample.get.trim
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val updatedReturn = eclReturn.copy(amendReason = Some(reason))
 

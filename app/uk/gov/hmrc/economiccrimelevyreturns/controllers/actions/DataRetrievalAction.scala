@@ -20,8 +20,8 @@ import cats.data.EitherT
 import play.api.mvc.{ActionTransformer, Session}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.ErrorHandler
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, ReturnType, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, ReturnType, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
@@ -60,25 +60,27 @@ class ReturnDataRetrievalAction @Inject() (
   private def getStartAmendUrl(returnType: Option[ReturnType], session: Session, internalId: String)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, ResponseError, Option[String]] =
-    EitherT {
-      returnType match {
-        case Some(AmendReturn) =>
-          sessionService.get(session, internalId, SessionKeys.StartAmendUrl).map(Right(_))
-        case _                 =>
-          Future.successful(Right(None))
-      }
+    returnType match {
+      case Some(AmendReturn) =>
+        sessionService
+          .getOptional(session, internalId, SessionKeys.StartAmendUrl)
+          .asResponseError
+
+      case _ =>
+        EitherT.rightT(None)
     }
 
   private def getPeriodKey(returnType: Option[ReturnType], session: Session, internalId: String)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, ResponseError, Option[String]] =
-    EitherT {
-      returnType match {
-        case Some(AmendReturn) =>
-          sessionService.get(session, internalId, SessionKeys.PeriodKey).map(Right(_))
-        case _                 =>
-          Future.successful(Right(None))
-      }
+    returnType match {
+      case Some(AmendReturn) =>
+        sessionService
+          .get(session, internalId, SessionKeys.PeriodKey)
+          .asResponseError
+          .map(Some(_))
+      case _                 =>
+        EitherT.rightT(None)
     }
 }
 

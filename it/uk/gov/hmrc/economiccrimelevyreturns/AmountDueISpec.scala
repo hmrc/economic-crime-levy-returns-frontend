@@ -6,7 +6,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, SessionData, SessionKeys}
 
 class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -16,10 +16,12 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the ECL amount due view when the ECL return data is valid" in {
       stubAuthorised()
 
-      val eclReturn = random[ValidEclReturn].eclReturn
+      val eclReturn        = random[ValidEclReturn].eclReturn
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad(NormalMode)))
 
@@ -31,10 +33,12 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
     "redirect to the invalid data page when the ECL return data is invalid" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn].copy(calculatedLiability = None, obligationDetails = None)
+      val eclReturn        = random[EclReturn].copy(calculatedLiability = None, obligationDetails = None)
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad(NormalMode)))
 
@@ -50,10 +54,12 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
     "redirect to the who is completing this return page" in {
       stubAuthorised()
 
-      val eclReturn = random[ValidEclReturn].eclReturn
+      val eclReturn        = random[ValidEclReturn].eclReturn
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val result = callRoute(FakeRequest(routes.AmountDueController.onSubmit(NormalMode)))
 

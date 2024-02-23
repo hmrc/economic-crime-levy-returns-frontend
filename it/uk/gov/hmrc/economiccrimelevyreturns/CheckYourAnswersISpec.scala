@@ -26,8 +26,7 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       val validEclReturnSubmission = random[GetEclReturnSubmissionResponse]
       val errors                   = random[DataValidationError]
       val sessionData              = random[SessionData]
-
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData         = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetEclReturnSubmission(testPeriodKey, testEclRegistrationReference, validEclReturnSubmission)
       stubGetReturn(validEclReturn.eclReturn)
@@ -44,12 +43,14 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
     "redirect to the answers are invalid page when the ECL return data is invalid" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
-      val errors    = random[DataValidationError]
+      val eclReturn        = random[EclReturn]
+      val errors           = random[DataValidationError]
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetReturnValidationErrors(valid = false, errors)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onPageLoad()))
 
@@ -69,11 +70,10 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       val validEclReturnSubmission = random[GetEclReturnSubmissionResponse]
       val chargeReference          = random[Option[String]]
       val sessionData              = random[SessionData]
+      val validSessionData         = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       val obligationDetails   = validEclReturn.eclReturn.obligationDetails.get
       val calculatedLiability = validEclReturn.eclReturn.calculatedLiability.get
-
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetEclReturnSubmission(testPeriodKey, testEclRegistrationReference, validEclReturnSubmission)
       stubGetReturn(validEclReturn.eclReturn)
