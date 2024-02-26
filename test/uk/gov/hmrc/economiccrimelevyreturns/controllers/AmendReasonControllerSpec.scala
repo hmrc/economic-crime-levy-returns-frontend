@@ -28,11 +28,12 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmendReasonFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, ObligationDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmendReasonPageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmendReasonView
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class AmendReasonControllerSpec extends SpecBase {
@@ -60,24 +61,45 @@ class AmendReasonControllerSpec extends SpecBase {
   }
 
   "onPageLoad" should {
-    "return OK and the correct view when no answer has already been provided" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn.copy(amendReason = None)) {
-        val result: Future[Result] = controller.onPageLoad(NormalMode)(fakeRequest)
-
-        status(result) shouldBe OK
-
-        contentAsString(result) shouldBe view(form, NormalMode)(fakeRequest, messages).toString
-      }
-    }
-
-    "populate the view correctly when the question has previously been answered" in forAll {
-      (eclReturn: EclReturn, reason: String) =>
-        new TestContext(eclReturn.copy(amendReason = Some(reason))) {
+    "return OK and the correct view when no answer has already been provided" in forAll {
+      (eclReturn: EclReturn, obligationDetails: ObligationDetails, fromFY: LocalDate, toFY: LocalDate) =>
+        val updatedObligation =
+          obligationDetails.copy(inboundCorrespondenceFromDate = fromFY, inboundCorrespondenceToDate = toFY)
+        val updatedReturn     = eclReturn.copy(obligationDetails = Some(updatedObligation), amendReason = None)
+        new TestContext(updatedReturn) {
           val result: Future[Result] = controller.onPageLoad(NormalMode)(fakeRequest)
 
           status(result) shouldBe OK
 
-          contentAsString(result) shouldBe view(form.fill(reason), NormalMode)(
+          contentAsString(result) shouldBe view(form, NormalMode, fromFY.getYear.toString, toFY.getYear.toString)(
+            fakeRequest,
+            messages
+          ).toString
+        }
+    }
+
+    "populate the view correctly when the question has previously been answered" in forAll {
+      (
+        eclReturn: EclReturn,
+        reason: String,
+        obligationDetails: ObligationDetails,
+        fromFY: LocalDate,
+        toFY: LocalDate
+      ) =>
+        val updatedObligation =
+          obligationDetails.copy(inboundCorrespondenceFromDate = fromFY, inboundCorrespondenceToDate = toFY)
+        val updatedReturn     = eclReturn.copy(obligationDetails = Some(updatedObligation), amendReason = Some(reason))
+        new TestContext(updatedReturn) {
+          val result: Future[Result] = controller.onPageLoad(NormalMode)(fakeRequest)
+
+          status(result) shouldBe OK
+
+          contentAsString(result) shouldBe view(
+            form.fill(reason),
+            NormalMode,
+            fromFY.getYear.toString,
+            toFY.getYear.toString
+          )(
             fakeRequest,
             messages
           ).toString
@@ -105,15 +127,25 @@ class AmendReasonControllerSpec extends SpecBase {
       }
     }
 
-    "return a Bad Request with form errors when invalid data is submitted" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
-        val result: Future[Result]       = controller.onSubmit(NormalMode)(fakeRequest.withFormUrlEncodedBody(("value", "")))
-        val formWithErrors: Form[String] = form.bind(Map("value" -> ""))
+    "return a Bad Request with form errors when invalid data is submitted" in forAll {
+      (eclReturn: EclReturn, obligationDetails: ObligationDetails, fromFY: LocalDate, toFY: LocalDate) =>
+        val updatedObligation =
+          obligationDetails.copy(inboundCorrespondenceFromDate = fromFY, inboundCorrespondenceToDate = toFY)
+        val updatedReturn     = eclReturn.copy(obligationDetails = Some(updatedObligation), amendReason = None)
+        new TestContext(updatedReturn) {
+          val result: Future[Result]       =
+            controller.onSubmit(NormalMode)(fakeRequest.withFormUrlEncodedBody(("value", "")))
+          val formWithErrors: Form[String] = form.bind(Map("value" -> ""))
 
-        status(result) shouldBe BAD_REQUEST
+          status(result) shouldBe BAD_REQUEST
 
-        contentAsString(result) shouldBe view(formWithErrors, NormalMode)(fakeRequest, messages).toString
-      }
+          contentAsString(result) shouldBe view(
+            formWithErrors,
+            NormalMode,
+            fromFY.getYear.toString,
+            toFY.getYear.toString
+          )(fakeRequest, messages).toString
+        }
     }
   }
 }

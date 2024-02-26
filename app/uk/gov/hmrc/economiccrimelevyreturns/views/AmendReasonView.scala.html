@@ -22,10 +22,9 @@
         govukButton: GovukButton
 )
 
-@(form: Form[String], mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
+@(form: Form[String], mode: Mode, fromFinancialYear: String, toFinancialYear: String, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @errorMessage = @{
-
     if(form.errors.nonEmpty) {
         Some(ErrorMessage(
             id = Some("amendReason.error.required"),
@@ -40,6 +39,8 @@
     @if(form.errors.nonEmpty) {
         @govukErrorSummary(ErrorSummaryViewModel(form))
     }
+
+    <label class="govuk-label">@messages("amendReason.label", fromFinancialYear, toFinancialYear)</label>
 
     <h1 class="govuk-heading-l">@messages("amendReason.h1")</h1>
 

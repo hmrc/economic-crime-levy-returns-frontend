@@ -339,6 +339,7 @@ otherRegistration.pdfHtml.title = Cais i ddiwygio datganiad ar gyfer yr Ardoll T
 otherRegistration.pdfHtml.submissionDate = Dyddiad cyflwyno:
 
 amendReason.title = Pam ydych yn gwneud cais i ddiwygio’ch datganiad?
+amendReason.label = {0} to {1}
 amendReason.h1 = Pam ydych yn gwneud cais i ddiwygio’ch datganiad?
 amendReason.p1 = Nodwch unrhyw wybodaeth sy’n berthnasol i’ch cais i ddiwygio’ch cofrestriad. Peidiwch â chynnwys gwybodaeth bersonol nac ariannol, megis eich rhif Yswiriant Gwladol neu fanylion eich cerdyn credyd.
 amendReason.error.required = Nodwch y rheswm pam yr ydych yn gwneud cais i newid eich datganiad
