@@ -26,7 +26,6 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, SessionError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
