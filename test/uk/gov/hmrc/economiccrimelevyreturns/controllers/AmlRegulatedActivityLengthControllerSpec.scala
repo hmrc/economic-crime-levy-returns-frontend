@@ -52,7 +52,8 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
       formProvider,
       view,
       mockEclLiabilityService,
-      mockEclReturnsService
+      mockEclReturnsService,
+      fakeNoOpStoreUrlAction
     )
   }
 

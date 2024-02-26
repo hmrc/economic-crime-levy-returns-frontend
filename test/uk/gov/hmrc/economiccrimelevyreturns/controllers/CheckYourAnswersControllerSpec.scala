@@ -55,7 +55,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       pdfReturnView,
       mcc,
       view,
-      appConfig
+      appConfig,
+      fakeNoOpStoreUrlAction
     )
   }
 

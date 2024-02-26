@@ -36,6 +36,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(EclReturn.empty(testInternalId, Some(FirstTimeReturn)))
       stubGetSessionEmpty()
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.StartController.start()))
 
@@ -52,6 +53,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
         EclReturn.empty(testInternalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(obligationDetails))
       )
       stubGetSessionEmpty()
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.StartController.start()))
 
@@ -85,6 +87,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetReturn(emptyReturn)
       stubUpsertReturn(emptyReturn.copy(obligationDetails = Some(openObligation)))
       stubGetSessionEmpty()
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.StartController.onPageLoad(openObligation.periodKey)))
 
@@ -95,7 +98,6 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the no obligation for period HTML view if there is no obligation for the period key" in {
       stubAuthorised()
 
-      val periodKey      = "22XY"
       val obligationData = ObligationData(obligations = Seq.empty)
 
       val eclRegistrationReference = random[String]
@@ -103,8 +105,10 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubQueryKnownFacts(eclRegistrationReference, eclRegistrationDate)
       stubGetObligations(obligationData)
+      stubGetSessionEmpty()
+      stubUpsertSession()
 
-      val result = callRoute(FakeRequest(routes.StartController.onPageLoad(periodKey)))
+      val result = callRoute(FakeRequest(routes.StartController.onPageLoad(testPeriodKey)))
 
       status(result) shouldBe OK
       html(result)     should include("You cannot submit a return for this financial year")
@@ -133,6 +137,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetReturn(emptyReturn)
       stubUpsertReturn(emptyReturn.copy(obligationDetails = Some(openObligation)))
       stubGetSessionEmpty()
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.StartController.onPageLoad(openObligation.periodKey)))
 

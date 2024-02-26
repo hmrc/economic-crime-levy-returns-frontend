@@ -8,7 +8,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, NormalMode, SessionData, SessionKeys}
 
 class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -18,10 +18,13 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the UK revenue view" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
+      val eclReturn        = random[EclReturn]
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.UkRevenueController.onPageLoad(NormalMode)))
 
@@ -41,9 +44,11 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
         .copy(amlRegulatedActivityLength = Some(365), relevantAp12Months = Some(true), calculatedLiability = None)
       val ukRevenue           = bigDecimalInRange(UkRevenueThreshold.toDouble, MinMaxValues.RevenueMax.toDouble).sample.get
       val calculatedLiability = random[CalculatedLiability].copy(calculatedBand = Large)
+      val sessionData         = random[SessionData]
+      val validSessionData    = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val updatedReturn = eclReturn.copy(
         relevantApRevenue = Some(ukRevenue),
@@ -72,9 +77,11 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       val ukRevenue           = bigDecimalInRange(MinMaxValues.RevenueMin.toDouble, UkRevenueThreshold.toDouble).sample.get
       val calculatedLiability =
         random[CalculatedLiability].copy(calculatedBand = Small)
+      val sessionData         = random[SessionData]
+      val validSessionData    = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val updatedReturn = eclReturn.copy(
         relevantAp12Months = Some(true),

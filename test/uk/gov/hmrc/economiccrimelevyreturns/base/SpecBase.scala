@@ -32,7 +32,7 @@ import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits}
 import play.api.test.Helpers.{stubBodyParser, stubControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.EclTestData
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{FakeAuthorisedAction, FakeDataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{FakeAuthorisedAction, FakeDataRetrievalAction, FakeNoOpStoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ErrorTemplate
@@ -74,6 +74,7 @@ trait SpecBase
   val config: Config                                   = app.injector.instanceOf[Config]
   val actorSystem: ActorSystem                         = ActorSystem("actor")
   val periodKey: String                                = "22XY"
+  val fakeNoOpStoreUrlAction                           = app.injector.instanceOf[FakeNoOpStoreUrlAction]
   implicit val errorTemplate: ErrorTemplate            = app.injector.instanceOf[ErrorTemplate]
 
   override def fakeApplication(): Application =

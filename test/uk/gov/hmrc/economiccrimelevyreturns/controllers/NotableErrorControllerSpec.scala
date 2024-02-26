@@ -34,7 +34,6 @@ class NotableErrorControllerSpec extends SpecBase {
     val controller = new NotableErrorController(
       mcc,
       fakeAuthorisedAction(eclReturnData.internalId),
-      fakeDataRetrievalAction(eclReturnData),
       answersAreInvalidView,
       agentCannotSubmitReturnView,
       appConfig

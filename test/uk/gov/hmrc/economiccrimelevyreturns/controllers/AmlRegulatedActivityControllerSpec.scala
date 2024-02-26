@@ -56,7 +56,8 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
       mockEclLiabilityService,
       formProvider,
       dataCleanup,
-      view
+      view,
+      fakeNoOpStoreUrlAction
     )
   }
 

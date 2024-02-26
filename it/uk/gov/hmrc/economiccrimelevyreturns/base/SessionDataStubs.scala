@@ -2,14 +2,14 @@ package uk.gov.hmrc.economiccrimelevyreturns.base
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.http.Status.OK
+import play.api.http.Status.{NO_CONTENT, OK}
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
 
 trait SessionDataStubs { self: WireMockStubs =>
 
-  def stubGetSessionEmpty() =
+  def stubGetSessionEmpty(): StubMapping =
     stubGetSession(
       SessionData(
         internalId = testInternalId,
@@ -25,22 +25,18 @@ trait SessionDataStubs { self: WireMockStubs =>
         .withBody(Json.toJson(sessionData).toString())
     )
 
-  def stubUpsertSession(sessionData: SessionData): StubMapping =
+  def stubUpsertSession(): StubMapping =
     stub(
-      put(urlEqualTo("/economic-crime-levy-returns/session"))
-        .withRequestBody(
-          equalToJson(Json.toJson(sessionData).toString(), true, true)
-        ),
+      put(urlEqualTo("/economic-crime-levy-returns/session")),
       aResponse()
         .withStatus(OK)
-        .withBody(Json.toJson(sessionData).toString())
     )
 
   def stubDeleteSession(): StubMapping =
     stub(
       delete(urlEqualTo(s"/economic-crime-levy-returns/session/$testInternalId")),
       aResponse()
-        .withStatus(OK)
+        .withStatus(NO_CONTENT)
     )
 
 }

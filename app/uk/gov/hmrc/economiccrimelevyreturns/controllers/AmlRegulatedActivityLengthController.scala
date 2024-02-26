@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
@@ -40,7 +40,8 @@ class AmlRegulatedActivityLengthController @Inject() (
   formProvider: AmlRegulatedActivityLengthFormProvider,
   view: AmlRegulatedActivityLengthView,
   eclLiabilityService: EclCalculatorService,
-  eclReturnsService: ReturnsService
+  eclReturnsService: ReturnsService,
+  storeUrl: StoreUrlAction
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with BaseController
@@ -49,8 +50,9 @@ class AmlRegulatedActivityLengthController @Inject() (
 
   val form: Form[Int] = formProvider()
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.amlRegulatedActivityLength), mode, request.startAmendUrl))
+  def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData andThen storeUrl) {
+    implicit request =>
+      Ok(view(form.prepare(request.eclReturn.amlRegulatedActivityLength), mode, request.startAmendUrl))
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>

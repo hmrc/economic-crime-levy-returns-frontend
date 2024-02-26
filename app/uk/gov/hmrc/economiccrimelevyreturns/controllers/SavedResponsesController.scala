@@ -1,0 +1,79 @@
+/*
+ * Copyright 2024 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.economiccrimelevyreturns.controllers
+
+import play.api.data.Form
+import play.api.i18n.I18nSupport
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
+import uk.gov.hmrc.economiccrimelevyreturns.forms.SavedResponsesFormProvider
+import uk.gov.hmrc.economiccrimelevyreturns.models.{NormalMode, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ErrorTemplate, SavedResponsesView}
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
+@Singleton
+class SavedResponsesController @Inject() (
+  val controllerComponents: MessagesControllerComponents,
+  authorise: AuthorisedAction,
+  sessionService: SessionService,
+  returnsService: ReturnsService,
+  formProvider: SavedResponsesFormProvider,
+  view: SavedResponsesView,
+  getReturnData: DataRetrievalAction
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
+    extends FrontendBaseController
+    with ErrorHandler
+    with BaseController
+    with I18nSupport {
+
+  val form: Form[Boolean] = formProvider()
+
+  def onPageLoad(): Action[AnyContent] = authorise { implicit request =>
+    Ok(view(form.prepare(None)))
+  }
+
+  def onSubmit(): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+    form
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future.successful(BadRequest(view(formWithErrors))),
+        {
+          case true  =>
+            (for {
+              urlToReturnTo <-
+                sessionService.get(request.session, request.internalId, SessionKeys.UrlToReturnTo).asResponseError
+            } yield urlToReturnTo).fold(
+              err => routeError(err),
+              url => Redirect(url)
+            )
+          case false =>
+            (for {
+              _ <- returnsService.deleteReturn(request.internalId).asResponseError
+              _ <- sessionService.delete(request.internalId).asResponseError
+            } yield ()).fold(
+              err => routeError(err),
+              _ => Redirect(routes.StartController.onPageLoad(request.periodKey.get))
+            )
+        }
+      )
+  }
+}

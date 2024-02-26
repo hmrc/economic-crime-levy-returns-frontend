@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.ContactNumberFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
@@ -41,7 +41,8 @@ class ContactNumberController @Inject() (
   eclReturnsService: ReturnsService,
   formProvider: ContactNumberFormProvider,
   pageNavigator: ContactNumberPageNavigator,
-  view: ContactNumberView
+  view: ContactNumberView,
+  storeUrl: StoreUrlAction
 )(implicit ec: ExecutionContext, errorView: ErrorTemplate)
     extends FrontendBaseController
     with BaseController
@@ -50,11 +51,12 @@ class ContactNumberController @Inject() (
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    getContactNameFromRequest.fold(
-      err => routeError(err),
-      name => Ok(view(form.prepare(request.eclReturn.contactTelephoneNumber), name, mode, request.startAmendUrl))
-    )
+  def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData andThen storeUrl) {
+    implicit request =>
+      getContactNameFromRequest.fold(
+        err => routeError(err),
+        name => Ok(view(form.prepare(request.eclReturn.contactTelephoneNumber), name, mode, request.startAmendUrl))
+      )
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
