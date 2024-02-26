@@ -68,21 +68,6 @@
         <p class="govuk-body">@messages("start.payLevyLater")</p>
     }
 
-    @*
-    @govukButton(Button(
-        content = Text(messages("site.saveAndContinue")),
-        attributes = Map("id" -> "continue", "type" -> "submit")
-    ))
-
-
-    @button(
-        ButtonViewModel(messages("site.start"))
-        .asLink(RelevantAp12MonthsController.onPageLoad(NormalMode).url)
-        .asStartButton()
-        .withAttribute("id" -> "start")
-    )
-    *@
-
     @formHelper(action = StartController.onSubmit()) {
         @button(
             ButtonViewModel(messages("site.start"))
