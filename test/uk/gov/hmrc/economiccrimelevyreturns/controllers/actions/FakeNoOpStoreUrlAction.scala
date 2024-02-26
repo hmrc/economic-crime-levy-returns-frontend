@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.services.SessionService
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeNoOpStoreUrlAction @Inject()()(implicit
+class FakeNoOpStoreUrlAction @Inject() ()(implicit
   override val executionContext: ExecutionContext
 ) extends StoreUrlAction(mock[SessionService]) {
 

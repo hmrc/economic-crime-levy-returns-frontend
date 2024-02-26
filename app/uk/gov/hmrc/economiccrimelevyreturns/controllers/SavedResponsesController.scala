@@ -38,9 +38,9 @@ class SavedResponsesController @Inject() (
   returnsService: ReturnsService,
   formProvider: SavedResponsesFormProvider,
   view: SavedResponsesView,
-  getReturnData: DataRetrievalAction,
+  getReturnData: DataRetrievalAction
 )(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
-  extends FrontendBaseController
+    extends FrontendBaseController
     with ErrorHandler
     with BaseController
     with I18nSupport {

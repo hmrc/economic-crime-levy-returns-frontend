@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class StoreUrlAction @Inject() (
   sessionService: SessionService
 )(implicit val executionContext: ExecutionContext)
-  extends ActionRefiner[ReturnDataRequest, ReturnDataRequest]
+    extends ActionRefiner[ReturnDataRequest, ReturnDataRequest]
     with FrontendHeaderCarrierProvider
     with ErrorHandler {
 
@@ -46,9 +46,9 @@ class StoreUrlAction @Inject() (
 
     (for {
       _ <- request.eclReturn.returnType match {
-        case Some(FirstTimeReturn) => sessionService.upsert(sessionData).asResponseError
-        case _                     => EitherT[Future, SessionError, Unit](Future.successful(Right(()))).asResponseError
-      }
+             case Some(FirstTimeReturn) => sessionService.upsert(sessionData).asResponseError
+             case _                     => EitherT[Future, SessionError, Unit](Future.successful(Right(()))).asResponseError
+           }
     } yield ()).foldF(
       error => Future.failed(new Exception(error.message)),
       _ => Future.successful(Right(request))
