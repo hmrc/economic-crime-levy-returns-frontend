@@ -20,7 +20,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.UkRevenueDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
@@ -41,7 +41,8 @@ class UkRevenueController @Inject() (
   eclLiabilityService: EclCalculatorService,
   formProvider: UkRevenueFormProvider,
   dataCleanup: UkRevenueDataCleanup,
-  view: UkRevenueView
+  view: UkRevenueView,
+  storeUrl: StoreUrlAction
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with BaseController
@@ -50,8 +51,9 @@ class UkRevenueController @Inject() (
 
   val form: Form[BigDecimal] = formProvider()
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.relevantApRevenue), mode, request.startAmendUrl))
+  def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData andThen storeUrl) {
+    implicit request =>
+      Ok(view(form.prepare(request.eclReturn.relevantApRevenue), mode, request.startAmendUrl))
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>

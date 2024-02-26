@@ -82,3 +82,6 @@ POST        /change-answer/can-you-provide-more-detail                    uk.gov
 
 GET         /cancel-return-amendment	                                  uk.gov.hmrc.economiccrimelevyreturns.controllers.CancelReturnAmendmentController.onPageLoad()
 POST        /cancel-return-amendment	                                  uk.gov.hmrc.economiccrimelevyreturns.controllers.CancelReturnAmendmentController.onSubmit()
+
+GET         /save-and-return                                              uk.gov.hmrc.economiccrimelevyreturns.controllers.SavedResponsesController.onPageLoad()
+POST        /save-and-return                                              uk.gov.hmrc.economiccrimelevyreturns.controllers.SavedResponsesController.onSubmit()

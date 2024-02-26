@@ -21,9 +21,9 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, SessionError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EnrolmentStoreProxyService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EnrolmentStoreProxyService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html._
@@ -43,7 +43,8 @@ class StartController @Inject() (
   alreadySubmittedReturnView: AlreadySubmittedReturnView,
   noObligationForPeriodView: NoObligationForPeriodView,
   chooseReturnPeriodView: ChooseReturnPeriodView,
-  view: StartView
+  view: StartView,
+  sessionService: SessionService
 )(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with I18nSupport
@@ -67,6 +68,7 @@ class StartController @Inject() (
   def onPageLoad(periodKey: String): Action[AnyContent] = authorise.async { implicit request =>
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     (for {
+      _                 <- addPeriodKeyToSession(periodKey).asResponseError
       registrationDate  <-
         enrolmentStoreProxyService.getEclRegistrationDate(request.eclRegistrationReference).asResponseError
       obligationData    <- eclAccountService.retrieveObligationData.asResponseError
@@ -100,10 +102,30 @@ class StartController @Inject() (
   }
 
   def onSubmit(): Action[AnyContent] = authorise.async { implicit request =>
-    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
-
-    Future.successful(Ok(""))
+    (for {
+      urlToReturnTo <-
+        sessionService.getOptional(request.session, request.internalId, SessionKeys.UrlToReturnTo).asResponseError
+    } yield urlToReturnTo).fold(
+      err => routeError(err),
+      urlToReturnTo =>
+        Redirect(
+          urlToReturnTo match {
+            case Some(_) => routes.SavedResponsesController.onPageLoad()
+            case None    => routes.RelevantAp12MonthsController.onPageLoad(NormalMode)
+          }
+        )
+    )
   }
+
+  private def addPeriodKeyToSession(periodKey: String)(implicit
+    request: AuthorisedRequest[_]
+  ): EitherT[Future, SessionError, Unit] =
+    sessionService.upsert(
+      SessionData(
+        internalId = request.internalId,
+        values = Map(SessionKeys.PeriodKey -> periodKey)
+      )
+    )
 
   private def processObligationDetails(obligationData: Option[ObligationData], periodKey: String)(implicit
     request: AuthorisedRequest[_]

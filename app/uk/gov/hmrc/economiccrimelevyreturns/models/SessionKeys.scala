@@ -26,6 +26,7 @@ object SessionKeys {
   val ObligationDetails: String = "obligationDetails"
   val PeriodKey: String         = "periodKey"
   val StartAmendUrl: String     = "StartAmendUrl"
+  val UrlToReturnTo: String     = "UrlToReturnTo"
 
   implicit class SessionOps(s: Session) {
     def clearEclValues: Session = s -- Seq(ChargeReference, Email, AmountDue, ObligationDetails, StartAmendUrl)

@@ -22,6 +22,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad(NormalMode)))
 
@@ -39,6 +40,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.AmountDueController.onPageLoad(NormalMode)))
 

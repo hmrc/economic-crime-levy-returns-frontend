@@ -57,6 +57,7 @@ class StartAmendController @Inject() (
     val startAmendUrl = routes.StartAmendController.onPageLoad(periodKey, returnNumber).url
 
     (for {
+      _                 <- addPeriodKeyToSession(periodKey).asResponseError
       -                 <- addStartAmendUrlAndPeriodKeyToSession(startAmendUrl, periodKey).asResponseError
       obligationData    <- eclAccountService.retrieveObligationData.asResponseError
       obligationDetails <- processObligationDetails(obligationData, periodKey).asResponseError
@@ -75,6 +76,16 @@ class StartAmendController @Inject() (
       )
       .flatten
   }
+
+  private def addPeriodKeyToSession(periodKey: String)(implicit
+    request: AuthorisedRequest[_]
+  ): EitherT[Future, SessionError, Unit] =
+    sessionService.upsert(
+      SessionData(
+        internalId = request.internalId,
+        values = Map(SessionKeys.PeriodKey -> periodKey)
+      )
+    )
 
   private def addStartAmendUrlAndPeriodKeyToSession(startAmendUrl: String, periodKey: String)(implicit
     hc: HeaderCarrier,

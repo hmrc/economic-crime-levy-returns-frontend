@@ -41,9 +41,12 @@ class ReturnDataRetrievalAction @Inject() (
     (for {
       eclReturn     <- eclReturnService.getOrCreateReturn(request.internalId)(hc(request), request).asResponseError
       startAmendUrl <- getStartAmendUrl(eclReturn.returnType, request.session, request.internalId)(hc(request))
-      periodKey     <- getPeriodKey(eclReturn.returnType, request.session, request.internalId)(hc(request))
+      periodKey     <- getPeriodKey(request.session, request.internalId)(hc(request))
     } yield (eclReturn, startAmendUrl, periodKey)).foldF(
-      error => Future.failed(new Exception(error.message)),
+      error => {
+        val e = error
+        Future.failed(new Exception(error.message))
+      },
       tuple =>
         Future.successful(
           ReturnDataRequest(
@@ -70,18 +73,13 @@ class ReturnDataRetrievalAction @Inject() (
         EitherT.rightT(None)
     }
 
-  private def getPeriodKey(returnType: Option[ReturnType], session: Session, internalId: String)(implicit
+  private def getPeriodKey(session: Session, internalId: String)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, ResponseError, Option[String]] =
-    returnType match {
-      case Some(AmendReturn) =>
-        sessionService
-          .get(session, internalId, SessionKeys.PeriodKey)
-          .asResponseError
-          .map(Some(_))
-      case _                 =>
-        EitherT.rightT(None)
-    }
+    sessionService
+      .get(session, internalId, SessionKeys.PeriodKey)
+      .asResponseError
+      .map(Some(_))
 }
 
 trait DataRetrievalAction extends ActionTransformer[AuthorisedRequest, ReturnDataRequest]

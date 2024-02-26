@@ -91,6 +91,8 @@ trait ErrorHandler extends Logging {
       ResponseError.badGateway(cause, statusCode)
     case SessionError.InternalUnexpectedError(message, cause) =>
       ResponseError.internalServiceError(message = message, cause = cause)
+    case SessionError.NotFound()                              =>
+      ResponseError.notFoundError(message = "Session not found")
     case SessionError.KeyNotFound(key)                        =>
       ResponseError.internalServiceError(message = s"Key not found in session: $key", cause = None)
   }

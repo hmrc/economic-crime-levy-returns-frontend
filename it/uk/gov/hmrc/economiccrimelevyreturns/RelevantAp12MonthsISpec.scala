@@ -22,6 +22,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.RelevantAp12MonthsController.onPageLoad(NormalMode)))
 

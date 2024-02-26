@@ -17,6 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import cats.data.EitherT
+import play.api.http.Status.NOT_FOUND
 import play.api.mvc.Session
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.SessionDataConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
@@ -48,31 +49,22 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
   def getOptional(session: Session, internalId: String, key: String)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, SessionError, Option[String]] =
-    Try {
-      session(key)
-    } match {
-      case Success(value) => EitherT[Future, SessionError, Option[String]](Future.successful(Right(Some(value))))
-      case Failure(_)     =>
-        EitherT {
-          (for {
-            sessionDataOpt <- getSessionData(internalId)
-            sessionData    <- valueOrNotFound(sessionDataOpt)
-            value          <- retrieveValueFromSessionData(sessionData, key)
-          } yield value).fold(
-            {
-              case _: SessionError.KeyNotFound | _: SessionError.NotFound => Right(None)
-              case error                                                  => Left(error)
-            },
-            success => Right(Some(success))
-          )
-        }
+    EitherT {
+      get(session, internalId, key)
+        .fold(
+          {
+            case _: SessionError.KeyNotFound | _: SessionError.NotFound => Right(None)
+            case error                                                  => Left(error)
+          },
+          value => Right(Some(value))
+        )
     }
 
-  private def valueOrNotFound(option: Option[SessionData]): EitherT[Future, SessionError, SessionData] =
+  private def valueOrNotFound(sessionDataOpt: Option[SessionData]): EitherT[Future, SessionError, SessionData] =
     EitherT {
-      option match {
-        case Some(o) => Future.successful(Right(o))
-        case None    => Future.successful(Left(SessionError.NotFound()))
+      sessionDataOpt match {
+        case Some(sessionData) => Future.successful(Right(sessionData))
+        case None              => Future.successful(Left(SessionError.NotFound()))
       }
     }
 
@@ -87,15 +79,22 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
 
   def delete(
     internalId: String
-  )(implicit hc: HeaderCarrier): Future[Unit] =
-    sessionRetrievalConnector.delete(internalId).recover {
-      case error @ UpstreamErrorResponse(message, code, _, _)
-          if UpstreamErrorResponse.Upstream5xxResponse
-            .unapply(error)
-            .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-        Left(SessionError.BadGateway(message, code))
-      case NonFatal(thr) =>
-        Left(SessionError.InternalUnexpectedError(thr.getMessage, Some(thr)))
+  )(implicit hc: HeaderCarrier): EitherT[Future, SessionError, Unit] =
+    EitherT {
+      sessionRetrievalConnector
+        .delete(internalId)
+        .map {
+          Right(_)
+        }
+        .recover {
+          case error @ UpstreamErrorResponse(message, code, _, _)
+              if UpstreamErrorResponse.Upstream5xxResponse
+                .unapply(error)
+                .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
+            Left(SessionError.BadGateway(message, code))
+          case NonFatal(thr) =>
+            Left(SessionError.InternalUnexpectedError(thr.getMessage, Some(thr)))
+        }
     }
 
   private def getSessionData(
@@ -106,13 +105,15 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
         .get(internalId)
         .map(s => Right(Some(s)))
         .recover {
-          case _: NotFoundException => Right(None)
+          case _: NotFoundException                         => Right(None)
+          case _ @UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
+            Right(None)
           case error @ UpstreamErrorResponse(message, code, _, _)
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
             Left(SessionError.BadGateway(message, code))
-          case NonFatal(thr)        =>
+          case NonFatal(thr)                                =>
             Left(SessionError.InternalUnexpectedError(thr.getMessage, Some(thr)))
         }
     }

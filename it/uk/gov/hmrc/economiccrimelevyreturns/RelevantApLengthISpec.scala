@@ -25,6 +25,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.RelevantApLengthController.onPageLoad(NormalMode)))
 
@@ -47,6 +48,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
+      stubUpsertSession()
 
       val updatedReturn =
         dataCleanup.cleanup(eclReturn.copy(relevantApLength = Some(relevantApLength)))

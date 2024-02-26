@@ -56,7 +56,8 @@ class ContactRoleControllerSpec extends SpecBase {
       mockEclReturnsService,
       formProvider,
       pageNavigator,
-      view
+      view,
+      fakeNoOpStoreUrlAction
     )
   }
 

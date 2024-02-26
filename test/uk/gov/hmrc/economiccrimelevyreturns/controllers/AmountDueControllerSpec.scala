@@ -50,9 +50,10 @@ class AmountDueControllerSpec extends SpecBase {
     val controller = new AmountDueController(
       mcc,
       fakeAuthorisedAction(eclReturnData.internalId),
-      fakeDataRetrievalAction(eclReturnData),
+      fakeDataRetrievalAction(eclReturnData, Some(testPeriodKey)),
       pageNavigator,
-      view
+      view,
+      fakeNoOpStoreUrlAction
     )
   }
 
@@ -77,7 +78,7 @@ class AmountDueControllerSpec extends SpecBase {
               updatedReturn,
               None,
               eclRegistrationReference,
-              Some(periodKey)
+              Some(testPeriodKey)
             )
           implicit val messages: Messages                                  = messagesApi.preferred(returnDataRequest)
 
@@ -115,7 +116,7 @@ class AmountDueControllerSpec extends SpecBase {
               updatedReturn,
               None,
               eclRegistrationReference,
-              Some(periodKey)
+              Some(testPeriodKey)
             )
 
           val result: Future[Result] = controller.onPageLoad(mode)(returnDataRequest)

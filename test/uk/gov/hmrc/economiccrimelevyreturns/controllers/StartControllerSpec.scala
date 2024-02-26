@@ -17,6 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
+import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.mvc.Result
@@ -25,7 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, EclAccountError}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EnrolmentStoreProxyService, ReturnsService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EnrolmentStoreProxyService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, NoObligationForPeriodView, StartView}
 
@@ -37,6 +38,7 @@ class StartControllerSpec extends SpecBase {
   val mockEnrolmentStoreProxyService: EnrolmentStoreProxyService = mock[EnrolmentStoreProxyService]
   val mockEclAccountService: EclAccountService                   = mock[EclAccountService]
   val mockEclReturnsService: ReturnsService                      = mock[ReturnsService]
+  val mockSessionService: SessionService                         = mock[SessionService]
 
   val view: StartView                                        = app.injector.instanceOf[StartView]
   val alreadySubmittedReturnView: AlreadySubmittedReturnView = app.injector.instanceOf[AlreadySubmittedReturnView]
@@ -52,13 +54,15 @@ class StartControllerSpec extends SpecBase {
     alreadySubmittedReturnView,
     noObligationForPeriodView,
     chooseReturnPeriodView,
-    view
+    view,
+    mockSessionService
   )
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockEnrolmentStoreProxyService)
     reset(mockEclAccountService)
     reset(mockEclReturnsService)
+    reset(mockSessionService)
   }
 
   "start" should {
@@ -127,6 +131,9 @@ class StartControllerSpec extends SpecBase {
               )
             )
 
+          when(mockSessionService.upsert(any())(any()))
+            .thenReturn(EitherT.fromEither[Future](Right(())))
+
           val updatedReturn =
             EclReturn.empty(internalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(openObligation))
 
@@ -184,6 +191,9 @@ class StartControllerSpec extends SpecBase {
             )(any())
           ).thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
+          when(mockSessionService.upsert(any())(any()))
+            .thenReturn(EitherT.fromEither[Future](Right(())))
+
           val result: Future[Result] = controller.onPageLoad(openObligation.periodKey)(fakeRequest)
 
           status(result) shouldBe OK
@@ -204,6 +214,9 @@ class StartControllerSpec extends SpecBase {
 
         when(mockEclAccountService.retrieveObligationData(any()))
           .thenReturn(EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(None))))
+
+        when(mockSessionService.upsert(any())(any()))
+          .thenReturn(EitherT.fromEither[Future](Right(())))
 
         val result: Future[Result] = controller.onPageLoad(periodKey)(fakeRequest)
 
@@ -229,6 +242,9 @@ class StartControllerSpec extends SpecBase {
         when(mockEclAccountService.retrieveObligationData(any())).thenReturn(
           EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(Some(obligationData))))
         )
+
+        when(mockSessionService.upsert(any())(any()))
+          .thenReturn(EitherT.fromEither[Future](Right(())))
 
         val result: Future[Result] = controller.onPageLoad(fulfilledObligation.periodKey)(fakeRequest)
 
@@ -257,10 +273,36 @@ class StartControllerSpec extends SpecBase {
           EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(Some(obligationData))))
         )
 
+        when(mockSessionService.upsert(any())(any()))
+          .thenReturn(EitherT.fromEither[Future](Right(())))
+
         val result = controller.onPageLoad(fulfilledObligation.periodKey)(fakeRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
     }
   }
 
+  "onSubmit" should {
+    "redirect to Relevant accounting period page if no return url" in {
+      when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.UrlToReturnTo))(any()))
+        .thenReturn(EitherT.fromEither[Future](Right(None)))
+
+      val result: Future[Result] = controller.onSubmit()(fakeRequest)
+
+      status(result) shouldBe SEE_OTHER
+
+      redirectLocation(result) shouldBe Some(routes.RelevantAp12MonthsController.onPageLoad(NormalMode).url)
+    }
+
+    "redirect to Saved Responses page if there is a return url" in {
+      when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.UrlToReturnTo))(any()))
+        .thenReturn(EitherT.fromEither[Future](Right(Some(random[String]))))
+
+      val result: Future[Result] = controller.onSubmit()(fakeRequest)
+
+      status(result) shouldBe SEE_OTHER
+
+      redirectLocation(result) shouldBe Some(routes.SavedResponsesController.onPageLoad().url)
+    }
+  }
 }

@@ -25,12 +25,13 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmendReasonFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, SessionError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, GetSubscriptionResponse, ObligationDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{RegistrationService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmendReturnSubmittedView
 
 import scala.concurrent.Future
+import scala.concurrent.Future.unit
 
 class AmendReturnSubmittedControllerSpec extends SpecBase {
 
@@ -72,7 +73,7 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
           when(mockReturnsService.deleteReturn(anyString())(any()))
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
           when(mockSessionService.delete(anyString())(any()))
-            .thenReturn((Future.successful(Right(()))))
+            .thenReturn(EitherT.right(unit))
           when(mockEclRegistrationService.getSubscription(anyString())(any()))
             .thenReturn(
               EitherT[Future, DataHandlingError, GetSubscriptionResponse](Future.successful(Right(subscription)))
@@ -98,7 +99,7 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
       when(mockReturnsService.deleteReturn(anyString())(any()))
         .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
       when(mockSessionService.delete(anyString())(any()))
-        .thenReturn((Future.successful(Right(()))))
+        .thenReturn(EitherT.right(unit))
       when(mockEclRegistrationService.getSubscription(anyString())(any()))
         .thenReturn(
           EitherT[Future, DataHandlingError, GetSubscriptionResponse](

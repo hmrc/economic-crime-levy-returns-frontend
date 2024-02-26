@@ -24,6 +24,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode)))
 

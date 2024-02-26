@@ -24,6 +24,7 @@ class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn.copy(contactName = Some(name)))
       stubGetSession(validSessionData)
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.ContactRoleController.onPageLoad(NormalMode)))
 

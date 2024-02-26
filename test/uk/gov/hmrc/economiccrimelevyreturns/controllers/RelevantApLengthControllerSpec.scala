@@ -49,7 +49,7 @@ class RelevantApLengthControllerSpec extends SpecBase {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
   }
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockEclLiabilityService)
     reset(mockEclReturnsService)
   }
@@ -63,7 +63,8 @@ class RelevantApLengthControllerSpec extends SpecBase {
       mockEclLiabilityService,
       formProvider,
       dataCleanup,
-      view
+      view,
+      fakeNoOpStoreUrlAction
     )
   }
 

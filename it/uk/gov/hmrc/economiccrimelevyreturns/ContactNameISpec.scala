@@ -23,6 +23,7 @@ class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.ContactNameController.onPageLoad(NormalMode)))
 

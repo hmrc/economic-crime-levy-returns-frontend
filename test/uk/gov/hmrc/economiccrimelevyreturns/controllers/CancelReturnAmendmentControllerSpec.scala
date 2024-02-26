@@ -78,7 +78,7 @@ class CancelReturnAmendmentControllerSpec extends SpecBase {
             .thenReturn(EitherT.fromEither[Future](Right(eclReturn)))
 
           when(mockEclReturnsService.deleteReturn(anyString())(any()))
-            .thenReturn(EitherT.fromEither[Future](Right()))
+            .thenReturn(EitherT.fromEither[Future](Right(())))
 
           val expected: (String, Int) = getExpectedValues(cancelReturnAmendment)
 
