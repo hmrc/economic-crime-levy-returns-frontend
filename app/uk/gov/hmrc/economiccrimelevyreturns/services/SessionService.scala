@@ -150,7 +150,7 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
     oldSessionData
       .map(oldData =>
         newSessionData.copy(
-          values = newSessionData.values ++ oldData.values.filter(e => !newSessionData.values.keySet.contains(e._1))
+          values = newSessionData.values ++ oldData.values.filterNot(e => newSessionData.values.keySet.contains(e._1))
         )
       )
       .getOrElse(newSessionData)
