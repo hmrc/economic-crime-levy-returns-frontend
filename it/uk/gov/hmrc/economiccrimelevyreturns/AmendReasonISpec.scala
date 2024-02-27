@@ -6,8 +6,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+
 import java.time.LocalDate
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, ObligationDetails, SessionData, SessionKeys}
 
 class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -28,7 +29,7 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
       val sessionData      = random[SessionData]
       val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
-      stubGetReturn(eclReturn)
+      stubGetReturn(updatedReturn)
       stubGetSession(validSessionData)
 
       val result = callRoute(FakeRequest(routes.AmendReasonController.onPageLoad(NormalMode)))
@@ -59,7 +60,7 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
       val sessionData      = random[SessionData]
       val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
-      stubGetReturn(eclReturn)
+      stubGetReturn(updatedReturn)
       stubGetSession(validSessionData)
 
       val returnWithAmendReason = updatedReturn.copy(amendReason = Some(reason))
