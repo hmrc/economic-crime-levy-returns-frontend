@@ -7,7 +7,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, SessionData, SessionKeys}
 
 class ContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -17,11 +17,14 @@ class ContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the contact email HTML view" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
-      val name      = random[String]
+      val eclReturn        = random[EclReturn]
+      val name             = random[String]
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn.copy(contactName = Some(name)))
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.ContactEmailController.onPageLoad(NormalMode)))
 
@@ -37,15 +40,17 @@ class ContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
     "save the provided email address then redirect to the contact telephone number page" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
-      val name      = random[String]
-      val email     = emailAddress(MinMaxValues.EmailMaxLength).sample.get
+      val eclReturn        = random[EclReturn]
+      val name             = random[String]
+      val email            = emailAddress(MinMaxValues.EmailMaxLength).sample.get
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       val updatedReturn = eclReturn.copy(contactName = Some(name), contactEmailAddress = Some(email.toLowerCase))
 
       stubGetReturn(updatedReturn)
       stubUpsertReturn(updatedReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val result = callRoute(
         FakeRequest(routes.ContactEmailController.onSubmit(NormalMode))

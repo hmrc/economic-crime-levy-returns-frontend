@@ -23,7 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, ResponseError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, ResponseError, SessionError}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EclCalculatorService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html._
@@ -55,6 +55,42 @@ class StartAmendController @Inject() (
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
 
     val startAmendUrl = routes.StartAmendController.onPageLoad(periodKey, returnNumber).url
+
+    (for {
+      _                 <- addPeriodKeyToSession(periodKey).asResponseError
+      -                 <- addStartAmendUrlAndPeriodKeyToSession(startAmendUrl, periodKey).asResponseError
+      obligationData    <- eclAccountService.retrieveObligationData.asResponseError
+      obligationDetails <- processObligationDetails(obligationData, periodKey).asResponseError
+    } yield obligationDetails)
+      .fold(
+        err => Future.successful(routeError(err)),
+        {
+          case Some(obligationData) =>
+            if (appConfig.getEclReturnEnabled) {
+              routeToAmendReason(periodKey, request.eclRegistrationReference)
+            } else {
+              Future.successful(startAmendJourney(returnNumber, obligationData, startAmendUrl))
+            }
+          case None                 => Future.successful(Ok(noObligationForPeriodView()))
+        }
+      )
+      .flatten
+  }
+
+  private def addPeriodKeyToSession(periodKey: String)(implicit
+    request: AuthorisedRequest[_]
+  ): EitherT[Future, SessionError, Unit] =
+    sessionService.upsert(
+      SessionData(
+        internalId = request.internalId,
+        values = Map(SessionKeys.PeriodKey -> periodKey)
+      )
+    )
+
+  private def addStartAmendUrlAndPeriodKeyToSession(startAmendUrl: String, periodKey: String)(implicit
+    hc: HeaderCarrier,
+    request: AuthorisedRequest[AnyContent]
+  ): EitherT[Future, SessionError, Unit] =
     sessionService
       .upsert(
         SessionData(
@@ -62,26 +98,6 @@ class StartAmendController @Inject() (
           Map(SessionKeys.StartAmendUrl -> startAmendUrl, SessionKeys.PeriodKey -> periodKey)
         )
       )
-      .flatMap { _ =>
-        (for {
-          obligationData    <- eclAccountService.retrieveObligationData.asResponseError
-          obligationDetails <- processObligationDetails(obligationData, periodKey).asResponseError
-        } yield obligationDetails)
-          .fold(
-            err => Future.successful(routeError(err)),
-            {
-              case Some(obligationData) =>
-                if (appConfig.getEclReturnEnabled) {
-                  routeToAmendReason(periodKey, request.eclRegistrationReference)
-                } else {
-                  Future.successful(startAmendJourney(returnNumber, obligationData, startAmendUrl))
-                }
-              case None                 => Future.successful(Ok(noObligationForPeriodView()))
-            }
-          )
-          .flatten
-      }
-  }
 
   private def routeToAmendReason(periodKey: String, eclRegistrationReference: String)(implicit
     hc: HeaderCarrier,

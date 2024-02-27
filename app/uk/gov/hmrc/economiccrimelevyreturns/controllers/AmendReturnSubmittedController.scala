@@ -54,7 +54,7 @@ class AmendReturnSubmittedController @Inject() (
 
     (for {
       _          <- returnsService.deleteReturn(request.internalId).asResponseError
-      _           = sessionService.delete(request.internalId)
+      _           = sessionService.delete(request.internalId).asResponseError
       obligation <- valueOrError(obligationDetails)
       email      <- valueOrError(email)
     } yield (obligation, email)).foldF(

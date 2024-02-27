@@ -78,7 +78,7 @@ class StartAmendGetEclReturnDisabledControllerSpec extends SpecBase {
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
           when(mockSessionService.upsert(any())(any()))
-            .thenReturn(unit)
+            .thenReturn(EitherT.right(unit))
 
           val result: Future[Result] =
             controller.onPageLoad(periodKey = openObligation.periodKey, returnNumber = returnNumber)(fakeRequest)
@@ -105,7 +105,7 @@ class StartAmendGetEclReturnDisabledControllerSpec extends SpecBase {
           .thenReturn(EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(None))))
 
         when(mockSessionService.upsert(any())(any()))
-          .thenReturn(unit)
+          .thenReturn(EitherT.right(unit))
 
         val result: Future[Result] = controller.onPageLoad(periodKey, returnNumber)(fakeRequest)
 

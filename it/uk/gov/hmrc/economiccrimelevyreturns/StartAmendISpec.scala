@@ -43,12 +43,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
         )
       )
 
-      stubUpsertSession(
-        SessionData(
-          internalId = testInternalId,
-          values = Map(SessionKeys.StartAmendUrl -> startAmendUrl)
-        )
-      )
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.StartAmendController.onPageLoad(testPeriodKey, testChargeReference)))
 
@@ -66,14 +61,8 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetObligations(obligationData)
 
-      val startAmendUrl = routes.StartAmendController.onPageLoad(testPeriodKey, testChargeReference).url
-      val emptyReturn   = EclReturn.empty(testInternalId, Some(AmendReturn))
-      stubUpsertSession(
-        SessionData(
-          internalId = emptyReturn.internalId,
-          values = Map(SessionKeys.StartAmendUrl -> startAmendUrl)
-        )
-      )
+      stubGetSessionEmpty()
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.StartAmendController.onPageLoad(testPeriodKey, testChargeReference)))
 

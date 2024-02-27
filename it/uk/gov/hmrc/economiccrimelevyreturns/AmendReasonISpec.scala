@@ -6,9 +6,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, ObligationDetails}
-
 import java.time.LocalDate
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, SessionData, SessionKeys}
 
 class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -26,8 +25,11 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
         obligationDetails.copy(inboundCorrespondenceFromDate = fromFY, inboundCorrespondenceToDate = toFY)
       val updatedReturn     = eclReturn.copy(obligationDetails = Some(updatedObligation))
 
-      stubGetReturn(updatedReturn)
-      stubGetSessionEmpty()
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+
+      stubGetReturn(eclReturn)
+      stubGetSession(validSessionData)
 
       val result = callRoute(FakeRequest(routes.AmendReasonController.onPageLoad(NormalMode)))
 
@@ -54,8 +56,11 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
         obligationDetails.copy(inboundCorrespondenceFromDate = fromFY, inboundCorrespondenceToDate = toFY)
       val updatedReturn     = eclReturn.copy(obligationDetails = Some(updatedObligation))
 
-      stubGetReturn(updatedReturn)
-      stubGetSessionEmpty()
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+
+      stubGetReturn(eclReturn)
+      stubGetSession(validSessionData)
 
       val returnWithAmendReason = updatedReturn.copy(amendReason = Some(reason))
 

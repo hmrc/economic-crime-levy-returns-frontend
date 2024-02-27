@@ -23,7 +23,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{EmailSubmissionError, ResponseError}
@@ -51,14 +51,15 @@ class CheckYourAnswersController @Inject() (
   pdfView: AmendReturnPdfView,
   val controllerComponents: MessagesControllerComponents,
   view: CheckYourAnswersView,
-  appConfig: AppConfig
+  appConfig: AppConfig,
+  storeUrl: StoreUrlAction
 )(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with I18nSupport
     with BaseController
     with ErrorHandler {
 
-  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData andThen storeUrl).async { implicit request =>
     (for {
       errors <- returnsService.getReturnValidationErrors(request.internalId)(hc).asResponseError
     } yield errors)

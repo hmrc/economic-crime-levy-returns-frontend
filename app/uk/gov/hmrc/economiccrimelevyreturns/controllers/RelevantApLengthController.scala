@@ -20,7 +20,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, RequestHeader}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantApLengthDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
@@ -43,7 +43,8 @@ class RelevantApLengthController @Inject() (
   eclLiabilityService: EclCalculatorService,
   formProvider: RelevantApLengthFormProvider,
   dataCleanup: RelevantApLengthDataCleanup,
-  view: RelevantApLengthView
+  view: RelevantApLengthView,
+  storeUrl: StoreUrlAction
 )(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with BaseController
@@ -52,8 +53,9 @@ class RelevantApLengthController @Inject() (
 
   val form: Form[Int] = formProvider()
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.relevantApLength), mode, request.startAmendUrl))
+  def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData andThen storeUrl) {
+    implicit request =>
+      Ok(view(form.prepare(request.eclReturn.relevantApLength), mode, request.startAmendUrl))
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>

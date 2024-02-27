@@ -348,3 +348,10 @@ cancelReturnAmendment.title = A ydych yn siŵr eich bod am ganslo’ch cais i dd
 cancelReturnAmendment.heading = A ydych yn siŵr eich bod am ganslo’ch cais i ddiwygio’ch datganiad?
 cancelReturnAmendment.body = Bydd eich atebion yn cael eu dileu.
 cancelReturnAmendment.error.required = Dewiswch ‘Iawn’ os hoffech ganslo’ch cais i ddiwygio’ch datganiad
+
+savedResponses.title = Mae’ch atebion wedi’u cadw
+savedResponses.h1 = Mae’ch atebion wedi’u cadw
+savedResponses.h2 = Beth yr hoffech ei wneud?
+savedResponses.true = Yn eich blaen â’ch atebion sydd wedi’u cadw
+savedResponses.false = Dileu’ch cynnydd hyd yma a dechrau eto
+savedResponses.error.required = Dewiswch yr opsiwn cyntaf os ydych am fynd yn eich blaen â’ch atebion sydd wedi’u cadw

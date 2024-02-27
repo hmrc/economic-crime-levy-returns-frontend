@@ -23,10 +23,12 @@ class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val email                = emailAddress(EmailMaxLength).sample.get
       val eclReturn            = random[EclReturn]
         .copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
+      val sessionData          = random[SessionData]
+      val validSessionData     = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubDeleteReturn()
       stubDeleteSession()
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
       stubGetReturn(eclReturn)
 
       stubGetSubscription(subscriptionResponse, testEclRegistrationReference)

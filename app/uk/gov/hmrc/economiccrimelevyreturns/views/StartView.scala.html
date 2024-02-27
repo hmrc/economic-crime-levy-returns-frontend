@@ -15,9 +15,11 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+@import uk.gov.hmrc.economiccrimelevyreturns.views.html.templates.Layout
 
 @this(
-        layout: templates.Layout,
+        layout: Layout,
+        formHelper: FormWithCSRF,
         summaryList: GovukSummaryList,
         button: GovukButton,
         appConfig: AppConfig
@@ -66,11 +68,12 @@
         <p class="govuk-body">@messages("start.payLevyLater")</p>
     }
 
-    @button(
-        ButtonViewModel(messages("site.start"))
-                .asLink(RelevantAp12MonthsController.onPageLoad(NormalMode).url)
+    @formHelper(action = StartController.onSubmit()) {
+        @button(
+            ButtonViewModel(messages("site.start"))
                 .asStartButton()
                 .withAttribute("id" -> "start")
-    )
-
+                .withAttribute("type" -> "submit")
+        )
+    }
 }

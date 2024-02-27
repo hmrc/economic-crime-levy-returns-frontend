@@ -22,9 +22,8 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.EmailMaxLength
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetSubscriptionResponse, ObligationDetails, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetSubscriptionResponse, ObligationDetails, SessionData, SessionKeys}
 
 class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -40,11 +39,13 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val amountDue            = "10000"
       val eclReturn            =
         random[EclReturn].copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
+      val sessionData          = random[SessionData]
+      val validSessionData     = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubDeleteReturn()
       stubDeleteSession()
       stubGetSubscription(subscriptionResponse, testEclRegistrationReference)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
       stubGetReturn(eclReturn)
 
       val result = callRoute(
@@ -71,11 +72,13 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val amountDue            = "0"
       val eclReturn            =
         random[EclReturn].copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
+      val sessionData          = random[SessionData]
+      val validSessionData     = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubDeleteReturn()
       stubDeleteSession()
       stubGetSubscription(subscriptionResponse, testEclRegistrationReference)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
       stubGetReturn(eclReturn)
 
       val result = callRoute(

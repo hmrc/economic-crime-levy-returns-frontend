@@ -17,6 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
+import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.i18n.Messages
@@ -25,7 +26,6 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
@@ -33,6 +33,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{NilReturnSubmittedView, ReturnSubmittedView}
 
 import scala.concurrent.Future
+import scala.concurrent.Future.unit
 
 class ReturnSubmittedControllerSpec extends SpecBase {
 
@@ -47,7 +48,7 @@ class ReturnSubmittedControllerSpec extends SpecBase {
       fakeAuthorisedAction(internalId),
       returnSubmittedView,
       nilReturnSubmittedView,
-      fakeDataRetrievalAction(returnsData),
+      fakeDataRetrievalAction(returnsData, Some(testPeriodKey)),
       mockReturnsService,
       mockSessionService
     )
@@ -69,10 +70,10 @@ class ReturnSubmittedControllerSpec extends SpecBase {
             AuthorisedRequest(fakeRequest, internalId, eclRegistrationReference)
           implicit val messages: Messages                                     = messagesApi.preferred(authRequest)
 
-          when(mockReturnsService.deleteReturn(ArgumentMatchers.eq(internalId))(any()))
-            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
-          when(mockSessionService.delete(ArgumentMatchers.eq(eclReturn.internalId))(any()))
-            .thenReturn(Future.successful(()))
+          when(mockReturnsService.deleteReturn(any())(any()))
+            .thenReturn(EitherT.right(unit))
+          when(mockSessionService.delete(any())(any()))
+            .thenReturn(EitherT.right(unit))
 
           val result: Future[Result] =
             controller.onPageLoad()(
@@ -107,10 +108,10 @@ class ReturnSubmittedControllerSpec extends SpecBase {
             AuthorisedRequest(fakeRequest, internalId, eclRegistrationReference)
           implicit val messages: Messages                                     = messagesApi.preferred(authRequest)
 
-          when(mockReturnsService.deleteReturn(ArgumentMatchers.eq(internalId))(any()))
-            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
-          when(mockSessionService.delete(ArgumentMatchers.eq(eclReturn.internalId))(any()))
-            .thenReturn(Future.successful(()))
+          when(mockReturnsService.deleteReturn(any())(any()))
+            .thenReturn(EitherT.right(unit))
+          when(mockSessionService.delete(any())(any()))
+            .thenReturn(EitherT.right(unit))
 
           val result: Future[Result] =
             controller.onPageLoad()(

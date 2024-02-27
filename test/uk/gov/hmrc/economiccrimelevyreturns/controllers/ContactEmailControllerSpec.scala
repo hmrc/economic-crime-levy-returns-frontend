@@ -56,7 +56,8 @@ class ContactEmailControllerSpec extends SpecBase {
       mockEclReturnsService,
       formProvider,
       pageNavigator,
-      view
+      view,
+      fakeNoOpStoreUrlAction
     )
   }
 

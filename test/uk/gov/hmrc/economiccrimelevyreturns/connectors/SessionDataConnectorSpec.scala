@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
@@ -63,7 +63,7 @@ class SessionDataConnectorSpec extends SpecBase {
       when(mockHttpClient.delete(ArgumentMatchers.eq(expectedUrl))(any()))
         .thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.execute[HttpResponse](any(), any()))
-        .thenReturn(Future.successful(HttpResponse.apply(OK, "")))
+        .thenReturn(Future.successful(HttpResponse.apply(NO_CONTENT, "")))
 
       val result: Unit = await(connector.delete(internalId))
       result shouldBe ()
@@ -72,6 +72,7 @@ class SessionDataConnectorSpec extends SpecBase {
 
       reset(mockHttpClient)
     }
+
     "return UpstreamErrorResponse when call to delete session data returns an error " in forAll { internalId: String =>
       val expectedUrl = url"$eclSessionDataUrl/session/$internalId"
       val errorCode   = INTERNAL_SERVER_ERROR

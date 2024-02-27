@@ -56,7 +56,8 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
       mockEclLiabilityService,
       formProvider,
       dataCleanup,
-      view
+      view,
+      fakeNoOpStoreUrlAction
     )
   }
 

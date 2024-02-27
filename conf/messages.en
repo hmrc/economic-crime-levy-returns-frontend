@@ -349,3 +349,10 @@ cancelReturnAmendment.title = Are you sure you want to cancel your request to am
 cancelReturnAmendment.heading = Are you sure you want to cancel your request to amend your return?
 cancelReturnAmendment.body = Your answers will be deleted.
 cancelReturnAmendment.error.required = Select yes if you want to cancel your request to amend your return
+
+savedResponses.title = Your answers have been saved
+savedResponses.h1 = Your answers have been saved
+savedResponses.h2 = What would you like to do?
+savedResponses.true = Continue with your saved answers
+savedResponses.false = Delete your progress and start again
+savedResponses.error.required = Select the first option if you want to continue with your saved answers

@@ -7,7 +7,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, NormalMode, SessionData, SessionKeys}
 
 class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -17,10 +17,13 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the Aml regulated HTML view" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
+      val eclReturn        = random[EclReturn]
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
+      stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.AmlRegulatedActivityController.onPageLoad(NormalMode)))
 
@@ -39,9 +42,11 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
       val ukRevenue           = bigDecimalInRange(MinMaxValues.RevenueMin.toDouble, MinMaxValues.RevenueMax.toDouble).sample.get
       val eclReturn           = random[EclReturn].copy(relevantAp12Months = Some(true), relevantApRevenue = Some(ukRevenue))
       val calculatedLiability = random[CalculatedLiability]
+      val sessionData         = random[SessionData]
+      val validSessionData    = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val updatedReturn = eclReturn.copy(
         carriedOutAmlRegulatedActivityForFullFy = Some(true),
@@ -65,10 +70,12 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
     "save the selected AML regulated activity option then redirect to the AML regulated activity length page when the No option is selected" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn].copy(internalId = testInternalId)
+      val eclReturn        = random[EclReturn].copy(internalId = testInternalId)
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
-      stubGetSessionEmpty()
+      stubGetSession(validSessionData)
 
       val updatedReturn = eclReturn.copy(
         carriedOutAmlRegulatedActivityForFullFy = Some(false),
