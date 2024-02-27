@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmendReasonFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
-import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmendReasonPageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReasonView, ErrorTemplate}
@@ -49,20 +49,44 @@ class AmendReasonController @Inject() (
   val form: Form[String] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
-    Ok(view(form.prepare(request.eclReturn.amendReason), mode, request.startAmendUrl))
+    getInboundCorrespondenceDates(request.eclReturn).fold(
+      err => routeError(err),
+      tuple => {
+        val fromFy = tuple._1
+        val toFy   = tuple._2
+
+        Ok(
+          view(
+            form.prepare(request.eclReturn.amendReason),
+            mode,
+            fromFy,
+            toFy,
+            request.startAmendUrl
+          )
+        )
+      }
+    )
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     form
       .bindFromRequest()
       .fold(
-        formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
+        formWithErrors =>
+          getInboundCorrespondenceDates(request.eclReturn).fold(
+            err => Future.successful(routeError(err)),
+            tuple => {
+              val fromFy = tuple._1
+              val toFy   = tuple._2
+              Future.successful(BadRequest(view(formWithErrors, mode, fromFy, toFy, request.startAmendUrl)))
+            }
+          ),
         reason => {
           val updatedReturn = request.eclReturn.copy(amendReason = Some(reason))
           (for {
-            unit <- eclReturnsService
-                      .upsertReturn(updatedReturn)
-                      .asResponseError
+            _ <- eclReturnsService
+                   .upsertReturn(updatedReturn)
+                   .asResponseError
           } yield updatedReturn).fold(
             err => routeError(err),
             eclReturn => Redirect(pageNavigator.nextPage(mode, eclReturn))
@@ -70,5 +94,18 @@ class AmendReasonController @Inject() (
         }
       )
   }
+
+  private def getInboundCorrespondenceDates(eclReturn: EclReturn) =
+    for {
+      fromFinancialYear <- valueOrError(
+                             eclReturn.obligationDetails.map(_.inboundCorrespondenceFromDate.getYear.toString),
+                             "Obligation details from date"
+                           )
+      toFinancialYear   <-
+        valueOrError(
+          eclReturn.obligationDetails.map(_.inboundCorrespondenceToDate.getYear.toString),
+          "Obligation details to date"
+        )
+    } yield (fromFinancialYear, toFinancialYear)
 
 }

@@ -340,6 +340,7 @@ otherRegistration.pdfHtml.title = Application to amend return for the Economic C
 otherRegistration.pdfHtml.submissionDate = Submission date: {0}
 
 amendReason.title = Why are you requesting to amend your return?
+amendReason.label = {0} to {1}
 amendReason.h1 = Why are you requesting to amend your return?
 amendReason.p1 = Enter any information relating to your request to amend your return. Do not include personal or financial information, like your National Insurance number or credit card details.
 amendReason.error.required = Enter the reason why you are requesting to amend your return

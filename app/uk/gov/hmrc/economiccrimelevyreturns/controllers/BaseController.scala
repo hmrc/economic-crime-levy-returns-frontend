@@ -33,6 +33,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait BaseController extends I18nSupport {
 
+  def valueOrError[T](value: Option[T], valueType: String) =
+    value.map(Right(_)).getOrElse(Left(ResponseError.internalServiceError(s"Missing $valueType")))
+
   def getContactNameFromRequest(implicit request: ReturnDataRequest[_]): Either[ResponseError, String] =
     request.eclReturn.contactName match {
       case Some(contactName) =>
