@@ -58,33 +58,29 @@ trait ErrorHandler extends Logging {
     def convert(error: E): ResponseError
   }
 
-  implicit val dataHandlingErrorConverter: Converter[DataHandlingError] =
-    new Converter[DataHandlingError] {
-      override def convert(error: DataHandlingError): ResponseError = error match {
-        case DataHandlingError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
-        case DataHandlingError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
-        case DataHandlingError.NotFound(message)                 => ResponseError.internalServiceError(message)
-      }
-    }
+  implicit val dataHandlingErrorConverter: Converter[DataHandlingError] = {
+    case DataHandlingError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
+    case DataHandlingError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
+    case DataHandlingError.NotFound(message)                 => ResponseError.internalServiceError(message)
+  }
 
-  implicit val eclAccountErrorConverter: Converter[EclAccountError] =
-    new Converter[EclAccountError] {
-      override def convert(error: EclAccountError): ResponseError = error match {
-        case EclAccountError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
-        case EclAccountError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
-      }
-    }
+  implicit val eclAccountErrorConverter: Converter[EclAccountError] = {
+    case EclAccountError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
+    case EclAccountError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
+  }
 
-  implicit val liabilityCalculationErrorConverter: Converter[LiabilityCalculationError] =
-    new Converter[LiabilityCalculationError] {
-      override def convert(error: LiabilityCalculationError): ResponseError = error match {
-        case LiabilityCalculationError.BadRequest(message)               => ResponseError.badRequestError(message)
-        case LiabilityCalculationError.InternalUnexpectedError(cause, _) =>
-          ResponseError.internalServiceError(cause = cause)
-        case LiabilityCalculationError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
+  implicit val eclEmailSubmissionError: Converter[EmailSubmissionError] = {
+    case EmailSubmissionError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
+    case EmailSubmissionError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
+  }
 
-      }
-    }
+  implicit val liabilityCalculationErrorConverter: Converter[LiabilityCalculationError] = {
+    case LiabilityCalculationError.BadRequest(message)               => ResponseError.badRequestError(message)
+    case LiabilityCalculationError.InternalUnexpectedError(cause, _) =>
+      ResponseError.internalServiceError(cause = cause)
+    case LiabilityCalculationError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
+
+  }
 
   implicit val sessionErrorConverter: Converter[SessionError] = {
     case SessionError.BadGateway(cause, statusCode)           =>

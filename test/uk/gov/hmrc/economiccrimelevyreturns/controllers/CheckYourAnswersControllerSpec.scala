@@ -28,7 +28,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, DataValidationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, ReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, RegistrationService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView}
 import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
@@ -40,9 +40,10 @@ class CheckYourAnswersControllerSpec extends SpecBase {
   val view: CheckYourAnswersView        = app.injector.instanceOf[CheckYourAnswersView]
   val pdfReturnView: AmendReturnPdfView = app.injector.instanceOf[AmendReturnPdfView]
 
-  val mockEclReturnsService: ReturnsService = mock[ReturnsService]
-  val mockSessionService: SessionService    = mock[SessionService]
-  val mockEmailService: EmailService        = mock[EmailService]
+  val mockEclReturnsService: ReturnsService        = mock[ReturnsService]
+  val mockSessionService: SessionService           = mock[SessionService]
+  val mockEmailService: EmailService               = mock[EmailService]
+  val mockRegistrationService: RegistrationService = mock[RegistrationService]
 
   class TestContext(eclReturnData: EclReturn, periodKey: Option[String] = None) {
     val controller = new CheckYourAnswersController(
@@ -56,7 +57,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       mcc,
       view,
       appConfig,
-      fakeNoOpStoreUrlAction
+      fakeNoOpStoreUrlAction,
+      mockRegistrationService
     )
   }
 
@@ -78,7 +80,10 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
   "onPageLoad" should {
     "return OK and the correct view" in forAll {
-      (validEclReturn: ValidEclReturn, validEclSubmission: ValidGetEclReturnSubmissionResponse) =>
+      (
+        validEclReturn: ValidEclReturn,
+        validEclSubmission: ValidGetEclReturnSubmissionResponse
+      ) =>
         val eclReturn: EclReturn                                = validEclReturn.eclReturn
         val eclReturnSubmission: GetEclReturnSubmissionResponse =
           createTestEclReturnSubmission(validEclReturn, validEclSubmission)
@@ -235,7 +240,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       (
         validEclReturn: ValidEclReturn,
         validEclSubmission: ValidGetEclReturnSubmissionResponse,
-        submitEclReturnResponse: SubmitEclReturnResponse
+        submitEclReturnResponse: SubmitEclReturnResponse,
+        subscriptionResponse: GetSubscriptionResponse
       ) =>
         val eclReturn: EclReturn                                = validEclReturn.eclReturn
         val eclReturnSubmission: GetEclReturnSubmissionResponse =
@@ -256,6 +262,13 @@ class CheckYourAnswersControllerSpec extends SpecBase {
             .thenReturn(
               EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
                 Future.successful(Right(eclReturnSubmission))
+              )
+            )
+
+          when(mockRegistrationService.getSubscription(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetSubscriptionResponse](
+                Future.successful(Right(subscriptionResponse))
               )
             )
 
@@ -297,7 +310,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       (
         validEclReturn: ValidEclReturn,
         validEclSubmission: ValidGetEclReturnSubmissionResponse,
-        submitEclReturnResponse: SubmitEclReturnResponse
+        submitEclReturnResponse: SubmitEclReturnResponse,
+        subscriptionResponse: GetSubscriptionResponse
       ) =>
         val eclReturn: EclReturn                                = validEclReturn.eclReturn.copy(contactEmailAddress = None)
         val eclReturnSubmission: GetEclReturnSubmissionResponse =
@@ -318,6 +332,13 @@ class CheckYourAnswersControllerSpec extends SpecBase {
             .thenReturn(
               EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
                 Future.successful(Right(eclReturnSubmission))
+              )
+            )
+
+          when(mockRegistrationService.getSubscription(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetSubscriptionResponse](
+                Future.successful(Right(subscriptionResponse))
               )
             )
 
@@ -376,7 +397,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
     "return InternalServerError (500) when getEclReturnSubmission fails for pdfViewHtml" in forAll {
       (
         validEclReturn: ValidEclReturn,
-        validEclSubmission: ValidGetEclReturnSubmissionResponse
+        validEclSubmission: ValidGetEclReturnSubmissionResponse,
+        subscriptionResponse: GetSubscriptionResponse
       ) =>
         val eclReturn: EclReturn                                = validEclReturn.eclReturn
           .copy(returnType = Some(AmendReturn))
@@ -397,6 +419,13 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           when(mockEclReturnsService.getReturnValidationErrors(any())(any()))
             .thenReturn(EitherT[Future, DataHandlingError, Option[DataValidationError]](Future.successful(Right(None))))
 
+          when(mockRegistrationService.getSubscription(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetSubscriptionResponse](
+                Future.successful(Right(subscriptionResponse))
+              )
+            )
+
           when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
             .thenReturn(
               EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
@@ -416,7 +445,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
     "return InternalServerError (500) when returnsService.upsertReturn fails" in forAll {
       (
         validEclReturn: ValidEclReturn,
-        validEclSubmission: ValidGetEclReturnSubmissionResponse
+        validEclSubmission: ValidGetEclReturnSubmissionResponse,
+        subscriptionResponse: GetSubscriptionResponse
       ) =>
         val eclReturn: EclReturn                                = validEclReturn.eclReturn
         val eclReturnSubmission: GetEclReturnSubmissionResponse =
@@ -437,6 +467,13 @@ class CheckYourAnswersControllerSpec extends SpecBase {
             .thenReturn(
               EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
                 Future.successful(Right(eclReturnSubmission))
+              )
+            )
+
+          when(mockRegistrationService.getSubscription(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetSubscriptionResponse](
+                Future.successful(Right(subscriptionResponse))
               )
             )
 
@@ -456,7 +493,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
     "return InternalServerError (500) when returnsService.submitReturn fails" in forAll {
       (
         validEclReturn: ValidEclReturn,
-        validEclSubmission: ValidGetEclReturnSubmissionResponse
+        validEclSubmission: ValidGetEclReturnSubmissionResponse,
+        subscriptionResponse: GetSubscriptionResponse
       ) =>
         val eclReturn: EclReturn                                = validEclReturn.eclReturn
         val eclReturnSubmission: GetEclReturnSubmissionResponse =
@@ -477,6 +515,13 @@ class CheckYourAnswersControllerSpec extends SpecBase {
             .thenReturn(
               EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
                 Future.successful(Right(eclReturnSubmission))
+              )
+            )
+
+          when(mockRegistrationService.getSubscription(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetSubscriptionResponse](
+                Future.successful(Right(subscriptionResponse))
               )
             )
 
@@ -501,7 +546,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
     "return InternalServerError (500) when return type is not set" in forAll {
       (
         validEclReturn: ValidEclReturn,
-        validEclSubmission: ValidGetEclReturnSubmissionResponse
+        validEclSubmission: ValidGetEclReturnSubmissionResponse,
+        subscriptionResponse: GetSubscriptionResponse
       ) =>
         val eclReturn: EclReturn                                = validEclReturn.eclReturn
           .copy(returnType = None)
@@ -517,6 +563,13 @@ class CheckYourAnswersControllerSpec extends SpecBase {
               None,
               eclRegistrationReference,
               Some(periodKey)
+            )
+
+          when(mockRegistrationService.getSubscription(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetSubscriptionResponse](
+                Future.successful(Right(subscriptionResponse))
+              )
             )
 
           when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
