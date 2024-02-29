@@ -100,9 +100,9 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
                 periodStartDate,
                 periodToDate,
                 address.map(_.addressLine1),
-                address.map(_.addressLine1),
-                address.map(_.addressLine1),
-                address.map(_.addressLine1),
+                address.flatMap(_.addressLine2),
+                address.flatMap(_.addressLine3),
+                address.flatMap(_.addressLine4),
                 address.map(_ => "true")
               )
             )
