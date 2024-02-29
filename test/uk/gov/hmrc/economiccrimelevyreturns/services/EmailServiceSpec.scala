@@ -21,9 +21,9 @@ import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
-import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailParameters
+import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedParameters, ReturnSubmittedEmailParameters}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.EmailSubmissionError
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetCorrespondenceAddressDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 import scala.concurrent.Future
@@ -93,4 +93,49 @@ class EmailServiceSpec extends SpecBase {
     }
   }
 
+  "sendAmendReturnConfirmationEmail" should {
+    "send an amendment successful email to the contact in the return" in forAll { (validEclReturn: ValidEclReturn) =>
+      val obligationDetails = validEclReturn.eclReturn.obligationDetails.get
+      val dateSubmitted     = ViewUtils.formatToday(translate = false)(messages)
+      val periodStartDate   =
+        ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceFromDate, translate = false)(messages)
+      val periodEndDate     =
+        ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceToDate, translate = false)(messages)
+
+      val validAddress = GetCorrespondenceAddressDetails("Test address", None, None, None, None, None)
+
+      val expectedParams = AmendReturnSubmittedParameters(
+        name = validEclReturn.eclReturn.contactName.get,
+        dateSubmitted = dateSubmitted,
+        periodStartDate = periodStartDate,
+        periodEndDate = periodEndDate,
+        addressLine1 = Some("Test address"),
+        addressLine2 = None,
+        addressLine3 = None,
+        addressLine4 = None,
+        containsAddress = Some("true")
+      )
+
+      when(
+        mockEmailConnector
+          .sendAmendReturnSubmittedEmail(
+            ArgumentMatchers.eq(validEclReturn.eclReturn.contactEmailAddress.get),
+            ArgumentMatchers.eq(expectedParams)
+          )(any())
+      )
+        .thenReturn(Future.successful(()))
+
+      val result =
+        await(
+          service.sendAmendReturnConfirmationEmail(validEclReturn.eclReturn, Some(validAddress))(hc, messages).value
+        )
+
+      result shouldBe Right(())
+
+      verify(mockEmailConnector, times(1))
+        .sendAmendReturnSubmittedEmail(any(), any())(any())
+
+      reset(mockEmailConnector)
+    }
+  }
 }

@@ -28,7 +28,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{EmailSubmissionError, ResponseError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, ReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, RegistrationService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView, ErrorTemplate}
@@ -52,7 +52,8 @@ class CheckYourAnswersController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   view: CheckYourAnswersView,
   appConfig: AppConfig,
-  storeUrl: StoreUrlAction
+  storeUrl: StoreUrlAction,
+  registrationService: RegistrationService
 )(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with I18nSupport
@@ -89,7 +90,7 @@ class CheckYourAnswersController @Inject() (
                       )
       _            <- returnsService.upsertReturn(eclReturn = updatedReturn).asResponseError
       response     <- returnsService.submitReturn(request.internalId).asResponseError
-      _             = sendConfirmationMail(request.eclReturn, response)
+      _             = sendConfirmationMail(request.eclReturn, response, request.eclRegistrationReference)
     } yield response).fold(
       error => routeError(error),
       response => getRedirectionRoute(request, response)
@@ -120,14 +121,18 @@ class CheckYourAnswersController @Inject() (
       }
     }
 
-  private def sendConfirmationMail(eclReturn: EclReturn, response: SubmitEclReturnResponse)(implicit
+  private def sendConfirmationMail(eclReturn: EclReturn, response: SubmitEclReturnResponse, eclReference: String)(
+    implicit
     messages: Messages,
     hc: HeaderCarrier
-  ): EitherT[Future, EmailSubmissionError, Unit] =
+  ) =
     eclReturn.returnType match {
-      case Some(FirstTimeReturn) => emailService.sendReturnSubmittedEmail(eclReturn, response.chargeReference)
-      case Some(AmendReturn)     => emailService.sendAmendReturnConfirmationEmail(eclReturn)
-      case None                  =>
+      case Some(FirstTimeReturn)                              => emailService.sendReturnSubmittedEmail(eclReturn, response.chargeReference)
+      case Some(AmendReturn) if appConfig.getEclReturnEnabled =>
+        sendEmailWithContactDetails(eclReturn, eclReference)
+
+      case Some(AmendReturn) => emailService.sendAmendReturnConfirmationEmail(eclReturn, None)
+      case None              =>
         EitherT.left(
           Future.successful(
             EmailSubmissionError
@@ -135,6 +140,17 @@ class CheckYourAnswersController @Inject() (
           )
         )
     }
+
+  private def sendEmailWithContactDetails(eclReturn: EclReturn, eclReference: String)(implicit
+    hc: HeaderCarrier,
+    messages: Messages
+  ) =
+    for {
+      subscription <- registrationService.getSubscription(eclReference).asResponseError
+      _             = emailService
+                        .sendAmendReturnConfirmationEmail(eclReturn, Some(subscription.correspondenceAddressDetails))
+
+    } yield ()
 
   private def checkOptionalVal[T](value: Option[T]) =
     if (value.isDefined) {

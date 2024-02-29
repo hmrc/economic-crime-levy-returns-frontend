@@ -20,7 +20,7 @@ import cats.data.EitherT
 import play.api.Logging
 import play.api.i18n.Messages
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EmailConnector
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetCorrespondenceAddressDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedParameters, ReturnSubmittedEmailParameters}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.EmailSubmissionError
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
@@ -80,10 +80,10 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
       }
     }
 
-  def sendAmendReturnConfirmationEmail(eclReturn: EclReturn)(implicit
+  def sendAmendReturnConfirmationEmail(eclReturn: EclReturn, address: Option[GetCorrespondenceAddressDetails])(implicit
     hc: HeaderCarrier,
     messages: Messages
-  ): EitherT[Future, EmailSubmissionError, Unit] =
+  ) =
     EitherT {
       (eclReturn.contactName, eclReturn.contactEmailAddress, eclReturn.obligationDetails) match {
         case (Some(name), Some(emailAddress), Some(obligationDetails)) =>
@@ -94,7 +94,17 @@ class EmailService @Inject() (emailConnector: EmailConnector)(implicit ec: Execu
           emailConnector
             .sendAmendReturnSubmittedEmail(
               emailAddress,
-              AmendReturnSubmittedParameters(name, dateSubmitted, periodStartDate, periodToDate)
+              AmendReturnSubmittedParameters(
+                name,
+                dateSubmitted,
+                periodStartDate,
+                periodToDate,
+                address.map(_.addressLine1),
+                address.flatMap(_.addressLine2),
+                address.flatMap(_.addressLine3),
+                address.flatMap(_.addressLine4),
+                address.map(_ => "true")
+              )
             )
             .map(Right(_))
         case _                                                         =>

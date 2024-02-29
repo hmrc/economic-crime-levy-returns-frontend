@@ -22,7 +22,12 @@ final case class AmendReturnSubmittedParameters(
   name: String,
   dateSubmitted: String,
   periodStartDate: String,
-  periodEndDate: String
+  periodEndDate: String,
+  addressLine1: Option[String],
+  addressLine2: Option[String],
+  addressLine3: Option[String],
+  addressLine4: Option[String],
+  containsAddress: Option[String]
 )
 
 object AmendReturnSubmittedParameters {
