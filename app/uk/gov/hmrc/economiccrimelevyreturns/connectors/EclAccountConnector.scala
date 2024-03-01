@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import cats.data.OptionT
 import com.typesafe.config.Config
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
