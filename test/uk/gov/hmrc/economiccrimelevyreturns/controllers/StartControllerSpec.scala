@@ -287,6 +287,9 @@ class StartControllerSpec extends SpecBase {
       when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.UrlToReturnTo))(any()))
         .thenReturn(EitherT.fromEither[Future](Right(None)))
 
+      when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.PeriodKey))(any()))
+        .thenReturn(EitherT.fromEither[Future](Right(Some("period-key"))))
+
       val result: Future[Result] = controller.onSubmit()(fakeRequest)
 
       status(result) shouldBe SEE_OTHER
@@ -297,6 +300,9 @@ class StartControllerSpec extends SpecBase {
     "redirect to Saved Responses page if there is a return url" in {
       when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.UrlToReturnTo))(any()))
         .thenReturn(EitherT.fromEither[Future](Right(Some(random[String]))))
+
+      when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.PeriodKey))(any()))
+        .thenReturn(EitherT.fromEither[Future](Right(Some("period-key"))))
 
       val result: Future[Result] = controller.onSubmit()(fakeRequest)
 

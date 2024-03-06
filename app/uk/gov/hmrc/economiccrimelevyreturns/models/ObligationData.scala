@@ -86,4 +86,9 @@ final case class ObligationDetails(
 
 object ObligationDetails {
   implicit val format: OFormat[ObligationDetails] = Json.format[ObligationDetails]
+
+  def read(input: Option[String]): Option[ObligationDetails] = input match {
+    case Some(inputForRead) => Some(Json.parse(inputForRead).as[ObligationDetails])
+    case None               => None
+  }
 }

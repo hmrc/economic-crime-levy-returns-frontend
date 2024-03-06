@@ -21,7 +21,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
-import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
+import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ErrorTemplate, NilReturnSubmittedView, ReturnSubmittedView}
@@ -45,11 +45,11 @@ class ReturnSubmittedController @Inject() (
     with I18nSupport
     with ErrorHandler {
 
-  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+  def onPageLoad: Action[AnyContent] = authorise.async { implicit request =>
     val chargeReference: Option[String] = request.session.get(SessionKeys.ChargeReference)
     val amountDue: BigDecimal           = BigDecimal(request.session(SessionKeys.AmountDue))
-    val obligationDetails               = request.eclReturn.obligationDetails
-    val email                           = request.eclReturn.contactEmailAddress
+    val obligationDetails               = ObligationDetails.read(request.session.get(SessionKeys.ObligationDetails))
+    val email                           = request.session.get(SessionKeys.Email)
 
     (for {
       _          <- returnsService.deleteReturn(request.internalId).asResponseError
