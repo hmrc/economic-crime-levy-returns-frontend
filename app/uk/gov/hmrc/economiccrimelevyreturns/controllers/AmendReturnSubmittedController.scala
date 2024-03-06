@@ -17,14 +17,15 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
-
 import play.api.i18n.{I18nSupport, Messages}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{GetCorrespondenceAddressDetails, ObligationDetails}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{GetCorrespondenceAddressDetails, ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{RegistrationService, ReturnsService, SessionService}
+
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnSubmittedView, ErrorTemplate}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -36,7 +37,6 @@ class AmendReturnSubmittedController @Inject() (
   appConfig: AppConfig,
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
-  getReturnData: DataRetrievalAction,
   registrationService: RegistrationService,
   view: AmendReturnSubmittedView,
   sessionService: SessionService,
@@ -47,17 +47,18 @@ class AmendReturnSubmittedController @Inject() (
     with ErrorHandler
     with BaseController {
 
-  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
-    val eclReference      = request.eclRegistrationReference
-    val obligationDetails = request.eclReturn.obligationDetails
-    val email             = request.eclReturn.contactEmailAddress
-
+  def onPageLoad: Action[AnyContent] = authorise.async { implicit request =>
+    val eclReference = request.eclRegistrationReference
     (for {
-      _          <- returnsService.deleteReturn(request.internalId).asResponseError
-      _           = sessionService.delete(request.internalId).asResponseError
-      obligation <- valueOrError(obligationDetails)
-      email      <- valueOrError(email)
-    } yield (obligation, email)).foldF(
+      _                 <- returnsService.deleteReturn(request.internalId).asResponseError
+      _                  = sessionService.delete(request.internalId).asResponseError
+      obligationJson    <- valueOrErrorF(request.session.get(SessionKeys.ObligationDetails), "Obligation details")
+      obligationDetails <- valueOrErrorF(
+                             Json.fromJson[ObligationDetails](Json.parse(obligationJson)).asOpt,
+                             "Obligation details parsed from session"
+                           )
+      email             <- valueOrErrorF(request.session.get(SessionKeys.Email), "Email")
+    } yield (obligationDetails, email)).foldF(
       error => Future.successful(routeError(error)),
       obligationAndEmail => {
         val obligation = obligationAndEmail._1
@@ -76,9 +77,6 @@ class AmendReturnSubmittedController @Inject() (
       }
     )
   }
-
-  private def valueOrError[T](value: Option[T]) =
-    EitherT(Future.successful(value.map(Right(_)).getOrElse(Left(ResponseError.internalServiceError()))))
 
   def generateView(
     obligationDetails: ObligationDetails,

@@ -22,7 +22,6 @@ import play.api.Logging
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors._
 
 trait ErrorHandler extends Logging {
-
   implicit class ErrorConvertor[E, R](value: EitherT[Future, E, R]) {
 
     def asResponseError(implicit c: Converter[E], ec: ExecutionContext): EitherT[Future, ResponseError, R] =

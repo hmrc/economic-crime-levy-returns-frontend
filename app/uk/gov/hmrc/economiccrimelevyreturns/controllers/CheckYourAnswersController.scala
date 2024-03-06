@@ -169,7 +169,7 @@ class CheckYourAnswersController @Inject() (
           case Right(email)    =>
             val session = request.session.clearEclValues ++ Seq(
               SessionKeys.Email             -> email,
-              SessionKeys.ObligationDetails -> Json.toJson(request.eclReturn.obligationDetails).toString()
+              SessionKeys.ObligationDetails -> Json.stringify(Json.toJson(request.eclReturn.obligationDetails))
             )
 
             Redirect(routes.AmendReturnSubmittedController.onPageLoad()).withSession(session)
