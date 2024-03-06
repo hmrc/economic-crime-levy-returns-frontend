@@ -20,13 +20,14 @@ import cats.data.EitherT
 import org.mockito.ArgumentMatchers.{any, anyString}
 import play.api.data.Form
 import play.api.http.Status.OK
+import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmendReasonFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, SessionError}
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, GetSubscriptionResponse, ObligationDetails}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, GetSubscriptionResponse, ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{RegistrationService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmendReturnSubmittedView
 
@@ -47,7 +48,6 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
       appConfig,
       mcc,
       fakeAuthorisedAction(returnsData.internalId),
-      fakeDataRetrievalAction(returnsData),
       mockEclRegistrationService,
       view,
       mockSessionService,
@@ -79,7 +79,12 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
               EitherT[Future, DataHandlingError, GetSubscriptionResponse](Future.successful(Right(subscription)))
             )
 
-          val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+          val result: Future[Result] = controller.onPageLoad()(
+            fakeRequest.withSession(
+              (SessionKeys.Email             -> email),
+              (SessionKeys.ObligationDetails -> Json.stringify(Json.toJson(obligationDetails)))
+            )
+          )
 
           status(result) shouldBe OK
 
@@ -94,22 +99,53 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
     }
   }
 
-  "return Internal server error and the correct view" in forAll { (eclReturn: EclReturn) =>
-    new TestContext(eclReturn) {
-      when(mockReturnsService.deleteReturn(anyString())(any()))
-        .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
-      when(mockSessionService.delete(anyString())(any()))
-        .thenReturn(EitherT.right(unit))
-      when(mockEclRegistrationService.getSubscription(anyString())(any()))
-        .thenReturn(
-          EitherT[Future, DataHandlingError, GetSubscriptionResponse](
-            Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, None)))
+  "return Internal server error when email is missing from the session" in forAll {
+    (
+      eclReturn: EclReturn,
+      obligationDetails: ObligationDetails
+    ) =>
+      new TestContext(
+        eclReturn.copy(
+          obligationDetails = Some(obligationDetails)
+        )
+      ) {
+        when(mockReturnsService.deleteReturn(anyString())(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+        when(mockSessionService.delete(anyString())(any()))
+          .thenReturn(EitherT.right(unit))
+
+        val result: Future[Result] = controller.onPageLoad()(
+          fakeRequest.withSession(
+            (SessionKeys.ObligationDetails -> Json.stringify(Json.toJson(obligationDetails)))
           )
         )
 
-      val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+      }
+  }
 
-      status(result) shouldBe INTERNAL_SERVER_ERROR
-    }
+  "return Internal server error when obligation details is missing from the session" in forAll {
+    (
+      eclReturn: EclReturn,
+      email: String
+    ) =>
+      new TestContext(
+        eclReturn.copy(
+          contactEmailAddress = Some(email)
+        )
+      ) {
+        when(mockReturnsService.deleteReturn(anyString())(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+        when(mockSessionService.delete(anyString())(any()))
+          .thenReturn(EitherT.right(unit))
+
+        val result: Future[Result] = controller.onPageLoad()(
+          fakeRequest.withSession(
+            (SessionKeys.Email -> email)
+          )
+        )
+
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+      }
   }
 }
