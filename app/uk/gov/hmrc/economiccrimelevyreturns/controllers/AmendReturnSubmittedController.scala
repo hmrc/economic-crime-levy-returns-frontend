@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
-import cats.data.EitherT
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.{GetCorrespondenceAddressDetails, ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{RegistrationService, ReturnsService, SessionService}
 
@@ -58,21 +56,29 @@ class AmendReturnSubmittedController @Inject() (
                              "Obligation details parsed from session"
                            )
       email             <- valueOrErrorF(request.session.get(SessionKeys.Email), "Email")
-    } yield (obligationDetails, email)).foldF(
+      startAmendUrl      = request.session.get(SessionKeys.StartAmendUrl)
+    } yield (obligationDetails, email, startAmendUrl)).foldF(
       error => Future.successful(routeError(error)),
       obligationAndEmail => {
-        val obligation = obligationAndEmail._1
-        val email      = obligationAndEmail._2
+        val obligation    = obligationAndEmail._1
+        val email         = obligationAndEmail._2
+        val startAmendUrl = obligationAndEmail._3
         if (appConfig.getSubscriptionEnabled) {
           (for {
             subscription <- registrationService.getSubscription(eclReference).asResponseError
           } yield subscription).fold(
             err => routeError(err),
             subscription =>
-              generateView(obligation, Some(subscription.correspondenceAddressDetails), eclReference, email)
+              generateView(
+                obligation,
+                Some(subscription.correspondenceAddressDetails),
+                eclReference,
+                email,
+                startAmendUrl
+              )
           )
         } else {
-          Future.successful(generateView(obligation, None, eclReference, email))
+          Future.successful(generateView(obligation, None, eclReference, email, startAmendUrl))
         }
       }
     )
@@ -82,7 +88,8 @@ class AmendReturnSubmittedController @Inject() (
     obligationDetails: ObligationDetails,
     address: Option[GetCorrespondenceAddressDetails],
     eclReference: String,
-    email: String
+    email: String,
+    startAmendUrl: Option[String]
   )(implicit request: Request[_], messages: Messages): Result =
     Ok(
       view(
@@ -90,7 +97,8 @@ class AmendReturnSubmittedController @Inject() (
         fyEnd = obligationDetails.inboundCorrespondenceToDate,
         confirmationEmail = email,
         contactAddress = if (address.isEmpty) None else address,
-        eclReference
+        eclReference,
+        startAmendUrl
       )(request, messages)
     )
 

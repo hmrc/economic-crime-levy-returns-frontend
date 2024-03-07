@@ -171,7 +171,7 @@ class CheckYourAnswersController @Inject() (
             val sessionData = Seq(
               SessionKeys.Email             -> email,
               SessionKeys.ObligationDetails -> Json.stringify(Json.toJson(request.eclReturn.obligationDetails))
-            )
+            ) ++ request.startAmendUrl.fold(Seq.empty[(String, String)])(url => Seq(SessionKeys.StartAmendUrl -> url))
 
             Redirect(routes.AmendReturnSubmittedController.onPageLoad())
               .withSession(addToSession(request.session.clearEclValues, sessionData))
