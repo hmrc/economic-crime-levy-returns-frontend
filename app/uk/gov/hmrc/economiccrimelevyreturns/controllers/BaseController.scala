@@ -20,12 +20,12 @@ import cats.data.EitherT
 import play.api.http.HeaderNames.CACHE_CONTROL
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.Results.{InternalServerError, Redirect}
-import play.api.mvc.{Request, Result, Results}
+import play.api.mvc.{Request, Result, Results, Session}
 import play.twirl.api.Html
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ErrorCode.{BadGateway, BadRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{ErrorCode, ResponseError}
-import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
+import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.PageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ErrorTemplate
 
@@ -91,4 +91,12 @@ trait BaseController extends I18nSupport {
           result => Redirect(pageNavigator.nextPage(mode, result))
         )
   }
+
+  def addToSession(sessionData: Seq[(String, String)])(implicit
+    request: Request[_]
+  ): Session =
+    request.session ++ sessionData
+
+  def addToSession(session: Session, sessionData: Seq[(String, String)]): Session =
+    session ++ sessionData
 }

@@ -17,8 +17,6 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.i18n.Messages
 import play.api.libs.json.Json
@@ -27,7 +25,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, ObligationDetails, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{NilReturnSubmittedView, ReturnSubmittedView}
@@ -42,13 +40,12 @@ class ReturnSubmittedControllerSpec extends SpecBase {
   val mockReturnsService: ReturnsService             = mock[ReturnsService]
   val mockSessionService: SessionService             = mock[SessionService]
 
-  class TestContext(returnsData: EclReturn) {
+  class TestContext() {
     val controller = new ReturnSubmittedController(
       mcc,
       fakeAuthorisedAction(internalId),
       returnSubmittedView,
       nilReturnSubmittedView,
-      fakeDataRetrievalAction(returnsData, Some(testPeriodKey)),
       mockReturnsService,
       mockSessionService
     )
@@ -57,15 +54,12 @@ class ReturnSubmittedControllerSpec extends SpecBase {
   "onPageLoad" should {
     "return OK and the correct view for a submitted return" in forAll {
       (
-        eclReturn: EclReturn,
         chargeReference: String,
         amountDue: BigDecimal,
         obligationDetails: ObligationDetails,
         email: String
       ) =>
-        new TestContext(
-          eclReturn.copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
-        ) {
+        new TestContext() {
           implicit val authRequest: AuthorisedRequest[AnyContentAsEmpty.type] =
             AuthorisedRequest(fakeRequest, internalId, eclRegistrationReference)
           implicit val messages: Messages                                     = messagesApi.preferred(authRequest)
@@ -100,10 +94,8 @@ class ReturnSubmittedControllerSpec extends SpecBase {
     }
 
     "return OK and the correct view for a submitted nil return" in forAll {
-      (eclReturn: EclReturn, obligationDetails: ObligationDetails, amountDue: BigDecimal, email: String) =>
-        new TestContext(
-          eclReturn.copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
-        ) {
+      (obligationDetails: ObligationDetails, amountDue: BigDecimal, email: String) =>
+        new TestContext() {
           implicit val authRequest: AuthorisedRequest[AnyContentAsEmpty.type] =
             AuthorisedRequest(fakeRequest, internalId, eclRegistrationReference)
           implicit val messages: Messages                                     = messagesApi.preferred(authRequest)

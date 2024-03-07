@@ -59,8 +59,14 @@ class StartController @Inject() (
       error => routeError(error),
       eclReturn =>
         eclReturn.obligationDetails match {
-          case Some(obligationDetails) => Redirect(routes.StartController.onPageLoad(obligationDetails.periodKey))
-          case None                    => Ok(chooseReturnPeriodView())
+          case Some(obligationDetails) =>
+            Redirect(routes.StartController.onPageLoad(obligationDetails.periodKey))
+              .withSession(addToSession(Seq(SessionKeys.PeriodKey -> obligationDetails.periodKey)))
+          case None                    =>
+            request.session.get(SessionKeys.PeriodKey) match {
+              case Some(periodKey) => Redirect(routes.StartController.onPageLoad(periodKey))
+              case None            => Ok(chooseReturnPeriodView())
+            }
         }
     )
   }
@@ -68,7 +74,7 @@ class StartController @Inject() (
   def onPageLoad(periodKey: String): Action[AnyContent] = authorise.async { implicit request =>
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
     (for {
-      _                 <- addPeriodKeyToSession(periodKey).asResponseError
+      _                 <- addPeriodKeyToSessionTable(periodKey).asResponseError
       registrationDate  <-
         enrolmentStoreProxyService.getEclRegistrationDate(request.eclRegistrationReference).asResponseError
       obligationData    <- eclAccountService.retrieveObligationData.asResponseError
@@ -105,19 +111,21 @@ class StartController @Inject() (
     (for {
       urlToReturnTo <-
         sessionService.getOptional(request.session, request.internalId, SessionKeys.UrlToReturnTo).asResponseError
-    } yield urlToReturnTo).fold(
+      periodKey     <-
+        sessionService.getOptional(request.session, request.internalId, SessionKeys.PeriodKey).asResponseError
+    } yield (urlToReturnTo, periodKey)).fold(
       err => routeError(err),
-      urlToReturnTo =>
+      yieldedValue =>
         Redirect(
-          urlToReturnTo match {
+          yieldedValue._1 match {
             case Some(_) => routes.SavedResponsesController.onPageLoad()
             case None    => routes.RelevantAp12MonthsController.onPageLoad(NormalMode)
           }
-        )
+        ).withSession(addToSession(Seq(SessionKeys.PeriodKey -> yieldedValue._2.get)))
     )
   }
 
-  private def addPeriodKeyToSession(periodKey: String)(implicit
+  private def addPeriodKeyToSessionTable(periodKey: String)(implicit
     request: AuthorisedRequest[_]
   ): EitherT[Future, SessionError, Unit] =
     sessionService.upsert(

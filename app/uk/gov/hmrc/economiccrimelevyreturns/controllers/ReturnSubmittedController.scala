@@ -19,9 +19,9 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import cats.data.EitherT
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
-import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
+import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ErrorTemplate, NilReturnSubmittedView, ReturnSubmittedView}
@@ -36,7 +36,6 @@ class ReturnSubmittedController @Inject() (
   authorise: AuthorisedAction,
   returnSubmittedView: ReturnSubmittedView,
   nilReturnSubmittedView: NilReturnSubmittedView,
-  getReturnData: DataRetrievalAction,
   returnsService: ReturnsService,
   sessionService: SessionService
 )(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
@@ -45,22 +44,23 @@ class ReturnSubmittedController @Inject() (
     with I18nSupport
     with ErrorHandler {
 
-  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
+  def onPageLoad: Action[AnyContent] = authorise.async { implicit request =>
     val chargeReference: Option[String] = request.session.get(SessionKeys.ChargeReference)
-    val amountDue: BigDecimal           = BigDecimal(request.session(SessionKeys.AmountDue))
-    val obligationDetails               = request.eclReturn.obligationDetails
-    val email                           = request.eclReturn.contactEmailAddress
+    val obligationDetails               = ObligationDetails.read(request.session.get(SessionKeys.ObligationDetails))
+    val email                           = request.session.get(SessionKeys.Email)
 
     (for {
-      _          <- returnsService.deleteReturn(request.internalId).asResponseError
-      _           = sessionService.delete(request.internalId).asResponseError
-      obligation <- valueOrError(obligationDetails)
-      email      <- valueOrError(email)
-    } yield (obligation, email)).foldF(
+      amountDueFromSession <- valueOrErrorF(request.session.get(SessionKeys.AmountDue), "amount due")
+      amountDue             = BigDecimal(amountDueFromSession)
+      _                    <- returnsService.deleteReturn(request.internalId).asResponseError
+      _                     = sessionService.delete(request.internalId).asResponseError
+      obligation           <- valueOrError(obligationDetails)
+      email                <- valueOrError(email)
+    } yield (obligation, email, amountDue)).foldF(
       error => Future.successful(routeError(error)),
-      obligationAndEmail => {
-        val obligation = obligationAndEmail._1
-        val email      = obligationAndEmail._2
+      response => {
+        val obligation = response._1
+        val email      = response._2
         chargeReference match {
           case Some(c) =>
             Future.successful(
@@ -71,7 +71,7 @@ class ReturnSubmittedController @Inject() (
                   ViewUtils.formatLocalDate(obligation.inboundCorrespondenceDueDate),
                   obligation.inboundCorrespondenceFromDate.getYear.toString,
                   obligation.inboundCorrespondenceToDate.getYear.toString,
-                  amountDue,
+                  response._3,
                   email
                 )
               )
@@ -83,7 +83,7 @@ class ReturnSubmittedController @Inject() (
                   ViewUtils.formatToday(),
                   obligation.inboundCorrespondenceFromDate.getYear.toString,
                   obligation.inboundCorrespondenceToDate.getYear.toString,
-                  amountDue,
+                  response._3,
                   email
                 )
               )
