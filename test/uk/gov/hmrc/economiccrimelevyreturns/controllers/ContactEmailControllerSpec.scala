@@ -69,7 +69,11 @@ class ContactEmailControllerSpec extends SpecBase {
 
           status(result) shouldBe OK
 
-          contentAsString(result) shouldBe view(form, name, NormalMode)(fakeRequest, messages).toString
+          val resultAsString = contentAsString(result)
+          resultAsString should include("type=\"email\"")
+          resultAsString should include("spellcheck=\"false\"")
+
+          resultAsString shouldBe view(form, name, NormalMode)(fakeRequest, messages).toString
         }
     }
 
