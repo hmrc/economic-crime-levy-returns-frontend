@@ -244,7 +244,7 @@ submitted.amountToPay = Y swm sydd angen i chi ei dalu: {0}
 submitted.subHeading = Yr hyn y mae angen i chi ei wneud nesaf
 submitted.p1 = Rydych wedi cyflwyno datganiad ar gyfer yr Ardoll Troseddau Economaidd (ECL) ar {0} ar gyfer blwyddyn ariannol {1}/{2}. Byddwch yn cael e-bost cadarnhau. Cadwch hwn ar gyfer eich cofnodion.
 submitted.p2 = Mae’n rhaid i chi dalu’r ardoll ar gyfer blwyddyn ariannol {0}/{1} erbyn {2}. Ni fyddwch yn cael e-bost na hysbysiad oddi wrth CThEF i’ch atgoffa i dalu.
-submitted.p3 = Mae’n rhaid defnyddio’ch rhif ECL fel cyfeirnod talu pan ydych yn talu’r ardoll. Byddwch hefyd yn gallu gweld rhif eich datganiad yn eich cyfrif ECL (cysylltu ‘Cyfrif ECL’ i adran datganiadau cyfrif ECL).
+submitted.p3 = Mae’n rhaid defnyddio’ch rhif ECL fel cyfeirnod talu pan ydych yn talu’r ardoll. Byddwch hefyd yn gallu gweld rhif eich datganiad yn eich <a href="{0}" class="govuk-link">cyfrif ECL</a>.
 submitted.p4 = Os ydych yn defnyddio cyfeirnod anghywir, bydd oedi cyn i’r taliad gael ei ddyrannu’n gywir.
 submitted.p5 = Codir llog arnoch os ydych yn talu’n hwyr.
 submitted.p6 = Gallwch dalu’r ardoll drwy ddarllen yr <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">arweiniad ar sut i dalu</a>.
