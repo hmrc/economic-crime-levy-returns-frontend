@@ -42,7 +42,7 @@
                 field = form("value"),
                 label = LabelViewModel(HtmlContent(HtmlFormat.escape(messages("contactEmail.heading", name))))
                        .asHiddenPageHeading()
-            ).withWidth(Fixed20)
+            ).asEmail().withWidth(Fixed20)
         )
 
         @govukButton(
