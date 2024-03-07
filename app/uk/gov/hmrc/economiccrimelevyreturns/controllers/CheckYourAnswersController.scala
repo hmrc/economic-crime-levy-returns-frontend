@@ -93,7 +93,7 @@ class CheckYourAnswersController @Inject() (
       _             = sendConfirmationMail(request.eclReturn, response, request.eclRegistrationReference)
     } yield response).fold(
       error => routeError(error),
-      response => getRedirectionRoute(request, response)
+      response => getRedirectionRoute(response)
     )
   }
 
@@ -159,20 +159,22 @@ class CheckYourAnswersController @Inject() (
       Left(Redirect(routes.NotableErrorController.answersAreInvalid()))
     }
 
-  private def getRedirectionRoute(request: ReturnDataRequest[AnyContent], response: SubmitEclReturnResponse)(implicit
-    hc: HeaderCarrier
+  private def getRedirectionRoute(response: SubmitEclReturnResponse)(implicit
+    hc: HeaderCarrier,
+    request: ReturnDataRequest[AnyContent]
   ) = {
     val containsEmailAddress = checkOptionalVal(request.eclReturn.contactEmailAddress)
     request.eclReturn.returnType match {
       case Some(AmendReturn) =>
         containsEmailAddress match {
           case Right(email)    =>
-            val session = request.session.clearEclValues ++ Seq(
+            val sessionData = Seq(
               SessionKeys.Email             -> email,
               SessionKeys.ObligationDetails -> Json.stringify(Json.toJson(request.eclReturn.obligationDetails))
             )
 
-            Redirect(routes.AmendReturnSubmittedController.onPageLoad()).withSession(session)
+            Redirect(routes.AmendReturnSubmittedController.onPageLoad())
+              .withSession(addToSession(request.session.clearEclValues, sessionData))
           case Left(errorPage) => errorPage
         }
       case _                 =>

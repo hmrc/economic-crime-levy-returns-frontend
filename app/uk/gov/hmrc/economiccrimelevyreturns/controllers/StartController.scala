@@ -61,7 +61,7 @@ class StartController @Inject() (
         eclReturn.obligationDetails match {
           case Some(obligationDetails) =>
             Redirect(routes.StartController.onPageLoad(obligationDetails.periodKey))
-              .withSession(addPeriodKeyToSession(obligationDetails.periodKey))
+              .withSession(addToSession(Seq(SessionKeys.PeriodKey -> obligationDetails.periodKey)))
           case None                    =>
             request.session.get(SessionKeys.PeriodKey) match {
               case Some(periodKey) => Redirect(routes.StartController.onPageLoad(periodKey))
@@ -121,7 +121,7 @@ class StartController @Inject() (
             case Some(_) => routes.SavedResponsesController.onPageLoad()
             case None    => routes.RelevantAp12MonthsController.onPageLoad(NormalMode)
           }
-        ).withSession(addPeriodKeyToSession(yieldedValue._2.get))
+        ).withSession(addToSession(Seq(SessionKeys.PeriodKey -> yieldedValue._2.get)))
     )
   }
 
@@ -133,13 +133,6 @@ class StartController @Inject() (
         internalId = request.internalId,
         values = Map(SessionKeys.PeriodKey -> periodKey)
       )
-    )
-
-  private def addPeriodKeyToSession(periodKey: String)(implicit
-    request: AuthorisedRequest[_]
-  ) =
-    request.session ++ Seq(
-      SessionKeys.PeriodKey -> periodKey
     )
 
   private def processObligationDetails(obligationData: Option[ObligationData], periodKey: String)(implicit
