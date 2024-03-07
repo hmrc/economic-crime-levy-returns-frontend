@@ -36,13 +36,15 @@ class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val result = callRoute(
         FakeRequest(routes.AmendReturnSubmittedController.onPageLoad()).withSession(
           (SessionKeys.Email, email),
-          (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString())
+          (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString()),
+          (SessionKeys.StartAmendUrl, routes.StartAmendController.onPageLoad(testPeriodKey, eclReturn.internalId).url)
         )
       )
 
       status(result) shouldBe OK
 
       html(result) should include("Economic Crime Levy return amendment requested")
+      html(result) should include("Amending your Economic Crime Levy return")
     }
   }
 }

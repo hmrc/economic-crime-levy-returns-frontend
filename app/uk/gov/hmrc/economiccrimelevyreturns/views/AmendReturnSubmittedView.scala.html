@@ -26,7 +26,7 @@
         appConfig: AppConfig
 )
 
-@(fyStart: LocalDate, fyEnd: LocalDate, confirmationEmail: String, contactAddress: Option[GetCorrespondenceAddressDetails], eclReference: String)(implicit request: Request[_], messages: Messages)
+@(fyStart: LocalDate, fyEnd: LocalDate, confirmationEmail: String, contactAddress: Option[GetCorrespondenceAddressDetails], eclReference: String, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @panelContentHtml = {
 <h2 class="govuk-label--m">@messages("amend.submitted.eclRef") @eclReference </h2>
@@ -34,9 +34,9 @@
 
 @layout(
     pageTitle = title(messages("amend.submitted.title")),
-    showBackLink = false
+    showBackLink = false,
+    startAmendUrl = startAmendUrl
 ) {
-
 
     @govukPanel(Panel(
         title = HtmlContent(messages("amend.submitted.heading")),
