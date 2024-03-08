@@ -39,7 +39,7 @@
         @radios(
             RadiosViewModel(
                 field = form("value"),
-                legend = LegendViewModel(Empty),
+                legend = LegendViewModel(messages("cancelReturnAmendment.heading")).asHidden(),
                 items = Seq(
                     RadioItem(
                         id = Some("yes"),

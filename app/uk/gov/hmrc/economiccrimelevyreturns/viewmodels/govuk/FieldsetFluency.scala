@@ -67,5 +67,10 @@ trait FieldsetFluency {
 
     def asHiddenPageHeading(size: LegendSize = LegendSize.ExtraLarge): Legend =
       asPageHeading(size).withCssClass("govuk-visually-hidden")
+
+    def asHidden(): Legend =
+      legend
+        .copy(isPageHeading = false)
+        .withCssClass("govuk-visually-hidden")
   }
 }
