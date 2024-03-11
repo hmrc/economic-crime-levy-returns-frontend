@@ -48,5 +48,10 @@ trait LabelFluency {
 
     def asHiddenPageHeading(size: LabelSize = LabelSize.ExtraLarge): Label =
       asPageHeading(size).withCssClass("govuk-visually-hidden")
+
+    def asHidden(): Label =
+      label
+        .copy(isPageHeading = false)
+        .withCssClass("govuk-visually-hidden")
   }
 }
