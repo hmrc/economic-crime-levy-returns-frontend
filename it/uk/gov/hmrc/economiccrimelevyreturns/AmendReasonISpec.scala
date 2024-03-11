@@ -52,7 +52,7 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
       val obligationDetails = random[ObligationDetails]
       val fromFY            = random[LocalDate]
       val toFY              = random[LocalDate]
-      val reason            = nonEmptyString.sample.get.trim
+      val reason            = nonEmptyString.sample.get
       val updatedObligation =
         obligationDetails.copy(inboundCorrespondenceFromDate = fromFY, inboundCorrespondenceToDate = toFY)
       val updatedReturn     = eclReturn.copy(obligationDetails = Some(updatedObligation))
