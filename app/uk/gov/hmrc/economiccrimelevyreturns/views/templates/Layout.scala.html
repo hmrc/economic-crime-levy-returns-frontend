@@ -16,6 +16,8 @@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.{Banners, HmrcStandardPageParams, ServiceURLs, TemplateOverrides}
+@import views.html.helper.CSPNonce
+
 
 @this(
         appConfig: AppConfig,
@@ -49,20 +51,27 @@
     }
 }
 
-@head = @{
-    if(timeout) {
-        Some(
-            hmrcTimeoutDialog(TimeoutDialog(
-                timeout = Some(appConfig.timeout),
-                countdown = Some(appConfig.countdown),
-                keepAliveUrl = Some(uk.gov.hmrc.hmrcfrontend.controllers.routes.KeepAliveController.keepAlive.url),
-                keepAliveButtonText = Some(messages("timeout.keepAlive")),
-                signOutUrl = Some(SignOutController.signOut.url),
-                signOutButtonText = Some(messages("timeout.signOut")),
-                title = Some(messages("timeout.title")),
-                message = Some(messages("timeout.message"))
-            )))
-    } else None
+@head = {
+        <link rel="stylesheet" href="@{
+        controllers.routes.Assets.versioned("stylesheets/custom-styles.css")
+        }" @{
+    CSPNonce.attr
+}>
+    @{
+        if(timeout) {
+            Some(
+                hmrcTimeoutDialog(TimeoutDialog(
+                    timeout = Some(appConfig.timeout),
+                    countdown = Some(appConfig.countdown),
+                    keepAliveUrl = Some(uk.gov.hmrc.hmrcfrontend.controllers.routes.KeepAliveController.keepAlive.url),
+                    keepAliveButtonText = Some(messages("timeout.keepAlive")),
+                    signOutUrl = Some(SignOutController.signOut.url),
+                    signOutButtonText = Some(messages("timeout.signOut")),
+                    title = Some(messages("timeout.title")),
+                    message = Some(messages("timeout.message"))
+                )))
+        } else None
+    }
 }
 
 @additionalScripts = {
@@ -89,7 +98,7 @@
     isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
     templateOverrides = TemplateOverrides(
         additionalScriptsBlock = Some(additionalScripts),
-        additionalHeadBlock = head
+        additionalHeadBlock = Some(head)
     ),
     backLink = if(showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None,
     serviceName = topPageTitle
