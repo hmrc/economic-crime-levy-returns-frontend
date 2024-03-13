@@ -96,18 +96,18 @@ class RelevantAp12MonthsController @Inject() (
       case true  =>
         (for {
           calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
-          _                   <-
-            eclReturnsService
-              .upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
-              .asResponseError
-        } yield calculatedLiability).foldF(
+          updatedReturn        = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
+          _                   <- eclReturnsService.upsertReturn(updatedReturn).asResponseError
+        } yield updatedReturn).foldF(
           error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
-          _ =>
-            eclReturn.calculatedLiability match {
+          updatedReturn =>
+            updatedReturn.calculatedLiability match {
               case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
                 clearAmlActivityAnswersAndRecalculate(eclReturn)
-              case Some(_)                                                                  => navigateLiable(eclReturn)
-              case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
+              case Some(_)                                                                  =>
+                navigateLiable(eclReturn)
+              case _                                                                        =>
+                Future.successful(routes.NotableErrorController.answersAreInvalid())
             }
         )
       case false => Future.successful(routes.RelevantApLengthController.onPageLoad(CheckMode))

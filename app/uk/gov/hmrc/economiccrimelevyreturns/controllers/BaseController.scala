@@ -25,7 +25,7 @@ import play.twirl.api.Html
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ErrorCode.{BadGateway, BadRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{ErrorCode, ResponseError}
-import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
+import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.PageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ErrorTemplate
 

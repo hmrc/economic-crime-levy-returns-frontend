@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.SavedResponsesFormProvider
-import uk.gov.hmrc.economiccrimelevyreturns.models.{NormalMode, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys
 import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ErrorTemplate, SavedResponsesView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
