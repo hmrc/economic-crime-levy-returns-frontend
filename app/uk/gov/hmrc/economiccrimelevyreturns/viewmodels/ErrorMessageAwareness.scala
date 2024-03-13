@@ -23,9 +23,9 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.errormessage.ErrorMessage
 
 trait ErrorMessageAwareness {
 
-  def errorMessage(field: Field)(implicit messages: Messages): Option[ErrorMessage] =
+  def errorMessage(field: Field, hiddenText: Option[String])(implicit messages: Messages): Option[ErrorMessage] =
     field.error
       .map { err =>
-        ErrorMessage(content = Text(messages(err.message, err.args: _*)))
+        ErrorMessage(content = Text(messages(err.message, err.args: _*)), visuallyHiddenText = hiddenText)
       }
 }
