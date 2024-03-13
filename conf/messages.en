@@ -356,3 +356,5 @@ savedResponses.h2 = What would you like to do?
 savedResponses.true = Continue with your saved answers
 savedResponses.false = Delete your progress and start again
 savedResponses.error.required = Select the first option if you want to continue with your saved answers
+
+govukErrorMessage.visuallyHiddenText = Error
