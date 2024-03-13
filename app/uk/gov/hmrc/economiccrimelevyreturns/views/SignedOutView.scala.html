@@ -15,17 +15,17 @@
  *@
 
 @this(
-    layout: templates.Layout,
-    govukButton: GovukButton
+        layout: templates.Layout,
+        govukButton: GovukButton
 )
 
 @()(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle    = title(messages("signedOut.title")),
+    pageTitle = title(messages("signedOut.title")),
     showBackLink = false,
-    timeout      = false,
-    showSignOut  = false
+    timeout = false,
+    showSignOut = false
 ) {
 
     <h1 class="govuk-heading-xl">@messages("signedOut.heading")</h1>
@@ -33,11 +33,10 @@
     <p class="govuk-body">@messages("signedOut.guidance")</p>
 
     <p class="govuk-body">
-        @govukButton(
-            Button(
-                element = Some(messages("site.signIn")),
-                href    = Some(StartController.start.url)
-            )
-        )
+    @govukButton(
+        ButtonViewModel(messages("site.signIn"))
+        .asLink(StartController.start().url)
+        .preventingDoubleClick()
+    )
     </p>
 }
