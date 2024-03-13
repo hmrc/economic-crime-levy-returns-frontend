@@ -276,7 +276,7 @@ exit.survey = {0} (mae’n cymryd 30 eiliad) i adael yr arolwg.
 
 signedOut.title = Er eich diogelwch, gwnaethom eich allgofnodi
 signedOut.heading = Er eich diogelwch, gwnaethom eich allgofnodi
-signedOut.guidance = Ni wnaethom gadw’ch atebion.
+signedOut.guidance = Gwnaethom gadw’ch atebion.
 
 notRegistered.title = Mae’n rhaid i chi gofrestru ar gyfer yr Ardoll Troseddau Economaidd cyn i chi gyflwyno datganiad - Ardoll Troseddau Economaidd - GOV.UK
 notRegistered.heading = Mae’n rhaid i chi gofrestru ar gyfer yr Ardoll Troseddau Economaidd cyn i chi allu cyflwyno datganiad

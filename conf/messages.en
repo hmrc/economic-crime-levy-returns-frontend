@@ -277,7 +277,7 @@ exit.survey = {0} (takes 30 seconds) to exit survey.
 
 signedOut.title = For your security, we signed you out
 signedOut.heading = For your security, we signed you out
-signedOut.guidance = We did not save your answers.
+signedOut.guidance = We saved your answers.
 
 notRegistered.title = You must register for the Economic Crime Levy before you submit a return - Economic Crime Levy - GOV.UK
 notRegistered.heading = You must register for the Economic Crime Levy before you can submit a return
