@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, RequestHeader}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Request, RequestHeader, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
@@ -65,72 +65,80 @@ class RelevantAp12MonthsController @Inject() (
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
         relevantAp12Months => {
-          val eclReturn = dataCleanup.cleanup(request.eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
+          val answerChanged = !request.eclReturn.relevantAp12Months.contains(relevantAp12Months)
+          val eclReturn     = dataCleanup.cleanup(request.eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
           eclReturnsService
             .upsertReturn(eclReturn)
             .asResponseError
             .foldF(
               error => Future.successful(routeError(error)),
-              _ => navigateByMode(mode, relevantAp12Months, eclReturn).map(Redirect)
+              _ => navigateByMode(mode, relevantAp12Months, eclReturn, answerChanged)
             )
         }
       )
   }
 
-  private def navigateByMode(mode: Mode, relevantAp12Months: Boolean, eclReturn: EclReturn)(implicit
-    request: RequestHeader
-  ) =
+  private def navigateByMode(mode: Mode, relevantAp12Months: Boolean, eclReturn: EclReturn, answerChanged: Boolean)(
+    implicit request: Request[_]
+  ): Future[Result] =
     mode match {
       case NormalMode => navigateInNormalMode(relevantAp12Months)
-      case CheckMode  => navigateInCheckMode(eclReturn, relevantAp12Months)
+      case CheckMode  => navigateInCheckMode(eclReturn, relevantAp12Months, answerChanged)
     }
 
-  private def navigateInNormalMode(relevantAp12Months: Boolean): Future[Call] =
-    relevantAp12Months match {
-      case true  => Future.successful(routes.UkRevenueController.onPageLoad(NormalMode))
-      case false => Future.successful(routes.RelevantApLengthController.onPageLoad(NormalMode))
-    }
+  private def navigateInNormalMode(relevantAp12Months: Boolean): Future[Result] =
+    Future.successful(Redirect(relevantAp12Months match {
+      case true  => routes.UkRevenueController.onPageLoad(NormalMode)
+      case false => routes.RelevantApLengthController.onPageLoad(NormalMode)
+    }))
 
-  private def navigateInCheckMode(eclReturn: EclReturn, relevantAp12Months: Boolean)(implicit request: RequestHeader) =
+  private def navigateInCheckMode(eclReturn: EclReturn, relevantAp12Months: Boolean, answerChanged: Boolean)(implicit
+    request: Request[_]
+  ): Future[Result] = if (answerChanged) {
     relevantAp12Months match {
       case true  =>
         (for {
           calculatedLiability <- eclLiabilityService.calculateLiability(eclReturn).asResponseError
-          _                   <-
-            eclReturnsService
-              .upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
-              .asResponseError
+          _                   <- eclReturnsService
+                                   .upsertReturn(eclReturn.copy(calculatedLiability = Some(calculatedLiability)))
+                                   .asResponseError
         } yield calculatedLiability).foldF(
-          error => Future.successful(routes.NotableErrorController.answersAreInvalid()),
+          error => Future.successful(routeError(error)),
           _ =>
             eclReturn.calculatedLiability match {
               case Some(calculatedLiability) if calculatedLiability.calculatedBand == Small =>
                 clearAmlActivityAnswersAndRecalculate(eclReturn)
-              case Some(_)                                                                  => navigateLiable(eclReturn)
-              case _                                                                        => Future.successful(routes.NotableErrorController.answersAreInvalid())
+              case Some(_)                                                                  =>
+                navigateLiable(eclReturn)
+              case _                                                                        =>
+                Future.successful(Redirect(routes.NotableErrorController.answersAreInvalid()))
             }
         )
-      case false => Future.successful(routes.RelevantApLengthController.onPageLoad(CheckMode))
+      case false =>
+        Future.successful(Redirect(routes.RelevantApLengthController.onPageLoad(CheckMode)))
     }
+  } else {
+    Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad()))
+  }
 
   private def clearAmlActivityAnswersAndRecalculate(
     eclReturn: EclReturn
-  )(implicit request: RequestHeader) = {
+  )(implicit request: Request[_]): Future[Result] = {
     val updatedReturn =
       eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
     (for {
       liability <- eclLiabilityService.calculateLiability(updatedReturn).asResponseError
       _         <- eclReturnsService.upsertReturn(updatedReturn.copy(calculatedLiability = Some(liability))).asResponseError
     } yield liability).fold(
-      error => routes.NotableErrorController.answersAreInvalid(),
-      _ => routes.AmountDueController.onPageLoad(CheckMode)
+      error => routeError(error),
+      _ => Redirect(routes.AmountDueController.onPageLoad(CheckMode))
     )
   }
 
-  private def navigateLiable(eclReturn: EclReturn): Future[Call] =
-    eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
-      case Some(_) => Future.successful(routes.AmountDueController.onPageLoad(CheckMode))
-      case None    => Future.successful(routes.AmlRegulatedActivityController.onPageLoad(CheckMode))
-    }
+  private def navigateLiable(eclReturn: EclReturn): Future[Result] =
+    Future.successful(Redirect(eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
+      case Some(_) => routes.AmountDueController.onPageLoad(CheckMode)
+      case None    => routes.AmlRegulatedActivityController.onPageLoad(CheckMode)
+    }))
 
 }

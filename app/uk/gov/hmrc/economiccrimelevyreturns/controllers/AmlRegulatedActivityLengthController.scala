@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthForm
 import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityLengthView
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmlRegulatedActivityLengthView, ErrorTemplate}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -42,7 +42,7 @@ class AmlRegulatedActivityLengthController @Inject() (
   eclLiabilityService: EclCalculatorService,
   eclReturnsService: ReturnsService,
   storeUrl: StoreUrlAction
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, errorTemplate: ErrorTemplate)
     extends FrontendBaseController
     with BaseController
     with ErrorHandler
@@ -62,7 +62,8 @@ class AmlRegulatedActivityLengthController @Inject() (
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
         amlRegulatedActivityLength => {
-          val eclReturn = request.eclReturn.copy(
+          val answerChanged = !request.eclReturn.amlRegulatedActivityLength.contains(amlRegulatedActivityLength)
+          val eclReturn     = request.eclReturn.copy(
             amlRegulatedActivityLength = Some(amlRegulatedActivityLength)
           )
           (for {
@@ -70,10 +71,13 @@ class AmlRegulatedActivityLengthController @Inject() (
             calculatedReturn     = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
             _                   <- eclReturnsService.upsertReturn(calculatedReturn).asResponseError
           } yield calculatedReturn).fold(
-            err => Redirect(routes.NotableErrorController.answersAreInvalid()),
-            _ => Redirect(routes.AmountDueController.onPageLoad(mode))
+            err => routeError(err),
+            _ =>
+              Redirect(answerChanged match {
+                case true  => routes.AmountDueController.onPageLoad(mode)
+                case false => routes.CheckYourAnswersController.onPageLoad()
+              })
           )
-
         }
       )
   }

@@ -42,7 +42,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
       val sessionData      = random[SessionData]
       val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
-      stubGetReturn(eclReturn)
+      stubGetReturn(eclReturn.copy(relevantAp12Months = None))
       stubGetSession(validSessionData)
 
       val updatedReturn =
@@ -67,7 +67,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
       val sessionData      = random[SessionData]
       val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
-      stubGetReturn(eclReturn)
+      stubGetReturn(eclReturn.copy(relevantAp12Months = None))
       stubGetSession(validSessionData)
 
       val updatedReturn = eclReturn.copy(relevantAp12Months = Some(false), calculatedLiability = None)

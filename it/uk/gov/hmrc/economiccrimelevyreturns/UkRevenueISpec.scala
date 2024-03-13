@@ -47,12 +47,11 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       val sessionData         = random[SessionData]
       val validSessionData    = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
-      stubGetReturn(eclReturn)
+      stubGetReturn(eclReturn.copy(relevantApRevenue = None))
       stubGetSession(validSessionData)
 
       val updatedReturn = eclReturn.copy(
-        relevantApRevenue = Some(ukRevenue),
-        carriedOutAmlRegulatedActivityForFullFy = None
+        relevantApRevenue = Some(ukRevenue)
       )
 
       stubUpsertReturn(updatedReturn)
@@ -80,7 +79,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       val sessionData         = random[SessionData]
       val validSessionData    = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
-      stubGetReturn(eclReturn)
+      stubGetReturn(eclReturn.copy(relevantApRevenue = None))
       stubGetSession(validSessionData)
 
       val updatedReturn = eclReturn.copy(

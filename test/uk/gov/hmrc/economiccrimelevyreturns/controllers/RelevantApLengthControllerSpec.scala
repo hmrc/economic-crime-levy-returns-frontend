@@ -25,12 +25,11 @@ import play.api.http.Status.OK
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantApLengthDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantApLengthView
 
@@ -45,10 +44,6 @@ class RelevantApLengthControllerSpec extends SpecBase {
   val mockEclReturnsService: ReturnsService         = mock[ReturnsService]
   val mockEclLiabilityService: EclCalculatorService = mock[EclCalculatorService]
 
-  val dataCleanup: RelevantApLengthDataCleanup = new RelevantApLengthDataCleanup {
-    override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
-  }
-
   override def beforeEach(): Unit = {
     reset(mockEclLiabilityService)
     reset(mockEclReturnsService)
@@ -62,7 +57,6 @@ class RelevantApLengthControllerSpec extends SpecBase {
       mockEclReturnsService,
       mockEclLiabilityService,
       formProvider,
-      dataCleanup,
       view,
       fakeNoOpStoreUrlAction
     )
@@ -102,8 +96,8 @@ class RelevantApLengthControllerSpec extends SpecBase {
       Arbitrary.arbitrary[EclReturn],
       Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
     ) { (eclReturn: EclReturn, relevantApLength: Int) =>
-      new TestContext(eclReturn) {
-        val updatedReturn = dataCleanup.cleanup(eclReturn.copy(relevantApLength = Some(relevantApLength)))
+      new TestContext(eclReturn.copy(relevantApLength = None)) {
+        val updatedReturn = eclReturn.copy(relevantApLength = Some(relevantApLength))
 
         when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
@@ -122,7 +116,7 @@ class RelevantApLengthControllerSpec extends SpecBase {
       Gen.alphaStr,
       Arbitrary.arbitrary[Mode]
     ) { (eclReturn: EclReturn, invalidLength: String, mode: Mode) =>
-      new TestContext(eclReturn) {
+      new TestContext(eclReturn.copy(relevantApLength = None)) {
         val result: Future[Result]    =
           controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", invalidLength)))
         val formWithErrors: Form[Int] = form.bind(Map("value" -> invalidLength))
@@ -130,6 +124,25 @@ class RelevantApLengthControllerSpec extends SpecBase {
         status(result) shouldBe BAD_REQUEST
 
         contentAsString(result) shouldBe view(formWithErrors, mode)(fakeRequest, messages).toString
+      }
+    }
+
+    "save the provided relevant AP length then redirect to the check your answers page of no data change" in forAll(
+      Arbitrary.arbitrary[EclReturn],
+      Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
+    ) { (eclReturn: EclReturn, relevantApLength: Int) =>
+      new TestContext(eclReturn.copy(relevantApLength = Some(relevantApLength))) {
+        val updatedReturn = eclReturn.copy(relevantApLength = Some(relevantApLength))
+
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+        val result: Future[Result] =
+          controller.onSubmit(CheckMode)(fakeRequest.withFormUrlEncodedBody(("value", relevantApLength.toString)))
+
+        status(result) shouldBe SEE_OTHER
+
+        redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
       }
     }
   }

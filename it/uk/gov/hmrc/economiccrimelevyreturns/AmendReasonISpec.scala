@@ -52,7 +52,7 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
       val obligationDetails = random[ObligationDetails]
       val fromFY            = random[LocalDate]
       val toFY              = random[LocalDate]
-      val reason            = nonEmptyString.sample.get
+      val reason            = stringsLongerThan(1).retryUntil(s => s == s.trim).sample.get
       val updatedObligation =
         obligationDetails.copy(inboundCorrespondenceFromDate = fromFY, inboundCorrespondenceToDate = toFY)
       val updatedReturn     = eclReturn.copy(obligationDetails = Some(updatedObligation))
@@ -60,7 +60,7 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
       val sessionData      = random[SessionData]
       val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
-      stubGetReturn(updatedReturn)
+      stubGetReturn(updatedReturn.copy(amendReason = None))
       stubGetSession(validSessionData)
 
       val returnWithAmendReason = updatedReturn.copy(amendReason = Some(reason))

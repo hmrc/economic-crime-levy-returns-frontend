@@ -23,8 +23,8 @@ import javax.inject.Inject
 class AmlRegulatedActivityDataCleanup @Inject() () extends DataCleanup {
   def cleanup(eclReturn: EclReturn): EclReturn =
     eclReturn.carriedOutAmlRegulatedActivityForFullFy match {
-      case Some(true) => eclReturn.copy(amlRegulatedActivityLength = None, calculatedLiability = None)
-      case _          => eclReturn.copy(calculatedLiability = None)
+      case Some(true) => eclReturn.copy(amlRegulatedActivityLength = None)
+      case _          => eclReturn
     }
 
 }

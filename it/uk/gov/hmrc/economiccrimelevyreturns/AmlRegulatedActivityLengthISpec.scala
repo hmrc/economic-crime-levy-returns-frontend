@@ -51,7 +51,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
       val sessionData                = random[SessionData]
       val validSessionData           = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
-      stubGetReturn(eclReturn)
+      stubGetReturn(eclReturn.copy(amlRegulatedActivityLength = None))
       stubGetSession(validSessionData)
 
       val updatedReturn =
