@@ -43,10 +43,7 @@ class ReturnDataRetrievalAction @Inject() (
       startAmendUrl <- getStartAmendUrl(eclReturn.returnType, request.session, request.internalId)(hc(request))
       periodKey     <- getPeriodKey(request.session, request.internalId)(hc(request))
     } yield (eclReturn, startAmendUrl, periodKey)).foldF(
-      error => {
-        val e = error
-        Future.failed(new Exception(error.message))
-      },
+      error => Future.failed(new Exception(error.message)),
       tuple =>
         Future.successful(
           ReturnDataRequest(
