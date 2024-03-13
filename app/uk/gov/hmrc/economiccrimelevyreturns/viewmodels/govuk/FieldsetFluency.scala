@@ -65,9 +65,6 @@ trait FieldsetFluency {
     def withCssClass(newClass: String): Legend =
       legend.copy(classes = s"${legend.classes} $newClass")
 
-    def asHiddenPageHeading(size: LegendSize = LegendSize.ExtraLarge): Legend =
-      asPageHeading(size).withCssClass("govuk-visually-hidden")
-
     def asHidden(): Legend =
       legend
         .copy(isPageHeading = false)

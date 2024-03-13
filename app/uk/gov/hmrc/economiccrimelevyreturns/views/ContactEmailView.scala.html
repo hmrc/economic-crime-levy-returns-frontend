@@ -41,7 +41,7 @@
             InputViewModel(
                 field = form("value"),
                 label = LabelViewModel(HtmlContent(HtmlFormat.escape(messages("contactEmail.heading", name))))
-                       .asHiddenPageHeading()
+                       .asHidden()
             ).asEmail().withWidth(Fixed20)
         )
 
