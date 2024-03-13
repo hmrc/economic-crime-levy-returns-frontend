@@ -43,7 +43,9 @@ trait DateFluency {
       fieldset: Fieldset
     )(implicit messages: Messages): DateInput = {
 
-      val errorClass = if (errorMessage(field).isDefined) "govuk-input--error" else ""
+      val errorClass =
+        if (errorMessage(field, Some(messages("govukErrorMessage.visuallyHiddenText"))).isDefined) "govuk-input--error"
+        else ""
 
       val items = Seq(
         InputItem(
@@ -73,7 +75,7 @@ trait DateFluency {
         fieldset = Some(fieldset),
         items = items,
         id = field.id,
-        errorMessage = errorMessage(field)
+        errorMessage = errorMessage(field, Some(messages("govukErrorMessage.visuallyHiddenText")))
       )
     }
   }

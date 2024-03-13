@@ -50,7 +50,7 @@ trait RadiosFluency {
         fieldset = Some(fieldset),
         name = field.name,
         items = items map (item => item.copy(checked = field.value.isDefined && field.value == item.value)),
-        errorMessage = errorMessage(field)
+        errorMessage = errorMessage(field, Some(messages("govukErrorMessage.visuallyHiddenText")))
       )
 
     def yesNo(
