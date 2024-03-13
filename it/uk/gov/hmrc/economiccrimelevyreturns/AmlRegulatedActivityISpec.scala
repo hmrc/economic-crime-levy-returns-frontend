@@ -39,38 +39,9 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
     "save the selected AML regulated activity option then redirect to the ECL amount due page when the Yes option is selected" in {
       stubAuthorised()
 
-      val ukRevenue           = bigDecimalInRange(MinMaxValues.RevenueMin.toDouble, MinMaxValues.RevenueMax.toDouble).sample.get
-      val eclReturn           = random[EclReturn].copy(relevantAp12Months = Some(true), relevantApRevenue = Some(ukRevenue))
-      val calculatedLiability = random[CalculatedLiability]
-      val sessionData         = random[SessionData]
-      val validSessionData    = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
-
-      stubGetReturn(eclReturn)
-      stubGetSession(validSessionData)
-
-      val updatedReturn = eclReturn.copy(
-        carriedOutAmlRegulatedActivityForFullFy = Some(true),
-        amlRegulatedActivityLength = None,
-        calculatedLiability = None
-      )
-
-      stubUpsertReturn(updatedReturn)
-      stubCalculateLiability(CalculateLiabilityRequest(FullYear, FullYear, ukRevenue.toLong), calculatedLiability)
-
-      val result = callRoute(
-        FakeRequest(routes.AmlRegulatedActivityController.onSubmit(NormalMode))
-          .withFormUrlEncodedBody(("value", "true"))
-      )
-
-      status(result) shouldBe SEE_OTHER
-
-      redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(NormalMode).url)
-    }
-
-    "save the selected AML regulated activity option then redirect to the AML regulated activity length page when the No option is selected" in {
-      stubAuthorised()
-
-      val eclReturn        = random[EclReturn].copy(internalId = testInternalId)
+      val ukRevenue        = bigDecimalInRange(MinMaxValues.RevenueMin.toDouble, MinMaxValues.RevenueMax.toDouble).sample.get
+      val eclReturn        =
+        random[EclReturn].copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
       val sessionData      = random[SessionData]
       val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
 
@@ -78,9 +49,38 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetSession(validSessionData)
 
       val updatedReturn = eclReturn.copy(
-        carriedOutAmlRegulatedActivityForFullFy = Some(false),
-        amlRegulatedActivityLength = None,
-        calculatedLiability = None
+        carriedOutAmlRegulatedActivityForFullFy = Some(false)
+      )
+
+      stubUpsertReturn(updatedReturn)
+
+      val result = callRoute(
+        FakeRequest(routes.AmlRegulatedActivityController.onSubmit(NormalMode))
+          .withFormUrlEncodedBody(("value", "false"))
+      )
+
+      status(result) shouldBe SEE_OTHER
+
+      redirectLocation(result) shouldBe Some(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode).url)
+    }
+
+    "save the selected AML regulated activity option then redirect to the AML regulated activity length page when the No option is selected" in {
+      stubAuthorised()
+
+      val eclReturn        =
+        random[EclReturn].copy(
+          internalId = testInternalId,
+          carriedOutAmlRegulatedActivityForFullFy = None,
+          amlRegulatedActivityLength = None
+        )
+      val sessionData      = random[SessionData]
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+
+      stubGetReturn(eclReturn)
+      stubGetSession(validSessionData)
+
+      val updatedReturn = eclReturn.copy(
+        carriedOutAmlRegulatedActivityForFullFy = Some(false)
       )
 
       stubUpsertReturn(updatedReturn)

@@ -28,7 +28,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.cleanup.AmlRegulatedActivityDataClea
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, Mode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, CheckMode, EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityView
 
@@ -96,7 +96,7 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
         mode: Mode,
         calculatedLiability: CalculatedLiability
       ) =>
-        new TestContext(eclReturn) {
+        new TestContext(eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None)) {
           val carriedOutAmlRegulatedActivityForFullFy = true
           val updatedReturn: EclReturn                =
             dataCleanup.cleanup(
@@ -137,7 +137,9 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
         mode: Mode,
         calculatedLiability: CalculatedLiability
       ) =>
-        new TestContext(eclReturn) {
+        new TestContext(
+          eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
+        ) {
           val carriedOutAmlRegulatedActivityForFullFy = false
           val updatedReturn: EclReturn                =
             dataCleanup.cleanup(
@@ -146,8 +148,15 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
               )
             )
 
-          when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          when(mockEclReturnsService.upsertReturn(any())(any()))
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(
+              EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+                Future.successful(Right(calculatedLiability))
+              )
+            )
 
           val result: Future[Result] =
             controller.onSubmit(mode)(
@@ -162,13 +171,47 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
 
     "return a Bad Request with form errors when invalid data is submitted" in forAll {
       (eclReturn: EclReturn, mode: Mode) =>
-        new TestContext(eclReturn) {
+        new TestContext(eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None)) {
           val result: Future[Result]        = controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", "")))
           val formWithErrors: Form[Boolean] = form.bind(Map("value" -> ""))
 
           status(result) shouldBe BAD_REQUEST
 
           contentAsString(result) shouldBe view(formWithErrors, mode)(fakeRequest, messages).toString
+        }
+    }
+
+    "save the selected answer then redirect to the check your answers page if no data change" in forAll {
+      (
+        eclReturn: EclReturn,
+        carriedOutAmlRegulatedActivityForFullFy: Boolean,
+        length: Int
+      ) =>
+        new TestContext(
+          eclReturn.copy(
+            carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy),
+            amlRegulatedActivityLength = Some(length)
+          )
+        ) {
+          val updatedReturn: EclReturn =
+            dataCleanup.cleanup(
+              eclReturn.copy(
+                carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy),
+                amlRegulatedActivityLength = Some(length)
+              )
+            )
+
+          when(mockEclReturnsService.upsertReturn(any())(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          val result: Future[Result] =
+            controller.onSubmit(CheckMode)(
+              fakeRequest.withFormUrlEncodedBody(("value", carriedOutAmlRegulatedActivityForFullFy.toString))
+            )
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
         }
     }
   }

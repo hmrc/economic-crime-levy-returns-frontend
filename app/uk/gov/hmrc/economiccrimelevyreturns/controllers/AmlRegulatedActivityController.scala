@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, RequestHeader}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, RequestHeader, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.AmlRegulatedActivityDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityFormProvider
@@ -64,7 +64,9 @@ class AmlRegulatedActivityController @Inject() (
       .fold(
         formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
         carriedOutAmlRegulatedActivityForFullFy => {
-          val eclReturn =
+          val answerChanged =
+            !request.eclReturn.carriedOutAmlRegulatedActivityForFullFy.contains(carriedOutAmlRegulatedActivityForFullFy)
+          val eclReturn     =
             dataCleanup.cleanup(
               request.eclReturn.copy(
                 carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy)
@@ -76,15 +78,20 @@ class AmlRegulatedActivityController @Inject() (
           } yield unit)
             .foldF(
               err => Future.successful(routeError(err)),
-              _ => route(eclReturn, carriedOutAmlRegulatedActivityForFullFy, mode).map(Redirect)
+              _ => route(eclReturn, carriedOutAmlRegulatedActivityForFullFy, mode, answerChanged)
             )
         }
       )
   }
 
-  private def route(eclReturn: EclReturn, carriedOutAmlRegulatedActivityForFullFy: Boolean, mode: Mode)(implicit
-    requestHeader: RequestHeader
-  ) =
+  private def route(
+    eclReturn: EclReturn,
+    carriedOutAmlRegulatedActivityForFullFy: Boolean,
+    mode: Mode,
+    answerChanged: Boolean
+  )(implicit
+    requestHeader: Request[_]
+  ): Future[Result] = if (answerChanged) {
     carriedOutAmlRegulatedActivityForFullFy match {
       case true  =>
         (for {
@@ -92,10 +99,17 @@ class AmlRegulatedActivityController @Inject() (
           calculatedReturn     = eclReturn.copy(calculatedLiability = Some(calculatedLiability))
           _                   <- eclReturnsService.upsertReturn(calculatedReturn).asResponseError
         } yield calculatedLiability).fold(
-          error => routes.NotableErrorController.answersAreInvalid(),
-          _ => routes.AmountDueController.onPageLoad(mode)
+          error => routeError(error),
+          _ => Redirect(routes.AmountDueController.onPageLoad(mode))
         )
-      case false => Future.successful(routes.AmlRegulatedActivityLengthController.onPageLoad(mode))
+      case false =>
+        Future.successful(Redirect(eclReturn.amlRegulatedActivityLength match {
+          case None => routes.AmlRegulatedActivityLengthController.onPageLoad(mode)
+          case _    => routes.CheckYourAnswersController.onPageLoad()
+        }))
     }
+  } else {
+    Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad()))
+  }
 
 }

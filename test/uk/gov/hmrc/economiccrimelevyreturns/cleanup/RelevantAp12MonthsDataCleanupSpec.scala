@@ -25,23 +25,19 @@ class RelevantAp12MonthsDataCleanupSpec extends SpecBase {
   val dataCleanup = new RelevantAp12MonthsDataCleanup
 
   "cleanup" should {
-    "return an ECL return with the relevant AP length and calculated liability set to none when relevant AP 12 months is true" in forAll {
+    "return an ECL return with the relevant AP length set to none when relevant AP 12 months is true" in forAll {
       eclReturn: EclReturn =>
         val updatedReturn = eclReturn.copy(relevantAp12Months = Some(true))
 
         dataCleanup.cleanup(updatedReturn) shouldBe updatedReturn.copy(
-          relevantApLength = None,
-          calculatedLiability = None
+          relevantApLength = None
         )
     }
 
-    "return an ECL return with the calculated liability set to none when relevant AP 12 months is false" in forAll {
-      eclReturn: EclReturn =>
-        val updatedReturn = eclReturn.copy(relevantAp12Months = Some(false))
+    "return an ECL return when relevant AP 12 months is false" in forAll { eclReturn: EclReturn =>
+      val updatedReturn = eclReturn.copy(relevantAp12Months = Some(false))
 
-        dataCleanup.cleanup(updatedReturn) shouldBe updatedReturn.copy(
-          calculatedLiability = None
-        )
+      dataCleanup.cleanup(updatedReturn) shouldBe updatedReturn
     }
   }
 

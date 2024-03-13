@@ -104,7 +104,7 @@ class UkRevenueControllerSpec extends SpecBase {
       Gen.oneOf[Band](Medium, Large, VeryLarge),
       bigDecimalInRange(1, 1000)
     ) { (eclReturn: EclReturn, calculatedLiability: CalculatedLiability, calculatedBand: Band, ukRevenue: BigDecimal) =>
-      new TestContext(eclReturn) {
+      new TestContext(eclReturn.copy(relevantApRevenue = None)) {
         val updatedReturn: EclReturn = dataCleanup.cleanup(eclReturn.copy(relevantApRevenue = Some(ukRevenue)))
 
         when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
@@ -139,7 +139,7 @@ class UkRevenueControllerSpec extends SpecBase {
     ) { (eclReturn: EclReturn, calculatedLiability: CalculatedLiability, calculatedBand: Band, ukRevenue: BigDecimal) =>
       val eclReturnNoAmlActivity =
         eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None, relevantAp12Months = Some(true))
-      new TestContext(eclReturnNoAmlActivity) {
+      new TestContext(eclReturnNoAmlActivity.copy(relevantApRevenue = None)) {
         val updatedReturn: EclReturn = dataCleanup.cleanup(
           eclReturnNoAmlActivity.copy(
             relevantApRevenue = Some(ukRevenue)
@@ -178,7 +178,7 @@ class UkRevenueControllerSpec extends SpecBase {
     ) { (eclReturn: EclReturn, ukRevenue: BigDecimal, calculatedLiability: CalculatedLiability, calculatedBand: Band) =>
       val eclReturnNoAmlActivity =
         eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(true), relevantAp12Months = Some(true))
-      new TestContext(eclReturnNoAmlActivity) {
+      new TestContext(eclReturnNoAmlActivity.copy(relevantApRevenue = None)) {
         val updatedReturn: EclReturn = dataCleanup.cleanup(
           eclReturnNoAmlActivity.copy(
             relevantApRevenue = Some(ukRevenue)
@@ -215,7 +215,7 @@ class UkRevenueControllerSpec extends SpecBase {
         val updatedReturn = eclReturn.copy(relevantAp12Months = Some(true))
         val liability     = calculatedLiability.copy(calculatedBand = Small)
 
-        new TestContext(updatedReturn) {
+        new TestContext(updatedReturn.copy(relevantApRevenue = None)) {
           val cleansedReturn: EclReturn = dataCleanup.cleanup(
             updatedReturn.copy(
               relevantApRevenue = Some(ukRevenue)
@@ -267,7 +267,7 @@ class UkRevenueControllerSpec extends SpecBase {
 
     "return a Call to the answers are invalid page in either mode when the ECL return data is invalid" in forAll {
       (eclReturn: EclReturn, mode: Mode) =>
-        new TestContext(eclReturn) {
+        new TestContext(eclReturn.copy(relevantApRevenue = None)) {
           val ukRevenue: BigDecimal    = bigDecimalInRange(1, 1000).sample.get
           val updatedReturn: EclReturn = dataCleanup.cleanup(
             eclReturn.copy(
@@ -298,7 +298,7 @@ class UkRevenueControllerSpec extends SpecBase {
       Gen.alphaStr,
       Arbitrary.arbitrary[Mode]
     ) { (eclReturn: EclReturn, invalidRevenue: String, mode: Mode) =>
-      new TestContext(eclReturn) {
+      new TestContext(eclReturn.copy(relevantApRevenue = None)) {
         val result: Future[Result]           =
           controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", invalidRevenue)))
         val formWithErrors: Form[BigDecimal] = form.bind(Map("value" -> invalidRevenue))
@@ -307,6 +307,43 @@ class UkRevenueControllerSpec extends SpecBase {
 
         contentAsString(result) shouldBe view(formWithErrors, mode)(fakeRequest, messages).toString
       }
+    }
+  }
+
+  "return a Call to the check your answers page in CheckMode when no data gas changed" in forAll(
+    arbEclReturn.arbitrary,
+    bigDecimalInRange(1, 1000),
+    arbCalculatedLiability.arbitrary,
+    Gen.oneOf[Band](Medium, Large, VeryLarge)
+  ) { (eclReturn: EclReturn, ukRevenue: BigDecimal, calculatedLiability: CalculatedLiability, calculatedBand: Band) =>
+    new TestContext(eclReturn.copy(relevantApRevenue = Some(ukRevenue))) {
+      val updatedReturn: EclReturn = dataCleanup.cleanup(
+        eclReturn.copy(
+          relevantApRevenue = Some(ukRevenue)
+        )
+      )
+
+      when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+        .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+      val liability: CalculatedLiability = calculatedLiability.copy(calculatedBand = calculatedBand)
+      when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+        .thenReturn(
+          EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+            Future.successful(Right(liability))
+          )
+        )
+
+      val calculatedReturn: EclReturn = updatedReturn.copy(calculatedLiability = Some(liability))
+      when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(calculatedReturn))(any()))
+        .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+      val result: Future[Result] =
+        controller.onSubmit(CheckMode)(fakeRequest.withFormUrlEncodedBody(("value", ukRevenue.toString)))
+
+      status(result) shouldBe SEE_OTHER
+
+      redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
     }
   }
 }

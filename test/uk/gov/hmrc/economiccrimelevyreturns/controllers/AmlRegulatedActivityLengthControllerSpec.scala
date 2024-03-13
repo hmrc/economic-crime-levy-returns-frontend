@@ -29,7 +29,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthForm
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityLengthView
 
@@ -104,7 +104,7 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
           relevantAp12Months = Some(true)
         )
 
-        new TestContext(eclReturn) {
+        new TestContext(eclReturn.copy(amlRegulatedActivityLength = None)) {
           val updatedReturn: EclReturn =
             eclReturn.copy(
               amlRegulatedActivityLength = Some(amlRegulatedActivityLength)
@@ -140,7 +140,7 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
       Gen.alphaStr,
       Arbitrary.arbitrary[Mode]
     ) { (eclReturn: EclReturn, invalidLength: String, mode: Mode) =>
-      new TestContext(eclReturn) {
+      new TestContext(eclReturn.copy(amlRegulatedActivityLength = None)) {
         val result: Future[Result]    =
           controller.onSubmit(mode)(fakeRequest.withFormUrlEncodedBody(("value", invalidLength)))
         val formWithErrors: Form[Int] = form.bind(Map("value" -> invalidLength))
@@ -149,6 +149,54 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
 
         contentAsString(result) shouldBe view(formWithErrors, mode)(fakeRequest, messages).toString
       }
+    }
+
+    "save the provided AML regulated activity length then redirect to the check your answer page if no data change" in forAll(
+      Arbitrary.arbitrary[EclReturn],
+      Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax),
+      Arbitrary.arbitrary[CalculatedLiability],
+      Arbitrary.arbitrary[Int]
+    ) {
+      (
+        randomEclReturn: EclReturn,
+        amlRegulatedActivityLength: Int,
+        calculatedLiability: CalculatedLiability,
+        length: Int
+      ) =>
+        val eclReturn = randomEclReturn.copy(
+          relevantApRevenue = Some(length),
+          relevantAp12Months = Some(true)
+        )
+
+        new TestContext(eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength))) {
+          val updatedReturn: EclReturn =
+            eclReturn.copy(
+              amlRegulatedActivityLength = Some(amlRegulatedActivityLength)
+            )
+
+          when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(
+              EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+                Future.successful(Right(calculatedLiability))
+              )
+            )
+
+          when(
+            mockEclReturnsService.upsertReturn(
+              ArgumentMatchers.eq(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))
+            )(any())
+          )
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          val result: Future[Result] =
+            controller.onSubmit(CheckMode)(
+              fakeRequest.withFormUrlEncodedBody(("value", amlRegulatedActivityLength.toString))
+            )
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
+        }
     }
   }
 }

@@ -23,8 +23,8 @@ import javax.inject.Inject
 class RelevantAp12MonthsDataCleanup @Inject() () extends DataCleanup {
   def cleanup(eclReturn: EclReturn): EclReturn =
     eclReturn.relevantAp12Months match {
-      case Some(true) => eclReturn.copy(relevantApLength = None, calculatedLiability = None)
-      case _          => eclReturn.copy(calculatedLiability = None)
+      case Some(true) => eclReturn.copy(relevantApLength = None)
+      case _          => eclReturn
     }
 
 }

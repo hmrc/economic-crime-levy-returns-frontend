@@ -25,23 +25,20 @@ class AmlRegulatedActivityDataCleanupSpec extends SpecBase {
   val dataCleanup = new AmlRegulatedActivityDataCleanup
 
   "cleanup" should {
-    "return an ECL return with the AML regulated activity length and calculated liability set to none when carried out AML regulated activity for the full financial year is true" in forAll {
+    "return an ECL return with the AML regulated activity length set to none when carried out AML regulated activity for the full financial year is true" in forAll {
       eclReturn: EclReturn =>
         val updatedReturn = eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(true))
 
         dataCleanup.cleanup(updatedReturn) shouldBe updatedReturn.copy(
-          amlRegulatedActivityLength = None,
-          calculatedLiability = None
+          amlRegulatedActivityLength = None
         )
     }
 
-    "return an ECL return with the calculated liability set to none when carried out AML regulated activity for the full financial year is false" in forAll {
+    "return an ECL return when carried out AML regulated activity for the full financial year is false" in forAll {
       eclReturn: EclReturn =>
         val updatedReturn = eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(false))
 
-        dataCleanup.cleanup(updatedReturn) shouldBe updatedReturn.copy(
-          calculatedLiability = None
-        )
+        dataCleanup.cleanup(updatedReturn) shouldBe updatedReturn
     }
   }
 
