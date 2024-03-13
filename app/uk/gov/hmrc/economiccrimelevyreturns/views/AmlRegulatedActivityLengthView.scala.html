@@ -38,7 +38,7 @@
         @govukInput(
             InputViewModel(
                 field = form("value"),
-                label = LabelViewModel(Text(messages("amlRegulatedActivityLength.heading"))).asHiddenPageHeading()
+                label = LabelViewModel(Text(messages("amlRegulatedActivityLength.heading"))).asHidden()
             )
                     .asNumeric()
                     .withWidth(Fixed5)

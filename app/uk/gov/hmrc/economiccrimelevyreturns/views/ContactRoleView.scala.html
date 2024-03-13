@@ -39,7 +39,7 @@
             InputViewModel(
                 field = form("value"),
                 label = LabelViewModel(HtmlContent(HtmlFormat.escape(messages("contactRole.heading", name))))
-                       .asHiddenPageHeading()
+                       .asHidden()
             ).withWidth(Fixed20).withHint(Hint(content = Text(messages("contactRole.hint"))))
         )
 
