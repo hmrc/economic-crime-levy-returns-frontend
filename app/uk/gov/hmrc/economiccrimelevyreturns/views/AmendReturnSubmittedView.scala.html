@@ -60,11 +60,11 @@
 @if(contactAddress.isDefined){
     <p class="govuk-body">@messages("amend.submitted.p6")</p>
 
-    <p class="govuk-body">
+    <div class="govuk-body">
         @{contactAddress.map { answer =>
         Html(AddressViewModel.html(answer))
         }}
-    </p>
+    </div>
 }
 
 
