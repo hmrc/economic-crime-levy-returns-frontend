@@ -34,13 +34,14 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
 
       val fromFY            = random[LocalDate]
       val toFY              = random[LocalDate]
-      val updatedObligation = random[ObligationDetails]
-        .copy(inboundCorrespondenceFromDate = fromFY, inboundCorrespondenceToDate = toFY)
+      val updatedObligation = random[ObligationDetails].copy(
+        inboundCorrespondenceFromDate = fromFY,
+        inboundCorrespondenceToDate = toFY
+      )
 
       testSetup()
-      stubGetReturn(
-        clearAmendReason(random[EclReturn])
-          .copy(obligationDetails = Some(updatedObligation))
+      stubGetReturn(clearAmendReason(random[EclReturn])
+        .copy(obligationDetails = Some(updatedObligation))
       )
 
       val result = callRoute(FakeRequest(routes.AmendReasonController.onPageLoad(NormalMode)))
