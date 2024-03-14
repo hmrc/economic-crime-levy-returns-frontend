@@ -8,9 +8,23 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 import java.time.LocalDate
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, ObligationDetails, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, ObligationDetails, SessionData, SessionKeys}
 
 class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
+
+  def updateAmendReason(eclReturn: EclReturn, reason: String) =
+    eclReturn.copy(amendReason = Some(reason))
+
+  def clearAmendReason(eclReturn: EclReturn) =
+    eclReturn.copy(amendReason = None)
+
+  def testSetup(internalId: String = testInternalId): Unit =
+    stubGetSession(
+      SessionData(
+        internalId = internalId,
+        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+      )
+    )
 
   s"GET ${routes.AmendReasonController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.AmendReasonController.onPageLoad(NormalMode))
@@ -18,19 +32,16 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the amendment reason HTML view" in {
       stubAuthorised()
 
-      val eclReturn         = random[EclReturn]
-      val obligationDetails = random[ObligationDetails]
       val fromFY            = random[LocalDate]
       val toFY              = random[LocalDate]
-      val updatedObligation =
-        obligationDetails.copy(inboundCorrespondenceFromDate = fromFY, inboundCorrespondenceToDate = toFY)
-      val updatedReturn     = eclReturn.copy(obligationDetails = Some(updatedObligation))
+      val updatedObligation = random[ObligationDetails]
+        .copy(inboundCorrespondenceFromDate = fromFY, inboundCorrespondenceToDate = toFY)
 
-      val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
-
-      stubGetReturn(updatedReturn)
-      stubGetSession(validSessionData)
+      testSetup()
+      stubGetReturn(
+        clearAmendReason(random[EclReturn])
+          .copy(obligationDetails = Some(updatedObligation))
+      )
 
       val result = callRoute(FakeRequest(routes.AmendReasonController.onPageLoad(NormalMode)))
 
@@ -39,7 +50,6 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
       html(result) should include("Why are you requesting to amend your return?")
       html(result) should include(s"${fromFY.getYear.toString} to ${toFY.getYear.toString}")
     }
-
   }
 
   s"POST ${routes.AmendReasonController.onSubmit(NormalMode).url}" should {
@@ -48,33 +58,31 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
     "save the provided reason then redirect to the contact role page" in {
       stubAuthorised()
 
-      val eclReturn         = random[EclReturn]
-      val obligationDetails = random[ObligationDetails]
-      val fromFY            = random[LocalDate]
-      val toFY              = random[LocalDate]
-      val reason            = stringsLongerThan(1).retryUntil(s => s == s.trim).sample.get
-      val updatedObligation =
-        obligationDetails.copy(inboundCorrespondenceFromDate = fromFY, inboundCorrespondenceToDate = toFY)
-      val updatedReturn     = eclReturn.copy(obligationDetails = Some(updatedObligation))
+      val eclReturn = clearAmendReason(random[EclReturn])
+      val reason    = stringsLongerThan(1).retryUntil(s => s == s.trim).sample.get
 
-      val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
-
-      stubGetReturn(updatedReturn.copy(amendReason = None))
-      stubGetSession(validSessionData)
-
-      val returnWithAmendReason = updatedReturn.copy(amendReason = Some(reason))
-
-      stubUpsertReturn(returnWithAmendReason)
+      testSetup()
+      stubGetReturn(eclReturn)
+      stubUpsertReturn(updateAmendReason(eclReturn, reason))
 
       val result = callRoute(
         FakeRequest(routes.AmendReasonController.onSubmit(NormalMode))
           .withFormUrlEncodedBody(("value", reason))
       )
 
-      status(result) shouldBe SEE_OTHER
-
+      status(result)           shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.RelevantAp12MonthsController.onPageLoad(NormalMode).url)
     }
+  }
+
+  s"POST ${routes.AmendReasonController.onSubmit(CheckMode).url}" should {
+    behave like authorisedActionRoute(routes.AmendReasonController.onSubmit(CheckMode))
+    behave like goToNextPageInCheckMode(
+      value = random[String],
+      updateEclReturnValue = updateAmendReason,
+      clearEclReturnValue = clearAmendReason,
+      destination = routes.AmendReasonController.onSubmit(CheckMode),
+      testSetup = Some(testSetup)
+    )
   }
 }
