@@ -97,7 +97,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
       value = false,
       updateEclReturnValue = updateRelevantAp12Months,
       clearEclReturnValue = clearRelevantAp12Months,
-      destination = routes.RelevantAp12MonthsController.onSubmit(CheckMode),
+      callToMake = routes.RelevantAp12MonthsController.onSubmit(CheckMode),
       testSetup = Some(testSetup),
       relatedValueInfo = Some(
         RelatedValueInfo(

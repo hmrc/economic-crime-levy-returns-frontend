@@ -82,7 +82,7 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
       value = random[String],
       updateEclReturnValue = updateAmendReason,
       clearEclReturnValue = clearAmendReason,
-      destination = routes.AmendReasonController.onSubmit(CheckMode),
+      callToMake = routes.AmendReasonController.onSubmit(CheckMode),
       testSetup = Some(testSetup)
     )
   }

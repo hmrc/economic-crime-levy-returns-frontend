@@ -157,12 +157,12 @@ abstract class ISpecBase
   }
 
   def goToNextPageInCheckMode[A, B](
-    value: A,
-    updateEclReturnValue: (EclReturn, A) => EclReturn,
-    clearEclReturnValue: EclReturn => EclReturn,
-    destination: Call,
-    testSetup: Option[String => Unit] = None,
-    relatedValueInfo: Option[RelatedValueInfo[B]] = None
+                                     value: A,
+                                     updateEclReturnValue: (EclReturn, A) => EclReturn,
+                                     clearEclReturnValue: EclReturn => EclReturn,
+                                     callToMake: Call,
+                                     testSetup: Option[String => Unit] = None,
+                                     relatedValueInfo: Option[RelatedValueInfo[B]] = None
   ): Unit =
     "onSubmit" should {
       "go to check your answers page if data has not changed" in {
@@ -175,7 +175,7 @@ abstract class ISpecBase
         stubUpsertReturn(updateEclReturnValue(eclReturn, value))
 
         val result = callRoute(
-          FakeRequest(destination).withFormUrlEncodedBody(("value", value.toString))
+          FakeRequest(callToMake).withFormUrlEncodedBody(("value", value.toString))
         )
 
         status(result)           shouldBe SEE_OTHER
@@ -193,7 +193,7 @@ abstract class ISpecBase
           stubUpsertReturn(eclReturn)
 
           val result = callRoute(
-            FakeRequest(destination).withFormUrlEncodedBody(("value", value.toString))
+            FakeRequest(callToMake).withFormUrlEncodedBody(("value", value.toString))
           )
 
           status(result)           shouldBe SEE_OTHER
