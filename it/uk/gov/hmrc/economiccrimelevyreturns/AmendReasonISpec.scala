@@ -10,15 +10,17 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import java.time.LocalDate
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, ObligationDetails, SessionData, SessionKeys}
 
+import scala.util.Random
+
 class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
 
-  def updateAmendReason(eclReturn: EclReturn, reason: String) =
+  private def updateAmendReason(eclReturn: EclReturn, reason: String) =
     eclReturn.copy(amendReason = Some(reason))
 
-  def clearAmendReason(eclReturn: EclReturn) =
+  private def clearAmendReason(eclReturn: EclReturn) =
     eclReturn.copy(amendReason = None)
 
-  def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
+  private def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
@@ -27,6 +29,9 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
     )
     eclReturn
   }
+
+  private def validReason: String =
+    stringsLongerThan(1).retryUntil(s => s == s.trim).sample.get
 
   s"GET ${routes.AmendReasonController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.AmendReasonController.onPageLoad(NormalMode))
@@ -56,14 +61,14 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"POST ${routes.AmendReasonController.onSubmit(NormalMode).url}" should {
+  s"POST ${routes.AmendReasonController.onSubmit(NormalMode).url}"  should {
     behave like authorisedActionRoute(routes.AmendReasonController.onSubmit(NormalMode))
 
     "save the provided reason then redirect to the contact role page" in {
       stubAuthorised()
 
       val eclReturn = clearAmendReason(random[EclReturn])
-      val reason    = stringsLongerThan(1).retryUntil(s => s == s.trim).sample.get
+      val reason    = validReason
 
       testSetup()
       stubGetReturn(eclReturn)
@@ -79,10 +84,10 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"POST ${routes.AmendReasonController.onSubmit(CheckMode).url}" should {
+  s"POST ${routes.AmendReasonController.onSubmit(CheckMode).url}"   should {
     behave like authorisedActionRoute(routes.AmendReasonController.onSubmit(CheckMode))
     behave like goToNextPageInCheckMode(
-      value = random[String],
+      value = validReason,
       updateEclReturnValue = updateAmendReason,
       clearEclReturnValue = clearAmendReason,
       callToMake = routes.AmendReasonController.onSubmit(CheckMode),
