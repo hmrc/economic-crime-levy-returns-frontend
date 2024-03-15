@@ -20,6 +20,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Call, Result, Results}
 import play.api.test._
 import play.api.{Application, Mode}
+import uk.gov.hmrc.economiccrimelevyreturns.TestUtils
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
@@ -46,7 +47,8 @@ abstract class ISpecBase
     with ResultExtractors
     with WireMockHelper
     with WireMockStubs
-    with Generators {
+    with Generators
+    with TestUtils {
 
   implicit val arbString: Arbitrary[String]    = Arbitrary(Gen.alphaNumStr.retryUntil(_.nonEmpty))
   implicit lazy val system: ActorSystem        = ActorSystem()
@@ -141,30 +143,43 @@ abstract class ISpecBase
       )
   }
 
-  private def set[A](value: A, updateEclReturnValue: (EclReturn, A) => EclReturn, testSetup: Option[String => Unit]) = {
-    testSetup.foreach(_(testInternalId))
-    updateEclReturnValue(
+  private def set[A](
+    value: A,
+    updateEclReturnValue: (EclReturn, A) => EclReturn,
+    testSetup: Option[(EclReturn, String) => EclReturn]
+  ) = {
+    val eclReturn = updateEclReturnValue(
       random[EclReturn].copy(internalId = testInternalId),
       value
     )
+    setup(eclReturn, testSetup)
   }
 
-  private def clear[A](clearEclReturnValue: EclReturn => EclReturn, testSetup: Option[String => Unit]) = {
-    testSetup.foreach(_(testInternalId))
-    clearEclReturnValue(
+  private def clear[A](
+    clearEclReturnValue: EclReturn => EclReturn,
+    testSetup: Option[(EclReturn, String) => EclReturn]
+  ) = {
+    val eclReturn = clearEclReturnValue(
       random[EclReturn].copy(internalId = testInternalId)
     )
+    setup(eclReturn, testSetup)
   }
 
+  private def setup(eclReturn: EclReturn, testSetup: Option[(EclReturn, String) => EclReturn]) =
+    testSetup match {
+      case Some(setup) => setup(eclReturn, testInternalId)
+      case None        => eclReturn
+    }
+
   def goToNextPageInCheckMode[A, B](
-                                     value: A,
-                                     updateEclReturnValue: (EclReturn, A) => EclReturn,
-                                     clearEclReturnValue: EclReturn => EclReturn,
-                                     callToMake: Call,
-                                     testSetup: Option[String => Unit] = None,
-                                     relatedValueInfo: Option[RelatedValueInfo[B]] = None
+    value: A,
+    updateEclReturnValue: (EclReturn, A) => EclReturn,
+    clearEclReturnValue: EclReturn => EclReturn,
+    callToMake: Call,
+    testSetup: Option[(EclReturn, String) => EclReturn] = None,
+    relatedValueInfo: Option[RelatedValueInfo[B]] = None
   ): Unit =
-    "onSubmit" should {
+    "Go to next page is CheckMode" should {
       "go to check your answers page if data has not changed" in {
         stubAuthorised()
 

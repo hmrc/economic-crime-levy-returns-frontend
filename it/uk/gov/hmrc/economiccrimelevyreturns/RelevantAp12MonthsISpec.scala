@@ -25,13 +25,15 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
   def clearRelevantApLength(eclReturn: EclReturn) =
     eclReturn.copy(relevantApLength = None)
 
-  def testSetup(internalId: String = testInternalId): Unit =
+  def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
         values = Map(SessionKeys.PeriodKey -> testPeriodKey)
       )
     )
+    eclReturn
+  }
 
   s"GET ${routes.RelevantAp12MonthsController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.RelevantAp12MonthsController.onPageLoad(NormalMode))

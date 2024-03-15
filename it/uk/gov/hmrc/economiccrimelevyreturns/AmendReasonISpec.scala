@@ -18,13 +18,15 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
   def clearAmendReason(eclReturn: EclReturn) =
     eclReturn.copy(amendReason = None)
 
-  def testSetup(internalId: String = testInternalId): Unit =
+  def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
         values = Map(SessionKeys.PeriodKey -> testPeriodKey)
       )
     )
+    eclReturn
+  }
 
   s"GET ${routes.AmendReasonController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.AmendReasonController.onPageLoad(NormalMode))
@@ -40,8 +42,9 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
       )
 
       testSetup()
-      stubGetReturn(clearAmendReason(random[EclReturn])
-        .copy(obligationDetails = Some(updatedObligation))
+      stubGetReturn(
+        clearAmendReason(random[EclReturn])
+          .copy(obligationDetails = Some(updatedObligation))
       )
 
       val result = callRoute(FakeRequest(routes.AmendReasonController.onPageLoad(NormalMode)))
