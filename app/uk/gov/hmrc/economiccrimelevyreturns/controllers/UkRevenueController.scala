@@ -67,7 +67,11 @@ class UkRevenueController @Inject() (
             val eclReturn = dataCleanup.cleanup(request.eclReturn.copy(relevantApRevenue = Some(revenue)))
             calculateLiability(mode, eclReturn)
           } else {
-            Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad()))
+            Future.successful(Redirect(if (request.eclReturn.hasContactInfo) {
+              routes.CheckYourAnswersController.onPageLoad()
+            } else {
+              routes.AmountDueController.onPageLoad(CheckMode)
+            }))
           }
         }
       )

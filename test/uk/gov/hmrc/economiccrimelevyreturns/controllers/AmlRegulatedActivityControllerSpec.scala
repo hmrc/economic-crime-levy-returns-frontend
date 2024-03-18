@@ -185,17 +185,19 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
       (
         eclReturn: EclReturn,
         carriedOutAmlRegulatedActivityForFullFy: Boolean,
-        length: Int
+        length: Int,
+        name: String
       ) =>
+        val baseReturn = clearContact(eclReturn).copy(contactName = Some(name))
         new TestContext(
-          eclReturn.copy(
+          baseReturn.copy(
             carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy),
             amlRegulatedActivityLength = Some(length)
           )
         ) {
           val updatedReturn: EclReturn =
             dataCleanup.cleanup(
-              eclReturn.copy(
+              baseReturn.copy(
                 carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy),
                 amlRegulatedActivityLength = Some(length)
               )
@@ -212,6 +214,41 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
           status(result) shouldBe SEE_OTHER
 
           redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
+        }
+    }
+
+    "save the selected answer then redirect to the amount due page if no data change" in forAll {
+      (
+        eclReturn: EclReturn,
+        carriedOutAmlRegulatedActivityForFullFy: Boolean,
+        length: Int
+      ) =>
+        val baseReturn = clearContact(eclReturn).copy(contactName = None)
+        new TestContext(
+          baseReturn.copy(
+            carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy),
+            amlRegulatedActivityLength = Some(length)
+          )
+        ) {
+          val updatedReturn: EclReturn =
+            dataCleanup.cleanup(
+              baseReturn.copy(
+                carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy),
+                amlRegulatedActivityLength = Some(length)
+              )
+            )
+
+          when(mockEclReturnsService.upsertReturn(any())(any()))
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          val result: Future[Result] =
+            controller.onSubmit(CheckMode)(
+              fakeRequest.withFormUrlEncodedBody(("value", carriedOutAmlRegulatedActivityForFullFy.toString))
+            )
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(CheckMode).url)
         }
     }
   }
