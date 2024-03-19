@@ -36,7 +36,6 @@ import scala.concurrent.Future
 class StartControllerSpec extends SpecBase {
 
   val mockEnrolmentStoreProxyService: EnrolmentStoreProxyService = mock[EnrolmentStoreProxyService]
-  val mockEclAccountService: EclAccountService                   = mock[EclAccountService]
   val mockEclReturnsService: ReturnsService                      = mock[ReturnsService]
   val mockSessionService: SessionService                         = mock[SessionService]
 
@@ -45,11 +44,11 @@ class StartControllerSpec extends SpecBase {
   val noObligationForPeriodView: NoObligationForPeriodView   = app.injector.instanceOf[NoObligationForPeriodView]
   val chooseReturnPeriodView: ChooseReturnPeriodView         = app.injector.instanceOf[ChooseReturnPeriodView]
 
-  class TestContext(eclReturnData: EclReturn) {
+  class TestContext(eclReturnData: EclReturn, periodKey: String) {
     val controller = new StartController(
       mcc,
       fakeAuthorisedAction(internalId),
-      fakeDataRetrievalAction(eclReturnData),
+      fakeDataRetrievalAction(eclReturnData, Some(periodKey)),
       mockEnrolmentStoreProxyService,
       mockEclReturnsService,
       alreadySubmittedReturnView,
@@ -62,23 +61,18 @@ class StartControllerSpec extends SpecBase {
 
   override def beforeEach(): Unit = {
     reset(mockEnrolmentStoreProxyService)
-    reset(mockEclAccountService)
     reset(mockEclReturnsService)
     reset(mockSessionService)
   }
 
   "start" should {
     "redirect to the start page if the return data contains obligation details" in forAll {
-      (internalId: String, obligationDetails: ObligationDetails) =>
+      (internalId: String, obligationDetails: ObligationDetails, periodKey: String) =>
         val openObligation              = obligationDetails.copy(status = Open)
         val returnWithObligationDetails =
           EclReturn.empty(internalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(openObligation))
-        new TestContext(returnWithObligationDetails) {
+        new TestContext(returnWithObligationDetails, periodKey) {
           val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
-
-          when(mockEclAccountService.retrieveObligationData(any())).thenReturn(
-            EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(Some(obligationData))))
-          )
 
           when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
             .thenReturn(
@@ -93,20 +87,21 @@ class StartControllerSpec extends SpecBase {
         }
     }
 
-    "show the choose return period view if the return data does not contain any obligation details" in {
-      val returnWithoutObligationDetails = EclReturn.empty(internalId, Some(FirstTimeReturn))
-      new TestContext(returnWithoutObligationDetails) {
-        when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
-          .thenReturn(
-            EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(returnWithoutObligationDetails)))
-          )
+    "show the choose return period view if the return data does not contain any obligation details" in forAll {
+      (periodKey: String) =>
+        val returnWithoutObligationDetails = EclReturn.empty(internalId, Some(FirstTimeReturn))
+        new TestContext(returnWithoutObligationDetails, periodKey) {
+          when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(returnWithoutObligationDetails)))
+            )
 
-        val result: Future[Result] = controller.start()(fakeRequest)
+          val result: Future[Result] = controller.start()(fakeRequest)
 
-        status(result) shouldBe OK
+          status(result) shouldBe OK
 
-        contentAsString(result) shouldBe chooseReturnPeriodView()(fakeRequest, messages).toString
-      }
+          contentAsString(result) shouldBe chooseReturnPeriodView()(fakeRequest, messages).toString
+        }
     }
   }
 
@@ -114,10 +109,10 @@ class StartControllerSpec extends SpecBase {
     "upsert the return data to contain the obligation details if the same period key is already held or no obligation details exist" +
       "and return OK with the start view when the period key is for an open obligation" in forAll {
         (internalId: String, obligationDetails: ObligationDetails, eclRegistrationDate: LocalDate) =>
-          val openObligation = obligationDetails.copy(status = Open)
+          val openObligation = obligationDetails.copy(status = Open, periodKey = periodKey)
           val updatedReturn  =
             EclReturn.empty(internalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(openObligation))
-          new TestContext(updatedReturn) {
+          new TestContext(updatedReturn, periodKey) {
             when(
               mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(
                 any()
@@ -126,10 +121,6 @@ class StartControllerSpec extends SpecBase {
               .thenReturn(EitherT[Future, DataHandlingError, LocalDate](Future.successful(Right(eclRegistrationDate))))
 
             val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
-
-            when(mockEclAccountService.retrieveObligationData(any())).thenReturn(
-              EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(Some(obligationData))))
-            )
 
             when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
               .thenReturn(
@@ -154,7 +145,7 @@ class StartControllerSpec extends SpecBase {
             contentAsString(result) shouldBe view(
               eclRegistrationReference,
               ViewUtils.formatLocalDate(eclRegistrationDate)(messages),
-              ViewUtils.formatObligationPeriodYears(obligationDetails)
+              ViewUtils.formatObligationPeriodYears(openObligation)
             )(fakeRequest, messages).toString
           }
       }
@@ -167,19 +158,13 @@ class StartControllerSpec extends SpecBase {
             EclReturn
               .empty(internalId, Some(FirstTimeReturn))
               .copy(obligationDetails = Some(openObligation.copy(periodKey = "P2")))
-          new TestContext(existingReturnWithDifferentPeriodKey) {
+          new TestContext(existingReturnWithDifferentPeriodKey, "P2") {
             when(
               mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(
                 any()
               )
             )
               .thenReturn(EitherT[Future, DataHandlingError, LocalDate](Future.successful(Right(eclRegistrationDate))))
-
-            val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
-
-            when(mockEclAccountService.retrieveObligationData(any())).thenReturn(
-              EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(Some(obligationData))))
-            )
 
             when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
               .thenReturn(
@@ -207,21 +192,19 @@ class StartControllerSpec extends SpecBase {
             contentAsString(result) shouldBe view(
               eclRegistrationReference,
               ViewUtils.formatLocalDate(eclRegistrationDate)(messages),
-              ViewUtils.formatObligationPeriodYears(obligationDetails)
+              ViewUtils.formatObligationPeriodYears(openObligation)
             )(fakeRequest, messages).toString
           }
       }
 
-    "return OK and the no obligation for period view when a period key is specified where there is no obligation" in forAll {
-      (eclRegistrationDate: LocalDate, periodKey: String, eclReturn: EclReturn) =>
-        new TestContext(eclReturn) {
+    "return OK and no obligation for period view when a period key is specified where there is no obligation" in forAll {
+      (eclRegistrationDate: LocalDate, eclReturn: EclReturn) =>
+        val noObligationReturn = eclReturn.copy(obligationDetails = None)
+        new TestContext(noObligationReturn, periodKey) {
           when(
             mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any())
           )
             .thenReturn(EitherT[Future, DataHandlingError, LocalDate](Future.successful(Right(eclRegistrationDate))))
-
-          when(mockEclAccountService.retrieveObligationData(any()))
-            .thenReturn(EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(None))))
 
           when(mockSessionService.upsert(any())(any()))
             .thenReturn(EitherT.fromEither[Future](Right(())))
@@ -236,22 +219,15 @@ class StartControllerSpec extends SpecBase {
 
     "return OK and the already submitted return view when a period key is specified for an obligation that is already fulfilled" in forAll {
       (obligationDetails: ObligationDetails, eclRegistrationDate: LocalDate, eclReturn: EclReturn) =>
-        new TestContext(eclReturn) {
+        val today               = LocalDate.now()
+        val fulfilledObligation =
+          obligationDetails.copy(status = Fulfilled, inboundCorrespondenceDateReceived = Some(today))
+        val updatedReturn       = eclReturn.copy(obligationDetails = Some(fulfilledObligation))
+        new TestContext(updatedReturn, periodKey) {
           when(
             mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any())
           )
             .thenReturn(EitherT[Future, DataHandlingError, LocalDate](Future.successful(Right(eclRegistrationDate))))
-
-          val today = LocalDate.now()
-
-          val fulfilledObligation =
-            obligationDetails.copy(status = Fulfilled, inboundCorrespondenceDateReceived = Some(today))
-
-          val obligationData = ObligationData(obligations = Seq(Obligation(Seq(fulfilledObligation))))
-
-          when(mockEclAccountService.retrieveObligationData(any())).thenReturn(
-            EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(Some(obligationData))))
-          )
 
           when(mockSessionService.upsert(any())(any()))
             .thenReturn(EitherT.fromEither[Future](Right(())))
@@ -270,20 +246,14 @@ class StartControllerSpec extends SpecBase {
 
     "return InternalServerError when a fulfilled obligation does not contain an inboundCorrespondenceDateReceived" in forAll {
       (obligationDetails: ObligationDetails, eclRegistrationDate: LocalDate, eclReturn: EclReturn) =>
-        new TestContext(eclReturn) {
+        val fulfilledObligation =
+          obligationDetails.copy(status = Fulfilled, inboundCorrespondenceDateReceived = None, periodKey = periodKey)
+        val updatedReturn       = eclReturn.copy(obligationDetails = Some(fulfilledObligation))
+        new TestContext(updatedReturn, periodKey) {
           when(
             mockEnrolmentStoreProxyService.getEclRegistrationDate(ArgumentMatchers.eq(eclRegistrationReference))(any())
           )
             .thenReturn(EitherT[Future, DataHandlingError, LocalDate](Future.successful(Right(eclRegistrationDate))))
-
-          val fulfilledObligation =
-            obligationDetails.copy(status = Fulfilled, inboundCorrespondenceDateReceived = None)
-
-          val obligationData = ObligationData(obligations = Seq(Obligation(Seq(fulfilledObligation))))
-
-          when(mockEclAccountService.retrieveObligationData(any())).thenReturn(
-            EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(Some(obligationData))))
-          )
 
           when(mockSessionService.upsert(any())(any()))
             .thenReturn(EitherT.fromEither[Future](Right(())))
@@ -297,7 +267,7 @@ class StartControllerSpec extends SpecBase {
 
   "onSubmit" should {
     "redirect to Relevant accounting period page if no return url" in forAll { (eclReturn: EclReturn) =>
-      new TestContext(eclReturn) {
+      new TestContext(eclReturn, periodKey) {
         when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.UrlToReturnTo))(any()))
           .thenReturn(EitherT.fromEither[Future](Right(None)))
 
@@ -313,7 +283,7 @@ class StartControllerSpec extends SpecBase {
     }
 
     "redirect to Saved Responses page if there is a return url" in forAll { (eclReturn: EclReturn) =>
-      new TestContext(eclReturn) {
+      new TestContext(eclReturn, periodKey) {
         when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.UrlToReturnTo))(any()))
           .thenReturn(EitherT.fromEither[Future](Right(Some(random[String]))))
 

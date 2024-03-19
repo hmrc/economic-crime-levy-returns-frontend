@@ -21,9 +21,8 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, SessionError}
-import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, EnrolmentStoreProxyService, ReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{ResponseError, SessionError}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EnrolmentStoreProxyService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html._
@@ -85,13 +84,17 @@ class StartController @Inject() (
         case (registrationDate, Some(obligationDetails)) =>
           obligationDetails.status match {
             case Fulfilled =>
-              Ok(
-                alreadySubmittedReturnView(
-                  obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
-                  obligationDetails.inboundCorrespondenceToDate.getYear.toString,
-                  ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDateReceived.get)
+              if (obligationDetails.inboundCorrespondenceDateReceived.isEmpty) {
+                routeError(ResponseError.internalServiceError("Missing inboundCorrespondenceDateReceived"))
+              } else {
+                Ok(
+                  alreadySubmittedReturnView(
+                    obligationDetails.inboundCorrespondenceFromDate.getYear.toString,
+                    obligationDetails.inboundCorrespondenceToDate.getYear.toString,
+                    ViewUtils.formatLocalDate(obligationDetails.inboundCorrespondenceDateReceived.get)
+                  )
                 )
-              )
+              }
             case Open      =>
               Ok(
                 view(

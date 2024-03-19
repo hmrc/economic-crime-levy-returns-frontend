@@ -85,9 +85,7 @@ class ReturnDataRetrievalAction @Inject() (
 
     obligationDetails match {
       case None                    =>
-        EitherT.fromEither[Future](
-          Left(DataHandlingError.InternalUnexpectedError(None, Some("Null obligation details")))
-        )
+        EitherT.fromEither[Future](Right(eclReturn))
       case Some(obligationDetails) =>
         obligationDetails.status match {
           case Fulfilled =>
