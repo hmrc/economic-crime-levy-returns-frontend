@@ -41,6 +41,7 @@ object ReturnType {
     }
   }
 }
+
 final case class EclReturn(
   internalId: String,
   relevantAp12Months: Option[Boolean],
@@ -58,7 +59,15 @@ final case class EclReturn(
   base64EncodedDmsSubmissionHtml: Option[String],
   returnType: Option[ReturnType],
   amendReason: Option[String]
-)
+) {
+  def hasContactInfo =
+    Seq(
+      contactName,
+      contactRole,
+      contactEmailAddress,
+      contactTelephoneNumber
+    ).exists(_.isDefined)
+}
 
 object EclReturn {
   def empty(internalId: String, returnType: Option[ReturnType]): EclReturn = EclReturn(

@@ -155,15 +155,18 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
       Arbitrary.arbitrary[EclReturn],
       Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax),
       Arbitrary.arbitrary[CalculatedLiability],
-      Arbitrary.arbitrary[Int]
+      Arbitrary.arbitrary[Int],
+      Arbitrary.arbitrary[String]
     ) {
       (
         randomEclReturn: EclReturn,
         amlRegulatedActivityLength: Int,
         calculatedLiability: CalculatedLiability,
-        length: Int
+        length: Int,
+        name: String
       ) =>
-        val eclReturn = randomEclReturn.copy(
+        val eclReturn = clearContact(randomEclReturn).copy(
+          contactName = Some(name),
           relevantApRevenue = Some(length),
           relevantAp12Months = Some(true)
         )
@@ -196,6 +199,55 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
           status(result) shouldBe SEE_OTHER
 
           redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
+        }
+    }
+
+    "save the provided AML regulated activity length then redirect to the amount due page if no data change" in forAll(
+      Arbitrary.arbitrary[EclReturn],
+      Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax),
+      Arbitrary.arbitrary[CalculatedLiability],
+      Arbitrary.arbitrary[Int]
+    ) {
+      (
+        randomEclReturn: EclReturn,
+        amlRegulatedActivityLength: Int,
+        calculatedLiability: CalculatedLiability,
+        length: Int
+      ) =>
+        val eclReturn = clearContact(randomEclReturn).copy(
+          contactName = None,
+          relevantApRevenue = Some(length),
+          relevantAp12Months = Some(true)
+        )
+
+        new TestContext(eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength))) {
+          val updatedReturn: EclReturn =
+            eclReturn.copy(
+              amlRegulatedActivityLength = Some(amlRegulatedActivityLength)
+            )
+
+          when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(
+              EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+                Future.successful(Right(calculatedLiability))
+              )
+            )
+
+          when(
+            mockEclReturnsService.upsertReturn(
+              ArgumentMatchers.eq(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))
+            )(any())
+          )
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          val result: Future[Result] =
+            controller.onSubmit(CheckMode)(
+              fakeRequest.withFormUrlEncodedBody(("value", amlRegulatedActivityLength.toString))
+            )
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(CheckMode).url)
         }
     }
   }

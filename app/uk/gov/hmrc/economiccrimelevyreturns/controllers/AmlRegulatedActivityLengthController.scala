@@ -74,8 +74,10 @@ class AmlRegulatedActivityLengthController @Inject() (
             err => routeError(err),
             _ =>
               Redirect(answerChanged match {
-                case true  => routes.AmountDueController.onPageLoad(mode)
-                case false => routes.CheckYourAnswersController.onPageLoad()
+                case false if request.eclReturn.hasContactInfo =>
+                  routes.CheckYourAnswersController.onPageLoad()
+                case _                                         =>
+                  routes.AmountDueController.onPageLoad(mode)
               })
           )
         }
