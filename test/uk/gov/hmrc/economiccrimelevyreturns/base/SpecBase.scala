@@ -105,4 +105,11 @@ trait SpecBase
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier    = HeaderCarrier()
 
+  def clearContact(eclReturn: EclReturn) =
+    eclReturn.copy(
+      contactName = None,
+      contactRole = None,
+      contactEmailAddress = None,
+      contactTelephoneNumber = None
+    )
 }

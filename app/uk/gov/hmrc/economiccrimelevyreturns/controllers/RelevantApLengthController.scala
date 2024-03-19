@@ -104,7 +104,11 @@ class RelevantApLengthController @Inject() (
         }
     )
   } else {
-    Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad()))
+    Future.successful(Redirect(if (eclReturn.hasContactInfo) {
+      routes.CheckYourAnswersController.onPageLoad()
+    } else {
+      routes.AmountDueController.onPageLoad(CheckMode)
+    }))
   }
 
   private def clearAmlActivityAnswersAndRecalculate(

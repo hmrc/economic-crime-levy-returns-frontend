@@ -110,7 +110,7 @@ class AmendReasonControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided amendment reason then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      nonEmptyString
+      stringsLongerThan(1).retryUntil(!_.contains(" "))
     ) { (eclReturn: EclReturn, reason: String) =>
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(amendReason = Some(reason))

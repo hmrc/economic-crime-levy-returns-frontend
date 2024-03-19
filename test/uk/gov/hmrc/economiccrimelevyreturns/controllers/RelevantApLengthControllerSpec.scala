@@ -129,10 +129,12 @@ class RelevantApLengthControllerSpec extends SpecBase {
 
     "save the provided relevant AP length then redirect to the check your answers page of no data change" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
-    ) { (eclReturn: EclReturn, relevantApLength: Int) =>
-      new TestContext(eclReturn.copy(relevantApLength = Some(relevantApLength))) {
-        val updatedReturn = eclReturn.copy(relevantApLength = Some(relevantApLength))
+      Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax),
+      Arbitrary.arbitrary[String]
+    ) { (eclReturn: EclReturn, relevantApLength: Int, name: String) =>
+      val baseReturn = clearContact(eclReturn).copy(contactName = Some(name))
+      new TestContext(baseReturn.copy(relevantApLength = Some(relevantApLength))) {
+        val updatedReturn = baseReturn.copy(relevantApLength = Some(relevantApLength))
 
         when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
@@ -143,6 +145,26 @@ class RelevantApLengthControllerSpec extends SpecBase {
         status(result) shouldBe SEE_OTHER
 
         redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
+      }
+    }
+
+    "save the provided relevant AP length then redirect to the amount due page of no data change" in forAll(
+      Arbitrary.arbitrary[EclReturn],
+      Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
+    ) { (eclReturn: EclReturn, relevantApLength: Int) =>
+      val baseReturn = clearContact(eclReturn).copy(contactName = None)
+      new TestContext(baseReturn.copy(relevantApLength = Some(relevantApLength))) {
+        val updatedReturn = baseReturn.copy(relevantApLength = Some(relevantApLength))
+
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+        val result: Future[Result] =
+          controller.onSubmit(CheckMode)(fakeRequest.withFormUrlEncodedBody(("value", relevantApLength.toString)))
+
+        status(result) shouldBe SEE_OTHER
+
+        redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(CheckMode).url)
       }
     }
   }

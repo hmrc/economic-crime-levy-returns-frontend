@@ -23,7 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.cleanup.AmlRegulatedActivityDataClea
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmlRegulatedActivityView, ErrorTemplate}
@@ -109,7 +109,11 @@ class AmlRegulatedActivityController @Inject() (
         }))
     }
   } else {
-    Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad()))
+    Future.successful(Redirect(if (eclReturn.hasContactInfo) {
+      routes.CheckYourAnswersController.onPageLoad()
+    } else {
+      routes.AmountDueController.onPageLoad(CheckMode)
+    }))
   }
 
 }
