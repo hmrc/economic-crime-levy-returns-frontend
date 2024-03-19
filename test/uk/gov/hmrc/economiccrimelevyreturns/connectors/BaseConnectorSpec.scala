@@ -49,7 +49,7 @@ class BaseConnectorSpec extends SpecBase {
       response(valid).as[Data]
 
     def asOption(valid: Boolean): Future[Option[Data]] =
-      response(valid).asOption
+      response(valid).asOption[Data]
   }
 
   val connector = new TestConnector
