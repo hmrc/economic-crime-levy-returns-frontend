@@ -49,4 +49,8 @@ object ErrorCode {
       .getOrElse(JsError())
   }
 
+  def forCode(code: Int) = {
+    val index = code % errorCodes.size
+    errorCodes.zipWithIndex.find(e => e._2 == index).get._1
+  }
 }

@@ -27,11 +27,11 @@ import scala.util.{Failure, Success, Try}
 
 class BaseConnectorSpec extends SpecBase {
 
-  case class Data(test: String)
+  case class Valid(text: String)
+  case class Invalid(string: String)
 
-  object Data {
-    implicit val format: OFormat[Data] = Json.format[Data]
-  }
+  implicit val formatValid: OFormat[Valid]     = Json.format[Valid]
+  implicit val formatInvalid: OFormat[Invalid] = Json.format[Invalid]
 
   class TestConnector extends BaseConnector {
     private def response(valid: Boolean) = {
@@ -39,30 +39,25 @@ class BaseConnectorSpec extends SpecBase {
       HttpResponse(
         OK,
         valid match {
-          case true  => Json.toJson(Data(text)).toString()
-          case false => text
+          case true  => Json.stringify(Json.toJson(Valid(text)))
+          case false => Json.stringify(Json.toJson(Invalid(text)))
         }
       )
     }
 
-    def as(valid: Boolean): Future[Data] =
-      response(valid).as[Data]
+    def as(valid: Boolean): Future[Valid] =
+      response(valid).as[Valid]
 
-    def asOption(valid: Boolean): Future[Option[Data]] =
-      response(valid).asOption[Data]
+    def asOption(valid: Boolean): Future[Option[Valid]] =
+      response(valid).asOption[Valid]
   }
 
   val connector = new TestConnector
 
   def test(future: Boolean => Future[_], valid: Boolean) =
-    Try {
-      future(valid).onComplete {
-        case Success(_) if !valid => fail
-        case Failure(_) if valid  => fail
-      }
-    } match {
-      case Success(_) =>
-      case Failure(_) => if (valid) fail
+    future(valid).onComplete {
+      case Success(_) if !valid => fail
+      case Failure(_) if valid  => fail
     }
 
   "as" should {
