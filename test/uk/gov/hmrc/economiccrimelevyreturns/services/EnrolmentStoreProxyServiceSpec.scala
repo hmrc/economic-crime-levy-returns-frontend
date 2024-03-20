@@ -67,7 +67,10 @@ class EnrolmentStoreProxyServiceSpec extends SpecBase {
 
         result shouldBe Left(
           DataHandlingError
-            .InternalUnexpectedError(None, Some("ECL registration date could not be found in the enrolment"))
+            .InternalUnexpectedError(
+              None,
+              Some("Enrolment store: ECL registration date could not be found in the enrolment")
+            )
         )
     }
   }
