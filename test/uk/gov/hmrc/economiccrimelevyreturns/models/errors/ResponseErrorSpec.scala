@@ -54,6 +54,16 @@ class ResponseErrorSpec extends SpecBase {
         ErrorCode.forCode(code),
         None
       )
+
+      uk.gov.hmrc.economiccrimelevyreturns.models.errors.BadGateway.causedBy(message, code) shouldBe
+        ResponseError.badGateway(message = message, code = code)
+
+      UpstreamServiceError.causedBy(UpstreamErrorResponse(message, code)) shouldBe
+        ResponseError.upstreamServiceError(cause = UpstreamErrorResponse(message, code))
+
+      InternalServiceError.causedBy(UpstreamErrorResponse(message, code)) shouldBe
+        ResponseError.internalServiceError(cause = Some(UpstreamErrorResponse(message, code)))
+
     }
   }
 }

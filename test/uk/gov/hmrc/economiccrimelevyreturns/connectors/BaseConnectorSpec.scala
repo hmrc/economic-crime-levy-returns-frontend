@@ -19,11 +19,11 @@ package uk.gov.hmrc.economiccrimelevyreturns.connectors
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.http.Status.OK
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 class BaseConnectorSpec extends SpecBase {
 
