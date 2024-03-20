@@ -67,4 +67,39 @@ class SavedResponsesControllerSpec extends SpecBase {
       }
     }
   }
+
+  "onSubmit" should {
+    "should redirect to return url saved in session when the user wants to continue with their saved answers" in forAll {
+      (eclReturn: EclReturn) =>
+        new TestContext(eclReturn) {
+          val path = "/return-url"
+          when(mockSessionService.get(any(), any(), any())(any())).thenReturn(EitherT.fromEither[Future](Right(path)))
+
+          val result: Future[Result] = controller.onSubmit()(
+            fakeRequest.withFormUrlEncodedBody(("value", "true"))
+          )
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(path)
+        }
+    }
+
+    "should redirect to the RelevantAp12MonthsController when the user wants to delete their saved answers and start again" in forAll {
+      (eclReturn: EclReturn) =>
+        new TestContext(eclReturn) {
+          when(mockSessionService.delete(any())(any())).thenReturn(EitherT.fromEither[Future](Right(())))
+
+          when(mockEclReturnsService.deleteReturn(any())(any())).thenReturn(EitherT.fromEither[Future](Right(())))
+
+          val result: Future[Result] = controller.onSubmit()(
+            fakeRequest.withFormUrlEncodedBody(("value", "false"))
+          )
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(routes.RelevantAp12MonthsController.onPageLoad(NormalMode).url)
+        }
+    }
+  }
 }
