@@ -16,22 +16,18 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
-import cats.data.EitherT
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.models.ReturnType
-import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.audit.ReturnStartedEvent
+import uk.gov.hmrc.economiccrimelevyreturns.models.ReturnType
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.AuditError
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 import scala.concurrent.Future
 
-class AuditServiceSpec extends SpecBase {
+class AuditServiceSpec extends ServiceSpec {
 
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
-  val testException                      = new Exception("Error")
 
   val service = new AuditService(
     mockAuditConnector
@@ -54,6 +50,23 @@ class AuditServiceSpec extends SpecBase {
       val result = await(service.auditReturnStarted(internalId, eclReference, Some(returnType)).value)
 
       result shouldBe Left(AuditError.InternalUnexpectedError(testException.getMessage, Some(testException)))
+    }
+
+    "return error if failure" in forAll {
+      (internalId: String, eclReference: String, returnType: ReturnType, is5xxError: Boolean) =>
+        val code = getErrorCode(is5xxError)
+
+        when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
+          .thenReturn(Future.failed(testException))
+
+        await(service.auditReturnStarted(internalId, eclReference, Some(returnType)).value) shouldBe
+          Left(AuditError.InternalUnexpectedError(testException.getMessage(), Some(testException)))
+
+        when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
+          .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
+
+        await(service.auditReturnStarted(internalId, eclReference, Some(returnType)).value) shouldBe
+          Left(AuditError.BadGateway(code.toString, code))
     }
   }
 }
