@@ -8,9 +8,28 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, EclReturn, NormalMode, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
 
 class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
+
+  private def updateAmendReason(eclReturn: EclReturn, revenue: BigDecimal) =
+    eclReturn.copy(relevantApRevenue = Some(revenue))
+
+  private def clearRevenue(eclReturn: EclReturn) =
+    eclReturn.copy(relevantApRevenue = None)
+
+  private def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
+    stubGetSession(
+      SessionData(
+        internalId = internalId,
+        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+      )
+    )
+    updateContactName(eclReturn)
+  }
+
+  private def validRevenue: BigDecimal =
+    random[BigDecimal]
 
   s"GET ${routes.UkRevenueController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.UkRevenueController.onPageLoad(NormalMode))
@@ -106,6 +125,17 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
       redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(NormalMode).url)
     }
+  }
+
+  s"POST ${routes.UkRevenueController.onSubmit(CheckMode).url}"   should {
+    behave like authorisedActionRoute(routes.UkRevenueController.onSubmit(CheckMode))
+    behave like goToNextPageInCheckMode(
+      value = validRevenue,
+      updateEclReturnValue = updateAmendReason,
+      clearEclReturnValue = clearRevenue,
+      callToMake = routes.UkRevenueController.onSubmit(CheckMode),
+      testSetup = Some(testSetup)
+    )
   }
 
 }

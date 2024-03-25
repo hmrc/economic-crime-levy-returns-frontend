@@ -32,7 +32,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
         values = Map(SessionKeys.PeriodKey -> testPeriodKey)
       )
     )
-    eclReturn
+    updateContactName(eclReturn)
   }
 
   s"GET ${routes.RelevantAp12MonthsController.onPageLoad(NormalMode).url}" should {

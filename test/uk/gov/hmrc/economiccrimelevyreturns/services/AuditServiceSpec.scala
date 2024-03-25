@@ -33,23 +33,25 @@ class AuditServiceSpec extends ServiceSpec {
     mockAuditConnector
   )
 
-  "auditReturnStarted" should {
-    "return normally if successful" in forAll { (internalId: String, eclReference: String, returnType: ReturnType) =>
-      when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
-        .thenReturn(Future.successful(AuditResult.Success))
-
-      val result = await(service.auditReturnStarted(internalId, eclReference, Some(returnType)).value)
-
-      result shouldBe Right(())
+  def getReturnTypeAsOption(isPresent: Boolean, returnType: ReturnType) =
+    isPresent match {
+      case true  => Some(returnType)
+      case false => None
     }
 
-    "return an error if failure" in forAll { (internalId: String, eclReference: String, returnType: ReturnType) =>
-      when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
-        .thenReturn(Future.failed(testException))
+  "auditReturnStarted" should {
+    "return normally if successful" in forAll {
+      (internalId: String, eclReference: String, returnType: ReturnType, isNoneReturnType: Boolean) =>
+        when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
+          .thenReturn(Future.successful(AuditResult.Success))
 
-      val result = await(service.auditReturnStarted(internalId, eclReference, Some(returnType)).value)
+        val result = await(
+          service
+            .auditReturnStarted(internalId, eclReference, getReturnTypeAsOption(isNoneReturnType, returnType))
+            .value
+        )
 
-      result shouldBe Left(AuditError.InternalUnexpectedError(testException.getMessage, Some(testException)))
+        result shouldBe Right(())
     }
 
     "return error if failure" in forAll {

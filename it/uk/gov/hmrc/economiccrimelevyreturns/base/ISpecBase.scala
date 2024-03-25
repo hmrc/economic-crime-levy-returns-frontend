@@ -201,11 +201,10 @@ abstract class ISpecBase
         "request related data if it is absent" in {
           stubAuthorised()
 
-          val eclReturn = clear(clearEclReturnValue, testSetup)
-          info.clearEclReturnValue(eclReturn)
+          val eclReturn = info.clearEclReturnValue(clear(clearEclReturnValue, testSetup))
 
           stubGetReturn(eclReturn)
-          stubUpsertReturn(eclReturn)
+          stubUpsertReturn(updateEclReturnValue(eclReturn, value))
 
           val result = callRoute(
             FakeRequest(callToMake).withFormUrlEncodedBody(("value", value.toString))

@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
-import org.scalacheck.Arbitrary
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 
 class AmlRegulatedActivityPageNavigatorSpec extends SpecBase {
 
@@ -38,6 +37,13 @@ class AmlRegulatedActivityPageNavigatorSpec extends SpecBase {
         }
 
         pageNavigator.nextPage(mode, updatedReturn) shouldBe nextPage
+    }
+
+    "return a Call to the error page if no data" in forAll { (eclReturn: EclReturn, mode: Mode) =>
+      val updatedReturn: EclReturn = eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None)
+
+      pageNavigator.nextPage(mode, updatedReturn) shouldBe
+        routes.NotableErrorController.answersAreInvalid()
     }
   }
 
