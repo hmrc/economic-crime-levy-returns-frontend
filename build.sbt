@@ -96,8 +96,9 @@ val excludedScoveragePackages: Seq[String] = Seq(
   ".*viewmodels.*",
   ".*testonly*.",
   ".*Module",
-  ".*template*.",
-  ".*View"
+  ".*template.*",
+  ".*viewmodels.govuk.*",
+  ".*viewmodels.*"
 )
 
 val scoverageSettings: Seq[Setting[_]] = Seq(

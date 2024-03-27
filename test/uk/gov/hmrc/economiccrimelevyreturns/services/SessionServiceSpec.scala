@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.scalacheck.Arbitrary
+import play.api.http.Status.NOT_FOUND
 import play.api.mvc.Session
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.SessionDataConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
@@ -75,6 +76,17 @@ class SessionServiceSpec extends ServiceSpec {
       await(service.get(new Session(), id, key).value) shouldBe
         Left(SessionError.BadGateway(code.toString, code))
     }
+
+    "return an if key not present" in forAll(
+      nonEmptyString,
+      nonEmptyString
+    ) { (id: String, key: String) =>
+      when(mockSessionConnector.get(ArgumentMatchers.eq(id))(any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse(key, NOT_FOUND)))
+
+      await(service.get(new Session(), id, key).value) shouldBe
+        Left(SessionError.NotFound())
+    }
   }
 
   "getOptional" should {
@@ -102,6 +114,19 @@ class SessionServiceSpec extends ServiceSpec {
         .thenReturn(Future.successful(SessionData(id, Map())))
 
       await(service.getOptional(new Session(), id, key).value) shouldBe Right(None)
+    }
+
+    "return au error if failure" in forAll(
+      nonEmptyString,
+      nonEmptyString
+    ) { (id: String, key: String) =>
+      val code = getErrorCode(true)
+
+      when(mockSessionConnector.get(ArgumentMatchers.eq(id))(any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
+
+      await(service.getOptional(new Session(), id, key).value) shouldBe
+        Left(SessionError.BadGateway(code.toString, code))
     }
   }
 
