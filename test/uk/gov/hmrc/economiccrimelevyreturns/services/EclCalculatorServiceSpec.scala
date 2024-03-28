@@ -33,7 +33,7 @@ class EclCalculatorServiceSpec extends ServiceSpec {
     mockEclCalculatorConnector
   )
 
-  def getValidReturn(eclReturn: EclReturn) =
+  def getValidReturn(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(
       relevantAp12Months = Some(random[Boolean]),
       relevantApLength = Some(random[Int]),
@@ -64,7 +64,7 @@ class EclCalculatorServiceSpec extends ServiceSpec {
         .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
       await(service.calculateLiability(getValidReturn(eclReturn))(fakeRequest).value) shouldBe
-        Left(LiabilityCalculationError.BadGateway(code.toString, code))
+        Left(LiabilityCalculationError.BadGateway(s"Get Calculated Liability Failed - ${code.toString}", code))
     }
   }
 }

@@ -39,7 +39,7 @@ class EclAccountService @Inject() (
             if UpstreamErrorResponse.Upstream5xxResponse
               .unapply(error)
               .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-          Left(EclAccountError.BadGateway(reason = message, code = code))
+          Left(EclAccountError.BadGateway(reason = s"Get Obligation Data Failed - $message", code = code))
         case NonFatal(thr) => Left(EclAccountError.InternalUnexpectedError(Some(thr), Some(thr.getMessage)))
       }
     }

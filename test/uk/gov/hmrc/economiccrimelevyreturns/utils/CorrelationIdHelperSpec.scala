@@ -22,8 +22,9 @@ class CorrelationIdHelperSpec extends SpecBase {
 
   "getOrCreateCorrelationId" should {
     "return the correlation id if there is one on the request" in forAll { id: String =>
-      val result  = CorrelationIdHelper.getOrCreateCorrelationId(fakeRequest.withHeaders(HttpHeader.CorrelationId -> id))
-      val headers = result.headers(Seq(HttpHeader.CorrelationId))
+      val result  =
+        CorrelationIdHelper.getOrCreateCorrelationId(fakeRequest.withHeaders(HttpHeader.xCorrelationId -> id))
+      val headers = result.headers(Seq(HttpHeader.xCorrelationId))
       headers.size    shouldBe 1
       headers.head._2 shouldBe id
     }
@@ -32,7 +33,7 @@ class CorrelationIdHelperSpec extends SpecBase {
       val result  = CorrelationIdHelper.getOrCreateCorrelationId(fakeRequest)
       val headers = result.extraHeaders
       headers.size            shouldBe 1
-      headers.head._1         shouldBe HttpHeader.CorrelationId
+      headers.head._1         shouldBe HttpHeader.xCorrelationId
       headers.head._2.isEmpty shouldBe false
     }
   }

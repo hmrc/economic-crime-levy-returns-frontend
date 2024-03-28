@@ -72,10 +72,10 @@ class ReturnSubmittedControllerSpec extends SpecBase {
           val result: Future[Result] =
             controller.onPageLoad()(
               fakeRequest.withSession(
-                (SessionKeys.ChargeReference, chargeReference),
-                (SessionKeys.Email, email),
-                (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString()),
-                (SessionKeys.AmountDue, amountDue.toString())
+                (SessionKeys.chargeReference, chargeReference),
+                (SessionKeys.email, email),
+                (SessionKeys.obligationDetails, Json.toJson(obligationDetails).toString()),
+                (SessionKeys.amountDue, amountDue.toString())
               )
             )
 
@@ -108,9 +108,9 @@ class ReturnSubmittedControllerSpec extends SpecBase {
           val result: Future[Result] =
             controller.onPageLoad()(
               fakeRequest.withSession(
-                (SessionKeys.Email, email),
-                (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString()),
-                (SessionKeys.AmountDue, amountDue.toString())
+                (SessionKeys.email, email),
+                (SessionKeys.obligationDetails, Json.toJson(obligationDetails).toString()),
+                (SessionKeys.amountDue, amountDue.toString())
               )
             )
 

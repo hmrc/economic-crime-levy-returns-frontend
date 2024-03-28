@@ -45,12 +45,12 @@ class ReturnSubmittedController @Inject() (
     with ErrorHandler {
 
   def onPageLoad: Action[AnyContent] = authorise.async { implicit request =>
-    val chargeReference: Option[String] = request.session.get(SessionKeys.ChargeReference)
-    val obligationDetails               = ObligationDetails.read(request.session.get(SessionKeys.ObligationDetails))
-    val email                           = request.session.get(SessionKeys.Email)
+    val chargeReference: Option[String] = request.session.get(SessionKeys.chargeReference)
+    val obligationDetails               = ObligationDetails.read(request.session.get(SessionKeys.obligationDetails))
+    val email                           = request.session.get(SessionKeys.email)
 
     (for {
-      amountDueFromSession <- valueOrErrorF(request.session.get(SessionKeys.AmountDue), "amount due")
+      amountDueFromSession <- valueOrErrorF(request.session.get(SessionKeys.amountDue), "amount due")
       amountDue             = BigDecimal(amountDueFromSession)
       _                    <- returnsService.deleteReturn(request.internalId).asResponseError
       _                     = sessionService.delete(request.internalId).asResponseError

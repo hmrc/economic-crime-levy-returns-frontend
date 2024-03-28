@@ -17,8 +17,6 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.mvc.Result
 import play.api.test.Helpers._
@@ -26,12 +24,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.forms.SavedResponsesFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, SessionError}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{EnrolmentStoreProxyService, ReturnsService, SessionService}
-import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, NoObligationForPeriodView, SavedResponsesView, StartView}
+import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.SavedResponsesView
 
-import java.time.LocalDate
 import scala.concurrent.Future
 
 class SavedResponsesControllerSpec extends SpecBase {

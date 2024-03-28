@@ -27,13 +27,13 @@ trait Formatters {
   private lazy val validRevenuePattern = """^-?(\d*(\.[0-9]{1,2})?)$""".r
   private lazy val decimalRegexp       = """^(\d*\.\d*)$""".r
 
-  private def removeWhitespace(value: String, removeAllWhitespace: Boolean) =
+  private def removeWhitespace(value: String, removeAllWhitespace: Boolean): String =
     if (removeAllWhitespace) value.filterNot(_.isWhitespace) else value.strip()
 
-  private def removePoundSign(value: String) =
+  private def removePoundSign(value: String): String =
     if (value.startsWith("£")) value.replaceFirst("£", "") else value
 
-  private def removeCommas(value: String) =
+  private def removeCommas(value: String): String =
     value.filterNot(_ == ',')
 
   private[mappings] def stringFormatter(requiredErrorKey: String, removeAllWhitespace: Boolean): Formatter[String] =
@@ -58,7 +58,7 @@ trait Formatters {
 
       private val baseFormatter = stringFormatter(requiredKey, removeAllWhitespace = true)
 
-      override def bind(key: String, data: Map[String, String]) =
+      override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Boolean] =
         baseFormatter
           .bind(key, data)
           .flatMap {
@@ -67,7 +67,7 @@ trait Formatters {
             case _       => Left(Seq(FormError(key, invalidKey)))
           }
 
-      def unbind(key: String, value: Boolean) = Map(key -> value.toString)
+      def unbind(key: String, value: Boolean): Map[String, String] = Map(key -> value.toString)
     }
 
   def currencyFormatter(
@@ -83,7 +83,7 @@ trait Formatters {
         * Number has more than 2 dp
         */
 
-      override def bind(key: String, data: Map[String, String]) =
+      override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], BigDecimal] =
         baseFormatter
           .bind(key, data)
           .map(removeCommas)
@@ -96,7 +96,7 @@ trait Formatters {
             }
           }
 
-      override def unbind(key: String, value: BigDecimal) =
+      override def unbind(key: String, value: BigDecimal): Map[String, String] =
         baseFormatter.unbind(key, value.toString)
     }
 
@@ -110,7 +110,7 @@ trait Formatters {
 
       private val baseFormatter = stringFormatter(requiredKey, removeAllWhitespace = true)
 
-      override def bind(key: String, data: Map[String, String]) =
+      override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], T] =
         baseFormatter
           .bind(key, data)
           .map(removeCommas)
@@ -124,7 +124,7 @@ trait Formatters {
                 .map(_ => Seq(FormError(key, nonNumericKey)))
           }
 
-      override def unbind(key: String, value: T) =
+      override def unbind(key: String, value: T): Map[String, String] =
         baseFormatter.unbind(key, value.toString)
     }
 

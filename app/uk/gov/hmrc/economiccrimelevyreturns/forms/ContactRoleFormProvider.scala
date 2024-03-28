@@ -28,8 +28,8 @@ class ContactRoleFormProvider @Inject() extends Mappings {
       "value" -> text("contactRole.error.required", removeAllWhitespace = false)
         .verifying(
           regexpWithMaxLength(
-            MinMaxValues.NameMaxLength,
-            Regex.PositionInCompanyRegex,
+            MinMaxValues.nameMaxLength,
+            Regex.positionInCompanyRegex,
             "contactRole.error.length",
             "contactRole.error.invalid"
           )

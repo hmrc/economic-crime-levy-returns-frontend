@@ -5,30 +5,30 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 
 class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
 
-  private def updateContactNumber(eclReturn: EclReturn, number: String) =
+  private def updateContactNumber(eclReturn: EclReturn, number: String): EclReturn =
     eclReturn.copy(contactTelephoneNumber = Some(number))
 
-  private def clearContactNumber(eclReturn: EclReturn) =
+  private def clearContactNumber(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(contactTelephoneNumber = None)
 
   private def testSetup(eclReturn: EclReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
     updateContactName(eclReturn)
   }
 
   private def validContactNumber: String =
-    ensureMaxLength(numericString, MinMaxValues.TelephoneNumberMaxLength)
+    ensureMaxLength(numericString, MinMaxValues.telephoneNumberMaxLength)
 
   s"GET ${routes.ContactNumberController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.ContactNumberController.onPageLoad(NormalMode))

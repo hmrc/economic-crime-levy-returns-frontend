@@ -22,8 +22,8 @@ import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.email.AmendReturnSubmittedRequest.AmendReturnTemplateId
-import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailRequest.{NilReturnTemplateId, ReturnTemplateId}
+import uk.gov.hmrc.economiccrimelevyreturns.models.email.AmendReturnSubmittedRequest.amendReturnTemplateId
+import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailRequest.{nilReturnTemplateId, returnTemplateId}
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedParameters, AmendReturnSubmittedRequest, ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HttpResponse, StringContextOps, UpstreamErrorResponse}
@@ -38,7 +38,7 @@ class EmailConnectorSpec extends SpecBase {
   val connector                          = new EmailConnector(appConfig, mockHttpClient, config, actorSystem)
   private val expectedUrl                = url"${appConfig.emailBaseUrl}/hmrc/email"
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockHttpClient)
     reset(mockRequestBuilder)
   }
@@ -47,7 +47,7 @@ class EmailConnectorSpec extends SpecBase {
     "return unit when the http client returns ACCEPTED for the return submitted email template" in forAll {
       (to: String, returnSubmittedEmailParameters: ReturnSubmittedEmailParameters) =>
         val templateId =
-          if (returnSubmittedEmailParameters.chargeReference.isDefined) ReturnTemplateId else NilReturnTemplateId
+          if (returnSubmittedEmailParameters.chargeReference.isDefined) returnTemplateId else nilReturnTemplateId
 
         when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any())).thenReturn(mockRequestBuilder)
         when(
@@ -78,7 +78,7 @@ class EmailConnectorSpec extends SpecBase {
         val errorCode = INTERNAL_SERVER_ERROR
 
         val templateId =
-          if (returnSubmittedEmailParameters.chargeReference.isDefined) ReturnTemplateId else NilReturnTemplateId
+          if (returnSubmittedEmailParameters.chargeReference.isDefined) returnTemplateId else nilReturnTemplateId
 
         when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any()))
           .thenReturn(mockRequestBuilder)
@@ -121,7 +121,7 @@ class EmailConnectorSpec extends SpecBase {
               Json.toJson(
                 AmendReturnSubmittedRequest(
                   Seq(to),
-                  templateId = AmendReturnTemplateId,
+                  templateId = amendReturnTemplateId,
                   amendSubmittedEmailParameters
                 )
               )
@@ -150,7 +150,7 @@ class EmailConnectorSpec extends SpecBase {
               Json.toJson(
                 AmendReturnSubmittedRequest(
                   Seq(to),
-                  templateId = AmendReturnTemplateId,
+                  templateId = amendReturnTemplateId,
                   amendSubmittedEmailParameters
                 )
               )

@@ -28,8 +28,8 @@ class ContactNameFormProvider @Inject() extends Mappings {
       "value" -> text("contactName.error.required", removeAllWhitespace = false)
         .verifying(
           regexpWithMaxLength(
-            MinMaxValues.NameMaxLength,
-            Regex.NameRegex,
+            MinMaxValues.nameMaxLength,
+            Regex.nameRegex,
             "contactName.error.length",
             "contactName.error.invalid"
           )

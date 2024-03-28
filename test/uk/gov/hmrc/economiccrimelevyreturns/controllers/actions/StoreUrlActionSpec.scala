@@ -48,7 +48,7 @@ class StoreUrlActionSpec extends SpecBase {
 
   "refine" should {
     "store given url if Return type is FirstTimeReturn" in forAll { (eclReturn: EclReturn, url: String) =>
-      val sessionData = SessionData(eclReturn.internalId, Map(SessionKeys.UrlToReturnTo -> url))
+      val sessionData = SessionData(eclReturn.internalId, Map(SessionKeys.urlToReturnTo -> url))
 
       when(mockSessionService.upsert(ArgumentMatchers.eq(sessionData))(any()))
         .thenReturn(EitherT.fromEither[Future](Right(())))

@@ -115,7 +115,7 @@ class ReturnsServiceSpec extends ServiceSpec {
       val result =
         await(service.getEclReturnSubmission(periodKey, eclRegistrationReference).value)
 
-      result shouldBe Left(DataHandlingError.BadGateway(message, errorCode))
+      result shouldBe Left(DataHandlingError.BadGateway(s"Get Return Submission Failed - $message", errorCode))
     }
 
     "return DataHandlingError.InternalUnexpectedError when when call to returns connector fails with an unexpected error" in {
@@ -196,7 +196,7 @@ class ReturnsServiceSpec extends ServiceSpec {
           .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
         await(service.getReturn(internalId).value) shouldBe
-          Left(DataHandlingError.BadGateway(code.toString, code))
+          Left(DataHandlingError.BadGateway(s"Get Return Failed - ${code.toString}", code))
       }
     }
   }
@@ -231,7 +231,7 @@ class ReturnsServiceSpec extends ServiceSpec {
         .thenReturn(OptionT[Future, String](Future.failed(UpstreamErrorResponse(code.toString, code))))
 
       await(service.getReturnValidationErrors(internalId).value) shouldBe
-        Left(DataHandlingError.BadGateway(code.toString, code))
+        Left(DataHandlingError.BadGateway(s"Get Return Validation Errors Failed - ${code.toString}", code))
     }
   }
 }

@@ -35,7 +35,7 @@ class RegistrationConnectorSpec extends SpecBase {
   val connector                          = new RegistrationConnector(appConfig, mockHttpClient, config, actorSystem)
   val eclRegistrationUrl                 = "http://localhost:14001/economic-crime-levy-registration/subscription"
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockHttpClient)
     reset(mockRequestBuilder)
   }

@@ -14,17 +14,17 @@ import scala.util.Random
 
 class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
 
-  private def updateAmendReason(eclReturn: EclReturn, reason: String) =
+  private def updateAmendReason(eclReturn: EclReturn, reason: String): EclReturn =
     eclReturn.copy(amendReason = Some(reason))
 
-  private def clearAmendReason(eclReturn: EclReturn) =
+  private def clearAmendReason(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(amendReason = None)
 
   private def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
     eclReturn

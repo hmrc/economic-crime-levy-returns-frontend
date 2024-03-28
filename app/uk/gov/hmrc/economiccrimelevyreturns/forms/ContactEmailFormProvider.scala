@@ -29,8 +29,8 @@ class ContactEmailFormProvider @Inject() extends Mappings {
         .transform[String](_.toLowerCase, identity)
         .verifying(
           regexpWithMaxLength(
-            MinMaxValues.EmailMaxLength,
-            Regex.EmailRegex,
+            MinMaxValues.emailMaxLength,
+            Regex.emailRegex,
             "contactEmail.error.length",
             "contactEmail.error.invalid"
           )

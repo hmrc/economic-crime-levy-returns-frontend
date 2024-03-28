@@ -17,7 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkyouranswers
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.{AmlDaysMax, AmlDaysMin, ApDaysMax, ApDaysMin}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.{amlDaysMax, amlDaysMin, apDaysMax, apDaysMin}
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers.TrackEclReturnChanges
 import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
@@ -160,7 +160,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+              numberOfDaysRegulatedActivityTookPlace = Some(amlDaysMax)
             )
           )
 
@@ -181,7 +181,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+              numberOfDaysRegulatedActivityTookPlace = Some(amlDaysMax)
             )
           )
 
@@ -222,7 +222,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+              numberOfDaysRegulatedActivityTookPlace = Some(amlDaysMax)
             )
           )
 
@@ -239,12 +239,12 @@ class TrackEclReturnChangesSpec extends SpecBase {
     "return true when relevantApLength and numberOfDaysRegulatedActivityTookPlace are set to different values" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
-          .copy(relevantApLength = Some(AmlDaysMin))
+          .copy(relevantApLength = Some(amlDaysMin))
 
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+              numberOfDaysRegulatedActivityTookPlace = Some(amlDaysMax)
             )
           )
 
@@ -260,7 +260,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
     "return true when relevantApLength is set to a value and numberOfDaysRegulatedActivityTookPlace is set to None" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
-          .copy(relevantApLength = Some(AmlDaysMax))
+          .copy(relevantApLength = Some(amlDaysMax))
 
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
@@ -286,7 +286,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+              numberOfDaysRegulatedActivityTookPlace = Some(amlDaysMax)
             )
           )
 
@@ -302,12 +302,12 @@ class TrackEclReturnChangesSpec extends SpecBase {
     "return false when relevantApLength and numberOfDaysRegulatedActivityTookPlace is set to the same value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
-          .copy(relevantApLength = Some(AmlDaysMax))
+          .copy(relevantApLength = Some(amlDaysMax))
 
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+              numberOfDaysRegulatedActivityTookPlace = Some(amlDaysMax)
             )
           )
 
@@ -344,12 +344,12 @@ class TrackEclReturnChangesSpec extends SpecBase {
     "return true when relevantApRevenue is set and accountingPeriodRevenue is set to a value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
-          .copy(relevantApRevenue = Some(RevenueMin))
+          .copy(relevantApRevenue = Some(revenueMin))
 
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              accountingPeriodRevenue = BigDecimal(RevenueMax)
+              accountingPeriodRevenue = BigDecimal(revenueMax)
             )
           )
 
@@ -370,7 +370,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              accountingPeriodRevenue = BigDecimal(RevenueMax)
+              accountingPeriodRevenue = BigDecimal(revenueMax)
             )
           )
 
@@ -386,12 +386,12 @@ class TrackEclReturnChangesSpec extends SpecBase {
     "return false when relevantApRevenue and accountingPeriodRevenue is set to the same value" in forAll {
       (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
         val eclReturn = defaultEclReturn(validEclReturn)
-          .copy(relevantApRevenue = Some(RevenueMax))
+          .copy(relevantApRevenue = Some(revenueMax))
 
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              accountingPeriodRevenue = RevenueMax
+              accountingPeriodRevenue = revenueMax
             )
           )
 
@@ -414,8 +414,8 @@ class TrackEclReturnChangesSpec extends SpecBase {
           val eclReturnSubmission = validEclReturnSubmission.response
             .copy(returnDetails =
               validEclReturnSubmission.response.returnDetails.copy(
-                accountingPeriodLength = ApDaysMax,
-                numberOfDaysRegulatedActivityTookPlace = Some(ApDaysMax)
+                accountingPeriodLength = apDaysMax,
+                numberOfDaysRegulatedActivityTookPlace = Some(apDaysMax)
               )
             )
 
@@ -437,8 +437,8 @@ class TrackEclReturnChangesSpec extends SpecBase {
           val eclReturnSubmission = validEclReturnSubmission.response
             .copy(returnDetails =
               validEclReturnSubmission.response.returnDetails.copy(
-                accountingPeriodLength = ApDaysMax,
-                numberOfDaysRegulatedActivityTookPlace = Some(ApDaysMax)
+                accountingPeriodLength = apDaysMax,
+                numberOfDaysRegulatedActivityTookPlace = Some(apDaysMax)
               )
             )
 
@@ -460,8 +460,8 @@ class TrackEclReturnChangesSpec extends SpecBase {
           val eclReturnSubmission = validEclReturnSubmission.response
             .copy(returnDetails =
               validEclReturnSubmission.response.returnDetails.copy(
-                accountingPeriodLength = ApDaysMax,
-                numberOfDaysRegulatedActivityTookPlace = Some(ApDaysMin)
+                accountingPeriodLength = apDaysMax,
+                numberOfDaysRegulatedActivityTookPlace = Some(apDaysMin)
               )
             )
 
@@ -483,8 +483,8 @@ class TrackEclReturnChangesSpec extends SpecBase {
           val eclReturnSubmission = validEclReturnSubmission.response
             .copy(returnDetails =
               validEclReturnSubmission.response.returnDetails.copy(
-                accountingPeriodLength = ApDaysMax,
-                numberOfDaysRegulatedActivityTookPlace = Some(ApDaysMin)
+                accountingPeriodLength = apDaysMax,
+                numberOfDaysRegulatedActivityTookPlace = Some(apDaysMin)
               )
             )
 
@@ -505,8 +505,8 @@ class TrackEclReturnChangesSpec extends SpecBase {
           val eclReturnSubmission = validEclReturnSubmission.response
             .copy(returnDetails =
               validEclReturnSubmission.response.returnDetails.copy(
-                accountingPeriodLength = ApDaysMax,
-                numberOfDaysRegulatedActivityTookPlace = Some(ApDaysMax)
+                accountingPeriodLength = apDaysMax,
+                numberOfDaysRegulatedActivityTookPlace = Some(apDaysMax)
               )
             )
 
@@ -524,12 +524,12 @@ class TrackEclReturnChangesSpec extends SpecBase {
       "numberOfDaysRegulatedActivityTookPlace are set to different values" in forAll {
         (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
           val eclReturn = defaultEclReturn(validEclReturn)
-            .copy(amlRegulatedActivityLength = Some(AmlDaysMax))
+            .copy(amlRegulatedActivityLength = Some(amlDaysMax))
 
           val eclReturnSubmission = validEclReturnSubmission.response
             .copy(returnDetails =
               validEclReturnSubmission.response.returnDetails.copy(
-                numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax - 1)
+                numberOfDaysRegulatedActivityTookPlace = Some(amlDaysMax - 1)
               )
             )
 
@@ -551,7 +551,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
           val eclReturnSubmission = validEclReturnSubmission.response
             .copy(returnDetails =
               validEclReturnSubmission.response.returnDetails.copy(
-                numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+                numberOfDaysRegulatedActivityTookPlace = Some(amlDaysMax)
               )
             )
 
@@ -568,7 +568,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
       "numberOfDaysRegulatedActivityTookPlace is set to None" in forAll {
         (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
           val eclReturn = defaultEclReturn(validEclReturn)
-            .copy(amlRegulatedActivityLength = Some(AmlDaysMax))
+            .copy(amlRegulatedActivityLength = Some(amlDaysMax))
 
           val eclReturnSubmission = validEclReturnSubmission.response
             .copy(returnDetails =
@@ -590,12 +590,12 @@ class TrackEclReturnChangesSpec extends SpecBase {
       "numberOfDaysRegulatedActivityTookPlace are both set to the same value" in forAll {
         (validEclReturn: ValidEclReturn, validEclReturnSubmission: ValidGetEclReturnSubmissionResponse) =>
           val eclReturn = defaultEclReturn(validEclReturn)
-            .copy(amlRegulatedActivityLength = Some(AmlDaysMax))
+            .copy(amlRegulatedActivityLength = Some(amlDaysMax))
 
           val eclReturnSubmission = validEclReturnSubmission.response
             .copy(returnDetails =
               validEclReturnSubmission.response.returnDetails.copy(
-                numberOfDaysRegulatedActivityTookPlace = Some(AmlDaysMax)
+                numberOfDaysRegulatedActivityTookPlace = Some(amlDaysMax)
               )
             )
 
@@ -706,7 +706,7 @@ class TrackEclReturnChangesSpec extends SpecBase {
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              amountOfEclDutyLiable = BigDecimal(RevenueMax)
+              amountOfEclDutyLiable = BigDecimal(revenueMax)
             )
           )
 
@@ -725,13 +725,13 @@ class TrackEclReturnChangesSpec extends SpecBase {
 
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(calculatedLiability =
-            Some(calculatedLiability.copy(amountDue = EclAmount(BigDecimal(RevenueMin), apportioned = false)))
+            Some(calculatedLiability.copy(amountDue = EclAmount(BigDecimal(revenueMin), apportioned = false)))
           )
 
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              amountOfEclDutyLiable = BigDecimal(RevenueMax)
+              amountOfEclDutyLiable = BigDecimal(revenueMax)
             )
           )
 
@@ -750,13 +750,13 @@ class TrackEclReturnChangesSpec extends SpecBase {
 
         val eclReturn = defaultEclReturn(validEclReturn)
           .copy(calculatedLiability =
-            Some(calculatedLiability.copy(amountDue = EclAmount(BigDecimal(RevenueMax), apportioned = false)))
+            Some(calculatedLiability.copy(amountDue = EclAmount(BigDecimal(revenueMax), apportioned = false)))
           )
 
         val eclReturnSubmission = validEclReturnSubmission.response
           .copy(returnDetails =
             validEclReturnSubmission.response.returnDetails.copy(
-              amountOfEclDutyLiable = BigDecimal(RevenueMax)
+              amountOfEclDutyLiable = BigDecimal(revenueMax)
             )
           )
 

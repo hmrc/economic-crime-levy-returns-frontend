@@ -26,7 +26,7 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       val validEclReturnSubmission = random[GetEclReturnSubmissionResponse]
       val errors                   = random[DataValidationError]
       val sessionData              = random[SessionData]
-      val validSessionData         = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData         = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetEclReturnSubmission(testPeriodKey, testEclRegistrationReference, validEclReturnSubmission)
       stubGetReturn(validEclReturn.eclReturn)
@@ -47,7 +47,7 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn        = random[EclReturn]
       val errors           = random[DataValidationError]
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetReturnValidationErrors(valid = false, errors)
@@ -72,7 +72,7 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       val validEclReturnSubmission = random[GetEclReturnSubmissionResponse]
       val chargeReference          = random[Option[String]]
       val sessionData              = random[SessionData]
-      val validSessionData         = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData         = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       val obligationDetails   = validEclReturn.eclReturn.obligationDetails.get
       val calculatedLiability = validEclReturn.eclReturn.calculatedLiability.get
@@ -115,8 +115,8 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
         ReturnSubmittedEmailRequest(
           to = Seq(validEclReturn.eclReturn.contactEmailAddress.get),
           parameters = emailParams,
-          templateId = if (chargeReference.isDefined) { ReturnSubmittedEmailRequest.ReturnTemplateId }
-          else { ReturnSubmittedEmailRequest.NilReturnTemplateId }
+          templateId = if (chargeReference.isDefined) { ReturnSubmittedEmailRequest.returnTemplateId }
+          else { ReturnSubmittedEmailRequest.nilReturnTemplateId }
         )
       )
 

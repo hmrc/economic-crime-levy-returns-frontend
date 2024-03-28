@@ -60,7 +60,7 @@ final case class EclReturn(
   returnType: Option[ReturnType],
   amendReason: Option[String]
 ) {
-  def hasContactInfo =
+  def hasContactInfo: Boolean =
     Seq(
       contactName,
       contactRole,

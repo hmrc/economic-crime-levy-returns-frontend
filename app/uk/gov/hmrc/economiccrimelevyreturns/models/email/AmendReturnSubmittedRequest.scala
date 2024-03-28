@@ -44,5 +44,5 @@ final case class AmendReturnSubmittedRequest(
 
 object AmendReturnSubmittedRequest {
   implicit val format: OFormat[AmendReturnSubmittedRequest] = Json.format[AmendReturnSubmittedRequest]
-  val AmendReturnTemplateId: String                         = "ecl_amend_return_submitted"
+  val amendReturnTemplateId: String                         = "ecl_amend_return_submitted"
 }

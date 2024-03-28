@@ -39,7 +39,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetSession(
         SessionData(
           internalId = testInternalId,
-          values = Map(SessionKeys.StartAmendUrl -> startAmendUrl)
+          values = Map(SessionKeys.startAmendUrl -> startAmendUrl)
         )
       )
 

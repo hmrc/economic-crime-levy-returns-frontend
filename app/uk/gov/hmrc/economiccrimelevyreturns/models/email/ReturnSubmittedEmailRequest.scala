@@ -43,7 +43,7 @@ final case class ReturnSubmittedEmailRequest(
 )
 
 object ReturnSubmittedEmailRequest {
-  val ReturnTemplateId: String                              = "ecl_return_submitted"
-  val NilReturnTemplateId: String                           = "ecl_nil_return_submitted"
+  val nilReturnTemplateId: String                           = "ecl_nil_return_submitted"
+  val returnTemplateId: String                              = "ecl_return_submitted"
   implicit val format: OFormat[ReturnSubmittedEmailRequest] = Json.format[ReturnSubmittedEmailRequest]
 }

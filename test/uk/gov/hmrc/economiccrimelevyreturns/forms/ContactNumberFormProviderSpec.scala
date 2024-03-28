@@ -34,15 +34,15 @@ class ContactNumberFormProviderSpec extends StringFieldBehaviours {
     behave like fieldThatBindsValidData(
       form,
       fieldName,
-      stringFromRegex(MinMaxValues.TelephoneNumberMaxLength, Regex.TelephoneNumberRegex)
+      stringFromRegex(MinMaxValues.telephoneNumberMaxLength, Regex.telephoneNumberRegex)
     )
 
     behave like fieldWithMaxLength(
       form,
       fieldName,
-      maxLength = MinMaxValues.TelephoneNumberMaxLength,
-      lengthError = FormError(fieldName, lengthKey, Seq(MinMaxValues.TelephoneNumberMaxLength)),
-      contactNumberMoreThanMaxLength(MinMaxValues.TelephoneNumberMaxLength)
+      maxLength = MinMaxValues.telephoneNumberMaxLength,
+      lengthError = FormError(fieldName, lengthKey, Seq(MinMaxValues.telephoneNumberMaxLength)),
+      contactNumberMoreThanMaxLength(MinMaxValues.telephoneNumberMaxLength)
     )
 
     behave like mandatoryField(
@@ -52,7 +52,7 @@ class ContactNumberFormProviderSpec extends StringFieldBehaviours {
     )
 
     "fail to bind an invalid telephone number" in forAll(
-      stringsWithMaxLength(MinMaxValues.TelephoneNumberMaxLength).retryUntil(!_.matches(Regex.TelephoneNumberRegex))
+      stringsWithMaxLength(MinMaxValues.telephoneNumberMaxLength).retryUntil(!_.matches(Regex.telephoneNumberRegex))
     ) { invalidNumber: String =>
       val result: Form[String] = form.bind(Map("value" -> invalidNumber))
 
