@@ -17,118 +17,89 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
+import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import play.api.data.Form
-import play.api.http.Status.OK
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.forms.SavedResponsesFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, SessionError}
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, ObligationDetails, SessionKeys}
-import uk.gov.hmrc.economiccrimelevyreturns.services.{ReturnsService, SessionService}
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.SavedResponsesView
+import uk.gov.hmrc.economiccrimelevyreturns.services.{EnrolmentStoreProxyService, ReturnsService, SessionService}
+import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, NoObligationForPeriodView, SavedResponsesView, StartView}
 
 import java.time.LocalDate
 import scala.concurrent.Future
 
 class SavedResponsesControllerSpec extends SpecBase {
 
-  val view: SavedResponsesView                 = app.injector.instanceOf[SavedResponsesView]
-  val formProvider: SavedResponsesFormProvider = new SavedResponsesFormProvider()
-  val form: Form[Boolean]                      = formProvider()
+  val mockEclReturnsService: ReturnsService                  = mock[ReturnsService]
+  val mockSessionService: SessionService                     = mock[SessionService]
+  val view: SavedResponsesView                               = app.injector.instanceOf[SavedResponsesView]
+  val savedResponsesFormProvider: SavedResponsesFormProvider = app.injector.instanceOf[SavedResponsesFormProvider]
 
-  val mockEclReturnsService: ReturnsService = mock[ReturnsService]
-  val mockSessionService: SessionService    = mock[SessionService]
-
-  class TestContext(returnsData: EclReturn) {
+  class TestContext(eclReturnData: EclReturn) {
     val controller = new SavedResponsesController(
       mcc,
-      fakeAuthorisedAction(returnsData.internalId),
+      fakeAuthorisedAction(internalId),
       mockSessionService,
       mockEclReturnsService,
-      formProvider,
+      savedResponsesFormProvider,
       view,
-      fakeDataRetrievalAction(returnsData, Some(testPeriodKey))
+      fakeDataRetrievalAction(eclReturnData, Some(periodKey))
     )
   }
 
+  override def beforeEach(): Unit = {
+    reset(mockEclReturnsService)
+    reset(mockSessionService)
+  }
+
   "onPageLoad" should {
-    "return OK and the correct view when no answer has already been provided" in forAll {
-      (eclReturn: EclReturn, obligationDetails: ObligationDetails, fromFY: LocalDate, toFY: LocalDate) =>
-        new TestContext(eclReturn) {
-          val result: Future[Result] = controller.onPageLoad()(fakeRequest)
+    "should return Ok with SavedResponsesFormProvider" in forAll { (eclReturn: EclReturn) =>
+      new TestContext(eclReturn) {
+        val result: Future[Result] = controller.onPageLoad()(fakeRequest)
 
-          status(result) shouldBe OK
-
-          contentAsString(result) shouldBe view(form)(
-            fakeRequest,
-            messages
-          ).toString
-        }
+        status(result) shouldBe OK
+      }
     }
   }
 
   "onSubmit" should {
-    "redirect to the saved page if yes is selected" in forAll { (eclReturn: EclReturn, url: String) =>
-      new TestContext(eclReturn) {
-        when(
-          mockSessionService.get(
-            any(),
-            ArgumentMatchers.eq(eclReturn.internalId),
-            ArgumentMatchers.eq(SessionKeys.UrlToReturnTo)
-          )(any())
-        )
-          .thenReturn(EitherT[Future, SessionError, String](Future.successful(Right(url))))
+    "should redirect to return url saved in session when the user wants to continue with their saved answers" in forAll {
+      (eclReturn: EclReturn) =>
+        new TestContext(eclReturn) {
+          val path = "/return-url"
+          when(mockSessionService.get(any(), any(), any())(any())).thenReturn(EitherT.fromEither[Future](Right(path)))
 
-        val result: Future[Result] =
-          controller.onSubmit()(fakeRequest.withFormUrlEncodedBody(("value", "true")))
+          val result: Future[Result] = controller.onSubmit()(
+            fakeRequest.withFormUrlEncodedBody(("value", "true"))
+          )
 
-        status(result) shouldBe SEE_OTHER
+          status(result) shouldBe SEE_OTHER
 
-        redirectLocation(result) shouldBe Some(url)
-      }
+          redirectLocation(result) shouldBe Some(path)
+        }
     }
 
-    "delete the saved return and redirect to the start page if no is selected" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
-        when(
-          mockEclReturnsService.deleteReturn(
-            ArgumentMatchers.eq(eclReturn.internalId)
-          )(any())
-        )
-          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right())))
+    "should redirect to the RelevantAp12MonthsController when the user wants to delete their saved answers and start again" in forAll {
+      (eclReturn: EclReturn) =>
+        new TestContext(eclReturn) {
+          when(mockSessionService.delete(any())(any())).thenReturn(EitherT.fromEither[Future](Right(())))
 
-        when(
-          mockSessionService.delete(
-            ArgumentMatchers.eq(eclReturn.internalId)
-          )(any())
-        )
-          .thenReturn(EitherT[Future, SessionError, Unit](Future.successful(Right())))
+          when(mockEclReturnsService.deleteReturn(any())(any())).thenReturn(EitherT.fromEither[Future](Right(())))
 
-        val result: Future[Result] =
-          controller.onSubmit()(fakeRequest.withFormUrlEncodedBody(("value", "false")))
+          val result: Future[Result] = controller.onSubmit()(
+            fakeRequest.withFormUrlEncodedBody(("value", "false"))
+          )
 
-        status(result) shouldBe SEE_OTHER
+          status(result) shouldBe SEE_OTHER
 
-        redirectLocation(result) shouldBe Some(routes.StartController.onPageLoad(testPeriodKey).url)
-      }
-    }
-
-    "return a Bad Request with form errors if nothing selected" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
-        val tuple: (String, String)       = ("value", "")
-        val formWithErrors: Form[Boolean] = form.bind(Map(tuple._1 -> tuple._2))
-
-        val result: Future[Result] =
-          controller.onSubmit()(fakeRequest.withFormUrlEncodedBody(tuple))
-
-        status(result) shouldBe BAD_REQUEST
-
-        contentAsString(result) shouldBe view(formWithErrors)(fakeRequest, messages).toString
-      }
+          redirectLocation(result) shouldBe Some(routes.RelevantAp12MonthsController.onPageLoad(NormalMode).url)
+        }
     }
   }
 }

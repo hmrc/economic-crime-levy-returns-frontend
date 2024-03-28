@@ -6,7 +6,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, ObligationData, SessionData, SessionKeys}
 
 class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -37,8 +37,10 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn        = random[EclReturn].copy(calculatedLiability = None, obligationDetails = None)
       val sessionData      = random[SessionData]
       val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val obligationData   = random[ObligationData]
 
       stubGetReturn(eclReturn)
+      stubGetObligations(obligationData)
       stubGetSession(validSessionData)
       stubUpsertSession()
 
