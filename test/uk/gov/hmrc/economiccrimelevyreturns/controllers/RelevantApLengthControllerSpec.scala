@@ -28,8 +28,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantApLengthView
 
@@ -127,7 +128,7 @@ class RelevantApLengthControllerSpec extends SpecBase {
       }
     }
 
-    "save the provided relevant AP length then redirect to the check your answers page of no data change" in forAll(
+    "save the provided relevant AP length then redirect to the check your answers page if no data change" in forAll(
       Arbitrary.arbitrary[EclReturn],
       Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax),
       Arbitrary.arbitrary[String]
@@ -148,7 +149,7 @@ class RelevantApLengthControllerSpec extends SpecBase {
       }
     }
 
-    "save the provided relevant AP length then redirect to the amount due page of no data change" in forAll(
+    "save the provided relevant AP length then redirect to the amount due page if no data change" in forAll(
       Arbitrary.arbitrary[EclReturn],
       Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
     ) { (eclReturn: EclReturn, relevantApLength: Int) =>
@@ -166,6 +167,41 @@ class RelevantApLengthControllerSpec extends SpecBase {
 
         redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(CheckMode).url)
       }
+    }
+  }
+
+  "save the provided relevant AP length then redirect to the amount page if new data" in forAll(
+    Arbitrary.arbitrary[EclReturn],
+    Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax),
+    Arbitrary.arbitrary[String],
+    Arbitrary.arbitrary[CalculatedLiability]
+  ) { (eclReturn: EclReturn, relevantApLength: Int, name: String, calculatedLiability: CalculatedLiability) =>
+    val baseReturn = clearContact(eclReturn).copy(contactName = Some(name))
+    new TestContext(baseReturn.copy(relevantApLength = None)) {
+      val updatedReturn = baseReturn.copy(relevantApLength = Some(relevantApLength))
+
+      when(mockEclReturnsService.upsertReturn(any())(any()))
+        .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+      when(mockEclLiabilityService.calculateLiability(any())(any()))
+        .thenReturn(
+          EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+            Future.successful(
+              Right(
+                calculatedLiability.copy(
+                  calculatedBand = Small
+                )
+              )
+            )
+          )
+        )
+
+      val result: Future[Result] =
+        controller.onSubmit(CheckMode)(fakeRequest.withFormUrlEncodedBody(("value", relevantApLength.toString)))
+
+      status(result) shouldBe SEE_OTHER
+
+      redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(CheckMode).url)
     }
   }
 }

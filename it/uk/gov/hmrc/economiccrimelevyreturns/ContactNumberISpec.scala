@@ -7,9 +7,28 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
 
 class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
+
+  private def updateContactNumber(eclReturn: EclReturn, number: String) =
+    eclReturn.copy(contactTelephoneNumber = Some(number))
+
+  private def clearContactNumber(eclReturn: EclReturn) =
+    eclReturn.copy(contactTelephoneNumber = None)
+
+  private def testSetup(eclReturn: EclReturn, internalId: String = testInternalId): EclReturn = {
+    stubGetSession(
+      SessionData(
+        internalId = internalId,
+        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+      )
+    )
+    updateContactName(eclReturn)
+  }
+
+  private def validContactNumber: String =
+    ensureMaxLength(numericString, MinMaxValues.TelephoneNumberMaxLength)
 
   s"GET ${routes.ContactNumberController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.ContactNumberController.onPageLoad(NormalMode))
@@ -17,20 +36,15 @@ class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the contact number HTML view" in {
       stubAuthorised()
 
-      val eclReturn        = random[EclReturn]
-      val name             = random[String]
-      val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val eclReturn = testSetup(random[EclReturn])
 
-      stubGetReturn(eclReturn.copy(contactName = Some(name)))
-      stubGetSession(validSessionData)
+      stubGetReturn(eclReturn)
       stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.ContactNumberController.onPageLoad(NormalMode)))
 
       status(result) shouldBe OK
-
-      html(result) should include(s"What is $name's telephone number?")
+      html(result)     should include(s"What is ${eclReturn.contactName.get}'s telephone number?")
     }
   }
 
@@ -40,27 +54,30 @@ class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
     "save the provided telephone number then redirect to the check your answers page" in {
       stubAuthorised()
 
-      val eclReturn        = random[EclReturn]
-      val name             = random[String]
-      val number           = stringFromRegex(MinMaxValues.TelephoneNumberMaxLength, Regex.TelephoneNumberRegex).sample.get
-      val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val number    = validContactNumber
+      val eclReturn = testSetup(random[EclReturn])
 
-      val updatedReturn =
-        eclReturn.copy(contactName = Some(name), contactTelephoneNumber = Some(number.filterNot(_.isWhitespace)))
-
-      stubGetReturn(updatedReturn)
-      stubUpsertReturn(updatedReturn)
-      stubGetSession(validSessionData)
+      stubGetReturn(clearContactNumber(eclReturn))
+      stubUpsertReturn(updateContactNumber(eclReturn, number))
 
       val result = callRoute(
         FakeRequest(routes.ContactNumberController.onSubmit(NormalMode))
           .withFormUrlEncodedBody(("value", number))
       )
 
-      status(result) shouldBe SEE_OTHER
-
+      status(result)           shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
     }
+  }
+
+  s"POST ${routes.ContactNumberController.onSubmit(CheckMode).url}"   should {
+    behave like authorisedActionRoute(routes.ContactNumberController.onSubmit(CheckMode))
+    behave like goToNextPageInCheckMode(
+      value = validContactNumber,
+      updateEclReturnValue = updateContactNumber,
+      clearEclReturnValue = clearContactNumber,
+      callToMake = routes.ContactNumberController.onSubmit(CheckMode),
+      testSetup = Some(testSetup)
+    )
   }
 }

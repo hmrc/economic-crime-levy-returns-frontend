@@ -16,21 +16,21 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
+import cats.data.OptionT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND}
-import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
-import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.ReturnsConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, DataValidationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.Future
 
-class ReturnsServiceSpec extends SpecBase {
+class ReturnsServiceSpec extends ServiceSpec {
   val mockEclReturnsConnector: ReturnsConnector = mock[ReturnsConnector]
   val mockAuditService: AuditService            = mock[AuditService]
   val service                                   = new ReturnsService(
@@ -101,7 +101,6 @@ class ReturnsServiceSpec extends SpecBase {
     }
 
     "return DataHandlingError.BadGateway when when call to returns connector fails with 5xx error" in {
-
       val errorCode = INTERNAL_SERVER_ERROR
       val message   = "INTERNAL_SERVER_ERROR"
 
@@ -120,7 +119,6 @@ class ReturnsServiceSpec extends SpecBase {
     }
 
     "return DataHandlingError.InternalUnexpectedError when when call to returns connector fails with an unexpected error" in {
-
       val throwable: Exception = new Exception()
 
       when(
@@ -157,10 +155,83 @@ class ReturnsServiceSpec extends SpecBase {
     }
 
     "return DataHandlingError.NotFound when EclReturn is None" in {
-
       val result = service.transformEclReturnSubmissionToEclReturn(null, None, null)
 
       result shouldBe Left(DataHandlingError.NotFound("Ecl return not found"))
+    }
+  }
+
+  "getReturn" should {
+    "return normally if success" in forAll { eclReturn: EclReturn =>
+      val internalId = eclReturn.internalId
+
+      when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
+        .thenReturn(Future.successful(eclReturn))
+
+      val result = await(service.getReturn(internalId).value)
+      result shouldBe Right(Some(eclReturn))
+    }
+
+    "return None if requested return cannot be found" in forAll { internalId: String =>
+      val code = NOT_FOUND
+
+      when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
+
+      val result = await(service.getReturn(internalId).value)
+      result shouldBe Right(None)
+    }
+
+    "return an error if failure" in forAll { (internalId: String, is5xxError: Boolean) =>
+      val code = getErrorCode(is5xxError)
+
+      when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
+        .thenReturn(Future.failed(testException))
+
+      await(service.getReturn(internalId).value) shouldBe
+        Left(DataHandlingError.InternalUnexpectedError(Some(testException)))
+
+      if (code != NOT_FOUND) {
+        when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
+          .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
+
+        await(service.getReturn(internalId).value) shouldBe
+          Left(DataHandlingError.BadGateway(code.toString, code))
+      }
+    }
+  }
+
+  "getReturnValidationErrors" should {
+    "return normally if success" in forAll { internalId: String =>
+      when(mockEclReturnsConnector.validateEclReturn(ArgumentMatchers.eq(internalId))(any()))
+        .thenReturn(OptionT[Future, String](Future.successful(None)))
+
+      val result = await(service.getReturnValidationErrors(internalId).value)
+      result shouldBe Right(None)
+    }
+
+    "return validation error if there is one" in forAll { internalId: String =>
+      when(mockEclReturnsConnector.validateEclReturn(ArgumentMatchers.eq(internalId))(any()))
+        .thenReturn(OptionT[Future, String](Future.successful(Some(internalId))))
+
+      val result = await(service.getReturnValidationErrors(internalId).value)
+      result shouldBe Right(Some(DataValidationError(internalId)))
+    }
+
+    "return an error if failure" in forAll { (internalId: String, is5xxError: Boolean) =>
+      val code = getErrorCode(is5xxError)
+
+      when(mockEclReturnsConnector.validateEclReturn(ArgumentMatchers.eq(internalId))(any()))
+        .thenReturn(OptionT[Future, String](Future.failed(testException)))
+
+      await(service.getReturnValidationErrors(internalId).value) shouldBe
+        Left(DataHandlingError.InternalUnexpectedError(Some(testException)))
+
+      when(mockEclReturnsConnector.validateEclReturn(ArgumentMatchers.eq(internalId))(any()))
+        .thenReturn(OptionT[Future, String](Future.failed(UpstreamErrorResponse(code.toString, code))))
+
+      await(service.getReturnValidationErrors(internalId).value) shouldBe
+        Left(DataHandlingError.BadGateway(code.toString, code))
     }
   }
 }

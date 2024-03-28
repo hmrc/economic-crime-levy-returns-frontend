@@ -22,13 +22,14 @@ import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.RegistrationConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.GetSubscriptionResponse
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{AuditError, DataHandlingError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{GetEclReturnSubmissionResponse, GetSubscriptionResponse, ReturnType}
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.play.audit.http.connector.AuditResult
 
 import scala.concurrent.Future
 
-class RegistrationServiceSpec extends SpecBase {
+class RegistrationServiceSpec extends ServiceSpec {
   val mockEclRegistrationConnector: RegistrationConnector = mock[RegistrationConnector]
   val mockAuditService: AuditService                      = mock[AuditService]
   val service                                             = new RegistrationService(mockEclRegistrationConnector)
@@ -77,6 +78,33 @@ class RegistrationServiceSpec extends SpecBase {
           await(service.getSubscription(eclReference).value)
 
         result shouldBe Left(DataHandlingError.InternalUnexpectedError(Some(throwable), None))
+    }
+  }
+
+  "getSubscription" should {
+    "return normally if successful" in forAll { (eclReference: String, eclSubscription: GetSubscriptionResponse) =>
+      when(mockEclRegistrationConnector.getSubscription(ArgumentMatchers.eq(eclReference))(any()))
+        .thenReturn(Future.successful(eclSubscription))
+
+      val result = await(service.getSubscription(eclReference).value)
+
+      result shouldBe Right(eclSubscription)
+    }
+
+    "return error if failure" in forAll { (eclReference: String, is5xxError: Boolean) =>
+      val code = getErrorCode(is5xxError)
+
+      when(mockEclRegistrationConnector.getSubscription(ArgumentMatchers.eq(eclReference))(any()))
+        .thenReturn(Future.failed(testException))
+
+      await(service.getSubscription(eclReference).value) shouldBe
+        Left(DataHandlingError.InternalUnexpectedError(Some(testException)))
+
+      when(mockEclRegistrationConnector.getSubscription(ArgumentMatchers.eq(eclReference))(any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
+
+      await(service.getSubscription(eclReference).value) shouldBe
+        Left(DataHandlingError.BadGateway(code.toString, code))
     }
   }
 }

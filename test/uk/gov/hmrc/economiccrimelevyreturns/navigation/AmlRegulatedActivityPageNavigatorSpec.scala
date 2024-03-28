@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,28 +18,29 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, Mode}
 
-class ContactNumberPageNavigatorSpec extends SpecBase {
+class AmlRegulatedActivityPageNavigatorSpec extends SpecBase {
 
-  val pageNavigator = new ContactNumberPageNavigator()
+  val pageNavigator = new AmlRegulatedActivityPageNavigator()
 
   "nextPage" should {
-    "return a Call to the check your answers page in NormalMode" in forAll { (eclReturn: EclReturn, number: String) =>
-      val updatedReturn: EclReturn = eclReturn.copy(contactTelephoneNumber = Some(number))
+    "return a Call to the next page in all modes" in forAll {
+      (eclReturn: EclReturn, amlRegulatedActivity: Boolean, mode: Mode) =>
+        val updatedReturn: EclReturn =
+          eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = Some(amlRegulatedActivity))
 
-      pageNavigator.nextPage(NormalMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad()
-    }
+        val nextPage = amlRegulatedActivity match {
+          case true  => routes.AmountDueController.onPageLoad(mode)
+          case false => routes.AmlRegulatedActivityLengthController.onPageLoad(mode)
+        }
 
-    "return a Call to the check your answers page in CheckMode" in forAll { (eclReturn: EclReturn, number: String) =>
-      val updatedReturn: EclReturn = eclReturn.copy(contactTelephoneNumber = Some(number))
-
-      pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad()
+        pageNavigator.nextPage(mode, updatedReturn) shouldBe nextPage
     }
 
     "return a Call to the error page if no data" in forAll { (eclReturn: EclReturn, mode: Mode) =>
-      val updatedReturn: EclReturn = eclReturn.copy(contactTelephoneNumber = None)
+      val updatedReturn: EclReturn = eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None)
 
       pageNavigator.nextPage(mode, updatedReturn) shouldBe
         routes.NotableErrorController.answersAreInvalid()

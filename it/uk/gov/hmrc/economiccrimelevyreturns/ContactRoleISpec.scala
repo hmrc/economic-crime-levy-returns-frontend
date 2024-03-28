@@ -7,9 +7,28 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
 
 class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
+
+  private def updateContactRole(eclReturn: EclReturn, role: String) =
+    eclReturn.copy(contactRole = Some(role))
+
+  private def clearContactRole(eclReturn: EclReturn) =
+    eclReturn.copy(contactRole = None)
+
+  private def testSetup(eclReturn: EclReturn, internalId: String = testInternalId): EclReturn = {
+    stubGetSession(
+      SessionData(
+        internalId = internalId,
+        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+      )
+    )
+    updateContactName(eclReturn)
+  }
+
+  private def validContactRole: String =
+    ensureMaxLength(alphaNumericString, MinMaxValues.RoleMaxLength)
 
   s"GET ${routes.ContactRoleController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.ContactRoleController.onPageLoad(NormalMode))
@@ -17,20 +36,14 @@ class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the contact role HTML view" in {
       stubAuthorised()
 
-      val eclReturn        = random[EclReturn]
-      val name             = random[String]
-      val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
-
-      stubGetReturn(eclReturn.copy(contactName = Some(name)))
-      stubGetSession(validSessionData)
+      val eclReturn = testSetup(random[EclReturn])
+      stubGetReturn(eclReturn)
       stubUpsertSession()
 
       val result = callRoute(FakeRequest(routes.ContactRoleController.onPageLoad(NormalMode)))
 
       status(result) shouldBe OK
-
-      html(result) should include(s"What is $name's role in your organisation?")
+      html(result)     should include(s"What is ${eclReturn.contactName.get}'s role in your organisation?")
     }
   }
 
@@ -40,26 +53,30 @@ class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
     "save the provided role then redirect to the contact email page" in {
       stubAuthorised()
 
-      val eclReturn        = random[EclReturn]
-      val name             = random[String].trim
-      val role             = stringFromRegex(MinMaxValues.RoleMaxLength, Regex.PositionInCompanyRegex).sample.get.trim
-      val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val role      = validContactRole
+      val eclReturn = clearContactRole(testSetup(random[EclReturn]))
 
-      val updatedReturn = eclReturn.copy(contactName = Some(name), contactRole = Some(role))
-
-      stubGetReturn(updatedReturn)
-      stubUpsertReturn(updatedReturn)
-      stubGetSession(validSessionData)
+      stubGetReturn(eclReturn)
+      stubUpsertReturn(updateContactRole(eclReturn, role))
 
       val result = callRoute(
         FakeRequest(routes.ContactRoleController.onSubmit(NormalMode))
           .withFormUrlEncodedBody(("value", role))
       )
 
-      status(result) shouldBe SEE_OTHER
-
+      status(result)           shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(routes.ContactEmailController.onPageLoad(NormalMode).url)
     }
+  }
+
+  s"POST ${routes.ContactRoleController.onSubmit(CheckMode).url}"   should {
+    behave like authorisedActionRoute(routes.ContactRoleController.onSubmit(CheckMode))
+    behave like goToNextPageInCheckMode(
+      value = validContactRole,
+      updateEclReturnValue = updateContactRole,
+      clearEclReturnValue = clearContactRole,
+      callToMake = routes.ContactRoleController.onSubmit(CheckMode),
+      testSetup = Some(testSetup)
+    )
   }
 }

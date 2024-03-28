@@ -145,6 +145,8 @@ trait EclTestData { self: Generators =>
 
   def alphaNumericString: String = Gen.alphaNumStr.sample.get
 
+  def numericString: String = Gen.numStr.sample.get
+
   val testInternalId: String               = alphaNumericString
   val testEclRegistrationReference: String = alphaNumericString
   val testChargeReference: String          = alphaNumericString
