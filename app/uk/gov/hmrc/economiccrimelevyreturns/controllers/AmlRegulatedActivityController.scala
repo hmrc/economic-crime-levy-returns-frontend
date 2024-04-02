@@ -18,12 +18,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, RequestHeader, Result}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.AmlRegulatedActivityDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmlRegulatedActivityView, ErrorTemplate}
@@ -105,12 +105,12 @@ class AmlRegulatedActivityController @Inject() (
       case false =>
         Future.successful(Redirect(eclReturn.amlRegulatedActivityLength match {
           case None => routes.AmlRegulatedActivityLengthController.onPageLoad(mode)
-          case _    => routes.CheckYourAnswersController.onPageLoad()
+          case _    => routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))
         }))
     }
   } else {
     Future.successful(Redirect(if (eclReturn.hasContactInfo) {
-      routes.CheckYourAnswersController.onPageLoad()
+      routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))
     } else {
       routes.AmountDueController.onPageLoad(CheckMode)
     }))

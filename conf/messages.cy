@@ -357,3 +357,13 @@ savedResponses.false = Dileu’ch cynnydd hyd yma a dechrau eto
 savedResponses.error.required = Dewiswch yr opsiwn cyntaf os ydych am fynd yn eich blaen â’ch atebion sydd wedi’u cadw
 
 govukErrorMessage.visuallyHiddenText = Gwall
+
+eclReturnSubmittedAlready.title = Rydych eisoes wedi cyflwyno’ch datganiad Ardoll Troseddau Economaidd – Cyflwyno’ch datganiad ECL – GOV.UK
+eclReturnSubmittedAlready.heading = Rydych eisoes wedi cyflwyno’ch datganiad Ardoll Troseddau Economaidd
+eclReturnSubmittedAlready.body.p1 = Mae’ch gwybodaeth wedi cael ei hanfon i CThEF.
+eclReturnSubmittedAlready.body.link = <a href = "{0}" class="govuk-link">Yn ôl i’ch cyfrif Ardoll Troseddau Economaidd</a>
+
+returnAmendmentAlreadyRequested.title = Rydych eisoes wedi gwneud cais i ddiwygio’ch datganiad Ardoll Troseddau Economaidd – Diwygio’ch datganiad Ardoll Troseddau Economaidd – GOV.UK
+returnAmendmentAlreadyRequested.heading = Rydych eisoes wedi gwneud cais i ddiwygio’ch datganiad Ardoll Troseddau Economaidd
+returnAmendmentAlreadyRequested.body.p1 = Mae’ch gwybodaeth wedi cael ei hanfon i CThEF.
+returnAmendmentAlreadyRequested.body.link = <a href="{0}" class="govuk-link">Yn ôl i’ch cyfrif Ardoll Troseddau Economaidd/a>

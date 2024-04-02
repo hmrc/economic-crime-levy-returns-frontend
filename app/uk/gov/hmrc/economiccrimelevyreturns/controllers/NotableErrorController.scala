@@ -20,7 +20,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.AuthorisedAction
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AgentCannotSubmitReturnView, AnswersAreInvalidView}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AgentCannotSubmitReturnView, AnswersAreInvalidView, ECLReturnSubmittedAlreadyView, ReturnAmendmentAlreadyRequestedView}
 import uk.gov.hmrc.http.HttpVerbs.GET
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -32,6 +32,8 @@ class NotableErrorController @Inject() (
   authorise: AuthorisedAction,
   answersAreInvalidView: AnswersAreInvalidView,
   agentCannotSubmitReturnView: AgentCannotSubmitReturnView,
+  eclReturnAlreadySubmittedView: ECLReturnSubmittedAlreadyView,
+  returnAmendmentAlreadyRequestedView: ReturnAmendmentAlreadyRequestedView,
   appConfig: AppConfig
 ) extends FrontendBaseController
     with I18nSupport {
@@ -44,7 +46,13 @@ class NotableErrorController @Inject() (
     Redirect(Call(GET, appConfig.claimUrl))
   }
 
-  def agentCannotSubmitReturn: Action[AnyContent] = Action { implicit request =>
+  def agentCannotSubmitReturn: Action[AnyContent]         = Action { implicit request =>
     Ok(agentCannotSubmitReturnView())
+  }
+  def eclReturnAlreadySubmitted: Action[AnyContent]       = Action { implicit request =>
+    Ok(eclReturnAlreadySubmittedView())
+  }
+  def returnAmendmentAlreadyRequested: Action[AnyContent] = Action { implicit request =>
+    Ok(returnAmendmentAlreadyRequestedView())
   }
 }

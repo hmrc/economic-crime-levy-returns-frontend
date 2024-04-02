@@ -32,7 +32,7 @@ import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits}
 import play.api.test.Helpers.{stubBodyParser, stubControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.EclTestData
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{FakeAuthorisedAction, FakeDataRetrievalAction, FakeNoOpStoreUrlAction}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{FakeAuthorisedAction, FakeDataRetrievalAction, FakeDataRetrievalOrErrorAction, FakeNoOpStoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ErrorTemplate
@@ -86,6 +86,9 @@ trait SpecBase
 
   def fakeDataRetrievalAction(data: EclReturn, periodKey: Option[String] = None) =
     new FakeDataRetrievalAction(data, periodKey)
+
+  def fakeDataRetrievalOrErrorAction(data: EclReturn, periodKey: Option[String] = None) =
+    new FakeDataRetrievalOrErrorAction(data, periodKey)
 
   def onwardRoute: Call = Call("GET", "/foo")
 

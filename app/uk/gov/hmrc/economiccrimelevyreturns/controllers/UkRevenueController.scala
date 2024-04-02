@@ -18,13 +18,13 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Request, RequestHeader, Result}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.UkRevenueDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ErrorTemplate, UkRevenueView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -68,7 +68,7 @@ class UkRevenueController @Inject() (
             calculateLiability(mode, eclReturn)
           } else {
             Future.successful(Redirect(if (request.eclReturn.hasContactInfo) {
-              routes.CheckYourAnswersController.onPageLoad()
+              routes.CheckYourAnswersController.onPageLoad(request.eclReturn.returnType.getOrElse(FirstTimeReturn))
             } else {
               routes.AmountDueController.onPageLoad(CheckMode)
             }))

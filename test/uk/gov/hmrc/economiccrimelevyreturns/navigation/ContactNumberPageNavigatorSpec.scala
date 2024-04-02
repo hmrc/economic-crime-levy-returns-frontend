@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 class ContactNumberPageNavigatorSpec extends SpecBase {
@@ -29,13 +29,17 @@ class ContactNumberPageNavigatorSpec extends SpecBase {
     "return a Call to the check your answers page in NormalMode" in forAll { (eclReturn: EclReturn, number: String) =>
       val updatedReturn: EclReturn = eclReturn.copy(contactTelephoneNumber = Some(number))
 
-      pageNavigator.nextPage(NormalMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad()
+      pageNavigator.nextPage(NormalMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad(
+        eclReturn.returnType.getOrElse(FirstTimeReturn)
+      )
     }
 
     "return a Call to the check your answers page in CheckMode" in forAll { (eclReturn: EclReturn, number: String) =>
       val updatedReturn: EclReturn = eclReturn.copy(contactTelephoneNumber = Some(number))
 
-      pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad()
+      pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad(
+        eclReturn.returnType.getOrElse(FirstTimeReturn)
+      )
     }
   }
 

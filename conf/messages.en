@@ -358,3 +358,13 @@ savedResponses.false = Delete your progress and start again
 savedResponses.error.required = Select the first option if you want to continue with your saved answers
 
 govukErrorMessage.visuallyHiddenText = Error
+
+eclReturnSubmittedAlready.title = You have already submitted your Economic Crime Levy return - Submit your ECL return - GOV.UK
+eclReturnSubmittedAlready.heading = You have already submitted your Economic Crime Levy return
+eclReturnSubmittedAlready.body.p1 = Your information has been sent to HMRC.
+eclReturnSubmittedAlready.body.link = <a href="{0}" class="govuk-link">Return to your Economic Crime Levy account</a>
+
+returnAmendmentAlreadyRequested.title = You have already requested to amend your Economic Crime Levy return - Amend your Economic Crime Levy return - GOV.UK
+returnAmendmentAlreadyRequested.heading = You have already requested to amend your Economic Crime Levy return
+returnAmendmentAlreadyRequested.body.p1 = Your information has been sent to HMRC.
+returnAmendmentAlreadyRequested.body.link = <a href="{0}" class="govuk-link">Return to your Economic Crime Levy account</a>

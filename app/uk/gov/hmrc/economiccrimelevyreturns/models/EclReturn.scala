@@ -17,11 +17,10 @@
 package uk.gov.hmrc.economiccrimelevyreturns.models
 
 import play.api.libs.json._
-
+import play.api.mvc.QueryStringBindable
 sealed trait ReturnType
 
 case object FirstTimeReturn extends ReturnType
-
 case object AmendReturn extends ReturnType
 object ReturnType {
 

@@ -21,14 +21,18 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
-import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AgentCannotSubmitReturnView, AnswersAreInvalidView}
+import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AgentCannotSubmitReturnView, AnswersAreInvalidView, ECLReturnSubmittedAlreadyView, ReturnAmendmentAlreadyRequestedView}
 
 import scala.concurrent.Future
 
 class NotableErrorControllerSpec extends SpecBase {
 
-  val answersAreInvalidView: AnswersAreInvalidView             = app.injector.instanceOf[AnswersAreInvalidView]
-  val agentCannotSubmitReturnView: AgentCannotSubmitReturnView = app.injector.instanceOf[AgentCannotSubmitReturnView]
+  val answersAreInvalidView: AnswersAreInvalidView                             = app.injector.instanceOf[AnswersAreInvalidView]
+  val agentCannotSubmitReturnView: AgentCannotSubmitReturnView                 = app.injector.instanceOf[AgentCannotSubmitReturnView]
+  val eclReturnSubmittedAlreadyView: ECLReturnSubmittedAlreadyView             =
+    app.injector.instanceOf[ECLReturnSubmittedAlreadyView]
+  val returnAmendmentAlreadyRequestedView: ReturnAmendmentAlreadyRequestedView =
+    app.injector.instanceOf[ReturnAmendmentAlreadyRequestedView]
 
   class TestContext(eclReturnData: EclReturn) {
     val controller = new NotableErrorController(
@@ -36,6 +40,8 @@ class NotableErrorControllerSpec extends SpecBase {
       fakeAuthorisedAction(eclReturnData.internalId),
       answersAreInvalidView,
       agentCannotSubmitReturnView,
+      eclReturnSubmittedAlreadyView,
+      returnAmendmentAlreadyRequestedView,
       appConfig
     )
   }

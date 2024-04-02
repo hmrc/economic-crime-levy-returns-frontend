@@ -46,7 +46,8 @@ lazy val root = (project in file("."))
         group(
           Seq(
             "javascripts/prevent-resubmit-warning.js",
-            "javascripts/print-dialogue.js"
+            "javascripts/print-dialogue.js",
+            "javascripts/onload.js"
           )
         )
     ),

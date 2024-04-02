@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, NormalMode}
 
 class ContactEmailPageNavigatorSpec extends SpecBase {
 
@@ -36,7 +36,9 @@ class ContactEmailPageNavigatorSpec extends SpecBase {
     "return a Call to the check your answers page in CheckMode" in forAll { (eclReturn: EclReturn, email: String) =>
       val updatedReturn: EclReturn = eclReturn.copy(contactEmailAddress = Some(email))
 
-      pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad()
+      pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad(
+        eclReturn.returnType.getOrElse(FirstTimeReturn)
+      )
     }
   }
 
