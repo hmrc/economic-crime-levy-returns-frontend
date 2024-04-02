@@ -33,7 +33,7 @@ class AuditServiceSpec extends ServiceSpec {
     mockAuditConnector
   )
 
-  def getReturnTypeAsOption(isPresent: Boolean, returnType: ReturnType) =
+  def getReturnTypeAsOption(isPresent: Boolean, returnType: ReturnType): Option[ReturnType] =
     isPresent match {
       case true  => Some(returnType)
       case false => None
@@ -62,13 +62,15 @@ class AuditServiceSpec extends ServiceSpec {
           .thenReturn(Future.failed(testException))
 
         await(service.auditReturnStarted(internalId, eclReference, Some(returnType)).value) shouldBe
-          Left(AuditError.InternalUnexpectedError(testException.getMessage(), Some(testException)))
+          Left(
+            AuditError.InternalUnexpectedError(testException.getMessage(), Some(testException))
+          )
 
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
         await(service.auditReturnStarted(internalId, eclReference, Some(returnType)).value) shouldBe
-          Left(AuditError.BadGateway(code.toString, code))
+          Left(AuditError.BadGateway(s"Audit Return Started Failed - ${code.toString}", code))
     }
   }
 }

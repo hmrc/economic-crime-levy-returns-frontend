@@ -60,9 +60,9 @@ class StartController @Inject() (
         eclReturn.obligationDetails match {
           case Some(obligationDetails) =>
             Redirect(routes.StartController.onPageLoad(obligationDetails.periodKey))
-              .withSession(addToSession(Seq(SessionKeys.PeriodKey -> obligationDetails.periodKey)))
+              .withSession(addToSession(Seq(SessionKeys.periodKey -> obligationDetails.periodKey)))
           case None                    =>
-            request.session.get(SessionKeys.PeriodKey) match {
+            request.session.get(SessionKeys.periodKey) match {
               case Some(periodKey) =>
                 Redirect(routes.StartController.onPageLoad(periodKey))
               case None            =>
@@ -113,7 +113,7 @@ class StartController @Inject() (
   def onSubmit(): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     (for {
       urlToReturnTo <-
-        sessionService.getOptional(request.session, request.internalId, SessionKeys.UrlToReturnTo).asResponseError
+        sessionService.getOptional(request.session, request.internalId, SessionKeys.urlToReturnTo).asResponseError
       periodKey     <- valueOrErrorF(request.periodKey, "Period key")
     } yield (urlToReturnTo, periodKey)).fold(
       err => routeError(err),
@@ -125,7 +125,7 @@ class StartController @Inject() (
             case Some(_) => routes.SavedResponsesController.onPageLoad()
             case None    => routes.RelevantAp12MonthsController.onPageLoad(NormalMode)
           }
-        ).withSession(addToSession(Seq(SessionKeys.PeriodKey -> periodKey)))
+        ).withSession(addToSession(Seq(SessionKeys.periodKey -> periodKey)))
       }
     )
   }
@@ -136,7 +136,7 @@ class StartController @Inject() (
     sessionService.upsert {
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> periodKey)
+        values = Map(SessionKeys.periodKey -> periodKey)
       )
     }
 

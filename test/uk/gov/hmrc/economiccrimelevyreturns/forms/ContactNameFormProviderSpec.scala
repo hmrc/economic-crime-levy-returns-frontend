@@ -34,14 +34,14 @@ class ContactNameFormProviderSpec extends StringFieldBehaviours {
     behave like fieldThatBindsValidData(
       form,
       fieldName,
-      stringFromRegex(MinMaxValues.NameMaxLength, Regex.NameRegex)
+      stringFromRegex(MinMaxValues.nameMaxLength, Regex.nameRegex)
     )
 
     behave like fieldWithMaxLength(
       form,
       fieldName,
-      maxLength = MinMaxValues.NameMaxLength,
-      lengthError = FormError(fieldName, lengthKey, Seq(MinMaxValues.NameMaxLength))
+      maxLength = MinMaxValues.nameMaxLength,
+      lengthError = FormError(fieldName, lengthKey, Seq(MinMaxValues.nameMaxLength))
     )
 
     behave like mandatoryField(
@@ -51,7 +51,7 @@ class ContactNameFormProviderSpec extends StringFieldBehaviours {
     )
 
     "fail to bind an invalid name" in forAll(
-      stringsWithMaxLength(MinMaxValues.NameMaxLength).retryUntil(!_.matches(Regex.NameRegex))
+      stringsWithMaxLength(MinMaxValues.nameMaxLength).retryUntil(!_.matches(Regex.nameRegex))
     ) { invalidName: String =>
       val result: Form[String] = form.bind(Map("value" -> invalidName))
 

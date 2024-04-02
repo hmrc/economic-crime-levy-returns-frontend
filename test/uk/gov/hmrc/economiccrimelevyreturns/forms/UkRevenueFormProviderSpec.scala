@@ -50,7 +50,7 @@ class UkRevenueFormProviderSpec extends CurrencyFieldBehaviours {
       minimum = RevenueMin,
       maximum = RevenueMax,
       expectedError =
-        FormError(fieldName, "ukRevenue.error.outOfRange", Seq(MinMaxValues.RevenueMin, MinMaxValues.RevenueMax))
+        FormError(fieldName, "ukRevenue.error.outOfRange", Seq(MinMaxValues.revenueMin, MinMaxValues.revenueMax))
     )
 
     behave like mandatoryField(

@@ -69,7 +69,7 @@ class ContactEmailControllerSpec extends SpecBase {
 
           status(result) shouldBe OK
 
-          val resultAsString = contentAsString(result)
+          val resultAsString: String = contentAsString(result)
           resultAsString should include("type=\"email\"")
           resultAsString should include("spellcheck=\"false\"")
 
@@ -81,7 +81,7 @@ class ContactEmailControllerSpec extends SpecBase {
       val updatedReturn = eclReturn.copy(contactName = None)
 
       new TestContext(updatedReturn) {
-        val result = controller.onPageLoad(NormalMode)(fakeRequest)
+        val result: Future[Result] = controller.onPageLoad(NormalMode)(fakeRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
@@ -102,7 +102,7 @@ class ContactEmailControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided contact email then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      emailAddress(MinMaxValues.EmailMaxLength)
+      emailAddress(MinMaxValues.emailMaxLength)
     ) { (eclReturn: EclReturn, email: String) =>
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(contactEmailAddress = Some(email.toLowerCase))

@@ -12,26 +12,26 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, C
 
 class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
-  val ukRevenue = random[BigDecimal]
+  val ukRevenue: BigDecimal = random[BigDecimal]
 
-  private def updateAmlActivityLength(eclReturn: EclReturn, length: Int) = {
+  private def updateAmlActivityLength(eclReturn: EclReturn, length: Int): EclReturn = {
     val updatedReturn       = eclReturn.copy(amlRegulatedActivityLength = Some(length))
     val calculatedLiability = random[CalculatedLiability]
     stubCalculateLiability(
-      CalculateLiabilityRequest(length, FullYear, ukRevenue.longValue),
+      CalculateLiabilityRequest(length, fullYear, ukRevenue.longValue),
       calculatedLiability
     )
     updatedReturn.copy(calculatedLiability = Some(calculatedLiability))
   }
 
-  private def clearAmlActivityLength(eclReturn: EclReturn) =
+  private def clearAmlActivityLength(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(amlRegulatedActivityLength = None)
 
   private def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
 
@@ -45,8 +45,8 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
     updateContactName(updatedReturn)
   }
 
-  def validLength =
-    Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax).sample.get
+  def validLength: Int =
+    Gen.chooseNum[Int](MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax).sample.get
 
   s"GET ${routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode))

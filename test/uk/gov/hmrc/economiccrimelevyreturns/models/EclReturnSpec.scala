@@ -17,17 +17,17 @@
 package uk.gov.hmrc.economiccrimelevyreturns.models
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
-import play.api.libs.json.{JsError, JsNull, JsString, JsSuccess, Json}
+import play.api.libs.json.{JsNull, JsSuccess, Json}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 class EclReturnSpec extends SpecBase {
 
-  def returnWithNoContactInfo =
-    returnWithContactInfo(false, false, false, false)
+  def returnWithNoContactInfo: EclReturn =
+    returnWithContactInfo(hasName = false, hasRole = false, hasEmail = false, hasNumber = false)
 
-  def returnWithContactInfo(hasName: Boolean, hasRole: Boolean, hasEmail: Boolean, hasNumber: Boolean) = {
-    def value(isPresent: Boolean) =
+  def returnWithContactInfo(hasName: Boolean, hasRole: Boolean, hasEmail: Boolean, hasNumber: Boolean): EclReturn = {
+    def value(isPresent: Boolean): Option[String] =
       if (isPresent) Some(random[String]) else None
 
     random[EclReturn].copy(

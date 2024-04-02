@@ -30,7 +30,7 @@ class RelevantApLengthFormProvider @Inject() extends Mappings {
         "relevantApLength.error.wholeNumber",
         "relevantApLength.error.nonNumeric"
       )
-        .verifying(inRange(MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax, "relevantApLength.error.outOfRange"))
+        .verifying(inRange(MinMaxValues.apDaysMin, MinMaxValues.apDaysMax, "relevantApLength.error.outOfRange"))
     )
 
 }

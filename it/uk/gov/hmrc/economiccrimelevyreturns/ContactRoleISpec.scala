@@ -5,30 +5,30 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 
 class ContactRoleISpec extends ISpecBase with AuthorisedBehaviour {
 
-  private def updateContactRole(eclReturn: EclReturn, role: String) =
+  private def updateContactRole(eclReturn: EclReturn, role: String): EclReturn =
     eclReturn.copy(contactRole = Some(role))
 
-  private def clearContactRole(eclReturn: EclReturn) =
+  private def clearContactRole(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(contactRole = None)
 
   private def testSetup(eclReturn: EclReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
     updateContactName(eclReturn)
   }
 
   private def validContactRole: String =
-    ensureMaxLength(alphaNumericString, MinMaxValues.RoleMaxLength)
+    ensureMaxLength(alphaNumericString, MinMaxValues.roleMaxLength)
 
   s"GET ${routes.ContactRoleController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.ContactRoleController.onPageLoad(NormalMode))

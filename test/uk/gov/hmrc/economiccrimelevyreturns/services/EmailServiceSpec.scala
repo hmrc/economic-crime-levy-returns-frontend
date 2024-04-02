@@ -33,7 +33,7 @@ class EmailServiceSpec extends SpecBase {
   val mockEmailConnector: EmailConnector = mock[EmailConnector]
   val service                            = new EmailService(mockEmailConnector)
 
-  def clearContactInfo(eclReturn: EclReturn) =
+  def clearContactInfo(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(
       contactName = None,
       contactRole = None,

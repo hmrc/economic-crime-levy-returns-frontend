@@ -28,7 +28,7 @@ class AmlRegulatedActivityLengthFormProviderSpec extends IntFieldBehaviours {
 
     val fieldName = "value"
 
-    val validDataGenerator = longsInRangeWithCommas(MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax)
+    val validDataGenerator = longsInRangeWithCommas(MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax)
 
     behave like fieldThatBindsValidData(
       form,
@@ -46,12 +46,12 @@ class AmlRegulatedActivityLengthFormProviderSpec extends IntFieldBehaviours {
     behave like intFieldWithRange(
       form,
       fieldName,
-      minimum = MinMaxValues.AmlDaysMin,
-      maximum = MinMaxValues.AmlDaysMax,
+      minimum = MinMaxValues.amlDaysMin,
+      maximum = MinMaxValues.amlDaysMax,
       expectedError = FormError(
         fieldName,
         "amlRegulatedActivityLength.error.outOfRange",
-        Seq(MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax)
+        Seq(MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax)
       )
     )
 

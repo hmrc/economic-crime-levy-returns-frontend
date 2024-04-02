@@ -20,15 +20,15 @@ import play.api.mvc.Session
 
 object SessionKeys {
 
-  val ChargeReference: String   = "chargeReference"
-  val Email: String             = "email"
-  val AmountDue: String         = "amountDue"
-  val ObligationDetails: String = "obligationDetails"
-  val PeriodKey: String         = "periodKey"
-  val StartAmendUrl: String     = "StartAmendUrl"
-  val UrlToReturnTo: String     = "UrlToReturnTo"
+  val amountDue: String         = "amountDue"
+  val chargeReference: String   = "chargeReference"
+  val email: String             = "email"
+  val obligationDetails: String = "obligationDetails"
+  val periodKey: String         = "periodKey"
+  val startAmendUrl: String     = "StartAmendUrl"
+  val urlToReturnTo: String     = "UrlToReturnTo"
 
   implicit class SessionOps(s: Session) {
-    def clearEclValues: Session = s -- Seq(ChargeReference, Email, AmountDue, ObligationDetails, StartAmendUrl)
+    def clearEclValues: Session = s -- Seq(chargeReference, email, amountDue, obligationDetails, startAmendUrl)
   }
 }

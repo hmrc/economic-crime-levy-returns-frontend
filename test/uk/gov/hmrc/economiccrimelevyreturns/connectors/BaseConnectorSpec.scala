@@ -54,10 +54,10 @@ class BaseConnectorSpec extends SpecBase {
 
   val connector = new TestConnector
 
-  def test(future: Boolean => Future[_], valid: Boolean) =
+  def test(future: Boolean => Future[_], valid: Boolean): Unit =
     future(valid).onComplete {
-      case Success(_) if !valid => fail
-      case Failure(_) if valid  => fail
+      case Success(_) if !valid => fail()
+      case Failure(_) if valid  => fail()
     }
 
   "as" should {

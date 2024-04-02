@@ -18,7 +18,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
       val eclReturn        = random[ValidEclReturn].eclReturn
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
@@ -36,7 +36,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
       val eclReturn        = random[EclReturn].copy(calculatedLiability = None, obligationDetails = None)
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
       val obligationData   = random[ObligationData]
 
       stubGetReturn(eclReturn)
@@ -60,7 +60,7 @@ class AmountDueISpec extends ISpecBase with AuthorisedBehaviour {
 
       val eclReturn        = random[ValidEclReturn].eclReturn
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)

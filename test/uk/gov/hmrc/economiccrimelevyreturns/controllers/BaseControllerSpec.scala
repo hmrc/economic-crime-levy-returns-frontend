@@ -17,6 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import play.api.i18n.MessagesApi
+import play.api.mvc.AnyContentAsEmpty
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ResponseError
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
@@ -25,13 +26,13 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 
 class BaseControllerSpec extends SpecBase {
 
-  val controller = new BaseController {
+  val controller: BaseController = new BaseController {
     override def messagesApi: MessagesApi = null
   }
 
   val text = "Value"
 
-  def getReturnRequest(eclReturn: EclReturn, name: Option[String]) =
+  def getReturnRequest(eclReturn: EclReturn, name: Option[String]): ReturnDataRequest[AnyContentAsEmpty.type] =
     ReturnDataRequest(
       fakeRequest,
       eclReturn.internalId,

@@ -43,7 +43,7 @@ class EnrolmentStoreProxyService @Inject() (enrolmentStoreProxyConnector: Enrolm
             queryKnownFactsResponse.enrolments.find(_.identifiers.exists(_.value == eclRegistrationReference))
 
           enrolment
-            .flatMap(_.verifiers.find(_.key == EclEnrolment.VerifierKey))
+            .flatMap(_.verifiers.find(_.key == EclEnrolment.verifierKey))
             .map(eclRegistrationDate =>
               Right(LocalDate.parse(eclRegistrationDate.value, DateTimeFormatter.BASIC_ISO_DATE))
             )
@@ -62,7 +62,7 @@ class EnrolmentStoreProxyService @Inject() (enrolmentStoreProxyConnector: Enrolm
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(DataHandlingError.BadGateway(reason = message, code = code))
+            Left(DataHandlingError.BadGateway(reason = s"Get ECL Registration Date Failed - $message", code = code))
           case NonFatal(thr) => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
         }
     }

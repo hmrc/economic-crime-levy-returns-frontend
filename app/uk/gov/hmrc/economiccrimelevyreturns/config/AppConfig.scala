@@ -25,48 +25,33 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 @Singleton
 class AppConfig @Inject() (configuration: Configuration, servicesConfig: ServicesConfig) {
 
-  val host: String    = configuration.get[String]("host")
-  val appName: String = configuration.get[String]("appName")
-
   private val contactHost                  = configuration.get[String]("contact-frontend.host")
   private val contactFormServiceIdentifier = "economic-crime-levy-returns-frontend"
+  private val exitSurveyHost               = configuration.get[String]("feedback-frontend.host")
+  private val exitSurveyServiceIdentifier  = configuration.get[String]("feedback-frontend.serviceId")
+
+  val host: String    = configuration.get[String]("host")
+  val appName: String = configuration.get[String]("appName")
 
   def feedbackUrl(implicit request: RequestHeader): String =
     s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier&backUrl=${Redirect(host + request.uri)}"
 
-  val signInUrl: String     = configuration.get[String]("urls.signIn")
-  val signOutUrl: String    = configuration.get[String]("urls.signOut")
-  val claimUrl: String      = configuration.get[String]("urls.claim")
-  val eclAccountUrl: String = configuration.get[String]("urls.eclAccount")
-
-  private val exitSurveyHost              = configuration.get[String]("feedback-frontend.host")
-  private val exitSurveyServiceIdentifier = configuration.get[String]("feedback-frontend.serviceId")
-
-  val exitSurveyUrl: String = s"$exitSurveyHost/feedback/$exitSurveyServiceIdentifier"
-
-  val languageTranslationEnabled: Boolean =
-    configuration.get[Boolean]("features.welsh-translation")
-
-  val timeout: Int   = configuration.get[Int]("timeout-dialog.timeout")
-  val countdown: Int = configuration.get[Int]("timeout-dialog.countdown")
-
-  val eclReturnsBaseUrl: String = servicesConfig.baseUrl("economic-crime-levy-returns")
-
-  val eclAccountBaseUrl: String = servicesConfig.baseUrl("economic-crime-levy-account")
-
-  val eclCalculatorBaseUrl: String = servicesConfig.baseUrl("economic-crime-levy-calculator")
-
-  val eclRegistrationBaseUrl: String = servicesConfig.baseUrl("economic-crime-levy-registration")
-
-  val enrolmentStoreProxyBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
-
-  val emailBaseUrl: String = servicesConfig.baseUrl("email")
-
-  val amendReturnsEnabled: Boolean = configuration.get[Boolean]("features.amendReturnsEnabled")
-
-  val paymentsEnabled: Boolean = configuration.get[Boolean]("features.paymentsEnabled")
-
-  val getEclReturnEnabled: Boolean = configuration.get[Boolean]("features.getEclReturnEnabled")
-
-  val getSubscriptionEnabled: Boolean = configuration.get[Boolean]("features.getSubscriptionEnabled")
+  val amendReturnsEnabled: Boolean        = configuration.get[Boolean]("features.amendReturnsEnabled")
+  val claimUrl: String                    = configuration.get[String]("urls.claim")
+  val countdown: Int                      = configuration.get[Int]("timeout-dialog.countdown")
+  val eclAccountBaseUrl: String           = servicesConfig.baseUrl("economic-crime-levy-account")
+  val eclAccountUrl: String               = configuration.get[String]("urls.eclAccount")
+  val eclCalculatorBaseUrl: String        = servicesConfig.baseUrl("economic-crime-levy-calculator")
+  val eclRegistrationBaseUrl: String      = servicesConfig.baseUrl("economic-crime-levy-registration")
+  val eclReturnsBaseUrl: String           = servicesConfig.baseUrl("economic-crime-levy-returns")
+  val enrolmentStoreProxyBaseUrl: String  = servicesConfig.baseUrl("enrolment-store-proxy")
+  val emailBaseUrl: String                = servicesConfig.baseUrl("email")
+  val exitSurveyUrl: String               = s"$exitSurveyHost/feedback/$exitSurveyServiceIdentifier"
+  val getEclReturnEnabled: Boolean        = configuration.get[Boolean]("features.getEclReturnEnabled")
+  val getSubscriptionEnabled: Boolean     = configuration.get[Boolean]("features.getSubscriptionEnabled")
+  val languageTranslationEnabled: Boolean = configuration.get[Boolean]("features.welsh-translation")
+  val paymentsEnabled: Boolean            = configuration.get[Boolean]("features.paymentsEnabled")
+  val signInUrl: String                   = configuration.get[String]("urls.signIn")
+  val signOutUrl: String                  = configuration.get[String]("urls.signOut")
+  val timeout: Int                        = configuration.get[Int]("timeout-dialog.timeout")
 }

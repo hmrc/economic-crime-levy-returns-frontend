@@ -27,7 +27,7 @@ trait ServiceSpec extends SpecBase {
   private val minErrorRange = 1
   private val maxErrorRange = 99
 
-  def getErrorCode(is5xxError: Boolean) = {
+  def getErrorCode(is5xxError: Boolean): Int = {
     val baseCode = is5xxError match {
       case false => base4xxCode
       case true  => base5xxCode

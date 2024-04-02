@@ -27,7 +27,10 @@ import java.util.Locale
 
 object ViewUtils {
 
-  private val UkZoneId = ZoneId.of("Europe/London")
+  private val ukZoneId = ZoneId.of("Europe/London")
+
+  private def errorPrefix(form: Form[_])(implicit messages: Messages): String =
+    if (form.hasErrors || form.hasGlobalErrors) s"${messages("error.browser.title.prefix")} " else ""
 
   def titleWithForm(form: Form[_], pageTitle: String, section: Option[String] = None)(implicit
     messages: Messages
@@ -39,9 +42,6 @@ object ViewUtils {
 
   def title(pageTitle: String, section: Option[String] = None)(implicit messages: Messages): String =
     s"${messages(pageTitle)} - ${section.fold("")(messages(_) + " - ")}${messages("service.name")} - ${messages("site.govuk")}"
-
-  private def errorPrefix(form: Form[_])(implicit messages: Messages): String =
-    if (form.hasErrors || form.hasGlobalErrors) s"${messages("error.browser.title.prefix")} " else ""
 
   def formatLocalDate(localDate: LocalDate, translate: Boolean = true)(implicit messages: Messages): String =
     if (translate) {
@@ -56,10 +56,10 @@ object ViewUtils {
     }
 
   def formatInstantAsLocalDate(instant: Instant, translate: Boolean = true)(implicit messages: Messages): String =
-    formatLocalDate(LocalDate.ofInstant(instant, UkZoneId), translate)
+    formatLocalDate(LocalDate.ofInstant(instant, ukZoneId), translate)
 
   def formatToday(translate: Boolean = true)(implicit messages: Messages): String =
-    formatLocalDate(LocalDate.now(UkZoneId), translate)
+    formatLocalDate(LocalDate.now(ukZoneId), translate)
 
   def formatMoney(amount: Number): String = {
     val formatter = NumberFormat.getNumberInstance(Locale.UK)

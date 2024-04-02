@@ -50,13 +50,13 @@ class AmendReturnSubmittedController @Inject() (
     (for {
       _                 <- returnsService.deleteReturn(request.internalId).asResponseError
       _                  = sessionService.delete(request.internalId).asResponseError
-      obligationJson    <- valueOrErrorF(request.session.get(SessionKeys.ObligationDetails), "Obligation details")
+      obligationJson    <- valueOrErrorF(request.session.get(SessionKeys.obligationDetails), "Obligation details")
       obligationDetails <- valueOrErrorF(
                              Json.fromJson[ObligationDetails](Json.parse(obligationJson)).asOpt,
                              "Obligation details parsed from session"
                            )
-      email             <- valueOrErrorF(request.session.get(SessionKeys.Email), "Email")
-      startAmendUrl      = request.session.get(SessionKeys.StartAmendUrl)
+      email             <- valueOrErrorF(request.session.get(SessionKeys.email), "Email")
+      startAmendUrl      = request.session.get(SessionKeys.startAmendUrl)
     } yield (obligationDetails, email, startAmendUrl)).foldF(
       error => Future.successful(routeError(error)),
       obligationAndEmail => {

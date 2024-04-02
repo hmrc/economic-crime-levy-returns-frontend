@@ -74,7 +74,7 @@ class SessionServiceSpec extends ServiceSpec {
         .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
       await(service.get(new Session(), id, key).value) shouldBe
-        Left(SessionError.BadGateway(code.toString, code))
+        Left(SessionError.BadGateway(s"Get Session Data Failed - ${code.toString}", code))
     }
 
     "return an if key not present" in forAll(
@@ -126,7 +126,7 @@ class SessionServiceSpec extends ServiceSpec {
         .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
       await(service.getOptional(new Session(), id, key).value) shouldBe
-        Left(SessionError.BadGateway(code.toString, code))
+        Left(SessionError.BadGateway(s"Get Session Data Failed - ${code.toString}", code))
     }
   }
 
@@ -147,9 +147,9 @@ class SessionServiceSpec extends ServiceSpec {
         .thenReturn(Future.successful(oldSessionData))
 
       when(mockSessionConnector.upsert(ArgumentMatchers.eq(mergedSessionData))(any()))
-        .thenReturn(Future.successful())
+        .thenReturn(Future.successful(()))
 
-      await(service.upsert(newSessionData).value) shouldBe Right()
+      await(service.upsert(newSessionData).value) shouldBe Right(())
     }
 
     "return an error if failure" in forAll(
@@ -180,7 +180,7 @@ class SessionServiceSpec extends ServiceSpec {
         .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
       await(service.upsert(newSessionData).value) shouldBe
-        Left(SessionError.BadGateway(code.toString, code))
+        Left(SessionError.BadGateway(s"Upsert Session Data Failed - ${code.toString}", code))
     }
   }
 
@@ -189,9 +189,9 @@ class SessionServiceSpec extends ServiceSpec {
       nonEmptyString
     ) { id: String =>
       when(mockSessionConnector.delete(ArgumentMatchers.eq(id))(any()))
-        .thenReturn(Future.successful())
+        .thenReturn(Future.successful(()))
 
-      await(service.delete(id).value) shouldBe Right()
+      await(service.delete(id).value) shouldBe Right(())
     }
 
     "return an error if failure" in forAll(
@@ -210,7 +210,7 @@ class SessionServiceSpec extends ServiceSpec {
         .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
       await(service.delete(id).value) shouldBe
-        Left(SessionError.BadGateway(code.toString, code))
+        Left(SessionError.BadGateway(s"Delete Session Data Failed - ${code.toString}", code))
     }
   }
 }
