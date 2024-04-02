@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 class ContactNumberPageNavigatorSpec extends SpecBase {
@@ -40,6 +40,13 @@ class ContactNumberPageNavigatorSpec extends SpecBase {
       pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad(
         eclReturn.returnType.getOrElse(FirstTimeReturn)
       )
+    }
+
+    "return a Call to the error page if no data" in forAll { (eclReturn: EclReturn, mode: Mode) =>
+      val updatedReturn: EclReturn = eclReturn.copy(contactTelephoneNumber = None)
+
+      pageNavigator.nextPage(mode, updatedReturn) shouldBe
+        routes.NotableErrorController.answersAreInvalid()
     }
   }
 

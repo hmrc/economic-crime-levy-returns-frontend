@@ -18,16 +18,17 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import org.scalacheck.Arbitrary
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EnrolmentStoreProxyConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.KeyValue
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.{EclEnrolment, Enrolment, QueryKnownFactsResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
+import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class EnrolmentStoreProxyServiceSpec extends SpecBase {
+class EnrolmentStoreProxyServiceSpec extends ServiceSpec {
   val mockEnrolmentStoreProxyConnector: EnrolmentStoreProxyConnector = mock[EnrolmentStoreProxyConnector]
   val service                                                        = new EnrolmentStoreProxyService(mockEnrolmentStoreProxyConnector)
 
@@ -72,6 +73,25 @@ class EnrolmentStoreProxyServiceSpec extends SpecBase {
               Some("Enrolment store: ECL registration date could not be found in the enrolment")
             )
         )
+    }
+
+    "return error if failure" in forAll(
+      nonEmptyString,
+      Arbitrary.arbitrary[Boolean]
+    ) { (eclReference: String, is5xxError: Boolean) =>
+      val code = getErrorCode(is5xxError)
+
+      when(mockEnrolmentStoreProxyConnector.queryKnownFacts(ArgumentMatchers.eq(eclReference))(any()))
+        .thenReturn(Future.failed(testException))
+
+      await(service.getEclRegistrationDate(eclReference).value) shouldBe
+        Left(DataHandlingError.InternalUnexpectedError(Some(testException)))
+
+      when(mockEnrolmentStoreProxyConnector.queryKnownFacts(ArgumentMatchers.eq(eclReference))(any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
+
+      await(service.getEclRegistrationDate(eclReference).value) shouldBe
+        Left(DataHandlingError.BadGateway(code.toString, code))
     }
   }
 

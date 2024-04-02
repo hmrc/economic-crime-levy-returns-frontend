@@ -44,6 +44,8 @@
     }
 }
 
+@language_key = @{"PLAY_LANG"}
+
 @startServiceUrl = @{
    startAmendUrl match {
         case Some(startAmendUrl) => Some(startAmendUrl)
@@ -56,11 +58,12 @@
         controllers.routes.Assets.versioned("stylesheets/custom-styles.css")
         }" @{
     CSPNonce.attr
-}>
+        }>
     @{
         if(timeout) {
             Some(
                 hmrcTimeoutDialog(TimeoutDialog(
+                    language = request.cookies.get(language_key).map(c => c.value),
                     timeout = Some(appConfig.timeout),
                     countdown = Some(appConfig.countdown),
                     keepAliveUrl = Some(uk.gov.hmrc.hmrcfrontend.controllers.routes.KeepAliveController.keepAlive.url),

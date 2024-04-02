@@ -33,6 +33,14 @@ class EmailServiceSpec extends SpecBase {
   val mockEmailConnector: EmailConnector = mock[EmailConnector]
   val service                            = new EmailService(mockEmailConnector)
 
+  def clearContactInfo(eclReturn: EclReturn) =
+    eclReturn.copy(
+      contactName = None,
+      contactRole = None,
+      contactEmailAddress = None,
+      contactTelephoneNumber = None
+    )
+
   "sendReturnSubmittedEmail" should {
     "send an email to the contact in the return" in forAll {
       (validEclReturn: ValidEclReturn, chargeReference: Option[String]) =>
@@ -136,6 +144,26 @@ class EmailServiceSpec extends SpecBase {
         .sendAmendReturnSubmittedEmail(any(), any())(any())
 
       reset(mockEmailConnector)
+    }
+
+    "return an error if insufficient data" in forAll { (validEclReturn: ValidEclReturn) =>
+      val validAddress = GetCorrespondenceAddressDetails("Test address", None, None, None, None, None)
+
+      val result = await(
+        service
+          .sendAmendReturnConfirmationEmail(clearContactInfo(validEclReturn.eclReturn), Some(validAddress))(
+            hc,
+            messages
+          )
+          .value
+      )
+
+      result shouldBe
+        Left(
+          EmailSubmissionError
+            .InternalUnexpectedError(None, Some("Missing required input data for amend return email."))
+        )
+
     }
   }
 }

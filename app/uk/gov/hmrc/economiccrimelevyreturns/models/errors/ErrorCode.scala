@@ -23,7 +23,8 @@ sealed abstract class ErrorCode(val code: String, val statusCode: Int) extends P
 
 object ErrorCode {
   case object BadRequest extends ErrorCode("BAD_REQUEST", BAD_REQUEST)
-  case object BadGateway extends ErrorCode("BAD_REQUEST", BAD_GATEWAY)
+
+  case object BadGateway extends ErrorCode("BAD_GATEWAY", BAD_GATEWAY)
 
   case object NotFound extends ErrorCode("NOT_FOUND", NOT_FOUND)
 
@@ -33,6 +34,7 @@ object ErrorCode {
 
   lazy val errorCodes: Seq[ErrorCode] = Seq(
     BadRequest,
+    BadGateway,
     NotFound,
     InternalServerError,
     Unauthorized
@@ -49,4 +51,8 @@ object ErrorCode {
       .getOrElse(JsError())
   }
 
+  def forCode(code: Int) = {
+    val index = code % errorCodes.size
+    errorCodes.zipWithIndex.find(e => e._2 == index).get._1
+  }
 }

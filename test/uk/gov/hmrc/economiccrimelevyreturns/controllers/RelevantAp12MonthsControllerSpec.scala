@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import cats.data.EitherT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
+import org.scalacheck.{Arbitrary, Gen}
 import play.api.data.Form
 import play.api.http.Status.OK
 import play.api.mvc.Result
@@ -26,9 +27,11 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, CalculatedLiability, CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
 
@@ -178,6 +181,50 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
           status(result) shouldBe SEE_OTHER
 
           redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(CheckMode).url)
+        }
+    }
+
+    "save the provided answer abd recalculate liability then redirect to the amount due page" in forAll {
+      (
+        randomEclReturn: EclReturn,
+        relevantAp12Months: Boolean,
+        calculatedLiability: CalculatedLiability,
+        length: Int,
+        band: Band,
+        amlActivity: Boolean
+      ) =>
+        val eclReturn = clearContact(randomEclReturn).copy(
+          relevantAp12Months = Some(!relevantAp12Months),
+          relevantApLength = Some(length),
+          carriedOutAmlRegulatedActivityForFullFy = Some(amlActivity)
+        )
+
+        new TestContext(eclReturn) {
+          when(mockEclLiabilityService.calculateLiability(any())(any()))
+            .thenReturn(
+              EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+                Future.successful(Right(calculatedLiability.copy(calculatedBand = band)))
+              )
+            )
+
+          when(
+            mockEclReturnsService.upsertReturn(
+              any()
+            )(any())
+          )
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          val result: Future[Result] =
+            controller.onSubmit(CheckMode)(
+              fakeRequest.withFormUrlEncodedBody(("value", relevantAp12Months.toString))
+            )
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some((relevantAp12Months match {
+            case true  => routes.AmountDueController.onPageLoad(CheckMode)
+            case false => routes.RelevantApLengthController.onPageLoad(CheckMode)
+          }).url)
         }
     }
   }

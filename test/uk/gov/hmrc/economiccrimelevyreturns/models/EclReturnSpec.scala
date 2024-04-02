@@ -17,6 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.models
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
+import play.api.libs.json.{JsError, JsNull, JsString, JsSuccess, Json}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
@@ -47,6 +48,19 @@ class EclReturnSpec extends SpecBase {
         if (hasName || hasRole || hasEmail || hasNumber) {
           returnWithContactInfo(hasName, hasRole, hasEmail, hasNumber).hasContactInfo shouldBe true
         }
+    }
+  }
+
+  "read/write" should {
+    "process Json correctly" in forAll { returnType: ReturnType =>
+      val json   = Json.toJson(returnType)
+      val result = Json.fromJson[ReturnType](json)
+      result shouldBe JsSuccess(returnType)
+    }
+
+    "return an error if incorrect Json" in {
+      val result = Json.fromJson[ReturnType](JsNull)
+      result.isError shouldBe true
     }
   }
 }
