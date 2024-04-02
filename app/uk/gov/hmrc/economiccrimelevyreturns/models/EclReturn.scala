@@ -24,6 +24,25 @@ case object FirstTimeReturn extends ReturnType
 case object AmendReturn extends ReturnType
 object ReturnType {
 
+  implicit def queryStringBindable(implicit
+    stringBinder: QueryStringBindable[String]
+  ): QueryStringBindable[ReturnType] = new QueryStringBindable[ReturnType] {
+    override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, ReturnType]] =
+      stringBinder.bind("returnType", params).map {
+        case Right(mode) =>
+          mode match {
+            case "FirstTimeReturn" => Right(FirstTimeReturn)
+            case "AmendReturn"     => Right(AmendReturn)
+            case _                 => Left("Unable to bind to a return type")
+          }
+        case _           =>
+          Left("Unable to bind to a return type")
+      }
+
+    override def unbind(key: String, returnType: ReturnType): String =
+      stringBinder.unbind("returnType", returnType.toString)
+  }
+
   implicit val format: Format[ReturnType] = new Format[ReturnType] {
     override def reads(json: JsValue): JsResult[ReturnType] = json.validate[String] match {
       case JsSuccess(value, _) =>
