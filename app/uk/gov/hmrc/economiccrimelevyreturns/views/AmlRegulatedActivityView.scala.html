@@ -33,13 +33,11 @@
 
     <h1 class="govuk-heading-l">@messages("amlRegulatedActivity.heading")</h1>
 
-    <p class="govuk-body">@messages("amlRegulatedActivity.p1")</p>
-
     @formHelper(action = AmlRegulatedActivityController.onSubmit(mode)) {
         @radios(
             RadiosViewModel(
                 field = form("value"),
-                legend = LegendViewModel(messages("amlRegulatedActivity.heading")).asHidden(),
+                legend = LegendViewModel(messages("amlRegulatedActivity.p1")),
                 items = Seq(
                     RadioItem(
                         id = Some("yes"),

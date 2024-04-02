@@ -30,6 +30,15 @@ trait FieldsetFluency {
       Fieldset(legend = Some(legend))
   }
 
+  implicit class FluentFieldset(fieldset: Fieldset) {
+
+    def withCssClass(newClass: String): Fieldset =
+      fieldset.copy(classes = s"${fieldset.classes} $newClass")
+
+    def withAttribute(attribute: (String, String)): Fieldset =
+      fieldset.copy(attributes = fieldset.attributes + attribute)
+  }
+
   object LegendViewModel {
 
     def apply(content: Content): Legend =
@@ -38,17 +47,11 @@ trait FieldsetFluency {
 
   implicit class FluentLegend(legend: Legend) {
 
-    def asPageHeading(size: LegendSize = LegendSize.ExtraLarge): Legend =
-      legend
-        .copy(isPageHeading = true)
-        .withCssClass(size.toString)
-
     def withCssClass(newClass: String): Legend =
       legend.copy(classes = s"${legend.classes} $newClass")
 
-    def asHidden(): Legend =
+    def withSize(size: LegendSize = LegendSize.Medium): Legend =
       legend
-        .copy(isPageHeading = false)
-        .withCssClass("govuk-visually-hidden")
+        .withCssClass(size.toString)
   }
 }
