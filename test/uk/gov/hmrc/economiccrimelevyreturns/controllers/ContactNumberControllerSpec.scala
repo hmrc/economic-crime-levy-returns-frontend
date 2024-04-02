@@ -98,7 +98,7 @@ class ContactNumberControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided contact number then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      stringFromRegex(MinMaxValues.TelephoneNumberMaxLength, Regex.TelephoneNumberRegex)
+      stringFromRegex(MinMaxValues.telephoneNumberMaxLength, Regex.telephoneNumberRegex)
     ) { (eclReturn: EclReturn, number: String) =>
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(contactTelephoneNumber = Some(number.filterNot(_.isWhitespace)))

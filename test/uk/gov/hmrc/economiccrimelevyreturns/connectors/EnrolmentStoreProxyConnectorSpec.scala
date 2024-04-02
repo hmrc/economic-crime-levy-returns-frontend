@@ -36,7 +36,7 @@ class EnrolmentStoreProxyConnectorSpec extends SpecBase {
   val connector                          = new EnrolmentStoreProxyConnectorImpl(appConfig, mockHttpClient, config, actorSystem)
   val enrolmentStoreUrl: String          = s"${appConfig.enrolmentStoreProxyBaseUrl}/enrolment-store-proxy/enrolment-store"
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockHttpClient)
     reset(mockRequestBuilder)
   }
@@ -48,9 +48,9 @@ class EnrolmentStoreProxyConnectorSpec extends SpecBase {
 
         val expectedUrl                    = url"$enrolmentStoreUrl/enrolments"
         val expectedQueryKnownFactsRequest = QueryKnownFactsRequest(
-          service = EclEnrolment.ServiceName,
+          service = EclEnrolment.serviceName,
           knownFacts = Seq(
-            KeyValue(EclEnrolment.IdentifierKey, eclRegistrationReference)
+            KeyValue(EclEnrolment.identifierKey, eclRegistrationReference)
           )
         )
 
@@ -73,9 +73,9 @@ class EnrolmentStoreProxyConnectorSpec extends SpecBase {
         val errorCode                      = INTERNAL_SERVER_ERROR
         val expectedUrl                    = url"$enrolmentStoreUrl/enrolments"
         val expectedQueryKnownFactsRequest = QueryKnownFactsRequest(
-          service = EclEnrolment.ServiceName,
+          service = EclEnrolment.serviceName,
           knownFacts = Seq(
-            KeyValue(EclEnrolment.IdentifierKey, eclRegistrationReference)
+            KeyValue(EclEnrolment.identifierKey, eclRegistrationReference)
           )
         )
 

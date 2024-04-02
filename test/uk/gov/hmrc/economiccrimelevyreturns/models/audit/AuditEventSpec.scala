@@ -28,8 +28,8 @@ class AuditEventSpec extends SpecBase {
     implicit val format: OFormat[Data] = Json.format[Data]
   }
 
-  val testAuditType  = random[String]
-  val testDetailJson = Json.toJson(Data(testAuditType))
+  val testAuditType: String   = random[String]
+  val testDetailJson: JsValue = Json.toJson(Data(testAuditType))
 
   "extendedDataEvent" should {
     "behave as expected" in {

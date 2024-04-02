@@ -49,9 +49,9 @@ class EnrolmentStoreProxyConnectorImpl @Inject() (
 
   def queryKnownFacts(eclRegistrationReference: String)(implicit hc: HeaderCarrier): Future[QueryKnownFactsResponse] = {
     val body = QueryKnownFactsRequest(
-      EclEnrolment.ServiceName,
+      EclEnrolment.serviceName,
       knownFacts = Seq(
-        KeyValue(key = EclEnrolment.IdentifierKey, value = eclRegistrationReference)
+        KeyValue(key = EclEnrolment.identifierKey, value = eclRegistrationReference)
       )
     )
 

@@ -287,12 +287,12 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           val result: Future[Result] = controller.onSubmit()(returnDataRequest)
 
           status(result)                                     shouldBe SEE_OTHER
-          session(result).get(SessionKeys.ChargeReference)   shouldBe submitEclReturnResponse.chargeReference
-          session(result).get(SessionKeys.Email)             shouldBe eclReturn.contactEmailAddress
-          session(result).get(SessionKeys.ObligationDetails) shouldBe Some(
+          session(result).get(SessionKeys.chargeReference)   shouldBe submitEclReturnResponse.chargeReference
+          session(result).get(SessionKeys.email)             shouldBe eclReturn.contactEmailAddress
+          session(result).get(SessionKeys.obligationDetails) shouldBe Some(
             Json.toJson(eclReturn.obligationDetails.get).toString()
           )
-          session(result).get(SessionKeys.AmountDue)         shouldBe Some(
+          session(result).get(SessionKeys.amountDue)         shouldBe Some(
             eclReturn.calculatedLiability.get.amountDue.amount.toString()
           )
           redirectLocation(result)                           shouldBe Some(routes.ReturnSubmittedController.onPageLoad().url)

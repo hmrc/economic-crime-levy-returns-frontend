@@ -91,7 +91,7 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(SessionError.BadGateway(message, code))
+            Left(SessionError.BadGateway(s"Delete Session Data Failed - $message", code))
           case NonFatal(thr) =>
             Left(SessionError.InternalUnexpectedError(thr.getMessage, Some(thr)))
         }
@@ -112,7 +112,7 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(SessionError.BadGateway(message, code))
+            Left(SessionError.BadGateway(s"Get Session Data Failed - $message", code))
           case NonFatal(thr)                                =>
             Left(SessionError.InternalUnexpectedError(thr.getMessage, Some(thr)))
         }
@@ -141,7 +141,7 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
           case error @ UpstreamErrorResponse(message, code, _, _)
               if UpstreamErrorResponse.Upstream5xxResponse.unapply(error).isDefined ||
                 UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(SessionError.BadGateway(message, code))
+            Left(SessionError.BadGateway(s"Upsert Session Data Failed - $message", code))
           case NonFatal(thr) => Left(SessionError.InternalUnexpectedError(thr.getMessage, Some(thr)))
         }
     }

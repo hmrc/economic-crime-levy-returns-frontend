@@ -36,11 +36,11 @@ class EnrolmentStoreProxyServiceSpec extends ServiceSpec {
     "return the ECL registration date from the query known facts response" in forAll {
       eclRegistrationReference: String =>
         val queryKnownFactsResponse = QueryKnownFactsResponse(
-          service = EclEnrolment.ServiceName,
+          service = EclEnrolment.serviceName,
           enrolments = Seq(
             Enrolment(
-              identifiers = Seq(KeyValue(key = EclEnrolment.IdentifierKey, value = eclRegistrationReference)),
-              verifiers = Seq(KeyValue(key = EclEnrolment.VerifierKey, value = "20230131"))
+              identifiers = Seq(KeyValue(key = EclEnrolment.identifierKey, value = eclRegistrationReference)),
+              verifiers = Seq(KeyValue(key = EclEnrolment.verifierKey, value = "20230131"))
             )
           )
         )
@@ -56,7 +56,7 @@ class EnrolmentStoreProxyServiceSpec extends ServiceSpec {
     "return InternalUnexpectedError if the ECL registration date could not be found in the enrolment" in forAll {
       eclRegistrationReference: String =>
         val queryKnownFactsResponse = QueryKnownFactsResponse(
-          service = EclEnrolment.ServiceName,
+          service = EclEnrolment.serviceName,
           enrolments = Seq.empty
         )
 
@@ -91,7 +91,7 @@ class EnrolmentStoreProxyServiceSpec extends ServiceSpec {
         .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
       await(service.getEclRegistrationDate(eclReference).value) shouldBe
-        Left(DataHandlingError.BadGateway(code.toString, code))
+        Left(DataHandlingError.BadGateway(s"Get ECL Registration Date Failed - ${code.toString}", code))
     }
   }
 

@@ -98,7 +98,7 @@ class ContactRoleControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided contact role then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      stringFromRegex(MinMaxValues.RoleMaxLength, Regex.PositionInCompanyRegex)
+      stringFromRegex(MinMaxValues.roleMaxLength, Regex.positionInCompanyRegex)
     ) { (eclReturn: EclReturn, role: String) =>
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(contactRole = Some(role.strip()))

@@ -90,7 +90,7 @@ class ContactNameControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided contact name then redirect to the next page" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      stringFromRegex(MinMaxValues.NameMaxLength, Regex.NameRegex)
+      stringFromRegex(MinMaxValues.nameMaxLength, Regex.nameRegex)
     ) { (eclReturn: EclReturn, name: String) =>
       new TestContext(eclReturn) {
         val updatedReturn: EclReturn = eclReturn.copy(contactName = Some(name.strip()))

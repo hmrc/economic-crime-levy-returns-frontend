@@ -47,14 +47,14 @@ final case class ValidGetEclReturnSubmissionResponse(response: GetEclReturnSubmi
 
 trait EclTestData { self: Generators =>
 
-  val FullYear: Int      = 365
-  val MinRevenue: Double = 0.00
-  val MaxRevenue: Double = 99999999999.99
-  val MinAmountDue       = 0
-  val MaxAmountDue       = 250000
-  val PeriodKeyLength    = 4
-  val RevenueMin: Double = 0.0
-  val RevenueMax: Double = 99999999999.99
+  val fullYear: Int        = 365
+  val maxAmountDue: Int    = 250000
+  val minAmountDue: Int    = 0
+  val maxRevenue: Double   = 99999999999.99
+  val minRevenue: Double   = 0.00
+  val periodKeyLength: Int = 4
+  val revenueMax: Double   = 99999999999.99
+  val revenueMin: Double   = 0.0
 
   implicit val arbInstant: Arbitrary[Instant] = Arbitrary {
     Instant.now()
@@ -69,9 +69,9 @@ trait EclTestData { self: Generators =>
       enrolments               <- Arbitrary.arbitrary[Enrolments]
       enrolment                <- Arbitrary.arbitrary[Enrolment]
       eclRegistrationReference <- Arbitrary.arbitrary[String]
-      eclEnrolmentIdentifier    = EnrolmentIdentifier(EclEnrolment.IdentifierKey, eclRegistrationReference)
+      eclEnrolmentIdentifier    = EnrolmentIdentifier(EclEnrolment.identifierKey, eclRegistrationReference)
       eclEnrolment              =
-        enrolment.copy(key = EclEnrolment.ServiceName, identifiers = enrolment.identifiers :+ eclEnrolmentIdentifier)
+        enrolment.copy(key = EclEnrolment.serviceName, identifiers = enrolment.identifiers :+ eclEnrolmentIdentifier)
     } yield EnrolmentsWithEcl(enrolments.copy(enrolments.enrolments + eclEnrolment))
   }
 
@@ -80,30 +80,30 @@ trait EclTestData { self: Generators =>
       .arbitrary[Enrolments]
       .retryUntil(
         !_.enrolments.exists(e =>
-          e.key == EclEnrolment.ServiceName && e.identifiers.exists(_.key == EclEnrolment.IdentifierKey)
+          e.key == EclEnrolment.serviceName && e.identifiers.exists(_.key == EclEnrolment.identifierKey)
         )
       )
       .map(EnrolmentsWithoutEcl)
   }
 
   implicit val arbPeriodKey: Arbitrary[ValidPeriodKey] = Arbitrary {
-    Gen.listOfN(PeriodKeyLength, Gen.alphaNumChar).map(_.mkString).map(ValidPeriodKey)
+    Gen.listOfN(periodKeyLength, Gen.alphaNumChar).map(_.mkString).map(ValidPeriodKey)
   }
 
   implicit def arbRevenue: Arbitrary[BigDecimal] =
     Arbitrary {
-      Gen.chooseNum[Double](RevenueMin, RevenueMax).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
+      Gen.chooseNum[Double](revenueMin, revenueMax).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
     }
 
   implicit val arbValidEclReturn: Arbitrary[ValidEclReturn] = Arbitrary {
     for {
       relevantAp12Months                      <- Arbitrary.arbitrary[Boolean]
-      relevantApLength                        <- Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
+      relevantApLength                        <- Gen.chooseNum[Int](MinMaxValues.apDaysMin, MinMaxValues.apDaysMax)
       relevantApRevenue                       <- arbRevenue.arbitrary
       carriedOutAmlRegulatedActivityForFullFy <- Arbitrary.arbitrary[Boolean]
-      amlRegulatedActivityLength              <- Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax)
+      amlRegulatedActivityLength              <- Gen.chooseNum[Int](MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax)
       liabilityAmountDue                      <-
-        Gen.chooseNum[Double](MinAmountDue, MaxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
+        Gen.chooseNum[Double](minAmountDue, maxAmountDue).map(BigDecimal.apply(_).setScale(2, RoundingMode.DOWN))
       calculatedLiability                     <-
         Arbitrary
           .arbitrary[CalculatedLiability]
@@ -111,10 +111,10 @@ trait EclTestData { self: Generators =>
             calcLiability
               .copy(calculatedBand = Medium, amountDue = calcLiability.amountDue.copy(amount = liabilityAmountDue))
           )
-      contactName                             <- stringsWithMaxLength(MinMaxValues.NameMaxLength)
-      contactRole                             <- stringsWithMaxLength(MinMaxValues.RoleMaxLength)
-      contactEmailAddress                     <- emailAddress(MinMaxValues.EmailMaxLength)
-      contactTelephoneNumber                  <- stringFromRegex(MinMaxValues.TelephoneNumberMaxLength, Regex.TelephoneNumberRegex)
+      contactName                             <- stringsWithMaxLength(MinMaxValues.nameMaxLength)
+      contactRole                             <- stringsWithMaxLength(MinMaxValues.roleMaxLength)
+      contactEmailAddress                     <- emailAddress(MinMaxValues.emailMaxLength)
+      contactTelephoneNumber                  <- stringFromRegex(MinMaxValues.telephoneNumberMaxLength, Regex.telephoneNumberRegex)
       obligationDetails                       <- Arbitrary.arbitrary[ObligationDetails]
       internalId                               = alphaNumericString
     } yield ValidEclReturn(
@@ -135,10 +135,10 @@ trait EclTestData { self: Generators =>
           obligationDetails = Some(obligationDetails)
         ),
       EclLiabilityCalculationData(
-        relevantApLength = if (relevantAp12Months) FullYear else relevantApLength,
+        relevantApLength = if (relevantAp12Months) fullYear else relevantApLength,
         relevantApRevenue = relevantApRevenue,
         amlRegulatedActivityLength =
-          if (carriedOutAmlRegulatedActivityForFullFy) FullYear else amlRegulatedActivityLength
+          if (carriedOutAmlRegulatedActivityForFullFy) fullYear else amlRegulatedActivityLength
       )
     )
   }
@@ -163,8 +163,8 @@ trait EclTestData { self: Generators =>
 
   implicit val arbValidGetEclReturnSubmissionResponse: Arbitrary[ValidGetEclReturnSubmissionResponse] = Arbitrary {
     for {
-      accountingPeriodRevenue <- bigDecimalInRange(MinRevenue, MaxRevenue)
-      amountOfEclDutyLiable   <- bigDecimalInRange(MinAmountDue, MaxAmountDue)
+      accountingPeriodRevenue <- bigDecimalInRange(minRevenue, maxRevenue)
+      amountOfEclDutyLiable   <- bigDecimalInRange(minAmountDue, maxAmountDue)
       chargeDetails           <- Arbitrary.arbitrary[GetEclReturnChargeDetails]
       declarationDetails      <- Arbitrary.arbitrary[GetEclReturnDeclarationDetails]
       eclReference            <- Arbitrary.arbitrary[String]

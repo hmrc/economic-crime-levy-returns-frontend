@@ -86,7 +86,7 @@ trait Generators {
 
   def currencyFormattedValue: Gen[String] =
     for {
-      formattedValue <- bigDecimalInRangeWithCommas(MinMaxValues.RevenueMin.toDouble, MinMaxValues.RevenueMax.toDouble)
+      formattedValue <- bigDecimalInRangeWithCommas(MinMaxValues.revenueMin.toDouble, MinMaxValues.revenueMax.toDouble)
     } yield s"£$formattedValue"
 
   def intsBelowValue(value: Int): Gen[Int] =

@@ -22,8 +22,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
-import scala.concurrent.Future
-
 class BaseServiceSpec extends SpecBase with PartialFunctionValues {
 
   class TestService extends BaseService

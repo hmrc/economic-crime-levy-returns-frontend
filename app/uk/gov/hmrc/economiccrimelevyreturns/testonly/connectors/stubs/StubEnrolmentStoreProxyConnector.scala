@@ -29,11 +29,11 @@ class StubEnrolmentStoreProxyConnector @Inject() extends EnrolmentStoreProxyConn
   def queryKnownFacts(eclRegistrationReference: String)(implicit hc: HeaderCarrier): Future[QueryKnownFactsResponse] =
     Future.successful(
       QueryKnownFactsResponse(
-        service = EclEnrolment.ServiceName,
+        service = EclEnrolment.serviceName,
         enrolments = Seq(
           Enrolment(
-            identifiers = Seq(KeyValue(EclEnrolment.IdentifierKey, eclRegistrationReference)),
-            verifiers = Seq(KeyValue(EclEnrolment.VerifierKey, "20230901"))
+            identifiers = Seq(KeyValue(EclEnrolment.identifierKey, eclRegistrationReference)),
+            verifiers = Seq(KeyValue(EclEnrolment.verifierKey, "20230901"))
           )
         )
       )

@@ -17,8 +17,8 @@ trait EnrolmentStoreProxyStubs { self: WireMockStubs =>
           Json
             .toJson(
               QueryKnownFactsRequest(
-                service = EclEnrolment.ServiceName,
-                knownFacts = Seq(KeyValue(key = EclEnrolment.IdentifierKey, value = eclRegistrationReference))
+                service = EclEnrolment.serviceName,
+                knownFacts = Seq(KeyValue(key = EclEnrolment.identifierKey, value = eclRegistrationReference))
               )
             )
             .toString()
@@ -30,11 +30,11 @@ trait EnrolmentStoreProxyStubs { self: WireMockStubs =>
           Json
             .toJson(
               QueryKnownFactsResponse(
-                service = EclEnrolment.ServiceName,
+                service = EclEnrolment.serviceName,
                 enrolments = Seq(
                   Enrolment(
-                    identifiers = Seq(KeyValue(key = EclEnrolment.IdentifierKey, value = eclRegistrationReference)),
-                    verifiers = Seq(KeyValue(key = EclEnrolment.VerifierKey, value = eclRegistrationDate))
+                    identifiers = Seq(KeyValue(key = EclEnrolment.identifierKey, value = eclRegistrationReference)),
+                    verifiers = Seq(KeyValue(key = EclEnrolment.verifierKey, value = eclRegistrationDate))
                   )
                 )
               )

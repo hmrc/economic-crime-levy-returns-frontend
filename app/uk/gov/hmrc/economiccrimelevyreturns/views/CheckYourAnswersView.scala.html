@@ -14,13 +14,14 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.economiccrimelevyreturns.views.html.templates.Layout
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 @import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 @import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 @import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers.CheckYourAnswersViewModel
 
 @this(
-        layout: templates.Layout,
+        layout: Layout,
         formHelper: FormWithCSRF,
         govukSummaryList: GovukSummaryList,
         govukButton: GovukButton

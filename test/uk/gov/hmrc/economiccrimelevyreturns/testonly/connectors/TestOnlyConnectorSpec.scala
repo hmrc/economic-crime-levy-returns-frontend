@@ -32,8 +32,8 @@ class TestOnlyConnectorSpec extends SpecBase {
     mockHttpClient
   )
 
-  val baseUrl  = s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns/test-only"
-  val response = HttpResponse(OK, "")
+  val baseUrl                = s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns/test-only"
+  val response: HttpResponse = HttpResponse(OK, "")
 
   "clearAllData" should {
     "return as expected" in {

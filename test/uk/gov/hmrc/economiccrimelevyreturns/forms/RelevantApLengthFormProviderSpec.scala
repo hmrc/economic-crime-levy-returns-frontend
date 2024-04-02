@@ -28,7 +28,7 @@ class RelevantApLengthFormProviderSpec extends IntFieldBehaviours {
 
     val fieldName = "value"
 
-    val validDataGenerator = longsInRangeWithCommas(MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
+    val validDataGenerator = longsInRangeWithCommas(MinMaxValues.apDaysMin, MinMaxValues.apDaysMax)
 
     behave like fieldThatBindsValidData(
       form,
@@ -46,10 +46,10 @@ class RelevantApLengthFormProviderSpec extends IntFieldBehaviours {
     behave like intFieldWithRange(
       form,
       fieldName,
-      minimum = MinMaxValues.ApDaysMin,
-      maximum = MinMaxValues.ApDaysMax,
+      minimum = MinMaxValues.apDaysMin,
+      maximum = MinMaxValues.apDaysMax,
       expectedError =
-        FormError(fieldName, "relevantApLength.error.outOfRange", Seq(MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax))
+        FormError(fieldName, "relevantApLength.error.outOfRange", Seq(MinMaxValues.apDaysMin, MinMaxValues.apDaysMax))
     )
 
     behave like mandatoryField(

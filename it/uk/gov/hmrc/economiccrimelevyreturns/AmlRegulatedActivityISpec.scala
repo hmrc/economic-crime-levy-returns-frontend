@@ -8,37 +8,37 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 
 class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
 
-  def updateAmlActivityForFullYear(eclReturn: EclReturn, isFullYear: Boolean) =
+  def updateAmlActivityForFullYear(eclReturn: EclReturn, isFullYear: Boolean): EclReturn =
     eclReturn.copy(
       carriedOutAmlRegulatedActivityForFullFy = Some(isFullYear),
       amlRegulatedActivityLength = if (isFullYear) None else eclReturn.amlRegulatedActivityLength
     )
 
-  def clearAmlActivityForFullYear(eclReturn: EclReturn) =
+  def clearAmlActivityForFullYear(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None)
 
-  def updateAmlActivityLength(eclReturn: EclReturn, length: Int) =
+  def updateAmlActivityLength(eclReturn: EclReturn, length: Int): EclReturn =
     eclReturn.copy(amlRegulatedActivityLength = Some(length))
 
-  def clearAmlActivityLength(eclReturn: EclReturn) =
+  def clearAmlActivityLength(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(amlRegulatedActivityLength = None)
 
   def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
     updateContactName(eclReturn)
   }
 
-  def validLength =
-    Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax).sample.get
+  def validLength: Int =
+    Gen.chooseNum[Int](MinMaxValues.apDaysMin, MinMaxValues.apDaysMax).sample.get
 
   s"GET ${routes.AmlRegulatedActivityController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.AmlRegulatedActivityController.onPageLoad(NormalMode))
@@ -48,7 +48,7 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
 
       val eclReturn        = random[EclReturn]
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
@@ -68,11 +68,10 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
     "save the selected AML regulated activity option then redirect to the ECL amount due page when the Yes option is selected" in {
       stubAuthorised()
 
-      val ukRevenue        = bigDecimalInRange(MinMaxValues.RevenueMin.toDouble, MinMaxValues.RevenueMax.toDouble).sample.get
       val eclReturn        =
         random[EclReturn].copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
@@ -103,7 +102,7 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
           amlRegulatedActivityLength = None
         )
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)

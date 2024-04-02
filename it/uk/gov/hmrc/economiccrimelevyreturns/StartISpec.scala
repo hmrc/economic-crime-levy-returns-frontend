@@ -110,7 +110,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
       stubUpsertSession()
 
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
       stubGetSession(validSessionData)
       stubGetReturn(eclReturn)
 
@@ -142,7 +142,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetObligations(obligationData)
 
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetSession(validSessionData)
 
