@@ -80,4 +80,27 @@ class NotableErrorControllerSpec extends SpecBase {
     }
   }
 
+  "eclReturnAlreadySubmitted" should {
+    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
+      new TestContext(eclReturn) {
+        val result: Future[Result] = controller.eclReturnAlreadySubmitted()(fakeRequest)
+
+        status(result) shouldBe OK
+
+        contentAsString(result) shouldBe eclReturnSubmittedAlreadyView()(fakeRequest, messages).toString
+      }
+    }
+  }
+
+  "returnAmendmentAlreadyRequested" should {
+    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
+      new TestContext(eclReturn) {
+        val result: Future[Result] = controller.returnAmendmentAlreadyRequested()(fakeRequest)
+
+        status(result) shouldBe OK
+
+        contentAsString(result) shouldBe returnAmendmentAlreadyRequestedView()(fakeRequest, messages).toString
+      }
+    }
+  }
 }

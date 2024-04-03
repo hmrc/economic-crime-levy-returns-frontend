@@ -87,8 +87,12 @@ trait SpecBase
   def fakeDataRetrievalAction(data: EclReturn, periodKey: Option[String] = None) =
     new FakeDataRetrievalAction(data, periodKey)
 
-  def fakeDataRetrievalOrErrorAction(data: EclReturn, periodKey: Option[String] = None) =
-    new FakeDataRetrievalOrErrorAction(data, periodKey)
+  def fakeDataRetrievalOrErrorAction(
+    data: EclReturn,
+    periodKey: Option[String] = None,
+    dataRetrievalFailure: Boolean = false
+  ) =
+    new FakeDataRetrievalOrErrorAction(data, periodKey, dataRetrievalFailure)
 
   def onwardRoute: Call = Call("GET", "/foo")
 

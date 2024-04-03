@@ -17,22 +17,42 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 
 import play.api.mvc.Result
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import play.api.mvc.Results.Redirect
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeDataRetrievalOrErrorAction(data: EclReturn, periodKey: Option[String] = None)
+class FakeDataRetrievalOrErrorAction(data: EclReturn, periodKey: Option[String] = None, dataRetrievalFailure: Boolean)
     extends DataRetrievalOrErrorAction {
 
-  override protected def refine[A](request: AuthorisedRequest[A]): Future[Either[Result, ReturnDataRequest[A]]] =
-    Future(
-      Right(
-        ReturnDataRequest(request.request, request.internalId, data, None, request.eclRegistrationReference, periodKey)
-      )
-    )
-
-  override protected implicit val executionContext: ExecutionContext =
+  override implicit val executionContext: ExecutionContext =
     scala.concurrent.ExecutionContext.Implicits.global
+
+  override protected def refine[A](request: AuthorisedRequest[A]): Future[Either[Result, ReturnDataRequest[A]]] =
+    if (dataRetrievalFailure) {
+      Future(Left(Redirect(getRedirectUrl(request))))
+    } else {
+      Future(
+        Right(
+          ReturnDataRequest(
+            request.request,
+            request.internalId,
+            data,
+            None,
+            request.eclRegistrationReference,
+            periodKey
+          )
+        )
+      )
+    }
+
+  private def getRedirectUrl(request: AuthorisedRequest[_]) =
+    request.uri match {
+      case amendUrl if amendUrl == routes.CheckYourAnswersController.onPageLoad(AmendReturn).url =>
+        routes.NotableErrorController.returnAmendmentAlreadyRequested()
+      case _                                                                                     => routes.NotableErrorController.eclReturnAlreadySubmitted()
+    }
 
 }
