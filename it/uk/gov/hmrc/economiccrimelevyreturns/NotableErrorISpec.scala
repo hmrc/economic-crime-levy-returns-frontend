@@ -36,6 +36,7 @@ class NotableErrorISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
       stubGetSessionEmpty()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.NotableErrorController.answersAreInvalid()))
 

@@ -6,11 +6,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 
 import java.time.LocalDate
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, ObligationDetails, SessionData, SessionKeys}
-
-import scala.util.Random
 
 class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -51,6 +49,7 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
         clearAmendReason(random[EclReturn])
           .copy(obligationDetails = Some(updatedObligation))
       )
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.AmendReasonController.onPageLoad(NormalMode)))
 
@@ -73,6 +72,7 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
       testSetup()
       stubGetReturn(eclReturn)
       stubUpsertReturn(updateAmendReason(eclReturn, reason))
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.AmendReasonController.onSubmit(NormalMode))
