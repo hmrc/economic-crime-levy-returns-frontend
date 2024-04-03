@@ -247,7 +247,7 @@ submitted.p2 = Mae’n rhaid i chi dalu’r ardoll ar gyfer blwyddyn ariannol {0
 submitted.p3 = Mae’n rhaid defnyddio’ch rhif ECL fel cyfeirnod talu pan ydych yn talu’r ardoll. Byddwch hefyd yn gallu gweld rhif eich datganiad yn eich <a href="{0}" class="govuk-link">cyfrif ECL</a>.
 submitted.p4 = Os ydych yn defnyddio cyfeirnod anghywir, bydd oedi cyn i’r taliad gael ei ddyrannu’n gywir.
 submitted.p5 = Codir llog arnoch os ydych yn talu’n hwyr.
-submitted.p6 = Gallwch dalu’r ardoll drwy ddarllen yr <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">arweiniad ar sut i dalu</a>.
+submitted.p6 = Gallwch dalu’r ardoll drwy ddarllen yr <a target="_blank" href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">arweiniad ar sut i dalu (yn agor mewn tab newydd)</a>.
 submitted.p7 = Rydym wedi anfon e-bost cadarnhau i {0}
 submitted.payLevyLater = Byddwch yn gallu talu’r ardoll o fis Awst ymlaen.
 
