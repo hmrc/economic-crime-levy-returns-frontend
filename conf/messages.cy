@@ -271,8 +271,10 @@ amend.submitted.p5 = Byddwn yn anfon llythyr atoch ar ôl i ni ddiwygio’ch dat
 amend.submitted.p6 = Byddwn yn anfon llythyr at:
 amend.submitted.eclRef = Cyfeirnod ECL:
 
-exit.survey.link = <a href="{0}" class="govuk-link">Beth oedd eich barn am y gwasanaeth hwn?</a>
-exit.survey = {0} (mae’n cymryd 30 eiliad) i adael yr arolwg.
+exit.h2 = Cyn i chi fynd
+exit.p1 = Mae’ch adborth yn ein helpu i wella ein gwasanaeth.
+exit.survey.link = <a href="{0}" class="govuk-link">Llenwch ein harolwg</a>
+exit.survey = {0} i rannu’ch adborth ar y gwasanaeth
 
 signedOut.title = Er eich diogelwch, gwnaethom eich allgofnodi
 signedOut.heading = Er eich diogelwch, gwnaethom eich allgofnodi

@@ -44,6 +44,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetReturn(clearRelevantAp12Months(random[EclReturn]))
       testSetup()
       stubUpsertSession()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.RelevantAp12MonthsController.onPageLoad(NormalMode)))
 
@@ -63,7 +64,8 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
 
       testSetup()
       stubGetReturn(eclReturn)
-      stubUpsertReturn(updateRelevantAp12Months(eclReturn, true))
+      stubUpsertReturn(updateRelevantAp12Months(eclReturn, isFullYear = true))
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.RelevantAp12MonthsController.onSubmit(NormalMode))
@@ -81,7 +83,8 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
 
       testSetup()
       stubGetReturn(eclReturn)
-      stubUpsertReturn(updateRelevantAp12Months(eclReturn, false))
+      stubUpsertReturn(updateRelevantAp12Months(eclReturn, isFullYear = false))
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.RelevantAp12MonthsController.onSubmit(NormalMode))
