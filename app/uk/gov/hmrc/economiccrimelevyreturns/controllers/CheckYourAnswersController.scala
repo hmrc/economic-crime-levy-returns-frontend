@@ -24,6 +24,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{EmailSubmissionError, ResponseError}
@@ -91,8 +92,8 @@ class CheckYourAnswersController @Inject() (
       _            <- returnsService.upsertReturn(eclReturn = updatedReturn).asResponseError
       response     <- returnsService.submitReturn(request.internalId).asResponseError
       _             = sendConfirmationMail(request.eclReturn, response, request.eclRegistrationReference)
-    } yield response).fold(
-      error => routeError(error),
+    } yield response).foldF(
+      error => Future.successful(routeError(error)),
       response => getRedirectionRoute(response)
     )
   }
@@ -162,20 +163,34 @@ class CheckYourAnswersController @Inject() (
   private def getRedirectionRoute(response: SubmitEclReturnResponse)(implicit
     hc: HeaderCarrier,
     request: ReturnDataRequest[AnyContent]
-  ) = {
+  ): Future[Result] = {
     val containsEmailAddress = checkOptionalVal(request.eclReturn.contactEmailAddress)
     request.eclReturn.returnType match {
       case Some(AmendReturn) =>
         containsEmailAddress match {
           case Right(email)    =>
-            val sessionData = Seq(
-              SessionKeys.email             -> email,
-              SessionKeys.obligationDetails -> Json.stringify(Json.toJson(request.eclReturn.obligationDetails))
-            ) ++ request.startAmendUrl.fold(Seq.empty[(String, String)])(url => Seq(SessionKeys.startAmendUrl -> url))
-
-            Redirect(routes.AmendReturnSubmittedController.onPageLoad())
-              .withSession(addToSession(request.session.clearEclValues, sessionData))
-          case Left(errorPage) => errorPage
+            (request.eclReturn.calculatedLiability, request.periodKey) match {
+              case (Some(liability), Some(periodKey)) =>
+                val amountDue = liability.amountDue.amount
+                val band      = liability.calculatedBand
+                (for {
+                  subscription <- returnsService
+                                    .getEclReturnSubmission(periodKey, request.eclRegistrationReference)
+                                    .asResponseError
+                } yield subscription).fold(
+                  _ => showSuccessPage(email, Some(band), Some(amountDue), false),
+                  subscription =>
+                    showSuccessPage(
+                      email,
+                      Some(band),
+                      Some(amountDue),
+                      (amountDue > subscription.returnDetails.amountOfEclDutyLiable)
+                    )
+                )
+              case _                                  =>
+                Future.successful(showSuccessPage(email, None, None, false))
+            }
+          case Left(errorPage) => Future.successful(errorPage)
         }
       case _                 =>
         containsEmailAddress match {
@@ -197,12 +212,37 @@ class CheckYourAnswersController @Inject() (
                 val sessionData = SessionData(request.internalId, session.data)
                 sessionService.upsert(sessionData)
 
-                Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(session)
-              case Left(errorPage)            => errorPage
+                Future.successful(Redirect(routes.ReturnSubmittedController.onPageLoad()).withSession(session))
+              case Left(errorPage)            => Future.successful(errorPage)
             }
-          case Left(errorPage) => errorPage
+          case Left(errorPage) => Future.successful(errorPage)
         }
     }
+  }
+
+  private def showSuccessPage(
+    email: String,
+    band: Option[Band],
+    amountDue: Option[BigDecimal],
+    isIncrease: Boolean
+  )(implicit
+    request: ReturnDataRequest[AnyContent]
+  ) = {
+    def asString[T](option: Option[T]) = option match {
+      case Some(value) => value.toString
+      case None        => ""
+    }
+
+    val sessionData = Seq(
+      SessionKeys.email             -> email,
+      SessionKeys.band              -> asString(band),
+      SessionKeys.amountDue         -> asString(amountDue),
+      SessionKeys.isIncrease        -> isIncrease.toString,
+      SessionKeys.obligationDetails -> Json.stringify(Json.toJson(request.eclReturn.obligationDetails))
+    ) ++ request.startAmendUrl.fold(Seq.empty[(String, String)])(url => Seq(SessionKeys.startAmendUrl -> url))
+
+    Redirect(routes.AmendReturnSubmittedController.onPageLoad())
+      .withSession(addToSession(request.session.clearEclValues, sessionData))
   }
 
   private def base64EncodeHtmlView(html: String): String = Base64.getEncoder

@@ -270,7 +270,36 @@ amend.submitted.p4 = We will review your answers. We may contact you using the d
 amend.submitted.p5 = We will send you a letter once we''ve amended your return. You won''t be able to view these changes until after you''ve received this letter.
 amend.submitted.p6 = We will send the letter to:
 amend.submitted.eclRef = ECL reference number:
-
+amend.submitted.p7 = Due to your amendment, you now fall into the {0} band.
+amend.submitted.p8 = The outstanding balance due for the Economic Crime Levy is now {0}.
+amend.submitted.p9 = You will be charged interest on late payments. To prevent the interest increasing, pay the outstanding balance through a bank transfer as soon as possible. You may be charged a penalty for late payment.
+amend.submitted.h3 = What you need
+amend.submitted.p10 = You need your 14-character Economic Crime Levy return number, starting with an X.
+amend.submitted.p11 = You can find this reference number:
+amend.submitted.b1 = in your HMRC online account if you registered online
+amend.submitted.b2 = on the confirmation email HMRC sent you to confirm your Economic Crime Levy return had been submitted
+amend.submitted.p12 = If you use an incorrect reference number, there will be a delay in the payment being allocated correctly.
+amend.submitted.h4 = Pay by bank transfer
+amend.submitted.p13 = If you pay by CHAPS (Clearing House Automated Payment System) or Faster Payments, you can submit your payment on the same or next day.
+amend.submitted.p14 = If you pay by Bacs (Bankers Automated Clearing System), allow 3 working days for the payment to reach HMRC.
+amend.submitted.p15 = We recommend you check your bank’s processing times and maximum transaction limits before you pay.
+amend.submitted.h5 = Account details to use if your account is in the UK
+amend.submitted.p16 = Use the following details to make a payment if your account is in the UK:
+amend.submitted.b3 = sort code — 20 05 17
+amend.submitted.b4 = account number — 40204374
+amend.submitted.b5 = account name — HMRC General BT Receipts
+amend.submitted.h6 = Account details to use if your account is overseas
+amend.submitted.p17 = Use the following details to make a payment if your account is overseas:
+amend.submitted.b6 = account number (IBAN) — GB86 BARC2 0051 7402 043 74
+amend.submitted.b7 = bank identifier code (BIC) — BARCGB22
+amend.submitted.b8 = account name — HMRC General BT Receipts
+amend.submitted.p18 = You should make overseas payments in sterling (GBP). Your bank may charge you if you use any other currency.
+amend.submitted.p19 = HMRC’s banking address is:
+amend.submitted.address.1 = Barclays Bank PLC
+amend.submitted.address.2 = 1 Churchill Place
+amend.submitted.address.3 = London
+amend.submitted.address.4 = United Kingdom
+amend.submitted.address.5 = E14 5HP
 
 exit.survey.link = <a href="{0}" class="govuk-link">What did you think of this service?</a>
 exit.survey = {0} (takes 30 seconds) to exit survey.

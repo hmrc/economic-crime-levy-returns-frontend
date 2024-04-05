@@ -28,7 +28,7 @@
         appConfig: AppConfig
 )
 
-@(fyStart: LocalDate, fyEnd: LocalDate, confirmationEmail: String, contactAddress: Option[GetCorrespondenceAddressDetails], eclReference: String, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
+@(fyStart: LocalDate, fyEnd: LocalDate, confirmationEmail: String, contactAddress: Option[GetCorrespondenceAddressDetails], eclReference: String, band: String, amountDue: Number, isIncrease: Boolean, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @panelContentHtml = {
 <h2 class="govuk-label--m">@messages("amend.submitted.eclRef") @eclReference </h2>
@@ -52,6 +52,68 @@
 
     <p class="govuk-body">@messages("amend.submitted.p2") <b>@confirmationEmail</b>.
         @messages("amend.submitted.saveEmail")</p>
+
+    @if(isIncrease) {
+        <p class="govuk-body">@Html(messages("amend.submitted.p7", messages(s"band.${band}")))</p>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p8", ViewUtils.formatMoney(amountDue)))</p>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p9"))</p>
+
+        <h2 class="govuk-heading-m">@messages("amend.submitted.h3")</h2>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p10"))</p>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p11"))</p>
+
+        <ul class="govuk-list govuk-list--bullet">
+            <li>@messages("amend.submitted.b1")</li>
+            <li>@messages("amend.submitted.b2")</li>
+        </ul>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p12"))</p>
+
+        <h2 class="govuk-heading-m">@messages("amend.submitted.h4")</h2>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p13"))</p>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p14"))</p>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p15"))</p>
+
+        <h2 class="govuk-heading-m">@messages("amend.submitted.h5")</h2>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p16"))</p>
+
+        <ul class="govuk-list govuk-list--bullet">
+            <li>@messages("amend.submitted.b3")</li>
+            <li>@messages("amend.submitted.b4")</li>
+            <li>@messages("amend.submitted.b5")</li>
+        </ul>
+
+        <h2 class="govuk-heading-m">@messages("amend.submitted.h6")</h2>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p17"))</p>
+
+        <ul class="govuk-list govuk-list--bullet">
+            <li>@messages("amend.submitted.b6")</li>
+            <li>@messages("amend.submitted.b7")</li>
+            <li>@messages("amend.submitted.b8")</li>
+        </ul>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p18"))</p>
+
+        <p class="govuk-body">@Html(messages("amend.submitted.p19"))</p>
+
+        <p class="govuk-body">
+            @Html(messages("amend.submitted.address.1"))<br>
+            @Html(messages("amend.submitted.address.2"))<br>
+            @Html(messages("amend.submitted.address.3"))<br>
+            @Html(messages("amend.submitted.address.4"))<br>
+            @Html(messages("amend.submitted.address.5"))<br>
+        </p>
+    }
+
     <p class="govuk-body">@Html(messages("amend.submitted.p3"))</p>
 
     <h2 class="govuk-heading-m">@messages("amend.submitted.h2")</h2>

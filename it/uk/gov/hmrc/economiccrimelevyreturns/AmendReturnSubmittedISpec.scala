@@ -8,7 +8,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.emailMaxLength
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetSubscriptionResponse, ObligationDetails, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, EclReturn, GetSubscriptionResponse, ObligationDetails, SessionData, SessionKeys}
 
 class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -21,6 +21,9 @@ class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val subscriptionResponse = random[GetSubscriptionResponse]
       val obligationDetails    = random[ObligationDetails]
       val email                = emailAddress(emailMaxLength).sample.get
+      val band                 = random[Band]
+      val amountDue            = random[Int]
+      val isIncrease           = random[Boolean]
       val eclReturn            = random[EclReturn]
         .copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
       val sessionData          = random[SessionData]
@@ -36,6 +39,9 @@ class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val result = callRoute(
         FakeRequest(routes.AmendReturnSubmittedController.onPageLoad()).withSession(
           (SessionKeys.email, email),
+          (SessionKeys.band, band.toString),
+          (SessionKeys.amountDue, amountDue.toString),
+          (SessionKeys.isIncrease, isIncrease.toString),
           (SessionKeys.obligationDetails, Json.toJson(obligationDetails).toString()),
           (SessionKeys.startAmendUrl, routes.StartAmendController.onPageLoad(testPeriodKey, eclReturn.internalId).url)
         )
