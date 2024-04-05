@@ -247,7 +247,7 @@ submitted.p2 = You must pay the levy for the {0}/{1} financial year by {2}. You 
 submitted.p3 = Your ECL return number must be used as a payment reference when you pay the levy. You will also be able to find your return number in your <a href="{0}" class="govuk-link">ECL account</a>.
 submitted.p5 = You will be charged interest if you make a late payment.
 submitted.p4 = If you use an incorrect reference number, there will be a delay in the payment being allocated correctly.
-submitted.p6 = You can pay the levy by reading the <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">guidance on how to pay</a>.
+submitted.p6 = You can pay the levy by reading the <a target="_blank" href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">guidance on how to pay (opens in a new tab)</a>.
 submitted.p7 = We have sent a confirmation email to {0}
 submitted.payLevyLater = You will be able to pay the levy from August 2023.
 
@@ -303,6 +303,11 @@ amend.submitted.address.5 = E14 5HP
 
 exit.survey.link = <a href="{0}" class="govuk-link">What did you think of this service?</a>
 exit.survey = {0} (takes 30 seconds) to exit survey.
+
+exit.h2 = Before you go
+exit.p1 = Your feedback helps us make our service better.
+exit.survey.link = <a href="{0}" class="govuk-link">Take a short survey</a>
+exit.survey = {0} to share your feedback on this service.
 
 signedOut.title = For your security, we signed you out
 signedOut.heading = For your security, we signed you out

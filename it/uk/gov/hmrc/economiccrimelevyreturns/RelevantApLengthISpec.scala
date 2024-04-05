@@ -18,7 +18,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
   private def clearApLength(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(relevantApLength = None)
 
-  private def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
+  private def testSetup(eclReturn: EclReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
@@ -39,6 +39,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(testSetup(random[EclReturn]))
       stubUpsertSession()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.RelevantApLengthController.onPageLoad(NormalMode)))
 
@@ -59,6 +60,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(clearApLength(eclReturn))
       stubUpsertReturn(updateApLength(eclReturn, relevantApLength))
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.RelevantApLengthController.onSubmit(NormalMode))

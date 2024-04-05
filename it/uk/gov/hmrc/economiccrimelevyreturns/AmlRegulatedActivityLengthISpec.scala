@@ -27,7 +27,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
   private def clearAmlActivityLength(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(amlRegulatedActivityLength = None)
 
-  private def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
+  private def testSetup(eclReturn: EclReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
@@ -56,6 +56,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
 
       stubGetReturn(testSetup(random[EclReturn]))
       stubUpsertSession()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode)))
 
@@ -76,6 +77,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
       val eclReturn = testSetup(random[EclReturn])
       stubGetReturn(clearAmlActivityLength(eclReturn))
       stubUpsertReturn(updateAmlActivityLength(eclReturn, amlActivityLength))
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.AmlRegulatedActivityLengthController.onSubmit(NormalMode))

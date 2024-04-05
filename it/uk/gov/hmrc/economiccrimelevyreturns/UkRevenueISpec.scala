@@ -18,7 +18,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
   private def clearRevenue(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(relevantApRevenue = None)
 
-  private def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
+  private def testSetup(eclReturn: EclReturn, internalId: String): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
@@ -44,6 +44,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
       stubUpsertSession()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.UkRevenueController.onPageLoad(NormalMode)))
 
@@ -68,6 +69,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn.copy(relevantApRevenue = None))
       stubGetSession(validSessionData)
+      stubGetEmptyObligations()
 
       val updatedReturn = eclReturn.copy(
         relevantApRevenue = Some(ukRevenue)
@@ -100,6 +102,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn.copy(relevantApRevenue = None))
       stubGetSession(validSessionData)
+      stubGetEmptyObligations()
 
       val updatedReturn = eclReturn.copy(
         relevantAp12Months = Some(true),

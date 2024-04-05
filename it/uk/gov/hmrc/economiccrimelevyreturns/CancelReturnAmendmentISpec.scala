@@ -25,6 +25,7 @@ class CancelReturnAmendmentISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.CancelReturnAmendmentController.onPageLoad()))
 
@@ -49,6 +50,7 @@ class CancelReturnAmendmentISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
       stubDeleteReturn()
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.CancelReturnAmendmentController.onSubmit())
