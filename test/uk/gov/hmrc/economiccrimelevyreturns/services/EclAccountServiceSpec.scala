@@ -18,11 +18,10 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 
 import cats.data.OptionT
 import org.mockito.ArgumentMatchers.any
-import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclAccountConnector
-import uk.gov.hmrc.economiccrimelevyreturns.models.{ObligationData, ReturnType}
+import uk.gov.hmrc.economiccrimelevyreturns.models.ObligationData
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{AuditError, EclAccountError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.EclAccountError
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.Future

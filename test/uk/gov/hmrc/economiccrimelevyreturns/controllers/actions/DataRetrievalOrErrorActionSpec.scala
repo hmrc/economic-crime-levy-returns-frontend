@@ -17,9 +17,9 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 
 import cats.data.EitherT
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.http.HeaderNames
+import play.api.http.Status.{INTERNAL_SERVER_ERROR}
 import play.api.mvc.{AnyContentAsEmpty, Request, Result}
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
@@ -72,6 +72,22 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
           dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
 
         await(result) shouldBe ReturnDataRequest(fakeRequest, internalId, eclReturn, None, eclReferenceNumber, None)
+    }
+
+    "refine returns a failed exception" in forAll { (internalId: String, eclReferenceNumber: String) =>
+      when(mockEclReturnService.getReturn(any())(any()))
+        .thenReturn(
+          EitherT.leftT[Future, Option[EclReturn]](
+            DataHandlingError.BadGateway("ErrorMessage", INTERNAL_SERVER_ERROR)
+          )
+        )
+
+      val result = intercept[Exception] {
+        await(dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber)))
+      }
+
+      result.getMessage shouldBe "ErrorMessage"
+
     }
 
     "return internal server error if retrive obligation data fails" in forAll {
@@ -144,12 +160,27 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
         )
     }
 
-    "redirect to error page when data retrieval fails" in forAll {
+    "redirect to First time return error page when data retrieval fails" in forAll {
       (internalId: String, eclReferenceNumber: String, periodKey: String) =>
         when(mockEclReturnService.getReturn(any())(any()))
           .thenReturn(EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(None))))
 
         val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(FirstTimeReturn).url)
+
+        val authorisedRequest = AuthorisedRequest(request, internalId, "ECLRefNumber12345")
+
+        val result: Future[Either[Result, ReturnDataRequest[AnyContentAsEmpty.type]]] =
+          dataRetrievalOrErrorAction.refine(authorisedRequest)
+
+        await(result) shouldBe Left(Redirect(getRedirectUrl(authorisedRequest)))
+    }
+
+    "redirect to Amendment Return error page when data retrieval fails" in forAll {
+      (internalId: String, eclReferenceNumber: String, periodKey: String) =>
+        when(mockEclReturnService.getReturn(any())(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(None))))
+
+        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(AmendReturn).url)
 
         val authorisedRequest = AuthorisedRequest(request, internalId, "ECLRefNumber12345")
 

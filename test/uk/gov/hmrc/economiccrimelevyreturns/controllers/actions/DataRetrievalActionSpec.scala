@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 import cats.data.EitherT
 import org.mockito.ArgumentMatchers.any
 import play.api.http.HeaderNames
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.mvc.{AnyContentAsEmpty, Request, Result}
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
@@ -109,6 +110,23 @@ class DataRetrievalActionSpec extends SpecBase {
           Some(periodKey)
         )
     }
+
+    "transform returns a failed exception" in forAll { (internalId: String, eclReferenceNumber: String) =>
+      when(mockEclReturnService.getOrCreateReturn(any(), any())(any(), any()))
+        .thenReturn(
+          EitherT.leftT[Future, EclReturn](
+            DataHandlingError.BadGateway("ErrorMessage", INTERNAL_SERVER_ERROR)
+          )
+        )
+
+      val result = intercept[Exception] {
+        await(dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber)))
+      }
+
+      result.getMessage shouldBe "ErrorMessage"
+
+    }
+
   }
 
 }

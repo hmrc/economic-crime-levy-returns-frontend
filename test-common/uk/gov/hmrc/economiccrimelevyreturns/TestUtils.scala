@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 

@@ -19,7 +19,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 import cats.data.EitherT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import org.scalacheck.{Arbitrary, Gen}
 import play.api.data.Form
 import play.api.http.Status.OK
 import play.api.mvc.Result
@@ -27,10 +26,8 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, CalculatedLiability, CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
-import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
@@ -113,6 +110,30 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
           redirectLocation(result) shouldBe Some(routes.UkRevenueController.onPageLoad(NormalMode).url)
         }
     }
+
+    /*"return Internal server error and the correct view" in { (eclReturn: EclReturn) =>
+      val relevantAp12Months = true
+      new TestContext(eclReturn.copy(relevantAp12Months = None)) {
+        val updatedReturn: EclReturn =
+          dataCleanup.cleanup(eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
+
+        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
+          .thenReturn(
+            EitherT[Future, DataHandlingError, Unit](
+              Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, Some("Error"))))
+            )
+          )
+
+        val result: Future[Result] =
+          controller.onSubmit(NormalMode)(
+            fakeRequest.withFormUrlEncodedBody(("value", relevantAp12Months.toString))
+          )
+
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+        reset(mockEclReturnsService)
+
+      }
+    }*/
 
     "return a Bad Request with form errors when invalid data is submitted" in forAll {
       (eclReturn: EclReturn, mode: Mode) =>

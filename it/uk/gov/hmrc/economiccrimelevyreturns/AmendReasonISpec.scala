@@ -10,8 +10,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import java.time.LocalDate
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, ObligationDetails, SessionData, SessionKeys}
 
-import scala.util.Random
-
 class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
 
   private def updateAmendReason(eclReturn: EclReturn, reason: String) =

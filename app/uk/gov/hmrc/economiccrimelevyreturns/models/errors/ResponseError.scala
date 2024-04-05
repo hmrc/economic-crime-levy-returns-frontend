@@ -27,8 +27,8 @@ sealed abstract class ResponseError extends Product with Serializable {
 
 object ResponseError {
 
-  val MessageFieldName = "message"
-  val CodeFieldName    = "code"
+  private val MessageFieldName = "message"
+  private val CodeFieldName    = "code"
 
   def badRequestError(message: String): ResponseError =
     StandardError(message, ErrorCode.BadRequest)

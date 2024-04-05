@@ -17,16 +17,16 @@
 package uk.gov.hmrc.economiccrimelevyreturns.models
 
 import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
-import play.api.libs.json.{JsError, JsNull, JsString, JsSuccess, Json}
+import play.api.libs.json.{JsBoolean, JsError, JsResultException, JsString, Json}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 class EclReturnSpec extends SpecBase {
 
-  def returnWithNoContactInfo =
-    returnWithContactInfo(false, false, false, false)
+  def returnWithNoContactInfo: EclReturn =
+    returnWithContactInfo(hasName = false, hasRole = false, hasEmail = false, hasNumber = false)
 
-  def returnWithContactInfo(hasName: Boolean, hasRole: Boolean, hasEmail: Boolean, hasNumber: Boolean) = {
+  def returnWithContactInfo(hasName: Boolean, hasRole: Boolean, hasEmail: Boolean, hasNumber: Boolean): EclReturn = {
     def value(isPresent: Boolean) =
       if (isPresent) Some(random[String]) else None
 
@@ -51,16 +51,36 @@ class EclReturnSpec extends SpecBase {
     }
   }
 
-  "read/write" should {
-    "process Json correctly" in forAll { returnType: ReturnType =>
-      val json   = Json.toJson(returnType)
-      val result = Json.fromJson[ReturnType](json)
-      result shouldBe JsSuccess(returnType)
-    }
+  "writes" should {
+    "return the return type serialized to its JSON representation" in forAll { (returnType: ReturnType) =>
+      val result = Json.toJson(returnType)
 
-    "return an error if incorrect Json" in {
-      val result = Json.fromJson[ReturnType](JsNull)
-      result.isError shouldBe true
+      result shouldBe JsString(returnType.toString)
     }
   }
+
+  "reads" should {
+    "return the return type deserialized from its JSON representation" in forAll { (returnType: ReturnType) =>
+      val json = Json.toJson(returnType)
+
+      json.as[ReturnType] shouldBe returnType
+    }
+
+    "return error when trying to deserialize unknown return type" in forAll { (returnType: ReturnType) =>
+      val json = Json.toJson(100)
+
+      val error = intercept[JsResultException] {
+        json.as[ReturnType] shouldBe returnType
+      }
+
+      assert(error.errors.nonEmpty)
+    }
+
+    "return a JsError when passed a type that is not a string" in {
+      val result = Json.fromJson[ReturnType](JsBoolean(true))
+
+      result shouldBe a[JsError]
+    }
+  }
+
 }

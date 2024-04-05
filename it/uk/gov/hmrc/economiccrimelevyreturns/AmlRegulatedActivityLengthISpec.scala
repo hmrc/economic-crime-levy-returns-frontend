@@ -12,7 +12,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, C
 
 class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
-  val ukRevenue = random[BigDecimal]
+  val ukRevenue: BigDecimal = random[BigDecimal]
 
   private def updateAmlActivityLength(eclReturn: EclReturn, length: Int) = {
     val updatedReturn       = eclReturn.copy(amlRegulatedActivityLength = Some(length))
@@ -45,7 +45,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
     updateContactName(updatedReturn)
   }
 
-  def validLength =
+  def validLength: Int =
     Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax).sample.get
 
   s"GET ${routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode).url}" should {

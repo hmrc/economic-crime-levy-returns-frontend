@@ -24,7 +24,7 @@ import play.api.mvc.Session
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.SessionDataConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.SessionError
-import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
 
 import scala.concurrent.Future
 
@@ -51,6 +51,19 @@ class SessionServiceSpec extends ServiceSpec {
 
       await(service.get(new Session() ++ Map(key -> value), id, key).value) shouldBe Right(value)
     }
+
+    /*   "return none if get session data returns an notfound exception" in forAll(
+      nonEmptyString,
+      nonEmptyString,
+      nonEmptyString
+    ) { (id: String, key: String, value: String) =>
+      when(mockSessionConnector.get(ArgumentMatchers.eq(id))(any()))
+        .thenReturn(Future.failed(new NotFoundException("Not Found")))
+
+      val result = await(service.get(new Session(), id, key).value) shouldBe Right(None)
+      result shouldBe Right(None)
+
+    }*/
 
     "return error if key not present" in forAll(
       nonEmptyString,
