@@ -45,7 +45,7 @@ class RegistrationService @Inject() (
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(DataHandlingError.BadGateway(reason = message, code = code))
+            Left(DataHandlingError.BadGateway(reason = s"Get Registration Subscription Failed - $message", code = code))
           case NonFatal(thr) =>
             Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
         }

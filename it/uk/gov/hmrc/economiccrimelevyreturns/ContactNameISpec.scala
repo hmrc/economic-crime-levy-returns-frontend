@@ -5,30 +5,30 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 
 class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
 
-  private def updateContactName(eclReturn: EclReturn, name: String) =
+  private def updateContactName(eclReturn: EclReturn, name: String): EclReturn =
     eclReturn.copy(contactName = Some(name))
 
-  private def clearContactName(eclReturn: EclReturn) =
+  private def clearContactName(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(contactName = None)
 
   private def testSetup(eclReturn: EclReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
     eclReturn
   }
 
   private def validContactName: String =
-    ensureMaxLength(alphaNumericString, MinMaxValues.NameMaxLength)
+    ensureMaxLength(alphaNumericString, MinMaxValues.nameMaxLength)
 
   s"GET ${routes.ContactNameController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.ContactNameController.onPageLoad(NormalMode))
@@ -38,6 +38,7 @@ class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(testSetup(random[EclReturn]))
       stubUpsertSession()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.ContactNameController.onPageLoad(NormalMode)))
 
@@ -58,6 +59,7 @@ class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
       stubUpsertReturn(updateContactName(eclReturn, name))
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.ContactNameController.onSubmit(NormalMode))

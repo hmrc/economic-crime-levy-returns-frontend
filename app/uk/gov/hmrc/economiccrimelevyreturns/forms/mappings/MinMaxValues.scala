@@ -18,15 +18,15 @@ package uk.gov.hmrc.economiccrimelevyreturns.forms.mappings
 
 object MinMaxValues {
 
-  val ApDaysMin                = 1
-  val ApDaysMax                = 999
-  val RevenueMin: BigDecimal   = 0.0
-  val RevenueMax: BigDecimal   = 99999999999.99
-  val AmlDaysMin               = 0
-  val AmlDaysMax               = 365
-  val EmailMaxLength           = 132
-  val NameMaxLength            = 160
-  val TelephoneNumberMaxLength = 24
-  val RoleMaxLength            = 160
+  val amlDaysMin: Int               = 0
+  val amlDaysMax: Int               = 365
+  val apDaysMin: Int                = 1
+  val apDaysMax: Int                = 999
+  val emailMaxLength: Int           = 132
+  val nameMaxLength: Int            = 160
+  val revenueMin: BigDecimal        = 0.0
+  val revenueMax: BigDecimal        = 99999999999.99
+  val roleMaxLength: Int            = 160
+  val telephoneNumberMaxLength: Int = 24
 
 }

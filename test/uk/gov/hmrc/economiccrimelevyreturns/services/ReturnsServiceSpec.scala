@@ -115,7 +115,7 @@ class ReturnsServiceSpec extends ServiceSpec {
       val result =
         await(service.getEclReturnSubmission(periodKey, eclRegistrationReference).value)
 
-      result shouldBe Left(DataHandlingError.BadGateway(message, errorCode))
+      result shouldBe Left(DataHandlingError.BadGateway(s"Get Return Submission Failed - $message", errorCode))
     }
 
     "return DataHandlingError.BAD_REQUEST when when call to returns connector fails with 4xx error" in {
@@ -133,7 +133,7 @@ class ReturnsServiceSpec extends ServiceSpec {
       val result =
         await(service.getEclReturnSubmission(periodKey, eclRegistrationReference).value)
 
-      result shouldBe Left(DataHandlingError.BadGateway(message, errorCode))
+      result shouldBe Left(DataHandlingError.BadGateway(s"Get Return Submission Failed - $message", errorCode))
     }
 
     "return DataHandlingError.InternalUnexpectedError when when call to returns connector fails with an unexpected error" in {
@@ -190,25 +190,15 @@ class ReturnsServiceSpec extends ServiceSpec {
       result shouldBe Right(Some(eclReturn))
     }
 
-    "return None if requested return cannot be found and returns an upstream error response" in forAll {
-      internalId: String =>
-        val code = NOT_FOUND
+    "return None if requested return cannot be found" in forAll { internalId: String =>
+      val code = NOT_FOUND
 
-        when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
-          .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
+      when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
-        val result = await(service.getReturn(internalId).value)
-        result shouldBe Right(None)
+      val result = await(service.getReturn(internalId).value)
+      result shouldBe Right(None)
     }
-
-    /*    "return None if requested return cannot be found and returns an not found exception" in forAll {
-      internalId: String =>
-        when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
-          .thenReturn(Future.failed(new NotFoundException("Not Found")))
-
-        val result = await(service.getReturn(internalId).value)
-        result shouldBe Right(None)
-    }*/
 
     "return an error if failure" in forAll { (internalId: String, is5xxError: Boolean) =>
       val code = getErrorCode(is5xxError)
@@ -224,7 +214,7 @@ class ReturnsServiceSpec extends ServiceSpec {
           .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
         await(service.getReturn(internalId).value) shouldBe
-          Left(DataHandlingError.BadGateway(code.toString, code))
+          Left(DataHandlingError.BadGateway(s"Get Return Failed - ${code.toString}", code))
       }
     }
 
@@ -258,7 +248,7 @@ class ReturnsServiceSpec extends ServiceSpec {
           .thenReturn(OptionT[Future, String](Future.failed(UpstreamErrorResponse(code.toString, code))))
 
         await(service.getReturnValidationErrors(internalId).value) shouldBe
-          Left(DataHandlingError.BadGateway(code.toString, code))
+          Left(DataHandlingError.BadGateway(s"Get Return Validation Errors Failed - ${code.toString}", code))
       }
     }
   }

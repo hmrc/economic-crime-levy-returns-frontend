@@ -34,15 +34,15 @@ class ContactEmailFormProviderSpec extends StringFieldBehaviours {
     behave like fieldThatBindsValidData(
       form,
       fieldName,
-      emailAddress(MinMaxValues.EmailMaxLength)
+      emailAddress(MinMaxValues.emailMaxLength)
     )
 
     behave like fieldWithMaxLength(
       form,
       fieldName,
-      maxLength = MinMaxValues.EmailMaxLength,
-      lengthError = FormError(fieldName, lengthKey, Seq(MinMaxValues.EmailMaxLength)),
-      emailAddressMoreThanMaxLength(MinMaxValues.EmailMaxLength)
+      maxLength = MinMaxValues.emailMaxLength,
+      lengthError = FormError(fieldName, lengthKey, Seq(MinMaxValues.emailMaxLength)),
+      emailAddressMoreThanMaxLength(MinMaxValues.emailMaxLength)
     )
 
     behave like mandatoryField(
@@ -52,7 +52,7 @@ class ContactEmailFormProviderSpec extends StringFieldBehaviours {
     )
 
     "fail to bind an invalid email address" in forAll(
-      stringsWithMaxLength(MinMaxValues.EmailMaxLength).retryUntil(!_.matches(Regex.EmailRegex))
+      stringsWithMaxLength(MinMaxValues.emailMaxLength).retryUntil(!_.matches(Regex.emailRegex))
     ) { invalidEmail: String =>
       val result: Form[String] = form.bind(Map("value" -> invalidEmail))
 

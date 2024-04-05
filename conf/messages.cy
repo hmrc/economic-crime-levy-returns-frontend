@@ -247,7 +247,7 @@ submitted.p2 = Mae’n rhaid i chi dalu’r ardoll ar gyfer blwyddyn ariannol {0
 submitted.p3 = Mae’n rhaid defnyddio’ch rhif ECL fel cyfeirnod talu pan ydych yn talu’r ardoll. Byddwch hefyd yn gallu gweld rhif eich datganiad yn eich <a href="{0}" class="govuk-link">cyfrif ECL</a>.
 submitted.p4 = Os ydych yn defnyddio cyfeirnod anghywir, bydd oedi cyn i’r taliad gael ei ddyrannu’n gywir.
 submitted.p5 = Codir llog arnoch os ydych yn talu’n hwyr.
-submitted.p6 = Gallwch dalu’r ardoll drwy ddarllen yr <a href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">arweiniad ar sut i dalu</a>.
+submitted.p6 = Gallwch dalu’r ardoll drwy ddarllen yr <a target="_blank" href="https://www.gov.uk/guidance/pay-your-economic-crime-levy" class="govuk-link">arweiniad ar sut i dalu (yn agor mewn tab newydd)</a>.
 submitted.p7 = Rydym wedi anfon e-bost cadarnhau i {0}
 submitted.payLevyLater = Byddwch yn gallu talu’r ardoll o fis Awst ymlaen.
 
@@ -271,8 +271,10 @@ amend.submitted.p5 = Byddwn yn anfon llythyr atoch ar ôl i ni ddiwygio’ch dat
 amend.submitted.p6 = Byddwn yn anfon llythyr at:
 amend.submitted.eclRef = Cyfeirnod ECL:
 
-exit.survey.link = <a href="{0}" class="govuk-link">Beth oedd eich barn am y gwasanaeth hwn?</a>
-exit.survey = {0} (mae’n cymryd 30 eiliad) i adael yr arolwg.
+exit.h2 = Cyn i chi fynd
+exit.p1 = Mae’ch adborth yn ein helpu i wella ein gwasanaeth.
+exit.survey.link = <a href="{0}" class="govuk-link">Llenwch ein harolwg</a>
+exit.survey = {0} i rannu’ch adborth ar y gwasanaeth
 
 signedOut.title = Er eich diogelwch, gwnaethom eich allgofnodi
 signedOut.heading = Er eich diogelwch, gwnaethom eich allgofnodi

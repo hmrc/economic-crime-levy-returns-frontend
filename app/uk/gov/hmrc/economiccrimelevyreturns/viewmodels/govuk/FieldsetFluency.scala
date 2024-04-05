@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk
 
-import play.twirl.api.Html
+import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.LegendSize
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Content
 import uk.gov.hmrc.govukfrontend.views.viewmodels.fieldset.{Fieldset, Legend}
-import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.LegendSize
 
 object fieldset extends FieldsetFluency
 
@@ -33,20 +32,11 @@ trait FieldsetFluency {
 
   implicit class FluentFieldset(fieldset: Fieldset) {
 
-    def describedBy(value: String): Fieldset =
-      fieldset.copy(describedBy = Some(value))
-
     def withCssClass(newClass: String): Fieldset =
       fieldset.copy(classes = s"${fieldset.classes} $newClass")
 
-    def withRole(role: String): Fieldset =
-      fieldset.copy(role = Some(role))
-
     def withAttribute(attribute: (String, String)): Fieldset =
       fieldset.copy(attributes = fieldset.attributes + attribute)
-
-    def withHtml(html: Html): Fieldset =
-      fieldset.copy(html = html)
   }
 
   object LegendViewModel {
@@ -57,17 +47,11 @@ trait FieldsetFluency {
 
   implicit class FluentLegend(legend: Legend) {
 
-    def asPageHeading(size: LegendSize = LegendSize.ExtraLarge): Legend =
-      legend
-        .copy(isPageHeading = true)
-        .withCssClass(size.toString)
-
     def withCssClass(newClass: String): Legend =
       legend.copy(classes = s"${legend.classes} $newClass")
 
-    def asHidden(): Legend =
+    def withSize(size: LegendSize = LegendSize.Medium): Legend =
       legend
-        .copy(isPageHeading = false)
-        .withCssClass("govuk-visually-hidden")
+        .withCssClass(size.toString)
   }
 }

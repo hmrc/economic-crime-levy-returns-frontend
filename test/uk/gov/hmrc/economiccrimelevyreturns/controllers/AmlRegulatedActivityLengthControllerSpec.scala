@@ -89,7 +89,7 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided AML regulated activity length then redirect o the UK revenue page when in NormalMode" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax),
+      Gen.chooseNum[Int](MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax),
       Arbitrary.arbitrary[CalculatedLiability],
       Arbitrary.arbitrary[Int]
     ) {
@@ -153,7 +153,7 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
 
     "save the provided AML regulated activity length then redirect to the check your answer page if no data change" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax),
+      Gen.chooseNum[Int](MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax),
       Arbitrary.arbitrary[CalculatedLiability],
       Arbitrary.arbitrary[Int],
       Arbitrary.arbitrary[String]
@@ -206,7 +206,7 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
 
     "save the provided AML regulated activity length then redirect to the amount due page if no data change" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax),
+      Gen.chooseNum[Int](MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax),
       Arbitrary.arbitrary[CalculatedLiability],
       Arbitrary.arbitrary[Int]
     ) {
@@ -255,7 +255,7 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
 
     "redirect to answers are invalid page when call to calculated liability fails" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax),
+      Gen.chooseNum[Int](MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax),
       Arbitrary.arbitrary[CalculatedLiability],
       Arbitrary.arbitrary[Int]
     ) {

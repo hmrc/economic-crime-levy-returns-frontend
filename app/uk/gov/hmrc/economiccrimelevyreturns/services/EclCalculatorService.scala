@@ -74,7 +74,9 @@ class EclCalculatorService @Inject() (
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(LiabilityCalculationError.BadGateway(reason = message, code = code))
+            Left(
+              LiabilityCalculationError.BadGateway(reason = s"Get Calculated Liability Failed - $message", code = code)
+            )
           case NonFatal(thr) => Left(LiabilityCalculationError.InternalUnexpectedError(Some(thr)))
         }
     }

@@ -72,7 +72,6 @@ class StartControllerSpec extends SpecBase {
         val returnWithObligationDetails =
           EclReturn.empty(internalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(openObligation))
         new TestContext(returnWithObligationDetails, periodKey) {
-          val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
 
           when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
             .thenReturn(
@@ -119,8 +118,6 @@ class StartControllerSpec extends SpecBase {
               )
             )
               .thenReturn(EitherT[Future, DataHandlingError, LocalDate](Future.successful(Right(eclRegistrationDate))))
-
-            val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
 
             when(mockEclReturnsService.getOrCreateReturn(any(), any())(any(), any()))
               .thenReturn(
@@ -258,7 +255,7 @@ class StartControllerSpec extends SpecBase {
           when(mockSessionService.upsert(any())(any()))
             .thenReturn(EitherT.fromEither[Future](Right(())))
 
-          val result = controller.onPageLoad(fulfilledObligation.periodKey)(fakeRequest)
+          val result: Future[Result] = controller.onPageLoad(fulfilledObligation.periodKey)(fakeRequest)
 
           status(result) shouldBe INTERNAL_SERVER_ERROR
         }
@@ -268,10 +265,10 @@ class StartControllerSpec extends SpecBase {
   "onSubmit" should {
     "redirect to Relevant accounting period page if no return url" in forAll { (eclReturn: EclReturn) =>
       new TestContext(eclReturn, periodKey) {
-        when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.UrlToReturnTo))(any()))
+        when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.urlToReturnTo))(any()))
           .thenReturn(EitherT.fromEither[Future](Right(None)))
 
-        when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.PeriodKey))(any()))
+        when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.periodKey))(any()))
           .thenReturn(EitherT.fromEither[Future](Right(Some("period-key"))))
 
         val result: Future[Result] = controller.onSubmit()(fakeRequest)
@@ -284,10 +281,10 @@ class StartControllerSpec extends SpecBase {
 
     "redirect to Saved Responses page if there is a return url" in forAll { (eclReturn: EclReturn) =>
       new TestContext(eclReturn, periodKey) {
-        when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.UrlToReturnTo))(any()))
+        when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.urlToReturnTo))(any()))
           .thenReturn(EitherT.fromEither[Future](Right(Some(random[String]))))
 
-        when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.PeriodKey))(any()))
+        when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.periodKey))(any()))
           .thenReturn(EitherT.fromEither[Future](Right(Some("period-key"))))
 
         val result: Future[Result] = controller.onSubmit()(fakeRequest)

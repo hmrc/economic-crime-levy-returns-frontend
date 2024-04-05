@@ -38,7 +38,7 @@
         @radios(
             RadiosViewModel(
                 field = form("value"),
-                legend = LegendViewModel(messages("savedResponses.h2")).asPageHeading(LegendSize.Medium),
+                legend = LegendViewModel(messages("savedResponses.h2")).withSize(),
                 items = Seq(
                     RadioItem(
                         id = Some("yes"),

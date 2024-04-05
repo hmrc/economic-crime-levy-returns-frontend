@@ -45,15 +45,15 @@ class BaseAuthorisedAction @Inject() (
     with AuthorisedFunctions {
 
   override def invokeBlock[A](request: Request[A], block: AuthorisedRequest[A] => Future[Result]): Future[Result] =
-    authorised(AffinityGroup.Organisation or AffinityGroup.Individual and Enrolment(EclEnrolment.ServiceName))
+    authorised(AffinityGroup.Organisation or AffinityGroup.Individual and Enrolment(EclEnrolment.serviceName))
       .retrieve(internalId and authorisedEnrolments) { case optInternalId ~ enrolments =>
         val internalId               = optInternalId.getOrElseFail("Unable to retrieve internalId")
         val eclRegistrationReference =
           enrolments
-            .getEnrolment(EclEnrolment.ServiceName)
-            .flatMap(_.getIdentifier(EclEnrolment.IdentifierKey))
+            .getEnrolment(EclEnrolment.serviceName)
+            .flatMap(_.getIdentifier(EclEnrolment.identifierKey))
             .getOrElseFail(
-              s"Unable to retrieve enrolment with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
+              s"Unable to retrieve enrolment with key ${EclEnrolment.serviceName} and identifier ${EclEnrolment.identifierKey}"
             )
             .value
 

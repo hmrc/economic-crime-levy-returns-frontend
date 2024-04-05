@@ -32,13 +32,13 @@ object AddressViewModel {
     address.countryCode
   )
 
+  private def htmlContent(eclAddress: GetCorrespondenceAddressDetails): HtmlContent = HtmlContent(html(eclAddress))
+
   def html(eclAddress: GetCorrespondenceAddressDetails): String = eclAddressToSeq(eclAddress)
     .filter(_.isDefined)
     .map(value => HtmlFormat.raw(value.get.prependedAll("<p class=\"govuk-body address\">")))
     .mkString("</p>")
     .appendedAll("</p>")
-
-  def htmlContent(eclAddress: GetCorrespondenceAddressDetails): HtmlContent = HtmlContent(html(eclAddress))
 
   def insetText(eclAddress: GetCorrespondenceAddressDetails): InsetText =
     InsetText(

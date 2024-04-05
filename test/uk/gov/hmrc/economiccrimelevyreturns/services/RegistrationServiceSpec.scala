@@ -23,6 +23,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.connectors.RegistrationConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.GetSubscriptionResponse
+import uk.gov.hmrc.economiccrimelevyreturns.models.GetSubscriptionResponse
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.Future
@@ -61,7 +63,9 @@ class RegistrationServiceSpec extends ServiceSpec {
         val result =
           await(service.getSubscription(eclReference).value)
 
-        result shouldBe Left(DataHandlingError.BadGateway(message, errorCode))
+        result shouldBe Left(
+          DataHandlingError.BadGateway(s"Get Registration Subscription Failed - $message", errorCode)
+        )
     }
 
     "return DataHandlingError.InternalUnexpectedError when when call to returns connector fails with an unexpected error" in forAll {
@@ -102,7 +106,7 @@ class RegistrationServiceSpec extends ServiceSpec {
         .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
       await(service.getSubscription(eclReference).value) shouldBe
-        Left(DataHandlingError.BadGateway(code.toString, code))
+        Left(DataHandlingError.BadGateway(s"Get Registration Subscription Failed - ${code.toString}", code))
     }
   }
 }

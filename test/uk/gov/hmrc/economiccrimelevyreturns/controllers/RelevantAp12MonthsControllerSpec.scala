@@ -111,30 +111,6 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
         }
     }
 
-    /*"return Internal server error and the correct view" in { (eclReturn: EclReturn) =>
-      val relevantAp12Months = true
-      new TestContext(eclReturn.copy(relevantAp12Months = None)) {
-        val updatedReturn: EclReturn =
-          dataCleanup.cleanup(eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
-
-        when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
-          .thenReturn(
-            EitherT[Future, DataHandlingError, Unit](
-              Future.successful(Left(DataHandlingError.InternalUnexpectedError(None, Some("Error"))))
-            )
-          )
-
-        val result: Future[Result] =
-          controller.onSubmit(NormalMode)(
-            fakeRequest.withFormUrlEncodedBody(("value", relevantAp12Months.toString))
-          )
-
-        status(result) shouldBe INTERNAL_SERVER_ERROR
-        reset(mockEclReturnsService)
-
-      }
-    }*/
-
     "return a Bad Request with form errors when invalid data is submitted" in forAll {
       (eclReturn: EclReturn, mode: Mode) =>
         new TestContext(eclReturn.copy(relevantAp12Months = None)) {

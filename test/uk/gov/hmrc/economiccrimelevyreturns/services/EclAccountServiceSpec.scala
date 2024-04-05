@@ -22,6 +22,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclAccountConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.ObligationData
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.EclAccountError
+import uk.gov.hmrc.economiccrimelevyreturns.models.ObligationData
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.Future
@@ -56,7 +57,7 @@ class EclAccountServiceSpec extends ServiceSpec {
         .thenReturn(OptionT[Future, ObligationData](Future.failed(UpstreamErrorResponse(code.toString, code))))
 
       await(service.retrieveObligationData.value) shouldBe
-        Left(EclAccountError.BadGateway(code.toString, code))
+        Left(EclAccountError.BadGateway(s"Get Obligation Data Failed - ${code.toString}", code))
     }
   }
 

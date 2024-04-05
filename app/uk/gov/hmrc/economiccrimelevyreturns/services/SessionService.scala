@@ -22,7 +22,7 @@ import play.api.mvc.Session
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.SessionDataConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.SessionError
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -91,7 +91,7 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(SessionError.BadGateway(message, code))
+            Left(SessionError.BadGateway(s"Delete Session Data Failed - $message", code))
           case NonFatal(thr) =>
             Left(SessionError.InternalUnexpectedError(thr.getMessage, Some(thr)))
         }
@@ -111,7 +111,7 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(SessionError.BadGateway(message, code))
+            Left(SessionError.BadGateway(s"Get Session Data Failed - $message", code))
           case NonFatal(thr)                                =>
             Left(SessionError.InternalUnexpectedError(thr.getMessage, Some(thr)))
         }
@@ -140,7 +140,7 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
           case error @ UpstreamErrorResponse(message, code, _, _)
               if UpstreamErrorResponse.Upstream5xxResponse.unapply(error).isDefined ||
                 UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(SessionError.BadGateway(message, code))
+            Left(SessionError.BadGateway(s"Upsert Session Data Failed - $message", code))
           case NonFatal(thr) => Left(SessionError.InternalUnexpectedError(thr.getMessage, Some(thr)))
         }
     }

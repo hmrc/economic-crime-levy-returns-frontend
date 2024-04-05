@@ -14,24 +14,24 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
 
   val ukRevenue: BigDecimal = random[BigDecimal]
 
-  private def updateAmlActivityLength(eclReturn: EclReturn, length: Int) = {
+  private def updateAmlActivityLength(eclReturn: EclReturn, length: Int): EclReturn = {
     val updatedReturn       = eclReturn.copy(amlRegulatedActivityLength = Some(length))
     val calculatedLiability = random[CalculatedLiability]
     stubCalculateLiability(
-      CalculateLiabilityRequest(length, FullYear, ukRevenue.longValue),
+      CalculateLiabilityRequest(length, fullYear, ukRevenue.longValue),
       calculatedLiability
     )
     updatedReturn.copy(calculatedLiability = Some(calculatedLiability))
   }
 
-  private def clearAmlActivityLength(eclReturn: EclReturn) =
+  private def clearAmlActivityLength(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(amlRegulatedActivityLength = None)
 
-  private def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
+  private def testSetup(eclReturn: EclReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
 
@@ -46,7 +46,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
   }
 
   def validLength: Int =
-    Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax).sample.get
+    Gen.chooseNum[Int](MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax).sample.get
 
   s"GET ${routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode))
@@ -56,6 +56,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
 
       stubGetReturn(testSetup(random[EclReturn]))
       stubUpsertSession()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.AmlRegulatedActivityLengthController.onPageLoad(NormalMode)))
 
@@ -76,6 +77,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
       val eclReturn = testSetup(random[EclReturn])
       stubGetReturn(clearAmlActivityLength(eclReturn))
       stubUpsertReturn(updateAmlActivityLength(eclReturn, amlActivityLength))
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.AmlRegulatedActivityLengthController.onSubmit(NormalMode))

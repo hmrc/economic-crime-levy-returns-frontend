@@ -19,12 +19,13 @@ package uk.gov.hmrc.economiccrimelevyreturns.testonly.controllers
 import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.OK
 import play.api.libs.json.Json
+import play.api.mvc.Result
 import play.api.test.Helpers.{contentAsString, status}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.testonly.connectors.TestOnlyConnector
 import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 import scala.concurrent.Future
 
@@ -41,7 +42,7 @@ class TestOnlyControllerSpec extends SpecBase {
     )
   }
 
-  val response = HttpResponse(OK, "")
+  val response: HttpResponse = HttpResponse(OK, "")
 
   "clearAllData" should {
     "return as expected" in forAll { eclReturn: EclReturn =>
@@ -49,7 +50,7 @@ class TestOnlyControllerSpec extends SpecBase {
         when(mockConnector.clearAllData()(any()))
           .thenReturn(Future.successful(response))
 
-        val result = controller.clearAllData()(fakeRequest)
+        val result: Future[Result] = controller.clearAllData()(fakeRequest)
 
         status(result)          shouldBe response.status
         contentAsString(result) shouldBe response.body
@@ -63,7 +64,7 @@ class TestOnlyControllerSpec extends SpecBase {
         when(mockConnector.clearCurrentData()(any()))
           .thenReturn(Future.successful(response))
 
-        val result = controller.clearCurrentData()(fakeRequest)
+        val result: Future[Result] = controller.clearCurrentData()(fakeRequest)
 
         status(result)          shouldBe response.status
         contentAsString(result) shouldBe response.body
@@ -74,7 +75,7 @@ class TestOnlyControllerSpec extends SpecBase {
   "getReturnData" should {
     "return as expected" in forAll { eclReturn: EclReturn =>
       new TestContext(eclReturn) {
-        val result = controller.getReturnData()(fakeRequest)
+        val result: Future[Result] = controller.getReturnData()(fakeRequest)
 
         status(result)          shouldBe OK
         contentAsString(result) shouldBe Json.stringify(Json.toJson[EclReturn](eclReturn))

@@ -34,7 +34,7 @@ class SessionDataConnectorSpec extends SpecBase {
   val connector                          = new SessionDataConnector(appConfig, mockHttpClient, config, actorSystem)
   val eclSessionDataUrl                  = "http://localhost:14003/economic-crime-levy-returns"
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockHttpClient)
     reset(mockRequestBuilder)
   }

@@ -10,26 +10,26 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
 
-  def updateRelevantAp12Months(eclReturn: EclReturn, isFullYear: Boolean) =
+  def updateRelevantAp12Months(eclReturn: EclReturn, isFullYear: Boolean): EclReturn =
     eclReturn.copy(
       relevantAp12Months = Some(isFullYear),
       relevantApLength = if (isFullYear) None else eclReturn.relevantApLength
     )
 
-  def clearRelevantAp12Months(eclReturn: EclReturn) =
+  def clearRelevantAp12Months(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(relevantAp12Months = None)
 
-  def updateRelevantApLength(eclReturn: EclReturn, length: Int) =
+  def updateRelevantApLength(eclReturn: EclReturn, length: Int): EclReturn =
     eclReturn.copy(relevantApLength = Some(length))
 
-  def clearRelevantApLength(eclReturn: EclReturn) =
+  def clearRelevantApLength(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(relevantApLength = None)
 
   def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
     updateContactName(eclReturn)
@@ -44,6 +44,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
       stubGetReturn(clearRelevantAp12Months(random[EclReturn]))
       testSetup()
       stubUpsertSession()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.RelevantAp12MonthsController.onPageLoad(NormalMode)))
 
@@ -63,7 +64,8 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
 
       testSetup()
       stubGetReturn(eclReturn)
-      stubUpsertReturn(updateRelevantAp12Months(eclReturn, true))
+      stubUpsertReturn(updateRelevantAp12Months(eclReturn, isFullYear = true))
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.RelevantAp12MonthsController.onSubmit(NormalMode))
@@ -81,7 +83,8 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
 
       testSetup()
       stubGetReturn(eclReturn)
-      stubUpsertReturn(updateRelevantAp12Months(eclReturn, false))
+      stubUpsertReturn(updateRelevantAp12Months(eclReturn, isFullYear = false))
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.RelevantAp12MonthsController.onSubmit(NormalMode))

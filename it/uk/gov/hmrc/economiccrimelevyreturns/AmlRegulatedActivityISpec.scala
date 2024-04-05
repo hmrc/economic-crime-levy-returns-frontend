@@ -12,33 +12,33 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Normal
 
 class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
 
-  def updateAmlActivityForFullYear(eclReturn: EclReturn, isFullYear: Boolean) =
+  def updateAmlActivityForFullYear(eclReturn: EclReturn, isFullYear: Boolean): EclReturn =
     eclReturn.copy(
       carriedOutAmlRegulatedActivityForFullFy = Some(isFullYear),
       amlRegulatedActivityLength = if (isFullYear) None else eclReturn.amlRegulatedActivityLength
     )
 
-  def clearAmlActivityForFullYear(eclReturn: EclReturn) =
+  def clearAmlActivityForFullYear(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(carriedOutAmlRegulatedActivityForFullFy = None)
 
-  def updateAmlActivityLength(eclReturn: EclReturn, length: Int) =
+  def updateAmlActivityLength(eclReturn: EclReturn, length: Int): EclReturn =
     eclReturn.copy(amlRegulatedActivityLength = Some(length))
 
-  def clearAmlActivityLength(eclReturn: EclReturn) =
+  def clearAmlActivityLength(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(amlRegulatedActivityLength = None)
 
   def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
     updateContactName(eclReturn)
   }
 
   def validLength =
-    Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax).sample.get
+    Gen.chooseNum[Int](MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax).sample.get
 
   s"GET ${routes.AmlRegulatedActivityController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.AmlRegulatedActivityController.onPageLoad(NormalMode))
@@ -48,11 +48,12 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
 
       val eclReturn        = random[EclReturn]
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
       stubUpsertSession()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.AmlRegulatedActivityController.onPageLoad(NormalMode)))
 
@@ -71,10 +72,11 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn        =
         random[EclReturn].copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
+      stubGetEmptyObligations()
 
       val updatedReturn = eclReturn.copy(
         carriedOutAmlRegulatedActivityForFullFy = Some(false)
@@ -102,10 +104,11 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
           amlRegulatedActivityLength = None
         )
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
+      stubGetEmptyObligations()
 
       val updatedReturn = eclReturn.copy(
         carriedOutAmlRegulatedActivityForFullFy = Some(false)

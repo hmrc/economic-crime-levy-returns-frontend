@@ -27,7 +27,7 @@ class EclReturnSpec extends SpecBase {
     returnWithContactInfo(hasName = false, hasRole = false, hasEmail = false, hasNumber = false)
 
   def returnWithContactInfo(hasName: Boolean, hasRole: Boolean, hasEmail: Boolean, hasNumber: Boolean): EclReturn = {
-    def value(isPresent: Boolean) =
+    def value(isPresent: Boolean): Option[String] =
       if (isPresent) Some(random[String]) else None
 
     random[EclReturn].copy(

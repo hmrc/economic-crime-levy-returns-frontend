@@ -40,7 +40,7 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn            =
         random[EclReturn].copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
       val sessionData          = random[SessionData]
-      val validSessionData     = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData     = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubDeleteReturn()
       stubDeleteSession()
@@ -51,10 +51,10 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())
           .withSession(
-            (SessionKeys.ChargeReference, chargeReference),
-            (SessionKeys.Email, email),
-            (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString()),
-            (SessionKeys.AmountDue, amountDue)
+            (SessionKeys.chargeReference, chargeReference),
+            (SessionKeys.email, email),
+            (SessionKeys.obligationDetails, Json.toJson(obligationDetails).toString()),
+            (SessionKeys.amountDue, amountDue)
           )
       )
 
@@ -73,7 +73,7 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn            =
         random[EclReturn].copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
       val sessionData          = random[SessionData]
-      val validSessionData     = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData     = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubDeleteReturn()
       stubDeleteSession()
@@ -84,9 +84,9 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
       val result = callRoute(
         FakeRequest(routes.ReturnSubmittedController.onPageLoad())
           .withSession(
-            (SessionKeys.Email, email),
-            (SessionKeys.ObligationDetails, Json.toJson(obligationDetails).toString()),
-            (SessionKeys.AmountDue, amountDue)
+            (SessionKeys.email, email),
+            (SessionKeys.obligationDetails, Json.toJson(obligationDetails).toString()),
+            (SessionKeys.amountDue, amountDue)
           )
       )
 

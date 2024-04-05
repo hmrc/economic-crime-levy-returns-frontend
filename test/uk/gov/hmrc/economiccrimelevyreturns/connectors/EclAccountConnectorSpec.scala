@@ -37,7 +37,7 @@ class EclAccountConnectorSpec extends SpecBase {
 
   val expectedUrl = url"${appConfig.eclAccountBaseUrl}/economic-crime-levy-account/obligation-data"
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockHttpClient)
     reset(mockRequestBuilder)
   }

@@ -22,14 +22,16 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 trait ServiceSpec extends SpecBase {
   val testException = new Exception("error")
 
-  private val base4xxCodeMin = 400
-  private val base4xxCodeMax = 499
-  private val base5xxCodeMin = 500
-  private val base5xxCodeMax = 599
+  private val base4xxCode   = 400
+  private val base5xxCode   = 500
+  private val minErrorRange = 1
+  private val maxErrorRange = 99
 
-  def getErrorCode(is5xxError: Boolean) =
-    is5xxError match {
-      case false => Gen.chooseNum[Int](base4xxCodeMin, base4xxCodeMax).suchThat(_ != 404).sample.get
-      case true  => Gen.chooseNum[Int](base5xxCodeMin, base5xxCodeMax).sample.get
+  def getErrorCode(is5xxError: Boolean): Int = {
+    val baseCode = is5xxError match {
+      case false => base4xxCode
+      case true  => base5xxCode
     }
+    baseCode + Gen.choose[Int](minErrorRange, maxErrorRange).sample.get
+  }
 }

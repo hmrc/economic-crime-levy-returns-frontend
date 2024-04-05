@@ -88,7 +88,7 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
         when(mockSessionService.getOptional(any(), any(), any())(any()))
           .thenReturn(EitherT.rightT(Some(alphaNumericString)))
 
-        when(mockSessionService.get(any(), any(), ArgumentMatchers.eq(SessionKeys.PeriodKey))(any()))
+        when(mockSessionService.get(any(), any(), ArgumentMatchers.eq(SessionKeys.periodKey))(any()))
           .thenReturn(EitherT.rightT(alphaNumericString))
 
         when(mockEclAccountService.retrieveObligationData(any())).thenReturn(

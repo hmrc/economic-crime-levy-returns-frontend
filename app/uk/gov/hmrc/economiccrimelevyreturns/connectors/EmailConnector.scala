@@ -21,7 +21,7 @@ import com.typesafe.config.Config
 import play.api.http.Status.ACCEPTED
 import play.api.libs.json.Json
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.models.email.AmendReturnSubmittedRequest.AmendReturnTemplateId
+import uk.gov.hmrc.economiccrimelevyreturns.models.email.AmendReturnSubmittedRequest.amendReturnTemplateId
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailRequest._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email._
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -53,7 +53,7 @@ class EmailConnector @Inject() (
       to = Seq(to),
       parameters = returnSubmittedEmailParameters,
       templateId =
-        if (returnSubmittedEmailParameters.chargeReference.isDefined) ReturnTemplateId else NilReturnTemplateId
+        if (returnSubmittedEmailParameters.chargeReference.isDefined) returnTemplateId else nilReturnTemplateId
     )
 
     retryFor[Unit]("HMRC Email service - initial return")(retryCondition) {
@@ -69,7 +69,7 @@ class EmailConnector @Inject() (
   ): Future[Unit] = {
     val body = AmendReturnSubmittedRequest(
       to = Seq(to),
-      templateId = AmendReturnTemplateId,
+      templateId = amendReturnTemplateId,
       parameters = parameters
     )
 

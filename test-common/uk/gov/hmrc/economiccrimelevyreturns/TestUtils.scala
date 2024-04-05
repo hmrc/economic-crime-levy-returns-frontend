@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 
@@ -25,10 +25,10 @@ import scala.util.Random
 trait TestUtils {
   private val digits = "1234567890"
 
-  val blankReturn = EclReturn.empty("", None)
+  val blankReturn: EclReturn = EclReturn.empty("", None)
 
-  def updateContactName(eclReturn: EclReturn) = {
-    val name = alphaNumStringsWithMaxLength(MinMaxValues.NameMaxLength).sample.get.trim
+  def updateContactName(eclReturn: EclReturn): EclReturn = {
+    val name = alphaNumStringsWithMaxLength(MinMaxValues.nameMaxLength).sample.get.trim
     eclReturn.copy(contactName = Some(name))
   }
 

@@ -120,7 +120,7 @@ class AuthorisedActionSpec extends SpecBase {
           await(authorisedAction.invokeBlock(fakeRequest, testAction))
         }
 
-        result.getMessage shouldBe s"Unable to retrieve enrolment with key ${EclEnrolment.ServiceName} and identifier ${EclEnrolment.IdentifierKey}"
+        result.getMessage shouldBe s"Unable to retrieve enrolment with key ${EclEnrolment.serviceName} and identifier ${EclEnrolment.identifierKey}"
     }
   }
 

@@ -12,17 +12,17 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, C
 
 class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
-  private def updateAmendReason(eclReturn: EclReturn, revenue: BigDecimal) =
+  private def updateAmendReason(eclReturn: EclReturn, revenue: BigDecimal): EclReturn =
     eclReturn.copy(relevantApRevenue = Some(revenue))
 
-  private def clearRevenue(eclReturn: EclReturn) =
+  private def clearRevenue(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(relevantApRevenue = None)
 
-  private def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
+  private def testSetup(eclReturn: EclReturn, internalId: String): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
     updateContactName(eclReturn)
@@ -39,11 +39,12 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
       val eclReturn        = random[EclReturn]
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
       stubUpsertSession()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.UkRevenueController.onPageLoad(NormalMode)))
 
@@ -61,20 +62,21 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
       val eclReturn           = random[EclReturn]
         .copy(amlRegulatedActivityLength = Some(365), relevantAp12Months = Some(true), calculatedLiability = None)
-      val ukRevenue           = bigDecimalInRange(UkRevenueThreshold.toDouble, MinMaxValues.RevenueMax.toDouble).sample.get
+      val ukRevenue           = bigDecimalInRange(UkRevenueThreshold.toDouble, MinMaxValues.revenueMax.toDouble).sample.get
       val calculatedLiability = random[CalculatedLiability].copy(calculatedBand = Large)
       val sessionData         = random[SessionData]
-      val validSessionData    = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData    = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn.copy(relevantApRevenue = None))
       stubGetSession(validSessionData)
+      stubGetEmptyObligations()
 
       val updatedReturn = eclReturn.copy(
         relevantApRevenue = Some(ukRevenue)
       )
 
       stubUpsertReturn(updatedReturn)
-      stubCalculateLiability(CalculateLiabilityRequest(FullYear, FullYear, ukRevenue.toLong), calculatedLiability)
+      stubCalculateLiability(CalculateLiabilityRequest(fullYear, fullYear, ukRevenue.toLong), calculatedLiability)
       stubUpsertReturn(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))
 
       val result = callRoute(
@@ -92,14 +94,15 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
       val eclReturn           = random[EclReturn]
         .copy(amlRegulatedActivityLength = Some(365), relevantAp12Months = Some(true), calculatedLiability = None)
-      val ukRevenue           = bigDecimalInRange(MinMaxValues.RevenueMin.toDouble, UkRevenueThreshold.toDouble).sample.get
+      val ukRevenue           = bigDecimalInRange(MinMaxValues.revenueMin.toDouble, UkRevenueThreshold.toDouble).sample.get
       val calculatedLiability =
         random[CalculatedLiability].copy(calculatedBand = Small)
       val sessionData         = random[SessionData]
-      val validSessionData    = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData    = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn.copy(relevantApRevenue = None))
       stubGetSession(validSessionData)
+      stubGetEmptyObligations()
 
       val updatedReturn = eclReturn.copy(
         relevantAp12Months = Some(true),
@@ -111,7 +114,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubUpsertReturn(updatedReturn)
       stubCalculateLiability(
-        CalculateLiabilityRequest(FullYear, FullYear, ukRevenue.toLong),
+        CalculateLiabilityRequest(fullYear, fullYear, ukRevenue.toLong),
         calculatedLiability
       )
       stubUpsertReturn(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))

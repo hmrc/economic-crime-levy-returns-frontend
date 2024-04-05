@@ -34,14 +34,14 @@ class ContactRoleFormProviderSpec extends StringFieldBehaviours {
     behave like fieldThatBindsValidData(
       form,
       fieldName,
-      stringFromRegex(MinMaxValues.RoleMaxLength, Regex.PositionInCompanyRegex)
+      stringFromRegex(MinMaxValues.roleMaxLength, Regex.positionInCompanyRegex)
     )
 
     behave like fieldWithMaxLength(
       form,
       fieldName,
-      maxLength = MinMaxValues.RoleMaxLength,
-      lengthError = FormError(fieldName, lengthKey, Seq(MinMaxValues.RoleMaxLength))
+      maxLength = MinMaxValues.roleMaxLength,
+      lengthError = FormError(fieldName, lengthKey, Seq(MinMaxValues.roleMaxLength))
     )
 
     behave like mandatoryField(
@@ -51,7 +51,7 @@ class ContactRoleFormProviderSpec extends StringFieldBehaviours {
     )
 
     "fail to bind an invalid role" in forAll(
-      stringsWithMaxLength(MinMaxValues.RoleMaxLength).retryUntil(!_.matches(Regex.PositionInCompanyRegex))
+      stringsWithMaxLength(MinMaxValues.roleMaxLength).retryUntil(!_.matches(Regex.positionInCompanyRegex))
     ) { invalidRole: String =>
       val result: Form[String] = form.bind(Map("value" -> invalidRole))
 

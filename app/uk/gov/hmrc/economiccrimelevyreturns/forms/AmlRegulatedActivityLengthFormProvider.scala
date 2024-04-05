@@ -31,7 +31,7 @@ class AmlRegulatedActivityLengthFormProvider @Inject() extends Mappings {
         "amlRegulatedActivityLength.error.nonNumeric"
       )
         .verifying(
-          inRange(MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax, "amlRegulatedActivityLength.error.outOfRange")
+          inRange(MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax, "amlRegulatedActivityLength.error.outOfRange")
         )
     )
 

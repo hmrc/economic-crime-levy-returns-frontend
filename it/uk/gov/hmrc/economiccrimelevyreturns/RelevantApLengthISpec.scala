@@ -9,27 +9,28 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 
 class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
-  private def updateApLength(eclReturn: EclReturn, length: Int) =
+  private def updateApLength(eclReturn: EclReturn, length: Int): EclReturn =
     eclReturn.copy(relevantApLength = Some(length))
 
-  private def clearApLength(eclReturn: EclReturn) =
+  private def clearApLength(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(relevantApLength = None)
 
-  private def testSetup(eclReturn: EclReturn = blankReturn, internalId: String = testInternalId): EclReturn = {
+  private def testSetup(eclReturn: EclReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
     updateContactName(eclReturn)
   }
 
-  def validLength =
-    Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax).sample.get
+  def validLength: Int =
+    Gen.chooseNum[Int](MinMaxValues.apDaysMin, MinMaxValues.apDaysMax).sample.get
 
   s"GET ${routes.RelevantApLengthController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.RelevantApLengthController.onPageLoad(NormalMode))
@@ -39,6 +40,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(testSetup(random[EclReturn]))
       stubUpsertSession()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.RelevantApLengthController.onPageLoad(NormalMode)))
 
@@ -59,6 +61,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(clearApLength(eclReturn))
       stubUpsertReturn(updateApLength(eclReturn, relevantApLength))
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.RelevantApLengthController.onSubmit(NormalMode))

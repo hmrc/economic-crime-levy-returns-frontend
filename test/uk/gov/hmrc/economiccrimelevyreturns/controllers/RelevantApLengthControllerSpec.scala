@@ -95,10 +95,10 @@ class RelevantApLengthControllerSpec extends SpecBase {
   "onSubmit" should {
     "save the provided relevant AP length then redirect to the UK revenue page in NormalMode" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
+      Gen.chooseNum[Int](MinMaxValues.apDaysMin, MinMaxValues.apDaysMax)
     ) { (eclReturn: EclReturn, relevantApLength: Int) =>
       new TestContext(eclReturn.copy(relevantApLength = None)) {
-        val updatedReturn = eclReturn.copy(relevantApLength = Some(relevantApLength))
+        val updatedReturn: EclReturn = eclReturn.copy(relevantApLength = Some(relevantApLength))
 
         when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
@@ -130,12 +130,12 @@ class RelevantApLengthControllerSpec extends SpecBase {
 
     "save the provided relevant AP length then redirect to the check your answers page if no data change" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax),
+      Gen.chooseNum[Int](MinMaxValues.apDaysMin, MinMaxValues.apDaysMax),
       Arbitrary.arbitrary[String]
     ) { (eclReturn: EclReturn, relevantApLength: Int, name: String) =>
       val baseReturn = clearContact(eclReturn).copy(contactName = Some(name))
       new TestContext(baseReturn.copy(relevantApLength = Some(relevantApLength))) {
-        val updatedReturn = baseReturn.copy(relevantApLength = Some(relevantApLength))
+        val updatedReturn: EclReturn = baseReturn.copy(relevantApLength = Some(relevantApLength))
 
         when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
@@ -153,11 +153,11 @@ class RelevantApLengthControllerSpec extends SpecBase {
 
     "save the provided relevant AP length then redirect to the amount due page if no data change" in forAll(
       Arbitrary.arbitrary[EclReturn],
-      Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax)
+      Gen.chooseNum[Int](MinMaxValues.apDaysMin, MinMaxValues.apDaysMax)
     ) { (eclReturn: EclReturn, relevantApLength: Int) =>
       val baseReturn = clearContact(eclReturn).copy(contactName = None)
       new TestContext(baseReturn.copy(relevantApLength = Some(relevantApLength))) {
-        val updatedReturn = baseReturn.copy(relevantApLength = Some(relevantApLength))
+        val updatedReturn: EclReturn = baseReturn.copy(relevantApLength = Some(relevantApLength))
 
         when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(updatedReturn))(any()))
           .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
@@ -174,13 +174,12 @@ class RelevantApLengthControllerSpec extends SpecBase {
 
   "save the provided relevant AP length then redirect to the amount page if new data" in forAll(
     Arbitrary.arbitrary[EclReturn],
-    Gen.chooseNum[Int](MinMaxValues.ApDaysMin, MinMaxValues.ApDaysMax),
+    Gen.chooseNum[Int](MinMaxValues.apDaysMin, MinMaxValues.apDaysMax),
     Arbitrary.arbitrary[String],
     Arbitrary.arbitrary[CalculatedLiability]
   ) { (eclReturn: EclReturn, relevantApLength: Int, name: String, calculatedLiability: CalculatedLiability) =>
     val baseReturn = clearContact(eclReturn).copy(contactName = Some(name))
     new TestContext(baseReturn.copy(relevantApLength = None)) {
-      val updatedReturn = baseReturn.copy(relevantApLength = Some(relevantApLength))
 
       when(mockEclReturnsService.upsertReturn(any())(any()))
         .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))

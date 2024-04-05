@@ -14,10 +14,11 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.economiccrimelevyreturns.views.html.templates.Layout
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Empty
 
 @this(
-        layout: templates.Layout,
+        layout: Layout,
         formHelper: FormWithCSRF,
         errorSummary: GovukErrorSummary,
         radios: GovukRadios,
@@ -33,13 +34,11 @@
 
     <h1 class="govuk-heading-l">@messages("cancelReturnAmendment.heading")</h1>
 
-    <p class="govuk-body">@messages("cancelReturnAmendment.body")</p>
-
     @formHelper(action = CancelReturnAmendmentController.onSubmit()) {
         @radios(
             RadiosViewModel(
                 field = form("value"),
-                legend = LegendViewModel(messages("cancelReturnAmendment.heading")).asHidden(),
+                legend = LegendViewModel(messages("cancelReturnAmendment.body")),
                 items = Seq(
                     RadioItem(
                         id = Some("yes"),

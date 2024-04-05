@@ -23,7 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, DataValidationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -51,7 +51,7 @@ class ReturnsService @Inject() (
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(DataHandlingError.BadGateway(reason = message, code = code))
+            Left(DataHandlingError.BadGateway(reason = s"Get Return Failed - $message", code = code))
           case NonFatal(thr)                                   =>
             Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
         }
@@ -127,7 +127,7 @@ class ReturnsService @Inject() (
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(DataHandlingError.BadGateway(reason = message, code = code))
+            Left(DataHandlingError.BadGateway(reason = s"Get Return Validation Errors Failed - $message", code = code))
           case NonFatal(thr) =>
             Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
         }
@@ -147,7 +147,7 @@ class ReturnsService @Inject() (
               if UpstreamErrorResponse.Upstream5xxResponse
                 .unapply(error)
                 .isDefined || UpstreamErrorResponse.Upstream4xxResponse.unapply(error).isDefined =>
-            Left(DataHandlingError.BadGateway(reason = message, code = code))
+            Left(DataHandlingError.BadGateway(reason = s"Get Return Submission Failed - $message", code = code))
 
           case NonFatal(thr) => Left(DataHandlingError.InternalUnexpectedError(Some(thr)))
         }
@@ -165,12 +165,12 @@ class ReturnsService @Inject() (
         val returnDetails      = submission.returnDetails
 
         val updatedReturn = eclReturn.copy(
-          relevantAp12Months = Some(returnDetails.accountingPeriodLength == MinMaxValues.AmlDaysMax),
+          relevantAp12Months = Some(returnDetails.accountingPeriodLength == MinMaxValues.amlDaysMax),
           relevantApLength = Some(returnDetails.accountingPeriodLength),
           relevantApRevenue = Some(returnDetails.accountingPeriodRevenue),
           carriedOutAmlRegulatedActivityForFullFy = returnDetails.numberOfDaysRegulatedActivityTookPlace match {
             case None               => None
-            case Some(numberOfDays) => Some(numberOfDays == MinMaxValues.AmlDaysMax)
+            case Some(numberOfDays) => Some(numberOfDays == MinMaxValues.amlDaysMax)
           },
           amlRegulatedActivityLength = returnDetails.numberOfDaysRegulatedActivityTookPlace,
           calculatedLiability = Some(calculatedLiability),

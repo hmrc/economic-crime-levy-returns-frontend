@@ -20,7 +20,7 @@ import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalOrErrorAction, StoreUrlAction}
@@ -145,7 +145,7 @@ class CheckYourAnswersController @Inject() (
   private def sendEmailWithContactDetails(eclReturn: EclReturn, eclReference: String)(implicit
     hc: HeaderCarrier,
     messages: Messages
-  ) =
+  ): EitherT[Future, ResponseError, Unit] =
     for {
       subscription <- registrationService.getSubscription(eclReference).asResponseError
       _             = emailService
@@ -153,7 +153,7 @@ class CheckYourAnswersController @Inject() (
 
     } yield ()
 
-  private def checkOptionalVal[T](value: Option[T]) =
+  private def checkOptionalVal[T](value: Option[T]): Either[Result, T] =
     if (value.isDefined) {
       Right(value.get)
     } else {
@@ -170,9 +170,9 @@ class CheckYourAnswersController @Inject() (
         containsEmailAddress match {
           case Right(email)    =>
             val sessionData = Seq(
-              SessionKeys.Email             -> email,
-              SessionKeys.ObligationDetails -> Json.stringify(Json.toJson(request.eclReturn.obligationDetails))
-            ) ++ request.startAmendUrl.fold(Seq.empty[(String, String)])(url => Seq(SessionKeys.StartAmendUrl -> url))
+              SessionKeys.email             -> email,
+              SessionKeys.obligationDetails -> Json.stringify(Json.toJson(request.eclReturn.obligationDetails))
+            ) ++ request.startAmendUrl.fold(Seq.empty[(String, String)])(url => Seq(SessionKeys.startAmendUrl -> url))
 
             Redirect(routes.AmendReturnSubmittedController.onPageLoad())
               .withSession(addToSession(request.session.clearEclValues, sessionData))
@@ -185,13 +185,13 @@ class CheckYourAnswersController @Inject() (
               case Right(calculatedLiability) =>
                 val session = {
                   request.session.clearEclValues ++ response.chargeReference.fold(Seq.empty[(String, String)])(c =>
-                    Seq(SessionKeys.ChargeReference -> c)
+                    Seq(SessionKeys.chargeReference -> c)
                   ) ++ Seq(
-                    SessionKeys.Email             -> email,
-                    SessionKeys.ObligationDetails -> Json.stringify(
+                    SessionKeys.email             -> email,
+                    SessionKeys.obligationDetails -> Json.stringify(
                       Json.toJson(request.eclReturn.obligationDetails)
                     ),
-                    SessionKeys.AmountDue         ->
+                    SessionKeys.amountDue         ->
                       calculatedLiability.amountDue.amount.toString()
                   )
                 }

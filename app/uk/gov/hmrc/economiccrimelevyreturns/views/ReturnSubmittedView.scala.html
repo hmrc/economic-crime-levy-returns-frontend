@@ -15,10 +15,11 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
+@import uk.gov.hmrc.economiccrimelevyreturns.views.html.templates.Layout
 @import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 @this(
-        layout: templates.Layout,
+        layout: Layout,
         govukPanel: GovukPanel,
         appConfig: AppConfig
 )
@@ -56,6 +57,8 @@
     }
     <p class="govuk-body">@messages("submitted.p7", email)</p>
 
+    <h2 class="govuk-heading-m">@messages("exit.h2")</h2>
+    <p class="govuk-body">@messages("exit.p1")</p>
     <p class="govuk-body">@Html(messages("exit.survey", messages("exit.survey.link", appConfig.exitSurveyUrl)))</p>
 
 }

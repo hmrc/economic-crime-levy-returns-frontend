@@ -49,7 +49,7 @@ object ObligationStatus {
 final case class ObligationData(
   obligations: Seq[Obligation]
 ) {
-  def getObligationDetails(periodKey: String) =
+  def getObligationDetails(periodKey: String): Option[ObligationDetails] =
     obligations.flatMap(_.obligationDetails.find(_.periodKey == periodKey)).headOption
 }
 

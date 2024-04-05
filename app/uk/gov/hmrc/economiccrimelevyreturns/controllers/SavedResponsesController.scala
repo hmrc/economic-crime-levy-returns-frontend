@@ -60,7 +60,7 @@ class SavedResponsesController @Inject() (
           case true  =>
             (for {
               urlToReturnTo <-
-                sessionService.get(request.session, request.internalId, SessionKeys.UrlToReturnTo).asResponseError
+                sessionService.get(request.session, request.internalId, SessionKeys.urlToReturnTo).asResponseError
             } yield urlToReturnTo).fold(
               err => routeError(err),
               url => Redirect(url)

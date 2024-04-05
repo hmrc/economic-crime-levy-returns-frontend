@@ -74,7 +74,7 @@ trait SpecBase
   val config: Config                                   = app.injector.instanceOf[Config]
   val actorSystem: ActorSystem                         = ActorSystem("actor")
   val periodKey: String                                = "22XY"
-  val fakeNoOpStoreUrlAction                           = app.injector.instanceOf[FakeNoOpStoreUrlAction]
+  val fakeNoOpStoreUrlAction: FakeNoOpStoreUrlAction   = app.injector.instanceOf[FakeNoOpStoreUrlAction]
   implicit val errorTemplate: ErrorTemplate            = app.injector.instanceOf[ErrorTemplate]
 
   override def fakeApplication(): Application =
@@ -112,7 +112,7 @@ trait SpecBase
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier    = HeaderCarrier()
 
-  def clearContact(eclReturn: EclReturn) =
+  def clearContact(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(
       contactName = None,
       contactRole = None,

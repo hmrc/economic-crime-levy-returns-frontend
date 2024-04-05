@@ -136,7 +136,7 @@ class ReturnDataRetrievalAction @Inject() (
     returnType match {
       case Some(AmendReturn) =>
         sessionService
-          .getOptional(session, internalId, SessionKeys.StartAmendUrl)
+          .getOptional(session, internalId, SessionKeys.startAmendUrl)
           .asResponseError
       case _                 =>
         EitherT.rightT(None)
@@ -152,7 +152,7 @@ class ReturnDataRetrievalAction @Inject() (
       EitherT.fromEither[Future](Right(periodKeyUri(1)))
     } else {
       sessionService
-        .get(session, internalId, SessionKeys.PeriodKey)
+        .get(session, internalId, SessionKeys.periodKey)
         .asResponseError
     }
   }

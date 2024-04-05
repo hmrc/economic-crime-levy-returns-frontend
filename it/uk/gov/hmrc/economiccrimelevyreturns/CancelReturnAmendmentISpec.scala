@@ -21,10 +21,11 @@ class CancelReturnAmendmentISpec extends ISpecBase with AuthorisedBehaviour {
 
       val eclReturn        = random[EclReturn]
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.CancelReturnAmendmentController.onPageLoad()))
 
@@ -44,11 +45,12 @@ class CancelReturnAmendmentISpec extends ISpecBase with AuthorisedBehaviour {
         internalId = testInternalId
       )
       val sessionData      = random[SessionData]
-      val validSessionData = sessionData.copy(values = Map(SessionKeys.PeriodKey -> testPeriodKey))
+      val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
       stubGetSession(validSessionData)
       stubDeleteReturn()
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.CancelReturnAmendmentController.onSubmit())

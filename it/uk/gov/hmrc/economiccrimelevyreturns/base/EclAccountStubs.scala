@@ -17,4 +17,12 @@ trait EclAccountStubs { self: WireMockStubs =>
         .withBody(Json.toJson(obligationData).toString())
     )
 
+  def stubGetEmptyObligations(): StubMapping =
+    stub(
+      get(urlEqualTo(s"/economic-crime-levy-account/obligation-data")),
+      aResponse()
+        .withStatus(OK)
+        .withBody(Json.toJson(ObligationData(Seq.empty)).toString())
+    )
+
 }

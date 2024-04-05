@@ -115,7 +115,7 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
               )
             )
 
-          val calculatedReturn = updatedReturn.copy(calculatedLiability = Some(calculatedLiability))
+          val calculatedReturn: EclReturn = updatedReturn.copy(calculatedLiability = Some(calculatedLiability))
 
           when(mockEclReturnsService.upsertReturn(ArgumentMatchers.eq(calculatedReturn))(any()))
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))

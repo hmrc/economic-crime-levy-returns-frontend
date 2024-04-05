@@ -11,24 +11,24 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Normal
 
 class ContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
 
-  private def updateContactEmail(eclReturn: EclReturn, email: String) =
+  private def updateContactEmail(eclReturn: EclReturn, email: String): EclReturn =
     eclReturn.copy(contactEmailAddress = Some(email.toLowerCase))
 
-  private def clearContactEmail(eclReturn: EclReturn) =
+  private def clearContactEmail(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(contactEmailAddress = None)
 
   private def testSetup(eclReturn: EclReturn, internalId: String = testInternalId): EclReturn = {
     stubGetSession(
       SessionData(
         internalId = internalId,
-        values = Map(SessionKeys.PeriodKey -> testPeriodKey)
+        values = Map(SessionKeys.periodKey -> testPeriodKey)
       )
     )
     updateContactName(eclReturn)
   }
 
   private def validContactEmail: String =
-    emailAddress(MinMaxValues.EmailMaxLength).sample.get
+    emailAddress(MinMaxValues.emailMaxLength).sample.get
 
   s"GET ${routes.ContactEmailController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.ContactEmailController.onPageLoad(NormalMode))
@@ -40,6 +40,7 @@ class ContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubGetReturn(eclReturn)
       stubUpsertSession()
+      stubGetEmptyObligations()
 
       val result = callRoute(FakeRequest(routes.ContactEmailController.onPageLoad(NormalMode)))
 
@@ -59,6 +60,7 @@ class ContactEmailISpec extends ISpecBase with AuthorisedBehaviour {
       val eclReturn = testSetup(clearContactEmail(random[EclReturn]))
       stubGetReturn(eclReturn)
       stubUpsertReturn(updateContactEmail(eclReturn, email))
+      stubGetEmptyObligations()
 
       val result = callRoute(
         FakeRequest(routes.ContactEmailController.onSubmit(NormalMode))

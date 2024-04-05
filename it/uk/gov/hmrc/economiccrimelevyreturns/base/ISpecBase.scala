@@ -188,6 +188,7 @@ abstract class ISpecBase
 
         stubGetReturn(eclReturn)
         stubUpsertReturn(updateEclReturnValue(eclReturn, value))
+        stubGetEmptyObligations()
 
         val result = callRoute(
           FakeRequest(callToMake).withFormUrlEncodedBody(("value", value.toString))
@@ -207,6 +208,7 @@ abstract class ISpecBase
 
           stubGetReturn(eclReturn)
           stubUpsertReturn(updateEclReturnValue(eclReturn, value))
+          stubGetEmptyObligations()
 
           val result = callRoute(
             FakeRequest(callToMake).withFormUrlEncodedBody(("value", value.toString))

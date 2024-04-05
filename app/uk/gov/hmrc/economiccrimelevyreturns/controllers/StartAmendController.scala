@@ -83,7 +83,7 @@ class StartAmendController @Inject() (
     sessionService.upsert(
       SessionData(
         internalId = request.internalId,
-        values = Map(SessionKeys.PeriodKey -> periodKey)
+        values = Map(SessionKeys.periodKey -> periodKey)
       )
     )
 
@@ -95,7 +95,7 @@ class StartAmendController @Inject() (
       .upsert(
         SessionData(
           request.internalId,
-          Map(SessionKeys.StartAmendUrl -> startAmendUrl, SessionKeys.PeriodKey -> periodKey)
+          Map(SessionKeys.startAmendUrl -> startAmendUrl, SessionKeys.periodKey -> periodKey)
         )
       )
 
