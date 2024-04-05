@@ -17,16 +17,17 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 
 import cats.data.EitherT
+import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.http.HeaderNames
-import play.api.http.Status.{INTERNAL_SERVER_ERROR}
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.mvc.{AnyContentAsEmpty, Request, Result}
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, FirstTimeReturn}
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, SessionError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, FirstTimeReturn, ObligationData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, EclAccountError, SessionError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
 import uk.gov.hmrc.http.HttpVerbs.GET
@@ -72,6 +73,33 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
           dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
 
         await(result) shouldBe ReturnDataRequest(fakeRequest, internalId, eclReturn, None, eclReferenceNumber, None)
+    }
+    "refine an AuthorisedRequest into a ReturnDataRequest when no obligation details is retrived" in forAll {
+      (eclReturn: EclReturn, internalId: String, eclReferenceNumber: String, obligationData: ObligationData) =>
+        val eclReturnWithNoObligation = eclReturn.copy(obligationDetails = None)
+
+        when(mockEclReturnService.getReturn(any())(any()))
+          .thenReturn(
+            EitherT[Future, DataHandlingError, Option[EclReturn]](
+              Future.successful(Right(Some(eclReturnWithNoObligation)))
+            )
+          )
+
+        when(mockSessionService.getOptional(any(), any(), any())(any()))
+          .thenReturn(EitherT.rightT(Some(alphaNumericString)))
+
+        when(mockSessionService.get(any(), any(), ArgumentMatchers.eq(SessionKeys.PeriodKey))(any()))
+          .thenReturn(EitherT.rightT(alphaNumericString))
+
+        when(mockEclAccountService.retrieveObligationData(any())).thenReturn(
+          EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(Some(obligationData))))
+        )
+
+        val result: Future[Either[Result, ReturnDataRequest[AnyContentAsEmpty.type]]] =
+          dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
+
+        val act = await(result)
+        act.isRight shouldBe true
     }
 
     "refine returns a failed exception" in forAll { (internalId: String, eclReferenceNumber: String) =>

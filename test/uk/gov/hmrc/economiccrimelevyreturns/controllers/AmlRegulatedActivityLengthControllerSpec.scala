@@ -252,5 +252,57 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
           redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(CheckMode).url)
         }
     }
+
+    "redirect to answers are invalid page when call to calculated liability fails" in forAll(
+      Arbitrary.arbitrary[EclReturn],
+      Gen.chooseNum[Int](MinMaxValues.AmlDaysMin, MinMaxValues.AmlDaysMax),
+      Arbitrary.arbitrary[CalculatedLiability],
+      Arbitrary.arbitrary[Int]
+    ) {
+      (
+        randomEclReturn: EclReturn,
+        amlRegulatedActivityLength: Int,
+        calculatedLiability: CalculatedLiability,
+        length: Int
+      ) =>
+        val eclReturn = clearContact(randomEclReturn).copy(
+          contactName = None,
+          relevantApRevenue = Some(length),
+          relevantAp12Months = Some(true)
+        )
+
+        new TestContext(
+          eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength))
+        ) {
+          val updatedReturn: EclReturn =
+            eclReturn.copy(
+              amlRegulatedActivityLength = Some(amlRegulatedActivityLength)
+            )
+
+          when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(
+              EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+                Future.successful(Left(LiabilityCalculationError.BadRequest("Bad Request")))
+              )
+            )
+
+          when(
+            mockEclReturnsService.upsertReturn(
+              ArgumentMatchers.eq(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))
+            )(any())
+          )
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          val result: Future[Result] =
+            controller.onSubmit(CheckMode)(
+              fakeRequest.withFormUrlEncodedBody(("value", amlRegulatedActivityLength.toString))
+            )
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(routes.NotableErrorController.answersAreInvalid().url)
+
+        }
+    }
   }
 }

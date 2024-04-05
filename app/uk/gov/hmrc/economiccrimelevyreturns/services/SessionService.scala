@@ -105,7 +105,6 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
         .get(internalId)
         .map(s => Right(Some(s)))
         .recover {
-          case _: NotFoundException                         => Right(None)
           case _ @UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
             Right(None)
           case error @ UpstreamErrorResponse(message, code, _, _)

@@ -45,7 +45,6 @@ class ReturnsService @Inject() (
         .getReturn(internalId)
         .map(eclReturn => Right(Some(eclReturn)))
         .recover {
-          case err: NotFoundException                          => Right(None)
           case err @ UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
             Right(None)
           case error @ UpstreamErrorResponse(message, code, _, _)
