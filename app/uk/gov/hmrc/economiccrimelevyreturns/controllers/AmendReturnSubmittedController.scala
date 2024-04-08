@@ -56,13 +56,13 @@ class AmendReturnSubmittedController @Inject() (
                              "Obligation details parsed from session"
                            )
       email             <- valueOrErrorF(request.session.get(SessionKeys.email), "Email")
+      band              <- valueOrErrorF(request.session.get(SessionKeys.band), "Band")
+      amount            <- valueOrErrorF(request.session.get(SessionKeys.amountDue), "Amount")
+      isIncrease        <- valueOrErrorF(request.session.get(SessionKeys.isIncrease), "Increase")
       startAmendUrl      = request.session.get(SessionKeys.startAmendUrl)
-    } yield (obligationDetails, email, startAmendUrl)).foldF(
+    } yield ViewData(eclReference, obligationDetails, email, band, amount, isIncrease, startAmendUrl)).foldF(
       error => Future.successful(routeError(error)),
-      obligationAndEmail => {
-        val obligation    = obligationAndEmail._1
-        val email         = obligationAndEmail._2
-        val startAmendUrl = obligationAndEmail._3
+      viewData =>
         if (appConfig.getSubscriptionEnabled) {
           (for {
             subscription <- registrationService.getSubscription(eclReference).asResponseError
@@ -70,36 +70,60 @@ class AmendReturnSubmittedController @Inject() (
             err => routeError(err),
             subscription =>
               generateView(
-                obligation,
-                Some(subscription.correspondenceAddressDetails),
-                eclReference,
-                email,
-                startAmendUrl
+                viewData.copy(
+                  address = Some(subscription.correspondenceAddressDetails)
+                )
               )
           )
         } else {
-          Future.successful(generateView(obligation, None, eclReference, email, startAmendUrl))
+          Future.successful(generateView(viewData))
         }
-      }
     )
   }
 
   def generateView(
-    obligationDetails: ObligationDetails,
-    address: Option[GetCorrespondenceAddressDetails],
-    eclReference: String,
-    email: String,
-    startAmendUrl: Option[String]
-  )(implicit request: Request[_], messages: Messages): Result =
+    viewData: ViewData
+  )(implicit
+    request: Request[_],
+    messages: Messages
+  ): Result = {
+    val obligationDetails = viewData.obligationDetails
     Ok(
       view(
-        fyStart = obligationDetails.inboundCorrespondenceFromDate,
-        fyEnd = obligationDetails.inboundCorrespondenceToDate,
-        confirmationEmail = email,
-        contactAddress = if (address.isEmpty) None else address,
-        eclReference,
-        startAmendUrl
+        obligationDetails.inboundCorrespondenceFromDate,
+        obligationDetails.inboundCorrespondenceToDate,
+        viewData.email,
+        viewData.address,
+        viewData.eclReference,
+        viewData.band,
+        viewData.amount.toInt,
+        viewData.isIncrease.toBoolean,
+        viewData.startAmendUrl
       )(request, messages)
     )
+  }
+}
 
+private case class ViewData(
+  obligationDetails: ObligationDetails,
+  address: Option[GetCorrespondenceAddressDetails],
+  eclReference: String,
+  email: String,
+  band: String,
+  amount: String,
+  isIncrease: String,
+  startAmendUrl: Option[String]
+)
+
+private object ViewData {
+  def apply(
+    eclReference: String,
+    obligationDetails: ObligationDetails,
+    email: String,
+    band: String,
+    amount: String,
+    isIncrease: String,
+    startAmendUrl: Option[String]
+  ) =
+    new ViewData(obligationDetails, None, eclReference, email, band, amount, isIncrease, startAmendUrl)
 }

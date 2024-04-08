@@ -17,6 +17,7 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
+import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.mockito.ArgumentMatchers.{any, anyString}
 import play.api.data.Form
 import play.api.http.Status.OK
@@ -27,7 +28,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmendReasonFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, GetSubscriptionResponse, ObligationDetails, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, Band, EclReturn, GetSubscriptionResponse, ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{RegistrationService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmendReturnSubmittedView
 
@@ -63,6 +64,9 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
         obligationDetails: ObligationDetails,
         email: String
       ) =>
+        val band       = random[Band]
+        val amountDue  = random[Int]
+        val isIncrease = random[Boolean]
         new TestContext(
           eclReturn.copy(
             contactEmailAddress = Some(email),
@@ -81,8 +85,11 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
 
           val result: Future[Result] = controller.onPageLoad()(
             fakeRequest.withSession(
-              SessionKeys.email             -> email,
-              SessionKeys.obligationDetails -> Json.stringify(Json.toJson(obligationDetails))
+              (SessionKeys.email             -> email),
+              (SessionKeys.band              -> band.toString),
+              (SessionKeys.amountDue         -> amountDue.toString),
+              (SessionKeys.isIncrease        -> isIncrease.toString),
+              (SessionKeys.obligationDetails -> Json.stringify(Json.toJson(obligationDetails)))
             )
           )
 
@@ -93,7 +100,10 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
             obligationDetails.inboundCorrespondenceToDate,
             email,
             Some(subscription.correspondenceAddressDetails),
-            "test-ecl-registration-reference"
+            "test-ecl-registration-reference",
+            band.toString,
+            amountDue,
+            isIncrease
           )(fakeRequest, messages).toString
         }
     }
