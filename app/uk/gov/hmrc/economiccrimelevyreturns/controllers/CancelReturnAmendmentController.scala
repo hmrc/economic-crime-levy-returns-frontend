@@ -23,6 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.CancelReturnAmendmentFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
+import uk.gov.hmrc.economiccrimelevyreturns.models.FirstTimeReturn
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{CancelReturnAmendmentView, ErrorTemplate}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -65,7 +66,11 @@ class CancelReturnAmendmentController @Inject() (
               _ => Redirect(appConfig.eclAccountUrl)
             )
           } else {
-            Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad()))
+            Future.successful(
+              Redirect(
+                routes.CheckYourAnswersController.onPageLoad(request.eclReturn.returnType.getOrElse(FirstTimeReturn))
+              )
+            )
           }
       )
   }

@@ -23,7 +23,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalOrErrorAction, StoreUrlAction}
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionKeys._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{EmailSubmissionError, ResponseError}
@@ -44,7 +44,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CheckYourAnswersController @Inject() (
   override val messagesApi: MessagesApi,
   authorise: AuthorisedAction,
-  getReturnData: DataRetrievalAction,
+  getReturnData: DataRetrievalOrErrorAction,
   returnsService: ReturnsService,
   sessionService: SessionService,
   emailService: EmailService,
@@ -60,23 +60,24 @@ class CheckYourAnswersController @Inject() (
     with BaseController
     with ErrorHandler {
 
-  def onPageLoad: Action[AnyContent] = (authorise andThen getReturnData andThen storeUrl).async { implicit request =>
-    (for {
-      errors <- returnsService.getReturnValidationErrors(request.internalId)(hc).asResponseError
-    } yield errors)
-      .fold(
-        error => Future.successful(routeError(error)),
-        {
-          case Some(_) => Future.successful(Redirect(routes.NotableErrorController.answersAreInvalid()))
-          case None    =>
-            viewHtmlOrError().fold(
-              error => routeError(error),
-              view => Ok(view)
-            )
-        }
-      )
-      .flatten
-  }
+  def onPageLoad(returnType: ReturnType): Action[AnyContent] =
+    (authorise andThen getReturnData andThen storeUrl).async { implicit request =>
+      (for {
+        errors <- returnsService.getReturnValidationErrors(request.internalId)(hc).asResponseError
+      } yield errors)
+        .fold(
+          error => Future.successful(routeError(error)),
+          {
+            case Some(_) => Future.successful(Redirect(routes.NotableErrorController.answersAreInvalid()))
+            case None    =>
+              viewHtmlOrError().fold(
+                error => routeError(error),
+                view => Ok(view)
+              )
+          }
+        )
+        .flatten
+    }
 
   def onSubmit: Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
     implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)

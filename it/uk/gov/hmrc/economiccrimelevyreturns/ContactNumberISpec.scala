@@ -67,8 +67,15 @@ class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
           .withFormUrlEncodedBody(("value", number))
       )
 
+      status(result) shouldBe SEE_OTHER
+
+      redirectLocation(result) shouldBe Some(
+        routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)).url
+      )
       status(result)           shouldBe SEE_OTHER
-      redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
+      redirectLocation(result) shouldBe Some(
+        routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)).url
+      )
     }
   }
 

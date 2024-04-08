@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
 
 class ContactRolePageNavigatorSpec extends SpecBase {
 
@@ -35,7 +35,9 @@ class ContactRolePageNavigatorSpec extends SpecBase {
     "return a Call to the check your answers page in CheckMode" in forAll { (eclReturn: EclReturn, role: String) =>
       val updatedReturn: EclReturn = eclReturn.copy(contactRole = Some(role))
 
-      pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad()
+      pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad(
+        eclReturn.returnType.getOrElse(FirstTimeReturn)
+      )
     }
 
     "return a Call to the error page if no data" in forAll { (eclReturn: EclReturn, mode: Mode) =>

@@ -8,7 +8,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models._
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
 
 class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -37,8 +37,8 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
     updateContactName(eclReturn)
   }
 
-  def validLength: Int =
-    Gen.chooseNum[Int](MinMaxValues.apDaysMin, MinMaxValues.apDaysMax).sample.get
+  def validLength =
+    Gen.chooseNum[Int](MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax).sample.get
 
   s"GET ${routes.AmlRegulatedActivityController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.AmlRegulatedActivityController.onPageLoad(NormalMode))

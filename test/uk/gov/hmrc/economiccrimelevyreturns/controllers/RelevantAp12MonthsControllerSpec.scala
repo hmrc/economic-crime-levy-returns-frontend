@@ -27,8 +27,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, CalculatedLiability, CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
-import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
 
@@ -147,7 +147,9 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
 
           status(result) shouldBe SEE_OTHER
 
-          redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
+          redirectLocation(result) shouldBe Some(
+            routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)).url
+          )
         }
     }
 

@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.TestUtils
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 
 import scala.concurrent.ExecutionContext.global
@@ -195,7 +195,9 @@ abstract class ISpecBase
         )
 
         status(result)           shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
+        redirectLocation(result) shouldBe Some(
+          routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)).url
+        )
       }
 
       relatedValueInfo.foreach { info =>

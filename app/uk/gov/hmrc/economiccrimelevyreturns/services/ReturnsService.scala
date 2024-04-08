@@ -23,7 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, DataValidationError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -45,7 +45,6 @@ class ReturnsService @Inject() (
         .getReturn(internalId)
         .map(eclReturn => Right(Some(eclReturn)))
         .recover {
-          case err: NotFoundException                          => Right(None)
           case err @ UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
             Right(None)
           case error @ UpstreamErrorResponse(message, code, _, _)

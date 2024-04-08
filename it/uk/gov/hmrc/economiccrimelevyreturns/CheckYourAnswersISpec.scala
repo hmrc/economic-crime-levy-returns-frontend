@@ -11,13 +11,15 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetEclReturnSubmissionResponse, Languages, SessionData, SessionKeys}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, GetEclReturnSubmissionResponse, Languages, SessionData, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 
 class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
 
-  s"GET ${routes.CheckYourAnswersController.onPageLoad().url}" should {
-    behave like authorisedActionRoute(routes.CheckYourAnswersController.onPageLoad())
+  s"GET ${routes.CheckYourAnswersController.onPageLoad(FirstTimeReturn).url}" should {
+    behave like authorisedActionRoute(
+      routes.CheckYourAnswersController.onPageLoad(FirstTimeReturn)
+    )
 
     "respond with 200 status and the Check your answers HTML view when the ECL return data is valid" in {
       stubAuthorised()
@@ -35,7 +37,11 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       stubUpsertSession()
       stubGetEmptyObligations()
 
-      val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onPageLoad()))
+      val result = callRoute(
+        FakeRequest(
+          routes.CheckYourAnswersController.onPageLoad(validEclReturn.eclReturn.returnType.getOrElse(FirstTimeReturn))
+        )
+      )
 
       status(result) shouldBe OK
 
@@ -56,7 +62,9 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
       stubUpsertSession()
       stubGetEmptyObligations()
 
-      val result = callRoute(FakeRequest(routes.CheckYourAnswersController.onPageLoad()))
+      val result = callRoute(
+        FakeRequest(routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)))
+      )
 
       status(result) shouldBe SEE_OTHER
 
@@ -64,7 +72,7 @@ class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
     }
   }
 
-  s"POST ${routes.CheckYourAnswersController.onSubmit().url}"  should {
+  s"POST ${routes.CheckYourAnswersController.onSubmit().url}"                 should {
     behave like authorisedActionRoute(routes.CheckYourAnswersController.onSubmit())
 
     "redirect to the ECL return submitted page after submitting the ECL return successfully" in {

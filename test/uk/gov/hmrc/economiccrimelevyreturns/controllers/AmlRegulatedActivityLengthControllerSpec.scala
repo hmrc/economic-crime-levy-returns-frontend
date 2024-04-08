@@ -29,7 +29,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthForm
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, CheckMode, EclReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityLengthView
 
@@ -198,7 +198,9 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
 
           status(result) shouldBe SEE_OTHER
 
-          redirectLocation(result) shouldBe Some(routes.CheckYourAnswersController.onPageLoad().url)
+          redirectLocation(result) shouldBe Some(
+            routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)).url
+          )
         }
     }
 
@@ -248,6 +250,58 @@ class AmlRegulatedActivityLengthControllerSpec extends SpecBase {
           status(result) shouldBe SEE_OTHER
 
           redirectLocation(result) shouldBe Some(routes.AmountDueController.onPageLoad(CheckMode).url)
+        }
+    }
+
+    "redirect to answers are invalid page when call to calculated liability fails" in forAll(
+      Arbitrary.arbitrary[EclReturn],
+      Gen.chooseNum[Int](MinMaxValues.amlDaysMin, MinMaxValues.amlDaysMax),
+      Arbitrary.arbitrary[CalculatedLiability],
+      Arbitrary.arbitrary[Int]
+    ) {
+      (
+        randomEclReturn: EclReturn,
+        amlRegulatedActivityLength: Int,
+        calculatedLiability: CalculatedLiability,
+        length: Int
+      ) =>
+        val eclReturn = clearContact(randomEclReturn).copy(
+          contactName = None,
+          relevantApRevenue = Some(length),
+          relevantAp12Months = Some(true)
+        )
+
+        new TestContext(
+          eclReturn.copy(amlRegulatedActivityLength = Some(amlRegulatedActivityLength))
+        ) {
+          val updatedReturn: EclReturn =
+            eclReturn.copy(
+              amlRegulatedActivityLength = Some(amlRegulatedActivityLength)
+            )
+
+          when(mockEclLiabilityService.calculateLiability(ArgumentMatchers.eq(updatedReturn))(any()))
+            .thenReturn(
+              EitherT[Future, LiabilityCalculationError, CalculatedLiability](
+                Future.successful(Left(LiabilityCalculationError.BadRequest("Bad Request")))
+              )
+            )
+
+          when(
+            mockEclReturnsService.upsertReturn(
+              ArgumentMatchers.eq(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))
+            )(any())
+          )
+            .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
+
+          val result: Future[Result] =
+            controller.onSubmit(CheckMode)(
+              fakeRequest.withFormUrlEncodedBody(("value", amlRegulatedActivityLength.toString))
+            )
+
+          status(result) shouldBe SEE_OTHER
+
+          redirectLocation(result) shouldBe Some(routes.NotableErrorController.answersAreInvalid().url)
+
         }
     }
   }

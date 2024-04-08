@@ -81,8 +81,8 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
 
           val result: Future[Result] = controller.onPageLoad()(
             fakeRequest.withSession(
-              (SessionKeys.email             -> email),
-              (SessionKeys.obligationDetails -> Json.stringify(Json.toJson(obligationDetails)))
+              SessionKeys.email             -> email,
+              SessionKeys.obligationDetails -> Json.stringify(Json.toJson(obligationDetails))
             )
           )
 
@@ -116,7 +116,7 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
 
         val result: Future[Result] = controller.onPageLoad()(
           fakeRequest.withSession(
-            (SessionKeys.obligationDetails -> Json.stringify(Json.toJson(obligationDetails)))
+            SessionKeys.obligationDetails -> Json.stringify(Json.toJson(obligationDetails))
           )
         )
 
@@ -141,7 +141,7 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
 
         val result: Future[Result] = controller.onPageLoad()(
           fakeRequest.withSession(
-            (SessionKeys.email -> email)
+            SessionKeys.email -> email
           )
         )
 
