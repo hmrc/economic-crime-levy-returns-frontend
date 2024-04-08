@@ -65,7 +65,7 @@ GET         /agent-cannot-submit-return                                   uk.gov
 
 GET         /assets/*file                                                 controllers.Assets.versioned(path = "/public", file: Asset)
 
-GET         /check-your-answers                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onPageLoad()
+GET         /check-your-answers                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onPageLoad(returnType : ReturnType)
 POST        /check-your-answers                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onSubmit()
 
 GET         /confirmation                                                 uk.gov.hmrc.economiccrimelevyreturns.controllers.ReturnSubmittedController.onPageLoad()
@@ -85,3 +85,6 @@ POST        /cancel-return-amendment	                                  uk.gov.hm
 
 GET         /save-and-return                                              uk.gov.hmrc.economiccrimelevyreturns.controllers.SavedResponsesController.onPageLoad()
 POST        /save-and-return                                              uk.gov.hmrc.economiccrimelevyreturns.controllers.SavedResponsesController.onSubmit()
+
+GET         /you-have-already-submitted-return                            uk.gov.hmrc.economiccrimelevyreturns.controllers.NotableErrorController.eclReturnAlreadySubmitted()
+GET         /you-have-already-amended-return                              uk.gov.hmrc.economiccrimelevyreturns.controllers.NotableErrorController.returnAmendmentAlreadyRequested()

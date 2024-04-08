@@ -22,7 +22,7 @@ import play.api.mvc.Session
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.SessionDataConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.SessionError
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -105,7 +105,6 @@ class SessionService @Inject() (sessionRetrievalConnector: SessionDataConnector)
         .get(internalId)
         .map(s => Right(Some(s)))
         .recover {
-          case _: NotFoundException                         => Right(None)
           case _ @UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
             Right(None)
           case error @ UpstreamErrorResponse(message, code, _, _)

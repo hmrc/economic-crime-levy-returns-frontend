@@ -49,7 +49,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
     val controller = new CheckYourAnswersController(
       messagesApi,
       fakeAuthorisedAction(eclReturnData.internalId),
-      fakeDataRetrievalAction(eclReturnData, periodKey),
+      fakeDataRetrievalOrErrorAction(eclReturnData, periodKey),
       mockEclReturnsService,
       mockSessionService,
       mockEmailService,
@@ -113,7 +113,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
           val viewModel: CheckYourAnswersViewModel = CheckYourAnswersViewModel(returnDataRequest.eclReturn, None, None)
 
-          val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
+          val result: Future[Result] =
+            controller.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))(returnDataRequest)
 
           status(result) shouldBe OK
 
@@ -147,7 +148,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
             )
           )
 
-        val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
+        val result: Future[Result] =
+          controller.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))(returnDataRequest)
 
         status(result)           shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.NotableErrorController.answersAreInvalid().url)
@@ -174,7 +176,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
               )
             )
 
-          val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
+          val result: Future[Result] =
+            controller.onPageLoad(validEclReturn.eclReturn.returnType.getOrElse(FirstTimeReturn))(returnDataRequest)
 
           status(result) shouldBe INTERNAL_SERVER_ERROR
         }
@@ -197,7 +200,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
         when(mockEclReturnsService.getReturnValidationErrors(any())(any()))
           .thenReturn(EitherT[Future, DataHandlingError, Option[DataValidationError]](Future.successful(Right(None))))
 
-        val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
+        val result: Future[Result] =
+          controller.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))(returnDataRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
@@ -228,7 +232,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
               )
             )
 
-          val result: Future[Result] = controller.onPageLoad()(returnDataRequest)
+          val result: Future[Result] =
+            controller.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))(returnDataRequest)
 
           status(result) shouldBe INTERNAL_SERVER_ERROR
         }
@@ -300,6 +305,80 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           verify(mockEmailService, times(1)).sendReturnSubmittedEmail(
             ArgumentMatchers.eq(eclReturn),
             ArgumentMatchers.eq(submitEclReturnResponse.chargeReference)
+          )(any(), any())
+
+          reset(mockEmailService)
+        }
+    }
+
+    "redirect to the ECL return amended page after submitting the ECL return successfully" in forAll {
+      (
+        validEclReturn: ValidEclReturn,
+        validEclSubmission: ValidGetEclReturnSubmissionResponse,
+        submitEclReturnResponse: SubmitEclReturnResponse,
+        subscriptionResponse: GetSubscriptionResponse
+      ) =>
+        val eclReturn: EclReturn = validEclReturn.eclReturn.copy(
+          returnType = Some(AmendReturn)
+        )
+
+        val eclReturnSubmission: GetEclReturnSubmissionResponse =
+          createTestEclReturnSubmission(validEclReturn, validEclSubmission)
+
+        new TestContext(eclReturn, Some(periodKey)) {
+          implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
+            ReturnDataRequest(
+              fakeRequest,
+              eclReturn.internalId,
+              eclReturn,
+              None,
+              eclRegistrationReference,
+              Some(periodKey)
+            )
+
+          when(mockEclReturnsService.getEclReturnSubmission(any(), any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetEclReturnSubmissionResponse](
+                Future.successful(Right(eclReturnSubmission))
+              )
+            )
+
+          when(mockRegistrationService.getSubscription(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, GetSubscriptionResponse](
+                Future.successful(Right(subscriptionResponse))
+              )
+            )
+
+          when(mockEclReturnsService.upsertReturn(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Unit](Future.successful(Right(())))
+            )
+
+          when(mockEclReturnsService.submitReturn(ArgumentMatchers.eq(eclReturn.internalId))(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, SubmitEclReturnResponse](
+                Future.successful(Right(submitEclReturnResponse))
+              )
+            )
+
+          val result: Future[Result] = controller.onSubmit()(returnDataRequest)
+
+          status(result)                                     shouldBe SEE_OTHER
+          session(result).get(SessionKeys.email)             shouldBe eclReturn.contactEmailAddress
+          session(result).get(SessionKeys.obligationDetails) shouldBe Some(
+            Json.toJson(eclReturn.obligationDetails.get).toString()
+          )
+          session(result).get(SessionKeys.amountDue)         shouldBe Some(
+            eclReturn.calculatedLiability.get.amountDue.amount.toString()
+          )
+          session(result).get(SessionKeys.band)              shouldBe eclReturn.calculatedLiability.map(_.calculatedBand.toString)
+          session(result).get(SessionKeys.email)             shouldBe eclReturn.contactEmailAddress
+          redirectLocation(result)                           shouldBe Some(routes.AmendReturnSubmittedController.onPageLoad().url)
+
+          verify(mockEmailService, times(1)).sendAmendReturnConfirmationEmail(
+            ArgumentMatchers.eq(eclReturn),
+            ArgumentMatchers.eq(Some(subscriptionResponse.correspondenceAddressDetails))
           )(any(), any())
 
           reset(mockEmailService)

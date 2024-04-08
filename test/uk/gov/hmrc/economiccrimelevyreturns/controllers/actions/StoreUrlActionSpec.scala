@@ -20,12 +20,14 @@ import cats.data.EitherT
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.scalacheck.Arbitrary
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.mvc.{Request, Result}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models._
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.SessionError
 import uk.gov.hmrc.economiccrimelevyreturns.services.SessionService
 import uk.gov.hmrc.http.HttpVerbs.GET
 
@@ -100,6 +102,38 @@ class StoreUrlActionSpec extends SpecBase {
 
       reset(mockSessionService)
     }
+  }
+
+  "refine returns a failed exception" in forAll { (eclReturn: EclReturn, url: String) =>
+    val sessionData = SessionData(eclReturn.internalId, Map(SessionKeys.urlToReturnTo -> url))
+
+    when(mockSessionService.upsert(ArgumentMatchers.eq(sessionData))(any()))
+      .thenReturn(
+        EitherT.leftT[Future, Unit](
+          SessionError.BadGateway("ErrorMessage", INTERNAL_SERVER_ERROR)
+        )
+      )
+
+    val request = FakeRequest(GET, url)
+
+    val result = intercept[Exception] {
+      await(
+        storeUrlAction.refine(
+          ReturnDataRequest(
+            request,
+            eclReturn.internalId,
+            eclReturn.copy(returnType = Some(FirstTimeReturn)),
+            None,
+            testEclRegistrationReference,
+            Some(testPeriodKey)
+          )
+        )
+      )
+    }
+
+    result.getMessage shouldBe "ErrorMessage"
+
+    reset(mockSessionService)
   }
 
 }

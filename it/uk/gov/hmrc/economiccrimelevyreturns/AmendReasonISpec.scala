@@ -9,6 +9,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 
 import java.time.LocalDate
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, ObligationDetails, SessionData, SessionKeys}
 
 class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
 

@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, NormalMode}
 
 class AmountDuePageNavigatorSpec extends SpecBase {
 
@@ -48,7 +48,9 @@ class AmountDuePageNavigatorSpec extends SpecBase {
           contactTelephoneNumber = Some(number)
         )
 
-        pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad()
+        pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad(
+          eclReturn.returnType.getOrElse(FirstTimeReturn)
+        )
     }
   }
 

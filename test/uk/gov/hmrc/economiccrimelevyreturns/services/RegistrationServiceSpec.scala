@@ -21,6 +21,8 @@ import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.RegistrationConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
+import uk.gov.hmrc.economiccrimelevyreturns.models.GetSubscriptionResponse
 import uk.gov.hmrc.economiccrimelevyreturns.models.GetSubscriptionResponse
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.http.UpstreamErrorResponse

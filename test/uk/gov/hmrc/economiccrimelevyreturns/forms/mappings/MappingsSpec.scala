@@ -167,5 +167,10 @@ class MappingsSpec extends AnyWordSpec with Matchers with OptionValues with Mapp
       val result = testForm.bind(Map.empty[String, String])
       result.errors should contain(FormError("value", "error.required"))
     }
+
+    "unbind a valid value" in {
+      val result = testForm.fill(Bar)
+      result.apply("value").value.value shouldEqual "Bar"
+    }
   }
 }

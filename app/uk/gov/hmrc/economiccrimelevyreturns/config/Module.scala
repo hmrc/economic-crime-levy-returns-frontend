@@ -30,6 +30,9 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     bind(classOf[DataRetrievalAction])
       .to(classOf[ReturnDataRetrievalAction])
       .asEagerSingleton()
+    bind(classOf[DataRetrievalOrErrorAction])
+      .to(classOf[ReturnDataRetrievalOrErrorAction])
+      .asEagerSingleton()
     bind(classOf[AuthorisedAction]).to(classOf[BaseAuthorisedAction]).asEagerSingleton()
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
 

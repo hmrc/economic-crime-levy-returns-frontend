@@ -162,7 +162,7 @@ trait Generators {
       firstPart  <- alphaNumStringsWithMaxLength(emailPartsLength)
       secondPart <- alphaNumStringsWithMaxLength(emailPartsLength)
       thirdPart  <- alphaNumStringsWithMaxLength(emailPartsLength)
-    } yield (s"$firstPart@$secondPart.$thirdPart")
+    } yield s"$firstPart@$secondPart.$thirdPart"
   }
 
   def emailAddressMoreThanMaxLength(maxLength: Int): Gen[String] = {
@@ -171,7 +171,7 @@ trait Generators {
       firstPart  <- alphaNumStringsWithMaxLength(moreThanMax)
       secondPart <- alphaNumStringsWithMaxLength(moreThanMax)
       thirdPart  <- alphaNumStringsWithMaxLength(moreThanMax)
-    } yield (s"$firstPart@$secondPart.$thirdPart")
+    } yield s"$firstPart@$secondPart.$thirdPart"
   }
 
   def contactNumberMoreThanMaxLength(maxLength: Int): Gen[String] = {

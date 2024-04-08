@@ -25,7 +25,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.forms.CancelReturnAmendmentFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.CancelReturnAmendmentView
 
@@ -37,11 +37,11 @@ class CancelReturnAmendmentControllerSpec extends SpecBase {
   val formProvider: CancelReturnAmendmentFormProvider = new CancelReturnAmendmentFormProvider()
   val form: Form[Boolean]                             = formProvider()
 
-  def getExpectedValues(cancelReturnAmendment: Boolean): (String, Int) =
+  def getExpectedValues(cancelReturnAmendment: Boolean, eclReturn: EclReturn): (String, Int) =
     if (cancelReturnAmendment) {
       (appConfig.eclAccountUrl, 1)
     } else {
-      (routes.CheckYourAnswersController.onPageLoad().url, 0)
+      (routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)).url, 0)
     }
 
   val mockEclReturnsService: ReturnsService = mock[ReturnsService]
@@ -80,7 +80,7 @@ class CancelReturnAmendmentControllerSpec extends SpecBase {
           when(mockEclReturnsService.deleteReturn(anyString())(any()))
             .thenReturn(EitherT.fromEither[Future](Right(())))
 
-          val expected: (String, Int) = getExpectedValues(cancelReturnAmendment)
+          val expected: (String, Int) = getExpectedValues(cancelReturnAmendment, eclReturn)
 
           val result: Future[Result] =
             controller.onSubmit()(
