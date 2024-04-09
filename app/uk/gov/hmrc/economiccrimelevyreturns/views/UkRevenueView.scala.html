@@ -58,8 +58,6 @@
         content = HtmlContent(turnoverDetailsContent)
     ))
 
-    <h2 class="govuk-heading-m">@messages("ukRevenue.h2")</h2>
-
     @formHelper(action = UkRevenueController.onSubmit(mode)) {
         @hmrcCurrencyInput(CurrencyInput(
             id = "value",
@@ -67,7 +65,7 @@
             value = form("value").value,
             classes = "govuk-input--width-10",
             hint = Some(Hint(content = messages("ukRevenue.hint"))),
-            label = LabelViewModel(Text(messages("ukRevenue.heading"))).asHidden(),
+            label = LabelViewModel(Text(messages("ukRevenue.h2"))).withSize(),
             errorMessage = form("value").error.map(err => ErrorMessage(content = Text(messages(err.message, err.args: _*)), visuallyHiddenText = Some(messages("govukErrorMessage.visuallyHiddenText"))))
         ))
 

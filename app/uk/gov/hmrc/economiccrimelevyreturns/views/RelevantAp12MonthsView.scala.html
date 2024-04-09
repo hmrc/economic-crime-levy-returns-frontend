@@ -60,14 +60,10 @@
             summary = HtmlContent(accPeriod),
             content = HtmlContent(accPeriodDetails)
         ))
-        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-            <h2 class="govuk-fieldset__heading">@messages("relevantAp12Months.question")</h2>
-        </legend>
-
         @radios(
             RadiosViewModel(
                 field = form("value"),
-                legend = LegendViewModel(Empty),
+                legend = LegendViewModel(HtmlContent(HtmlFormat.escape(messages("relevantAp12Months.question")))).withSize(),
                 items = Seq(
                     RadioItem(
                         id = Some("yes"),

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk
 
+import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.LabelSize
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Content
 import uk.gov.hmrc.govukfrontend.views.viewmodels.label.Label
 
@@ -38,5 +39,9 @@ trait LabelFluency {
       label
         .copy(isPageHeading = false)
         .withCssClass("govuk-visually-hidden")
+
+    def withSize(size: LabelSize = LabelSize.Medium): Label =
+      label
+        .withCssClass(size.toString)
   }
 }

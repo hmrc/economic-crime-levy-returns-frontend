@@ -19,5 +19,6 @@ package uk.gov.hmrc.economiccrimelevyreturns.viewmodels
 sealed trait LabelSize
 
 object LabelSize {
-  case object ExtraLarge extends WithCssClass("govuk-label--xl") with LabelSize
+  case object Medium extends WithCssClass("govuk-label--m") with LabelSize
+
 }
