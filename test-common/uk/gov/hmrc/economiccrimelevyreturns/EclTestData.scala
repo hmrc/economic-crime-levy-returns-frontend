@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Medium
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn, GetEclReturnChargeDetails, GetEclReturnDeclarationDetails, GetEclReturnDetails, GetEclReturnSubmissionResponse, ObligationDetails, SessionData}
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 
 import java.time.{Instant, LocalDate}
 import scala.math.BigDecimal.RoundingMode
@@ -116,6 +116,7 @@ trait EclTestData { self: Generators =>
       contactEmailAddress                     <- emailAddress(MinMaxValues.emailMaxLength)
       contactTelephoneNumber                  <- stringFromRegex(MinMaxValues.telephoneNumberMaxLength, Regex.telephoneNumberRegex)
       obligationDetails                       <- Arbitrary.arbitrary[ObligationDetails]
+      inboundCorrespondenceDateReceived       <- Arbitrary.arbitrary[LocalDate]
       internalId                               = alphaNumericString
     } yield ValidEclReturn(
       EclReturn
@@ -132,7 +133,8 @@ trait EclTestData { self: Generators =>
           contactRole = Some(contactRole),
           contactEmailAddress = Some(contactEmailAddress),
           contactTelephoneNumber = Some(contactTelephoneNumber),
-          obligationDetails = Some(obligationDetails)
+          obligationDetails =
+            Some(obligationDetails.copy(inboundCorrespondenceDateReceived = Some(inboundCorrespondenceDateReceived)))
         ),
       EclLiabilityCalculationData(
         relevantApLength = if (relevantAp12Months) fullYear else relevantApLength,
