@@ -23,6 +23,7 @@ import play.api.http.HeaderNames
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.{FakeHeaders, FakeRequest}
+import uk.gov.hmrc.economiccrimelevyreturns.ValidObligationData
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
@@ -32,6 +33,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
 import uk.gov.hmrc.http.HttpVerbs.GET
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class DataRetrievalOrErrorActionSpec extends SpecBase {
@@ -78,7 +80,7 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
     }
 
     "refine an AuthorisedRequest into a ReturnDataRequest when no obligation details is retrieved" in forAll {
-      (eclReturn: EclReturn, internalId: String, obligationData: ObligationData) =>
+      (eclReturn: EclReturn, internalId: String, validObligationData: ValidObligationData) =>
         val eclReturnWithNoObligation = eclReturn.copy(obligationDetails = None)
 
         when(mockEclReturnService.getReturn(any())(any()))
@@ -95,7 +97,9 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
           .thenReturn(EitherT.rightT(alphaNumericString))
 
         when(mockEclAccountService.retrieveObligationData(any())).thenReturn(
-          EitherT[Future, EclAccountError, Option[ObligationData]](Future.successful(Right(Some(obligationData))))
+          EitherT[Future, EclAccountError, Option[ObligationData]](
+            Future.successful(Right(Some(validObligationData.obligationData)))
+          )
         )
 
         val result: Future[Either[Result, ReturnDataRequest[AnyContentAsEmpty.type]]] =

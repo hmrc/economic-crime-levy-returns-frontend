@@ -45,6 +45,10 @@ final case class ValidEclReturn(eclReturn: EclReturn, eclLiabilityCalculationDat
 
 final case class ValidGetEclReturnSubmissionResponse(response: GetEclReturnSubmissionResponse)
 
+final case class ValidObligationData(obligationData: ObligationData)
+
+final case class ValidObligationDetails(obligationDetails: ObligationDetails)
+
 trait EclTestData { self: Generators =>
 
   val fullYear: Int        = 365
@@ -141,6 +145,26 @@ trait EclTestData { self: Generators =>
         relevantApRevenue = relevantApRevenue,
         amlRegulatedActivityLength =
           if (carriedOutAmlRegulatedActivityForFullFy) fullYear else amlRegulatedActivityLength
+      )
+    )
+  }
+
+  implicit val arbValidObligationDetails: Arbitrary[ValidObligationDetails] = Arbitrary {
+    for {
+      obligationDetails: ObligationDetails         <- Arbitrary.arbitrary[ObligationDetails]
+      inboundCorrespondenceDateReceived: LocalDate <- Arbitrary.arbitrary[LocalDate]
+    } yield ValidObligationDetails(
+      obligationDetails.copy(inboundCorrespondenceDateReceived = Some(inboundCorrespondenceDateReceived))
+    )
+  }
+
+  implicit val arbValidObligationData: Arbitrary[ValidObligationData] = Arbitrary {
+    for {
+      obligations: Seq[Obligation]                        <- Arbitrary.arbitrary[Seq[Obligation]]
+      validObligationDetails: Seq[ValidObligationDetails] <- Arbitrary.arbitrary[Seq[ValidObligationDetails]]
+    } yield ValidObligationData(
+      ObligationData(
+        obligations.map(o => o.copy(obligationDetails = validObligationDetails.map(v => v.obligationDetails)))
       )
     )
   }
