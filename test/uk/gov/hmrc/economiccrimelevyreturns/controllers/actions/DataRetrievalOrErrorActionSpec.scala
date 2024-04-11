@@ -21,19 +21,19 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.http.HeaderNames
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-import play.api.mvc.{AnyContentAsEmpty, Result}
+import play.api.libs.json.Json
+import play.api.mvc.{AnyContentAsEmpty, Call, Result}
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.ValidObligationData
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, EclAccountError, SessionError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
-import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
 import uk.gov.hmrc.http.HttpVerbs.GET
 
-import java.time.LocalDate
 import scala.concurrent.Future
 
 class DataRetrievalOrErrorActionSpec extends SpecBase {
@@ -51,11 +51,18 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
   val dataRetrievalOrErrorAction =
     new TestDataRetrievalOrErrorAction
 
-  private def getRedirectUrl(request: AuthorisedRequest[_]) =
-    request.uri match {
-      case amendUrl if amendUrl == routes.CheckYourAnswersController.onPageLoad(AmendReturn).url =>
-        routes.NotableErrorController.returnAmendmentAlreadyRequested()
-      case _                                                                                     => routes.NotableErrorController.eclReturnAlreadySubmitted()
+  private def getRedirectUrl(request: AuthorisedRequest[_]): Call =
+    request.session.get(SessionKeys.returnType) match {
+      case Some(returnTypeString: String) =>
+        Json.fromJson[ReturnType](Json.parse(returnTypeString)).asOpt match {
+          case Some(returnType: ReturnType) =>
+            returnType match {
+              case FirstTimeReturn => routes.NotableErrorController.eclReturnAlreadySubmitted()
+              case AmendReturn     => routes.NotableErrorController.returnAmendmentAlreadyRequested()
+            }
+          case None                         => routes.NotableErrorController.answersAreInvalid()
+        }
+      case None                           => routes.NotableErrorController.answersAreInvalid()
     }
 
   "refine" should {
@@ -201,7 +208,7 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
       when(mockEclReturnService.getReturn(any())(any()))
         .thenReturn(EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(None))))
 
-      val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(FirstTimeReturn).url)
+      val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
       val authorisedRequest = AuthorisedRequest(request, internalId, testEclRegistrationReference)
 
@@ -215,7 +222,7 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
       when(mockEclReturnService.getReturn(any())(any()))
         .thenReturn(EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(None))))
 
-      val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(AmendReturn).url)
+      val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
       val authorisedRequest = AuthorisedRequest(request, internalId, testEclRegistrationReference)
 

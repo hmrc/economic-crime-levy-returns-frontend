@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.Call
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 
 class ContactNamePageNavigator extends PageNavigator {
 
@@ -30,7 +30,7 @@ class ContactNamePageNavigator extends PageNavigator {
 
   override protected def navigateInCheckMode(eclReturn: EclReturn): Call =
     eclReturn.contactName match {
-      case Some(_) => routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))
+      case Some(_) => routes.CheckYourAnswersController.onPageLoad()
       case _       => routes.NotableErrorController.answersAreInvalid()
     }
 

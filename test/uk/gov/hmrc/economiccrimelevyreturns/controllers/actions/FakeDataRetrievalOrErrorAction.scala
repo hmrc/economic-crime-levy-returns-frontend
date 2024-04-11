@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -50,9 +50,9 @@ class FakeDataRetrievalOrErrorAction(data: EclReturn, periodKey: Option[String] 
 
   private def getRedirectUrl(request: AuthorisedRequest[_]) =
     request.uri match {
-      case amendUrl if amendUrl == routes.CheckYourAnswersController.onPageLoad(AmendReturn).url =>
+      case amendUrl if amendUrl == routes.CheckYourAnswersController.onPageLoad().url =>
         routes.NotableErrorController.returnAmendmentAlreadyRequested()
-      case _                                                                                     => routes.NotableErrorController.eclReturnAlreadySubmitted()
+      case _                                                                          => routes.NotableErrorController.eclReturnAlreadySubmitted()
     }
 
 }

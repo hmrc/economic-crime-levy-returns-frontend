@@ -20,7 +20,7 @@ import org.scalacheck.Arbitrary
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 
 class AmendReasonPageNavigatorSpec extends SpecBase {
 
@@ -44,9 +44,7 @@ class AmendReasonPageNavigatorSpec extends SpecBase {
     ) { (eclReturn: EclReturn, reason: String) =>
       val updatedReturn: EclReturn = eclReturn.copy(amendReason = Some(reason))
 
-      pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad(
-        eclReturn.returnType.getOrElse(FirstTimeReturn)
-      )
+      pageNavigator.nextPage(CheckMode, updatedReturn) shouldBe routes.CheckYourAnswersController.onPageLoad()
     }
 
     "return a Call to the error page if no data" in forAll { (eclReturn: EclReturn, mode: Mode) =>

@@ -81,7 +81,7 @@ class AmendReturnSubmittedController @Inject() (
     )
   }
 
-  def generateView(
+  private def generateView(
     viewData: ViewData
   )(implicit
     request: Request[_],

@@ -23,9 +23,9 @@ import play.api.{Application, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.TestUtils
 import uk.gov.hmrc.economiccrimelevyreturns.base.WireMockHelper._
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -196,7 +196,7 @@ abstract class ISpecBase
 
         status(result)           shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(
-          routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)).url
+          routes.CheckYourAnswersController.onPageLoad().url
         )
       }
 
