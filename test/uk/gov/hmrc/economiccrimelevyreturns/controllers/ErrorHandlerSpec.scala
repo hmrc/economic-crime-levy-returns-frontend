@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, EclAccountError, EmailSubmissionError, LiabilityCalculationError, ResponseError, SessionError}
+import uk.gov.hmrc.economiccrimelevyreturns.models.errors._
 
 import scala.concurrent.Future
 
@@ -110,6 +110,66 @@ class ErrorHandlerSpec extends SpecBase with ErrorHandler {
       testError(
         LiabilityCalculationError.BadRequest(message),
         ResponseError.badRequestError(message)
+      )
+    }
+  }
+
+  "dataHandlingErrorConverter" should {
+    "return ResponseError.internalServiceError when nothing is converted" in {
+      val result: ResponseError = dataHandlingErrorConverter.convert(null)
+
+      result shouldBe ResponseError.internalServiceError(
+        "Invalid DataHandlingError",
+        ErrorCode.InternalServerError,
+        None
+      )
+    }
+  }
+
+  "eclAccountErrorConverter" should {
+    "return ResponseError.internalServiceError when nothing is converted" in {
+      val result: ResponseError = eclAccountErrorConverter.convert(null)
+
+      result shouldBe ResponseError.internalServiceError(
+        "Invalid EclAccountError",
+        ErrorCode.InternalServerError,
+        None
+      )
+    }
+  }
+
+  "eclEmailSubmissionError" should {
+    "return ResponseError.internalServiceError when nothing is converted" in {
+      val result: ResponseError = eclEmailSubmissionError.convert(null)
+
+      result shouldBe ResponseError.internalServiceError(
+        "Invalid EmailSubmissionError",
+        ErrorCode.InternalServerError,
+        None
+      )
+    }
+  }
+
+  "liabilityCalculationErrorConverter" should {
+    "return ResponseError.internalServiceError when nothing is converted" in {
+      val result: ResponseError = liabilityCalculationErrorConverter.convert(null)
+
+      result shouldBe ResponseError.internalServiceError(
+        "Invalid LiabilityCalculationError",
+        ErrorCode.InternalServerError,
+        None
+      )
+    }
+  }
+
+  "sessionErrorConverter" should {
+    "return ResponseError.internalServiceError when nothing is converted" in {
+      val result: ResponseError = sessionErrorConverter.convert(null)
+
+      result shouldBe ResponseError.internalServiceError(
+        "Invalid SessionError",
+        ErrorCode.InternalServerError,
+        None
       )
     }
   }
