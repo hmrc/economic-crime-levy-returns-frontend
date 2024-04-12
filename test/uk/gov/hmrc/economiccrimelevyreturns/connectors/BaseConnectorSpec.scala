@@ -58,6 +58,7 @@ class BaseConnectorSpec extends SpecBase {
     future(valid).onComplete {
       case Success(_) if !valid => fail()
       case Failure(_) if valid  => fail()
+      case _                    => fail()
     }
 
   "as" should {

@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedActio
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ErrorTemplate, UkRevenueView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -68,7 +68,7 @@ class UkRevenueController @Inject() (
             calculateLiability(mode, eclReturn)
           } else {
             Future.successful(Redirect(if (request.eclReturn.hasContactInfo) {
-              routes.CheckYourAnswersController.onPageLoad(request.eclReturn.returnType.getOrElse(FirstTimeReturn))
+              routes.CheckYourAnswersController.onPageLoad()
             } else {
               routes.AmountDueController.onPageLoad(CheckMode)
             }))

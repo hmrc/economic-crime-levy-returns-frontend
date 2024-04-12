@@ -28,11 +28,11 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.UkRevenueDataCleanup
 import uk.gov.hmrc.economiccrimelevyreturns.forms.UkRevenueFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import uk.gov.hmrc.economiccrimelevyreturns.models.Band._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, LiabilityCalculationError}
-import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, CalculatedLiability, CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.UkRevenueView
-import uk.gov.hmrc.economiccrimelevyreturns.models.Band._
 
 import scala.concurrent.Future
 
@@ -353,7 +353,7 @@ class UkRevenueControllerSpec extends SpecBase {
         status(result) shouldBe SEE_OTHER
 
         redirectLocation(result) shouldBe Some(
-          routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)).url
+          routes.CheckYourAnswersController.onPageLoad().url
         )
       }
   }

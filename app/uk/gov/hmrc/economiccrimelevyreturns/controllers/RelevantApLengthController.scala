@@ -23,7 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedActio
 import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantApLengthFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, FirstTimeReturn, Mode, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{ErrorTemplate, RelevantApLengthView}
@@ -105,7 +105,7 @@ class RelevantApLengthController @Inject() (
     )
   } else {
     Future.successful(Redirect(if (eclReturn.hasContactInfo) {
-      routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))
+      routes.CheckYourAnswersController.onPageLoad()
     } else {
       routes.AmountDueController.onPageLoad(CheckMode)
     }))

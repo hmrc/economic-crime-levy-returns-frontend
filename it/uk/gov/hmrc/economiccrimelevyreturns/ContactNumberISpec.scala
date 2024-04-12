@@ -70,11 +70,11 @@ class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
       status(result) shouldBe SEE_OTHER
 
       redirectLocation(result) shouldBe Some(
-        routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)).url
+        routes.CheckYourAnswersController.onPageLoad().url
       )
       status(result)           shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(
-        routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)).url
+        routes.CheckYourAnswersController.onPageLoad().url
       )
     }
   }

@@ -60,7 +60,7 @@ class CheckYourAnswersController @Inject() (
     with BaseController
     with ErrorHandler {
 
-  def onPageLoad(returnType: ReturnType): Action[AnyContent] =
+  def onPageLoad(): Action[AnyContent] =
     (authorise andThen getReturnData andThen storeUrl).async { implicit request =>
       (for {
         errors <- returnsService.getReturnValidationErrors(request.internalId)(hc).asResponseError
@@ -178,7 +178,7 @@ class CheckYourAnswersController @Inject() (
                                     .getEclReturnSubmission(periodKey, request.eclRegistrationReference)
                                     .asResponseError
                 } yield subscription).fold(
-                  _ => showSuccessPage(email, Some(band), Some(amountDue), false),
+                  _ => showSuccessPage(email, Some(band), Some(amountDue), isIncrease = false),
                   subscription =>
                     showSuccessPage(
                       email,
@@ -188,7 +188,7 @@ class CheckYourAnswersController @Inject() (
                     )
                 )
               case _                                  =>
-                Future.successful(showSuccessPage(email, None, None, false))
+                Future.successful(showSuccessPage(email, None, None, isIncrease = false))
             }
           case Left(errorPage) => Future.successful(errorPage)
         }
@@ -206,7 +206,8 @@ class CheckYourAnswersController @Inject() (
                       Json.toJson(request.eclReturn.obligationDetails)
                     ),
                     SessionKeys.amountDue         ->
-                      calculatedLiability.amountDue.amount.toString()
+                      calculatedLiability.amountDue.amount.toString(),
+                    SessionKeys.returnType        -> Json.stringify(Json.toJson(request.eclReturn.returnType))
                   )
                 }
                 val sessionData = SessionData(request.internalId, session.data)
@@ -227,7 +228,7 @@ class CheckYourAnswersController @Inject() (
     isIncrease: Boolean
   )(implicit
     request: ReturnDataRequest[AnyContent]
-  ) = {
+  ): Result = {
     def asString[T](option: Option[T]) = option match {
       case Some(value) => value.toString
       case None        => ""
@@ -238,7 +239,8 @@ class CheckYourAnswersController @Inject() (
       SessionKeys.band              -> asString(band),
       SessionKeys.amountDue         -> asString(amountDue),
       SessionKeys.isIncrease        -> isIncrease.toString,
-      SessionKeys.obligationDetails -> Json.stringify(Json.toJson(request.eclReturn.obligationDetails))
+      SessionKeys.obligationDetails -> Json.stringify(Json.toJson(request.eclReturn.obligationDetails)),
+      SessionKeys.returnType        -> Json.stringify(Json.toJson(request.eclReturn.returnType))
     ) ++ request.startAmendUrl.fold(Seq.empty[(String, String)])(url => Seq(SessionKeys.startAmendUrl -> url))
 
     Redirect(routes.AmendReturnSubmittedController.onPageLoad())

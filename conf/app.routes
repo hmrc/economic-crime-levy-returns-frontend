@@ -65,7 +65,7 @@ GET         /agent-cannot-submit-return                                   uk.gov
 
 GET         /assets/*file                                                 controllers.Assets.versioned(path = "/public", file: Asset)
 
-GET         /check-your-answers                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onPageLoad(returnType : ReturnType)
+GET         /check-your-answers                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onPageLoad()
 POST        /check-your-answers                                           uk.gov.hmrc.economiccrimelevyreturns.controllers.CheckYourAnswersController.onSubmit()
 
 GET         /confirmation                                                 uk.gov.hmrc.economiccrimelevyreturns.controllers.ReturnSubmittedController.onPageLoad()

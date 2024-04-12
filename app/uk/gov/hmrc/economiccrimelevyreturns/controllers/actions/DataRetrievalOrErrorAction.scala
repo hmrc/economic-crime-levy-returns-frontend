@@ -17,8 +17,9 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 
 import cats.data.EitherT
+import play.api.libs.json.Json
 import play.api.mvc.Results.Redirect
-import play.api.mvc.{ActionRefiner, Result, Session}
+import play.api.mvc.{ActionRefiner, Call, Result, Session}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.{ErrorHandler, routes}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, ErrorCode, ResponseError}
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
@@ -74,15 +75,23 @@ class ReturnDataRetrievalOrErrorAction @Inject() (
       }
     )
 
-  private def getRedirectUrl(request: AuthorisedRequest[_]) =
-    if (request.uri.contains("FirstTimeReturn")) {
-      routes.NotableErrorController.eclReturnAlreadySubmitted()
-    } else {
-      routes.NotableErrorController.returnAmendmentAlreadyRequested()
+  private def getRedirectUrl(request: AuthorisedRequest[_]): Call =
+    request.session.get(SessionKeys.returnType) match {
+      case Some(returnTypeString: String) =>
+        Json.fromJson[ReturnType](Json.parse(returnTypeString)).asOpt match {
+          case Some(returnType: ReturnType) =>
+            returnType match {
+              case FirstTimeReturn => routes.NotableErrorController.eclReturnAlreadySubmitted()
+              case AmendReturn     => routes.NotableErrorController.returnAmendmentAlreadyRequested()
+            }
+          case None                         => routes.NotableErrorController.answersAreInvalid()
+        }
+      case None                           => routes.NotableErrorController.answersAreInvalid()
     }
+
   private def addObligationDetails(eclReturn: EclReturn, periodKey: String)(implicit
     request: AuthorisedRequest[_]
-  ): EitherT[Future, ResponseError, EclReturn]              =
+  ): EitherT[Future, ResponseError, EclReturn] =
     if (eclReturn.obligationDetails.isEmpty) {
       for {
         obligationData <- eclAccountService.retrieveObligationData.asResponseError

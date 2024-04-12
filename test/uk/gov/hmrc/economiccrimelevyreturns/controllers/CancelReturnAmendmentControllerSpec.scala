@@ -25,7 +25,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.forms.CancelReturnAmendmentFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.CancelReturnAmendmentView
 
@@ -41,7 +41,7 @@ class CancelReturnAmendmentControllerSpec extends SpecBase {
     if (cancelReturnAmendment) {
       (appConfig.eclAccountUrl, 1)
     } else {
-      (routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn)).url, 0)
+      (routes.CheckYourAnswersController.onPageLoad().url, 0)
     }
 
   val mockEclReturnsService: ReturnsService = mock[ReturnsService]

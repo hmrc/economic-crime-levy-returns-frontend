@@ -20,9 +20,9 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
-import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
 import uk.gov.hmrc.economiccrimelevyreturns.forms.AmlRegulatedActivityLengthFormProvider
-import uk.gov.hmrc.economiccrimelevyreturns.models.{FirstTimeReturn, Mode}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.FormOps
+import uk.gov.hmrc.economiccrimelevyreturns.models.Mode
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmlRegulatedActivityLengthView, ErrorTemplate}
@@ -75,7 +75,7 @@ class AmlRegulatedActivityLengthController @Inject() (
             _ =>
               Redirect(answerChanged match {
                 case false if request.eclReturn.hasContactInfo =>
-                  routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))
+                  routes.CheckYourAnswersController.onPageLoad()
                 case _                                         =>
                   routes.AmountDueController.onPageLoad(mode)
               })

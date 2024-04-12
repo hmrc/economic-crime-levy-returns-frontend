@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.navigation
 
 import play.api.mvc.Call
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
-import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, FirstTimeReturn, NormalMode}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 
 class AmountDuePageNavigator extends PageNavigator {
 
@@ -33,7 +33,7 @@ class AmountDuePageNavigator extends PageNavigator {
       eclReturn.contactTelephoneNumber
     ) match {
       case (Some(_), Some(_), Some(_), Some(_)) =>
-        routes.CheckYourAnswersController.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))
+        routes.CheckYourAnswersController.onPageLoad()
       case _                                    => routes.ContactNameController.onPageLoad(NormalMode)
     }
 

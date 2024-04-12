@@ -35,14 +35,15 @@ class EclCalculatorService @Inject() (
   ec: ExecutionContext
 ) extends FrontendHeaderCarrierProvider {
 
-  private val FullYear: Option[Int] = Some(365)
+  private val fullYearDays          = 365
+  private val fullYear: Option[Int] = Some(fullYearDays)
 
   def calculateLiability(
     eclReturn: EclReturn
   )(implicit request: RequestHeader): EitherT[Future, LiabilityCalculationError, CalculatedLiability] =
     for {
       relevantAp12Months                     <- eclReturn.relevantAp12Months.valueOrError
-      relevantApLength                       <- (if (relevantAp12Months) FullYear else eclReturn.relevantApLength).valueOrError
+      relevantApLength                       <- (if (relevantAp12Months) fullYear else eclReturn.relevantApLength).valueOrError
       relevantApRevenue                      <- eclReturn.relevantApRevenue.valueOrError
       carriedOutAmlRegulatedActivityForFullFy = eclReturn.carriedOutAmlRegulatedActivityForFullFy.getOrElse(true)
       amlRegulatedActivityLength              = calculateAmlRegulatedActivityLength(
@@ -87,7 +88,7 @@ class EclCalculatorService @Inject() (
   ): Int =
     (carriedOutAmlRegulatedActivityForFullFy, amlRegulatedActivityLength) match {
       case (false, None)    => 0
-      case (true, _)        => FullYear.get
+      case (true, _)        => fullYear.get
       case (false, Some(_)) => amlRegulatedActivityLength.get
     }
 

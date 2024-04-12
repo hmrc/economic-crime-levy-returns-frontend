@@ -60,16 +60,19 @@ trait ErrorHandler extends Logging {
     case DataHandlingError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
     case DataHandlingError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
     case DataHandlingError.NotFound(message)                 => ResponseError.internalServiceError(message)
+    case _                                                   => ResponseError.internalServiceError("Invalid DataHandlingError")
   }
 
   implicit val eclAccountErrorConverter: Converter[EclAccountError] = {
     case EclAccountError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
     case EclAccountError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
+    case _                                                 => ResponseError.internalServiceError("Invalid EclAccountError")
   }
 
   implicit val eclEmailSubmissionError: Converter[EmailSubmissionError] = {
     case EmailSubmissionError.InternalUnexpectedError(cause, _) => ResponseError.internalServiceError(cause = cause)
     case EmailSubmissionError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
+    case _                                                      => ResponseError.internalServiceError("Invalid EmailSubmissionError")
   }
 
   implicit val liabilityCalculationErrorConverter: Converter[LiabilityCalculationError] = {
@@ -77,6 +80,7 @@ trait ErrorHandler extends Logging {
     case LiabilityCalculationError.InternalUnexpectedError(cause, _) =>
       ResponseError.internalServiceError(cause = cause)
     case LiabilityCalculationError.BadGateway(cause, code)           => ResponseError.badGateway(cause, code)
+    case _                                                           => ResponseError.internalServiceError("Invalid LiabilityCalculationError")
 
   }
 
@@ -89,5 +93,6 @@ trait ErrorHandler extends Logging {
       ResponseError.notFoundError(message = "Session not found")
     case SessionError.KeyNotFound(key)                        =>
       ResponseError.internalServiceError(message = s"Key not found in session: $key", cause = None)
+    case _                                                    => ResponseError.internalServiceError("Invalid SessionError")
   }
 }

@@ -52,19 +52,6 @@ class SessionServiceSpec extends ServiceSpec {
       await(service.get(new Session() ++ Map(key -> value), id, key).value) shouldBe Right(value)
     }
 
-    /*   "return none if get session data returns an notfound exception" in forAll(
-      nonEmptyString,
-      nonEmptyString,
-      nonEmptyString
-    ) { (id: String, key: String, value: String) =>
-      when(mockSessionConnector.get(ArgumentMatchers.eq(id))(any()))
-        .thenReturn(Future.failed(new NotFoundException("Not Found")))
-
-      val result = await(service.get(new Session(), id, key).value) shouldBe Right(None)
-      result shouldBe Right(None)
-
-    }*/
-
     "return error if key not present" in forAll(
       nonEmptyString,
       nonEmptyString,

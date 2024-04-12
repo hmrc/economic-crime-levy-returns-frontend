@@ -114,7 +114,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           val viewModel: CheckYourAnswersViewModel = CheckYourAnswersViewModel(returnDataRequest.eclReturn, None, None)
 
           val result: Future[Result] =
-            controller.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))(returnDataRequest)
+            controller.onPageLoad()(returnDataRequest)
 
           status(result) shouldBe OK
 
@@ -149,7 +149,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           )
 
         val result: Future[Result] =
-          controller.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))(returnDataRequest)
+          controller.onPageLoad()(returnDataRequest)
 
         status(result)           shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some(routes.NotableErrorController.answersAreInvalid().url)
@@ -177,7 +177,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
             )
 
           val result: Future[Result] =
-            controller.onPageLoad(validEclReturn.eclReturn.returnType.getOrElse(FirstTimeReturn))(returnDataRequest)
+            controller.onPageLoad()(returnDataRequest)
 
           status(result) shouldBe INTERNAL_SERVER_ERROR
         }
@@ -201,7 +201,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           .thenReturn(EitherT[Future, DataHandlingError, Option[DataValidationError]](Future.successful(Right(None))))
 
         val result: Future[Result] =
-          controller.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))(returnDataRequest)
+          controller.onPageLoad()(returnDataRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
@@ -233,7 +233,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
             )
 
           val result: Future[Result] =
-            controller.onPageLoad(eclReturn.returnType.getOrElse(FirstTimeReturn))(returnDataRequest)
+            controller.onPageLoad()(returnDataRequest)
 
           status(result) shouldBe INTERNAL_SERVER_ERROR
         }
