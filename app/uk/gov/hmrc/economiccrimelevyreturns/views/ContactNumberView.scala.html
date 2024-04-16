@@ -41,7 +41,7 @@
         @govukInput(
             InputViewModel(
                 field = form("value"),
-                label = LabelViewModel(HtmlContent(HtmlFormat.escape(messages("contactNumber.label"))))
+                label = LabelViewModel(HtmlContent(HtmlFormat.escape(messages("contactNumber.label")))).withCssClass("govuk-body govuk-!-font-weight-bold")
             ).withWidth(Fixed20).withHint(Hint(content = Text(messages("contactNumber.hint"))))
         )
 
