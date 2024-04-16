@@ -34,6 +34,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, 
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
 import uk.gov.hmrc.http.HttpVerbs.GET
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class DataRetrievalOrErrorActionSpec extends SpecBase {
@@ -98,16 +99,25 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
           )
 
         when(mockSessionService.getOptional(any(), any(), any())(any()))
-          .thenReturn(EitherT.rightT(Some(alphaNumericString)))
+          .thenReturn(EitherT[Future, SessionError, Option[String]](Future.successful(Right(Some(alphaNumericString)))))
 
         when(mockSessionService.get(any(), any(), ArgumentMatchers.eq(SessionKeys.periodKey))(any()))
-          .thenReturn(EitherT.rightT(alphaNumericString))
+          .thenReturn(EitherT[Future, SessionError, String](Future.successful(Right(alphaNumericString))))
 
         when(mockEclAccountService.retrieveObligationData(any())).thenReturn(
           EitherT[Future, EclAccountError, Option[ObligationData]](
             Future.successful(Right(Some(validObligationData.obligationData)))
           )
         )
+
+        when(mockEclReturnService.getOrCreateReturn(any(), any())(any(), any()))
+          .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
+
+        when(mockEclReturnService.upsertReturn(any())(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right())))
+
+        when(mockEclReturnService.deleteReturn(any())(any()))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right())))
 
         val result: Future[Either[Result, ReturnDataRequest[AnyContentAsEmpty.type]]] =
           dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, testEclRegistrationReference))
