@@ -319,7 +319,7 @@ notRegistered.body1 = You cannot submit an Economic Crime Levy (ECL) return.
 notRegistered.body2 = This could be because you have not registered for the Economic Crime Levy.
 notRegistered.body3 = If you have already registered and received an ECL reference number, you will need to add the levy to your <a href="{0}" class="govuk-link">business tax account</a>.
 
-agentCannotSubmitReturn.title = You cannot use this service to submit an Economic Crime Levy return
+agentCannotSubmitReturn.title = You cannot use this service to submit an Economic Crime Levy return - Economic Crime Levy - GOV.UK
 agentCannotSubmitReturn.heading = You cannot use this service to submit an Economic Crime Levy return
 agentCannotSubmitReturn.p1 = Agents cannot submit an Economic Crime Levy (ECL) return on behalf of a client.
 agentCannotSubmitReturn.p2 = Your client must submit a return using their own user ID and password.
