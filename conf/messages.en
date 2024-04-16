@@ -322,7 +322,7 @@ notRegistered.body3 = If you have already registered and received an ECL referen
 agentCannotSubmitReturn.title = You cannot use this service to submit an Economic Crime Levy return
 agentCannotSubmitReturn.heading = You cannot use this service to submit an Economic Crime Levy return
 agentCannotSubmitReturn.p1 = Agents cannot submit an Economic Crime Levy (ECL) return on behalf of a client.
-agentCannotSubmitReturn.p2 = Your client must submit a return using their own Government Gateway ID.
+agentCannotSubmitReturn.p2 = Your client must submit a return using their own user ID and password.
 agentCannotSubmitReturn.p3 = Go to your {0}.
 agentCannotSubmitReturn.p3.link = <a href="https://www.gov.uk/guidance/sign-in-to-your-agent-services-account" class="govuk-link">agent services account</a>
 

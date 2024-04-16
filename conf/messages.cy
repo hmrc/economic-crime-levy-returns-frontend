@@ -319,7 +319,7 @@ notRegistered.body3 = Os ydych eisoes wedi cofrestru ac wedi cael cyfeirnod ECL,
 agentCannotSubmitReturn.title = Ni allwch ddefnyddio’r gwasanaeth hwn i gyflwyno datganiad Ardoll Troseddau Economaidd
 agentCannotSubmitReturn.heading = Ni allwch ddefnyddio’r gwasanaeth hwn i gyflwyno datganiad Ardoll Troseddau Economaidd
 agentCannotSubmitReturn.p1 = Ni all asiantau gyflwyno datganiad Ardoll Troseddau Economaidd (ECL) ar ran cleient.
-agentCannotSubmitReturn.p2 = Mae’n rhaid i’ch cleient gyflwyno datganiad drwy ddefnyddio’i Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth.
+agentCannotSubmitReturn.p2 = Rhaid i''ch cleient gofrestru gan ddefnyddio ei ID defnyddiwr a''i gyfrinair ei hun.
 agentCannotSubmitReturn.p3 = Ewch i’ch {0}.
 agentCannotSubmitReturn.p3.link = <a href="https://www.gov.uk/guidance/sign-in-to-your-agent-services-account" class="govuk-link">cyfrif gwasanaethau asiant</a>
 
