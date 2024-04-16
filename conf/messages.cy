@@ -316,7 +316,7 @@ notRegistered.body1 = Ni allwch gyflwyno datganiad Ardoll Troseddau Economaidd (
 notRegistered.body2 = Gall hyn fod oherwydd nad ydych wedi cofrestru ar gyfer yr Ardoll Troseddau Economaidd.
 notRegistered.body3 = Os ydych eisoes wedi cofrestru ac wedi cael cyfeirnod ECL, bydd angen i chi ychwanegu’r ardoll i’ch cyfrif treth busnes.
 
-agentCannotSubmitReturn.title = Ni allwch ddefnyddio’r gwasanaeth hwn i gyflwyno datganiad Ardoll Troseddau Economaidd - Ardoll Troseddau Economaidd - GOV.UK
+agentCannotSubmitReturn.title = Ni allwch ddefnyddio’r gwasanaeth hwn i gyflwyno datganiad Ardoll Troseddau Economaidd
 agentCannotSubmitReturn.heading = Ni allwch ddefnyddio’r gwasanaeth hwn i gyflwyno datganiad Ardoll Troseddau Economaidd
 agentCannotSubmitReturn.p1 = Ni all asiantau cyflwyno datganiad Ardoll Troseddau Economaidd (ECL) ar ran cleient.
 agentCannotSubmitReturn.p2 = Rhaid i''ch cleient gyflwyno datganiad gan ddefnyddio ei ID defnyddiwr a''i gyfrinair ei hun.
