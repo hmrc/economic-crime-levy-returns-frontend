@@ -65,13 +65,14 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
   s"GET ${routes.StartController.onPageLoad(":periodKey").url}" should {
     behave like authorisedActionRoute(routes.StartController.onPageLoad(testPeriodKey))
 
-    "respond with 200 status and the start HTML view if the period key is for an open obligation" in {
+    "respond with 200 status and the correct HTML view if the period key is for an open obligation and the due date is 30/09/2023" in {
       stubAuthorised()
 
       val openObligation = random[ObligationDetails].copy(
         status = Open,
         inboundCorrespondenceFromDate = LocalDate.parse("2022-04-01"),
         inboundCorrespondenceToDate = LocalDate.parse("2023-03-31"),
+        inboundCorrespondenceDueDate = LocalDate.parse("2023-09-30"),
         periodKey = testPeriodKey
       )
 
@@ -93,6 +94,37 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
 
       status(result) shouldBe OK
       html(result)     should include("Submit your Economic Crime Levy return for 2022-2023")
+    }
+
+    "respond with 200 status and the correct HTML view if the period key is for an open obligation and the due date is 30/09/2024" in {
+      stubAuthorised()
+
+      val openObligation = random[ObligationDetails].copy(
+        status = Open,
+        inboundCorrespondenceFromDate = LocalDate.parse("2023-04-01"),
+        inboundCorrespondenceToDate = LocalDate.parse("2024-03-31"),
+        inboundCorrespondenceDueDate = LocalDate.parse("2024-09-30"),
+        periodKey = testPeriodKey
+      )
+
+      val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
+      val emptyReturn    = EclReturn.empty(testInternalId, Some(FirstTimeReturn))
+
+      val eclRegistrationReference = random[String]
+      val eclRegistrationDate      = "20230901"
+
+      stubQueryKnownFacts(eclRegistrationReference, eclRegistrationDate)
+      stubGetObligations(obligationData)
+
+      stubGetReturn(emptyReturn)
+      stubUpsertReturn(emptyReturn.copy(obligationDetails = Some(openObligation)))
+      stubGetSessionEmpty()
+      stubUpsertSession()
+
+      val result = callRoute(FakeRequest(routes.StartController.onPageLoad(openObligation.periodKey)))
+
+      status(result) shouldBe OK
+      html(result)     should include("Submit your Economic Crime Levy return for 2023-2024")
     }
 
     "respond with 200 status and no obligation for period HTML view if there is no obligation for the period key" in {

@@ -68,12 +68,10 @@ class ReturnDataRetrievalAction @Inject() (
   private def addObligationDetails(eclReturn: EclReturn, periodKey: String)(implicit
     request: AuthorisedRequest[_]
   ): EitherT[Future, ResponseError, EclReturn] =
-    if (eclReturn.obligationDetails.isEmpty) {
-      for {
-        obligationData <- eclAccountService.retrieveObligationData.asResponseError
-        updatedReturn  <- processObligationDetails(eclReturn, obligationData, periodKey).asResponseError
-      } yield updatedReturn
-    } else { EitherT.fromEither[Future](Right(eclReturn)) }
+    for {
+      obligationData <- eclAccountService.retrieveObligationData.asResponseError
+      updatedReturn  <- processObligationDetails(eclReturn, obligationData, periodKey).asResponseError
+    } yield updatedReturn
 
   private def processObligationDetails(eclReturn: EclReturn, obligationData: Option[ObligationData], periodKey: String)(
     implicit request: AuthorisedRequest[_]

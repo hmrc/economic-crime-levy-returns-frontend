@@ -33,8 +33,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, Ec
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
 import uk.gov.hmrc.http.HttpVerbs.GET
-
-import java.time.LocalDate
 import scala.concurrent.Future
 
 class DataRetrievalOrErrorActionSpec extends SpecBase {
