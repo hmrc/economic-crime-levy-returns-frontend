@@ -89,6 +89,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
       stubUpsertReturn(emptyReturn.copy(obligationDetails = Some(openObligation)))
       stubGetSessionEmpty()
       stubUpsertSession()
+      stubDeleteReturn()
 
       val result = callRoute(FakeRequest(routes.StartController.onPageLoad(openObligation.periodKey)))
 
@@ -120,6 +121,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
       stubUpsertReturn(emptyReturn.copy(obligationDetails = Some(openObligation)))
       stubGetSessionEmpty()
       stubUpsertSession()
+      stubDeleteReturn()
 
       val result = callRoute(FakeRequest(routes.StartController.onPageLoad(openObligation.periodKey)))
 
