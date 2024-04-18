@@ -92,12 +92,10 @@ class ReturnDataRetrievalOrErrorAction @Inject() (
   private def addObligationDetails(eclReturn: EclReturn, periodKey: String)(implicit
     request: AuthorisedRequest[_]
   ): EitherT[Future, ResponseError, EclReturn] =
-    if (eclReturn.obligationDetails.isEmpty) {
-      for {
-        obligationData <- eclAccountService.retrieveObligationData.asResponseError
-        updatedReturn  <- processObligationDetails(eclReturn, obligationData, periodKey).asResponseError
-      } yield updatedReturn
-    } else { EitherT.fromEither[Future](Right(eclReturn)) }
+    for {
+      obligationData <- eclAccountService.retrieveObligationData.asResponseError
+      updatedReturn  <- processObligationDetails(eclReturn, obligationData, periodKey).asResponseError
+    } yield updatedReturn
 
   private def processObligationDetails(eclReturn: EclReturn, obligationData: Option[ObligationData], periodKey: String)(
     implicit request: AuthorisedRequest[_]
@@ -138,20 +136,18 @@ class ReturnDataRetrievalOrErrorAction @Inject() (
     implicit request: AuthorisedRequest[_]
   ): EitherT[Future, DataHandlingError, EclReturn] = {
     val optPeriodKey = eclReturn.obligationDetails.map(_.periodKey)
-    if (optPeriodKey.contains(periodKey) || optPeriodKey.isEmpty) {
-      val updatedReturn =
-        eclReturn.copy(obligationDetails = Some(obligationDetails), returnType = Some(FirstTimeReturn))
-      eclReturnService.upsertReturn(updatedReturn)
-      EitherT.fromEither[Future](Right(updatedReturn))
-    } else {
-      for {
-        _            <- eclReturnService.deleteReturn(request.internalId)
-        updatedReturn = EclReturn
+
+    for {
+      _            <- eclReturnService.deleteReturn(request.internalId)
+      updatedReturn = if (optPeriodKey.contains(periodKey) || optPeriodKey.isEmpty) {
+                        eclReturn.copy(obligationDetails = Some(obligationDetails), returnType = Some(FirstTimeReturn))
+                      } else {
+                        EclReturn
                           .empty(request.internalId, None)
                           .copy(obligationDetails = Some(obligationDetails), returnType = Some(FirstTimeReturn))
-        _            <- eclReturnService.upsertReturn(updatedReturn)
-      } yield updatedReturn
-    }
+                      }
+      _            <- eclReturnService.upsertReturn(updatedReturn)
+    } yield updatedReturn
   }
 
   private def getStartAmendUrl(returnType: Option[ReturnType], session: Session, internalId: String)(implicit
