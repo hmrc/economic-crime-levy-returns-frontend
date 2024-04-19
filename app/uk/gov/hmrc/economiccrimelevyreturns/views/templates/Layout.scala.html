@@ -25,8 +25,7 @@
         govukBackLink: GovukBackLink,
         hmrcHead: HmrcHead,
         hmrcTimeoutDialog: HmrcTimeoutDialog,
-        hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
-        betaBanner: StandardBetaBanner
+        hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper
 )
 
 @(
@@ -94,9 +93,6 @@
     serviceURLs = ServiceURLs(
         serviceUrl = startServiceUrl,
         signOutUrl = Some(SignOutController.signOut.url)
-    ),
-    banners = Banners(
-        phaseBanner = Some(betaBanner(appConfig.feedbackUrl))
     ),
     isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
     templateOverrides = TemplateOverrides(

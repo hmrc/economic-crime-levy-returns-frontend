@@ -112,10 +112,10 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
           .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
 
         when(mockEclReturnService.upsertReturn(any())(any()))
-          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right())))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         when(mockEclReturnService.deleteReturn(any())(any()))
-          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right())))
+          .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
 
         val result: Future[Either[Result, ReturnDataRequest[AnyContentAsEmpty.type]]] =
           dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, testEclRegistrationReference))
