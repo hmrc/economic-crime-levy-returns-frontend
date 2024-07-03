@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclCalculatorConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, ObligationDetails}
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.Future
@@ -39,12 +39,13 @@ class EclCalculatorServiceSpec extends ServiceSpec {
       relevantApLength = Some(random[Int]),
       relevantApRevenue = Some(random[BigDecimal]),
       carriedOutAmlRegulatedActivityForFullFy = Some(random[Boolean]),
-      amlRegulatedActivityLength = Some(random[Int])
+      amlRegulatedActivityLength = Some(random[Int]),
+      obligationDetails = Some(random[ObligationDetails])
     )
 
   "calculateLiability" should {
     "returns normally if success" in forAll { (eclReturn: EclReturn, calculatedLiability: CalculatedLiability) =>
-      when(mockEclCalculatorConnector.calculateLiability(any(), any(), any())(any()))
+      when(mockEclCalculatorConnector.calculateLiability(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(calculatedLiability))
 
       val result = await(service.calculateLiability(getValidReturn(eclReturn))(fakeRequest).value)
@@ -54,13 +55,13 @@ class EclCalculatorServiceSpec extends ServiceSpec {
     "return error if failure" in forAll { (eclReturn: EclReturn, is5xxError: Boolean) =>
       val code = getErrorCode(is5xxError)
 
-      when(mockEclCalculatorConnector.calculateLiability(any(), any(), any())(any()))
+      when(mockEclCalculatorConnector.calculateLiability(any(), any(), any(), any())(any()))
         .thenReturn(Future.failed(testException))
 
       await(service.calculateLiability(getValidReturn(eclReturn))(fakeRequest).value) shouldBe
         Left(LiabilityCalculationError.InternalUnexpectedError(Some(testException)))
 
-      when(mockEclCalculatorConnector.calculateLiability(any(), any(), any())(any()))
+      when(mockEclCalculatorConnector.calculateLiability(any(), any(), any(), any())(any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
       await(service.calculateLiability(getValidReturn(eclReturn))(fakeRequest).value) shouldBe

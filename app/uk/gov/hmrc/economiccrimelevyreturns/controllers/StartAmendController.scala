@@ -67,7 +67,7 @@ class StartAmendController @Inject() (
         {
           case Some(obligationData) =>
             if (appConfig.getEclReturnEnabled) {
-              routeToAmendReason(periodKey, request.eclRegistrationReference)
+              routeToAmendReason(periodKey, request.eclRegistrationReference, obligationData)
             } else {
               Future.successful(startAmendJourney(returnNumber, obligationData, startAmendUrl))
             }
@@ -99,13 +99,14 @@ class StartAmendController @Inject() (
         )
       )
 
-  private def routeToAmendReason(periodKey: String, eclRegistrationReference: String)(implicit
+  private def routeToAmendReason(periodKey: String, eclRegistrationReference: String, obligation: ObligationDetails)(
+    implicit
     hc: HeaderCarrier,
     request: AuthorisedRequest[AnyContent]
   ): Future[Result] =
     (for {
       eclReturnSubmission <- returnsService.getEclReturnSubmission(periodKey, eclRegistrationReference).asResponseError
-      calculatedLiability <- getCalculatedLiability(eclReturnSubmission)
+      calculatedLiability <- getCalculatedLiability(eclReturnSubmission, obligation)
       eclReturn           <- returnsService.getReturn(request.internalId).asResponseError
       updatedReturn       <- transformEclReturnSubmissionToEclReturn(eclReturnSubmission, calculatedLiability, eclReturn)
       unit                <- returnsService.upsertReturn(updatedReturn).asResponseError
@@ -127,14 +128,16 @@ class StartAmendController @Inject() (
       .asResponseError
 
   private def getCalculatedLiability(
-    eclReturnSubmission: GetEclReturnSubmissionResponse
+    eclReturnSubmission: GetEclReturnSubmissionResponse,
+    obligation: ObligationDetails
   )(implicit hc: HeaderCarrier): EitherT[Future, ResponseError, CalculatedLiability] = {
     val returnDetails = eclReturnSubmission.returnDetails
     eclCalculatorService
       .getCalculatedLiability(
         relevantApLength = returnDetails.accountingPeriodLength,
         relevantApRevenue = returnDetails.accountingPeriodRevenue,
-        amlRegulatedActivityLength = returnDetails.numberOfDaysRegulatedActivityTookPlace.getOrElse(0)
+        amlRegulatedActivityLength = returnDetails.numberOfDaysRegulatedActivityTookPlace.getOrElse(0),
+        obligation
       )
       .asResponseError
   }

@@ -18,7 +18,12 @@ package uk.gov.hmrc.economiccrimelevyreturns.models
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class CalculateLiabilityRequest(amlRegulatedActivityLength: Int, relevantApLength: Int, ukRevenue: Long)
+final case class CalculateLiabilityRequest(
+  amlRegulatedActivityLength: Int,
+  relevantApLength: Int,
+  ukRevenue: Long,
+  year: Int
+)
 
 object CalculateLiabilityRequest {
   implicit val format: OFormat[CalculateLiabilityRequest] = Json.format[CalculateLiabilityRequest]

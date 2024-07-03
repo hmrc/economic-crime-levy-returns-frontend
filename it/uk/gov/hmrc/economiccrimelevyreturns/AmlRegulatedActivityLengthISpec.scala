@@ -18,7 +18,12 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
     val updatedReturn       = eclReturn.copy(amlRegulatedActivityLength = Some(length))
     val calculatedLiability = random[CalculatedLiability]
     stubCalculateLiability(
-      CalculateLiabilityRequest(length, fullYear, ukRevenue.longValue),
+      CalculateLiabilityRequest(
+        length,
+        fullYear,
+        ukRevenue.longValue,
+        eclReturn.obligationDetails.get.inboundCorrespondenceFromDate.getYear
+      ),
       calculatedLiability
     )
     updatedReturn.copy(calculatedLiability = Some(calculatedLiability))

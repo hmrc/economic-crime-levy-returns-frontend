@@ -50,21 +50,6 @@ class ReturnsConnector @Inject() (
   def deleteReturn(internalId: String)(implicit hc: HeaderCarrier): Future[Unit] =
     httpClient.delete(url"$eclReturnsUrl/returns/$internalId").executeAndExpect(NO_CONTENT)
 
-  def calculateLiability(amlRegulatedActivityLength: Int, relevantApLength: Int, relevantApRevenue: Long)(implicit
-    hc: HeaderCarrier
-  ): Future[CalculatedLiability] = {
-    val calculatedLiabilityRequest = CalculateLiabilityRequest(
-      amlRegulatedActivityLength = amlRegulatedActivityLength,
-      relevantApLength = relevantApLength,
-      ukRevenue = relevantApRevenue
-    )
-
-    httpClient
-      .post(url"$eclReturnsUrl/calculate-liability")
-      .withBody(Json.toJson(calculatedLiabilityRequest))
-      .executeAndDeserialise[CalculatedLiability]
-  }
-
   def validateEclReturn(
     internalId: String
   )(implicit hc: HeaderCarrier): OptionT[Future, String] =

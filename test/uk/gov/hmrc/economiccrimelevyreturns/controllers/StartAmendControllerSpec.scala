@@ -111,7 +111,7 @@ class StartAmendControllerSpec extends SpecBase {
         when(mockSessionService.upsert(any())(any()))
           .thenReturn(EitherT.right(unit))
 
-        when(mockEclLiabilityService.getCalculatedLiability(any(), any(), any())(any()))
+        when(mockEclLiabilityService.getCalculatedLiability(any(), any(), any(), any())(any()))
           .thenReturn(
             EitherT[Future, LiabilityCalculationError, CalculatedLiability](
               Future.successful(Right(calculatedLiability))
@@ -268,7 +268,7 @@ class StartAmendControllerSpec extends SpecBase {
             )
           )
 
-        when(mockEclLiabilityService.getCalculatedLiability(any(), any(), any())(any()))
+        when(mockEclLiabilityService.getCalculatedLiability(any(), any(), any(), any())(any()))
           .thenReturn(
             EitherT[Future, LiabilityCalculationError, CalculatedLiability](
               Future.successful(Left(LiabilityCalculationError.InternalUnexpectedError(None, None)))
@@ -324,7 +324,7 @@ class StartAmendControllerSpec extends SpecBase {
             )
           )
 
-        when(mockEclLiabilityService.getCalculatedLiability(any(), any(), any())(any()))
+        when(mockEclLiabilityService.getCalculatedLiability(any(), any(), any(), any())(any()))
           .thenReturn(
             EitherT[Future, LiabilityCalculationError, CalculatedLiability](
               Future.successful(Right(calculatedLiability))

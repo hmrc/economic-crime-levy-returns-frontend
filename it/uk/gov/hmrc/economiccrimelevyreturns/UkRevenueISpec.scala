@@ -76,7 +76,15 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
       )
 
       stubUpsertReturn(updatedReturn)
-      stubCalculateLiability(CalculateLiabilityRequest(fullYear, fullYear, ukRevenue.toLong), calculatedLiability)
+      stubCalculateLiability(
+        CalculateLiabilityRequest(
+          fullYear,
+          fullYear,
+          ukRevenue.toLong,
+          eclReturn.obligationDetails.get.inboundCorrespondenceFromDate.getYear
+        ),
+        calculatedLiability
+      )
       stubUpsertReturn(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))
 
       val result = callRoute(
@@ -114,7 +122,12 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
       stubUpsertReturn(updatedReturn)
       stubCalculateLiability(
-        CalculateLiabilityRequest(fullYear, fullYear, ukRevenue.toLong),
+        CalculateLiabilityRequest(
+          fullYear,
+          fullYear,
+          ukRevenue.toLong,
+          eclReturn.obligationDetails.get.inboundCorrespondenceFromDate.getYear
+        ),
         calculatedLiability
       )
       stubUpsertReturn(updatedReturn.copy(calculatedLiability = Some(calculatedLiability)))

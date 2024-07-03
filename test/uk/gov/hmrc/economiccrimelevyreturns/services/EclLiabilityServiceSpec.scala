@@ -19,6 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.scalacheck.Gen
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.economiccrimelevyreturns.ValidEclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclCalculatorConnector
@@ -26,7 +27,6 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
 import uk.gov.hmrc.http.UpstreamErrorResponse
-import play.api.http.Status.INTERNAL_SERVER_ERROR
 
 import scala.concurrent.Future
 
@@ -41,7 +41,8 @@ class EclLiabilityServiceSpec extends SpecBase {
           mockEclCalculatorConnector.calculateLiability(
             ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength),
             ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApLength),
-            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue)
+            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue),
+            ArgumentMatchers.eq(validEclReturn.eclReturn.obligationDetails.get.inboundCorrespondenceFromDate.getYear)
           )(any())
         ).thenReturn(Future.successful(calculatedLiability))
 
@@ -80,7 +81,8 @@ class EclLiabilityServiceSpec extends SpecBase {
         mockEclCalculatorConnector.calculateLiability(
           ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength),
           ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApLength),
-          ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue)
+          ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue),
+          ArgumentMatchers.eq(validEclReturn.eclReturn.obligationDetails.get.inboundCorrespondenceFromDate.getYear)
         )(any())
       ).thenReturn(Future.failed(UpstreamErrorResponse("Internal server error", errorCode)))
 
@@ -119,7 +121,8 @@ class EclLiabilityServiceSpec extends SpecBase {
           mockEclCalculatorConnector.calculateLiability(
             ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength),
             ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApLength),
-            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue)
+            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue),
+            ArgumentMatchers.eq(validEclReturn.eclReturn.obligationDetails.get.inboundCorrespondenceFromDate.getYear)
           )(any())
         ).thenReturn(Future.successful(calculatedLiability))
 
@@ -128,7 +131,8 @@ class EclLiabilityServiceSpec extends SpecBase {
             .getCalculatedLiability(
               validEclReturn.eclLiabilityCalculationData.relevantApLength,
               validEclReturn.eclLiabilityCalculationData.relevantApRevenue,
-              validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength
+              validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength,
+              validEclReturn.eclReturn.obligationDetails.get
             )
             .value
         )
@@ -144,7 +148,8 @@ class EclLiabilityServiceSpec extends SpecBase {
           mockEclCalculatorConnector.calculateLiability(
             ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength),
             ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApLength),
-            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue)
+            ArgumentMatchers.eq(validEclReturn.eclLiabilityCalculationData.relevantApRevenue),
+            ArgumentMatchers.eq(validEclReturn.eclReturn.obligationDetails.get.inboundCorrespondenceFromDate.getYear)
           )(any())
         ).thenReturn(Future.failed(UpstreamErrorResponse("Internal server error", errorCode)))
       )
@@ -154,7 +159,8 @@ class EclLiabilityServiceSpec extends SpecBase {
           .getCalculatedLiability(
             validEclReturn.eclLiabilityCalculationData.relevantApLength,
             validEclReturn.eclLiabilityCalculationData.relevantApRevenue,
-            validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength
+            validEclReturn.eclLiabilityCalculationData.amlRegulatedActivityLength,
+            validEclReturn.eclReturn.obligationDetails.get
           )
           .value
       )
