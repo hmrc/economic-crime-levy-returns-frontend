@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
@@ -24,7 +23,7 @@ import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.economiccrimelevyreturns.ValidGetEclReturnSubmissionResponse
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, SubmitEclReturnResponse}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SubmitEclReturnResponse}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HttpResponse, StringContextOps, UpstreamErrorResponse}
 
@@ -269,25 +268,6 @@ class ReturnsConnectorSpec extends SpecBase {
           code shouldEqual errorCode
         case _                                             => fail("expected UpstreamErrorResponse when an error is received from the returns service")
       }
-    }
-
-    "return calculated liability" in {
-      beforeEach()
-
-      val expectedUrl         = url"$eclReturnsUrl/calculate-liability"
-      val calculatedLiability = random[CalculatedLiability]
-
-      when(mockHttpClient.post(ArgumentMatchers.eq(expectedUrl))(any()))
-        .thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.withBody(any())(any(), any(), any()))
-        .thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
-        .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(Json.toJson(calculatedLiability)))))
-
-      val result = await(connector.calculateLiability(random[Int], random[Int], random[Long]))
-
-      result shouldBe calculatedLiability
-
     }
   }
 }

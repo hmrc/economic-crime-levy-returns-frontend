@@ -19,7 +19,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.services
 import cats.data.EitherT
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclCalculatorConnector
-import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
+import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, ObligationDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
@@ -45,6 +45,7 @@ class EclCalculatorService @Inject() (
       relevantAp12Months                     <- eclReturn.relevantAp12Months.valueOrError
       relevantApLength                       <- (if (relevantAp12Months) fullYear else eclReturn.relevantApLength).valueOrError
       relevantApRevenue                      <- eclReturn.relevantApRevenue.valueOrError
+      obligationDetails                      <- eclReturn.obligationDetails.valueOrError
       carriedOutAmlRegulatedActivityForFullFy = eclReturn.carriedOutAmlRegulatedActivityForFullFy.getOrElse(true)
       amlRegulatedActivityLength              = calculateAmlRegulatedActivityLength(
                                                   carriedOutAmlRegulatedActivityForFullFy,
@@ -53,20 +54,27 @@ class EclCalculatorService @Inject() (
       response                               <- getCalculatedLiability(
                                                   relevantApLength = relevantApLength,
                                                   relevantApRevenue = relevantApRevenue,
-                                                  amlRegulatedActivityLength = amlRegulatedActivityLength
+                                                  amlRegulatedActivityLength = amlRegulatedActivityLength,
+                                                  obligationDetails = obligationDetails
                                                 )
     } yield response
 
   def getCalculatedLiability(
     relevantApLength: Int,
     relevantApRevenue: BigDecimal,
-    amlRegulatedActivityLength: Int
+    amlRegulatedActivityLength: Int,
+    obligationDetails: ObligationDetails
   )(implicit
     hc: HeaderCarrier
   ): EitherT[Future, LiabilityCalculationError, CalculatedLiability] =
     EitherT {
       eclCalculatorConnector
-        .calculateLiability(amlRegulatedActivityLength, relevantApLength, relevantApRevenue)
+        .calculateLiability(
+          amlRegulatedActivityLength,
+          relevantApLength,
+          relevantApRevenue,
+          obligationDetails.inboundCorrespondenceFromDate.getYear
+        )
         .map {
           Right(_)
         }

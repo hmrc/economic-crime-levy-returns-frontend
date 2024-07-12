@@ -39,13 +39,19 @@ class EclCalculatorConnector @Inject() (
 
   private val eclCalculatorUrl: String = s"${appConfig.eclCalculatorBaseUrl}/economic-crime-levy-calculator"
 
-  def calculateLiability(amlRegulatedActivityLength: Int, relevantApLength: Int, relevantApRevenue: BigDecimal)(implicit
+  def calculateLiability(
+    amlRegulatedActivityLength: Int,
+    relevantApLength: Int,
+    relevantApRevenue: BigDecimal,
+    taxYearStart: Int
+  )(implicit
     hc: HeaderCarrier
   ): Future[CalculatedLiability] = {
     val body = CalculateLiabilityRequest(
       amlRegulatedActivityLength = amlRegulatedActivityLength,
       relevantApLength = relevantApLength,
-      ukRevenue = relevantApRevenue.toLong
+      ukRevenue = relevantApRevenue.toLong,
+      year = taxYearStart
     )
 
     retryFor[CalculatedLiability]("ECL Calculator Connector - calculate liability")(retryCondition) {

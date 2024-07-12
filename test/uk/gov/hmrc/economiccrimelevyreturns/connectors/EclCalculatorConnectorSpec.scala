@@ -49,7 +49,8 @@ class EclCalculatorConnectorSpec extends SpecBase {
           connector.calculateLiability(
             calculateLiabilityRequest.amlRegulatedActivityLength,
             calculateLiabilityRequest.relevantApLength,
-            calculateLiabilityRequest.ukRevenue
+            calculateLiabilityRequest.ukRevenue,
+            calculateLiabilityRequest.year
           )
         )
 
@@ -69,7 +70,7 @@ class EclCalculatorConnectorSpec extends SpecBase {
         when(mockRequestBuilder.execute[HttpResponse](any(), any()))
           .thenReturn(Future.successful(HttpResponse.apply(errorCode, "Internal server error")))
 
-        Try(await(connector.calculateLiability(any(), any(), any()))) match {
+        Try(await(connector.calculateLiability(any(), any(), any(), any()))) match {
           case Failure(UpstreamErrorResponse(_, code, _, _)) =>
             code shouldEqual errorCode
           case _                                             => fail("expected UpstreamErrorResponse when an error is received from the account service")
