@@ -17,7 +17,7 @@ date.month = Month
 date.year = Year
 
 timeout.title = You’re about to be signed out
-timeout.message = For security reasons, you will be signed out of this service in
+timeout.message = For your security, we will sign you out in
 timeout.keepAlive = Stay signed in
 timeout.signOut = Sign out
 
@@ -311,7 +311,7 @@ exit.survey = {0} to share your feedback on this service.
 
 signedOut.title = For your security, we signed you out
 signedOut.heading = For your security, we signed you out
-signedOut.guidance = We saved your answers.
+signedOut.guidance = We saved your answers for 15 minutes.
 
 notRegistered.title = You must register for the Economic Crime Levy before you submit a return - Economic Crime Levy - GOV.UK
 notRegistered.heading = You must register for the Economic Crime Levy before you can submit a return
