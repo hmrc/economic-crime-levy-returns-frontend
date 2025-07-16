@@ -67,7 +67,7 @@
                     countdown = Some(appConfig.countdown),
                     keepAliveUrl = Some(uk.gov.hmrc.hmrcfrontend.controllers.routes.KeepAliveController.keepAlive.url),
                     keepAliveButtonText = Some(messages("timeout.keepAlive")),
-                    signOutUrl = Some(SignOutController.signOutNoSurvey.url),
+                    signOutUrl = Some(appConfig.basGatewayLoggedOutUrl),
                     signOutButtonText = Some(messages("timeout.signOut")),
                     title = Some(messages("timeout.title")),
                     message = Some(messages("timeout.message"))
