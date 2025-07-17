@@ -36,13 +36,6 @@ class AppConfig @Inject() (configuration: Configuration, servicesConfig: Service
   def feedbackUrl(implicit request: RequestHeader): String =
     s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier&backUrl=${Redirect(host + request.uri)}"
 
-  val platformHost: Option[String] = configuration.getOptional[String]("platform.frontend.host")
-
-  lazy val basGatewayLoggedOutUrl: String = {
-    val baseUrl = platformHost.getOrElse("http://localhost:9553")
-    s"$baseUrl/bas-gateway/loggedout"
-  }
-
   val amendReturnsEnabled: Boolean        = configuration.get[Boolean]("features.amendReturnsEnabled")
   val claimUrl: String                    = configuration.get[String]("urls.claim")
   val countdown: Int                      = configuration.get[Int]("timeout-dialog.countdown")
