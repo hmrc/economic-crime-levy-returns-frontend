@@ -49,7 +49,7 @@ lazy val root = (project in file("."))
             "javascripts/onload.js"
           )
         )
-    ),
+    )
   )
 
 lazy val buildSettings = Def.settings(
@@ -109,4 +109,3 @@ val scalaCompilerOptions: Def.Setting[Task[Seq[String]]] = scalacOptions ++= Seq
 )
 
 addCommandAlias("runAllChecks", ";clean;compile;scalafmtCheckAll;coverage;test;it:test;scalastyle;coverageReport")
-
