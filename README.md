@@ -20,6 +20,14 @@ that they depend on.
 
 ## Running tests
 
+To stop the microservice from running on service manager (e.g. to run your own version locally), you can run:
+```
+sm2 --stop ECONOMIC_CRIME_LEVY_RETURNS_FRONTEND 
+
+To stop all the microservices from running on service manager you can run:
+
+sm2 --stop-all
+
 ### Unit tests
 
 > `sbt test`
