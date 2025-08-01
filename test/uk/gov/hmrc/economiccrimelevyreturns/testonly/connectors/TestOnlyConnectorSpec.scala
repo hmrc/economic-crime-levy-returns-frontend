@@ -20,14 +20,16 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.OK
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
-import uk.gov.hmrc.http.{HttpClient, HttpResponse}
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
+import uk.gov.hmrc.http.{HttpResponse, StringContextOps}
 
 import scala.concurrent.Future
 
 class TestOnlyConnectorSpec extends SpecBase {
 
-  val mockHttpClient: HttpClient = mock[HttpClient]
-  val connector                  = new TestOnlyConnector(
+  val mockHttpClient: HttpClientV2       = mock[HttpClientV2]
+  val mockRequestBuilder: RequestBuilder = mock[RequestBuilder]
+  val connector                          = new TestOnlyConnector(
     appConfig,
     mockHttpClient
   )
@@ -35,39 +37,37 @@ class TestOnlyConnectorSpec extends SpecBase {
   val baseUrl                = s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns/test-only"
   val response: HttpResponse = HttpResponse(OK, "")
 
+  override def beforeEach(): Unit = {
+    reset(mockHttpClient)
+    reset(mockRequestBuilder)
+  }
+
   "clearAllData" should {
     "return as expected" in {
-      val expectedUrl = s"$baseUrl/clear-all"
+      val expectedUrl =
+        url"$baseUrl/clear-all"
 
-      when(
-        mockHttpClient.GET[HttpResponse](
-          ArgumentMatchers.eq(expectedUrl),
-          ArgumentMatchers.eq(Seq.empty),
-          ArgumentMatchers.eq(Seq.empty)
-        )(any(), any(), any())
-      )
-        .thenReturn(Future.successful(response))
+      when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(OK, "")))
 
       val result = await(connector.clearAllData())
-      result shouldBe response
+      result.status shouldBe response.status
     }
   }
 
   "clearCurrentData" should {
     "return as expected" in {
-      val expectedUrl = s"$baseUrl/clear-current"
+      val expectedUrl = url"$baseUrl/clear-current"
 
-      when(
-        mockHttpClient.GET[HttpResponse](
-          ArgumentMatchers.eq(expectedUrl),
-          ArgumentMatchers.eq(Seq.empty),
-          ArgumentMatchers.eq(Seq.empty)
-        )(any(), any(), any())
-      )
-        .thenReturn(Future.successful(response))
+      when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(OK, "")))
 
       val result = await(connector.clearCurrentData())
-      result shouldBe response
+      result.status shouldBe response.status
     }
   }
 }
