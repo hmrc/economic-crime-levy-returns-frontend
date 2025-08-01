@@ -18,14 +18,15 @@ package uk.gov.hmrc.economiccrimelevyreturns.testonly.connectors
 
 import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class TestOnlyConnector @Inject() (
   appConfig: AppConfig,
-  httpClient: HttpClient
+  httpClient: HttpClientV2
 )(implicit
   val ec: ExecutionContext
 ) {
@@ -34,13 +35,17 @@ class TestOnlyConnector @Inject() (
     s"${appConfig.eclReturnsBaseUrl}/economic-crime-levy-returns/test-only"
 
   def clearAllData()(implicit hc: HeaderCarrier): Future[HttpResponse] =
-    httpClient.GET(
-      s"$eclReturnsUrl/clear-all"
-    )
+    httpClient
+      .get(
+        url"$eclReturnsUrl/clear-all"
+      )
+      .execute[HttpResponse]
 
   def clearCurrentData()(implicit hc: HeaderCarrier): Future[HttpResponse] =
-    httpClient.GET(
-      s"$eclReturnsUrl/clear-current"
-    )
+    httpClient
+      .get(
+        url"$eclReturnsUrl/clear-current"
+      )
+      .execute[HttpResponse]
 
 }
