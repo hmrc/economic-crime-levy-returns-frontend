@@ -21,12 +21,13 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 class CorrelationIdHelperSpec extends SpecBase {
 
   "getOrCreateCorrelationId" should {
-    "return the correlation id if there is one on the request" in forAll { id: String =>
-      val result  =
-        CorrelationIdHelper.getOrCreateCorrelationId(fakeRequest.withHeaders(HttpHeader.xCorrelationId -> id))
-      val headers = result.headers(Seq(HttpHeader.xCorrelationId))
-      headers.size    shouldBe 1
-      headers.head._2 shouldBe id
+    "return the correlation id if there is one on the request" in forAll {
+      id: String =>
+        val result  =
+          CorrelationIdHelper.getOrCreateCorrelationId(fakeRequest.withHeaders(HttpHeader.xCorrelationId -> id))
+        val headers = result.headers(Seq(HttpHeader.xCorrelationId))
+        headers.size    shouldBe 1
+        headers.head._2 shouldBe id
     }
 
     "return a default correlation id if there is none on the request" in {

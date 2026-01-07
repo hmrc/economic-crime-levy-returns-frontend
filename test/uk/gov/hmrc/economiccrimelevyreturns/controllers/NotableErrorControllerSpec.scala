@@ -47,60 +47,65 @@ class NotableErrorControllerSpec extends SpecBase {
   }
 
   "answerAreInvalid" should {
-    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
-        val result: Future[Result] = controller.answersAreInvalid()(fakeRequest)
+    "return OK and the correct view" in forAll {
+      eclReturn: EclReturn =>
+        new TestContext(eclReturn) {
+          val result: Future[Result] = controller.answersAreInvalid()(fakeRequest)
 
-        status(result) shouldBe OK
+          status(result) shouldBe OK
 
-        contentAsString(result) shouldBe answersAreInvalidView()(fakeRequest, messages).toString
-      }
+          contentAsString(result) shouldBe answersAreInvalidView()(fakeRequest, messages).toString
+        }
     }
   }
 
   "notRegistered" should {
-    "return SEE_OTHER" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
-        val result: Future[Result] = controller.notRegistered()(fakeRequest)
+    "return SEE_OTHER" in forAll {
+      eclReturn: EclReturn =>
+        new TestContext(eclReturn) {
+          val result: Future[Result] = controller.notRegistered()(fakeRequest)
 
-        status(result) shouldBe SEE_OTHER
-      }
+          status(result) shouldBe SEE_OTHER
+        }
     }
   }
 
   "agentCannotSubmitReturn" should {
-    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
-        val result: Future[Result] = controller.agentCannotSubmitReturn()(fakeRequest)
+    "return OK and the correct view" in forAll {
+      eclReturn: EclReturn =>
+        new TestContext(eclReturn) {
+          val result: Future[Result] = controller.agentCannotSubmitReturn()(fakeRequest)
 
-        status(result) shouldBe OK
+          status(result) shouldBe OK
 
-        contentAsString(result) shouldBe agentCannotSubmitReturnView()(fakeRequest, messages).toString
-      }
+          contentAsString(result) shouldBe agentCannotSubmitReturnView()(fakeRequest, messages).toString
+        }
     }
   }
 
   "eclReturnAlreadySubmitted" should {
-    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
-        val result: Future[Result] = controller.eclReturnAlreadySubmitted()(fakeRequest)
+    "return OK and the correct view" in forAll {
+      eclReturn: EclReturn =>
+        new TestContext(eclReturn) {
+          val result: Future[Result] = controller.eclReturnAlreadySubmitted()(fakeRequest)
 
-        status(result) shouldBe OK
+          status(result) shouldBe OK
 
-        contentAsString(result) shouldBe eclReturnSubmittedAlreadyView()(fakeRequest, messages).toString
-      }
+          contentAsString(result) shouldBe eclReturnSubmittedAlreadyView()(fakeRequest, messages).toString
+        }
     }
   }
 
   "returnAmendmentAlreadyRequested" should {
-    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
-      new TestContext(eclReturn) {
-        val result: Future[Result] = controller.returnAmendmentAlreadyRequested()(fakeRequest)
+    "return OK and the correct view" in forAll {
+      eclReturn: EclReturn =>
+        new TestContext(eclReturn) {
+          val result: Future[Result] = controller.returnAmendmentAlreadyRequested()(fakeRequest)
 
-        status(result) shouldBe OK
+          status(result) shouldBe OK
 
-        contentAsString(result) shouldBe returnAmendmentAlreadyRequestedView()(fakeRequest, messages).toString
-      }
+          contentAsString(result) shouldBe returnAmendmentAlreadyRequestedView()(fakeRequest, messages).toString
+        }
     }
   }
 }

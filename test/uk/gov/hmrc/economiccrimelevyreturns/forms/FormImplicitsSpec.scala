@@ -28,10 +28,11 @@ class FormImplicitsSpec extends SpecBase {
   )
 
   "prepare" should {
-    "return a form filled with the data if it exists" in forAll { value: String =>
-      val result = testForm.prepare(Some(value))
+    "return a form filled with the data if it exists" in forAll {
+      value: String =>
+        val result = testForm.prepare(Some(value))
 
-      result.value shouldBe Some(value)
+        result.value shouldBe Some(value)
     }
 
     "return an empty form if the data does not exist" in {

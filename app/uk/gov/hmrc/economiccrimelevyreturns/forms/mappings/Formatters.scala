@@ -78,9 +78,7 @@ trait Formatters {
 
       private val baseFormatter = stringFormatter(requiredKey, removeAllWhitespace = true)
 
-      /**
-        * Number < 0 or  > 999999999.99
-        * Number has more than 2 dp
+      /** Number < 0 or > 999999999.99 Number has more than 2 dp
         */
 
       override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], BigDecimal] =

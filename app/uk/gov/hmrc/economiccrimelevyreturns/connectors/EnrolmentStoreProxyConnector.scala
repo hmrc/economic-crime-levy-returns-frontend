@@ -24,6 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.KeyValue
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.{EclEnrolment, QueryKnownFactsRequest, QueryKnownFactsResponse}
 import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
+import play.api.libs.ws.writeableOf_JsValue
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}

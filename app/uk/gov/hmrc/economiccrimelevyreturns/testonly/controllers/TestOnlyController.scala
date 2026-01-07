@@ -29,7 +29,7 @@ import scala.concurrent.ExecutionContext
 class TestOnlyController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
-  getReturnData: DataRetrievalAction,
+  dataRetrievalAction: DataRetrievalAction,
   testOnlyConnector: TestOnlyConnector
 )(implicit val ec: ExecutionContext)
     extends FrontendBaseController {
@@ -42,7 +42,7 @@ class TestOnlyController @Inject() (
     testOnlyConnector.clearCurrentData().map(httpResponse => Ok(httpResponse.body))
   }
 
-  def getReturnData(): Action[AnyContent] = (authorise andThen getReturnData) { implicit request =>
+  def getReturnData(): Action[AnyContent] = (authorise andThen dataRetrievalAction) { implicit request =>
     Ok(Json.toJson(request.eclReturn))
   }
 

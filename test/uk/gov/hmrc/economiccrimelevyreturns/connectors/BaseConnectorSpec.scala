@@ -62,13 +62,13 @@ class BaseConnectorSpec extends SpecBase {
     }
 
   "as" should {
-    "behave as expected" in forAll { valid: Boolean =>
+    "behave as expected" in forAll { (valid: Boolean) =>
       test(connector.as, valid)
     }
   }
 
   "asOption" should {
-    "behave as expected" in forAll { valid: Boolean =>
+    "behave as expected" in forAll { (valid: Boolean) =>
       test(connector.asOption, valid)
     }
   }

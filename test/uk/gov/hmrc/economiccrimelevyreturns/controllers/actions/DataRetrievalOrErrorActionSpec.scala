@@ -65,24 +65,28 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
     }
 
   "refine" should {
-    "refine an AuthorisedRequest into a ReturnDataRequest" in forAll { eclReturn: EclReturn => (internalId: String) =>
-      when(mockEclReturnService.getReturn(any())(any()))
-        .thenReturn(EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(Some(eclReturn)))))
+    "refine an AuthorisedRequest into a ReturnDataRequest" in forAll {
+      eclReturn: EclReturn =>
+        (internalId: String) =>
+          when(mockEclReturnService.getReturn(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(Some(eclReturn))))
+            )
 
-      when(mockSessionService.get(any(), any(), any())(any()))
-        .thenReturn(EitherT.rightT(alphaNumericString))
+          when(mockSessionService.get(any(), any(), any())(any()))
+            .thenReturn(EitherT.rightT(alphaNumericString))
 
-      val result: Future[Either[Result, ReturnDataRequest[AnyContentAsEmpty.type]]] =
-        dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, testEclRegistrationReference))
+          val result: Future[Either[Result, ReturnDataRequest[AnyContentAsEmpty.type]]] =
+            dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, testEclRegistrationReference))
 
-      await(result) shouldBe ReturnDataRequest(
-        fakeRequest,
-        internalId,
-        eclReturn,
-        None,
-        testEclRegistrationReference,
-        None
-      )
+          await(result) shouldBe ReturnDataRequest(
+            fakeRequest,
+            internalId,
+            eclReturn,
+            None,
+            testEclRegistrationReference,
+            None
+          )
     }
 
     "refine an AuthorisedRequest into a ReturnDataRequest when no obligation details is retrieved" in forAll {
@@ -143,73 +147,82 @@ class DataRetrievalOrErrorActionSpec extends SpecBase {
     }
 
     "return internal server error if retrieve obligation data fails" in forAll {
-      eclReturn: EclReturn => (internalId: String) =>
-        when(mockEclReturnService.getReturn(any())(any()))
-          .thenReturn(EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(Some(eclReturn)))))
-
-        val error = "Internal server error"
-        when(mockSessionService.get(any(), any(), any())(any()))
-          .thenReturn(
-            EitherT[Future, SessionError, String](
-              Future.successful(Left(SessionError.InternalUnexpectedError(error, None)))
+      eclReturn: EclReturn =>
+        (internalId: String) =>
+          when(mockEclReturnService.getReturn(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(Some(eclReturn))))
             )
-          )
 
-        val result = intercept[Exception] {
-          await(
-            dataRetrievalOrErrorAction.refine(
-              AuthorisedRequest(fakeRequest, internalId, testEclRegistrationReference)
+          val error = "Internal server error"
+          when(mockSessionService.get(any(), any(), any())(any()))
+            .thenReturn(
+              EitherT[Future, SessionError, String](
+                Future.successful(Left(SessionError.InternalUnexpectedError(error, None)))
+              )
             )
-          )
-        }
 
-        result.getMessage shouldBe error
+          val result = intercept[Exception] {
+            await(
+              dataRetrievalOrErrorAction.refine(
+                AuthorisedRequest(fakeRequest, internalId, testEclRegistrationReference)
+              )
+            )
+          }
+
+          result.getMessage shouldBe error
     }
 
     "when period key is present in url is is extracted from the url rather than session" in forAll {
-      eclReturn: EclReturn => (internalId: String, periodKey: String) =>
-        when(mockEclReturnService.getReturn(any())(any()))
-          .thenReturn(EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(Some(eclReturn)))))
+      eclReturn: EclReturn =>
+        (internalId: String, periodKey: String) =>
+          when(mockEclReturnService.getReturn(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(Some(eclReturn))))
+            )
 
-        val fakeRequest = FakeRequest(
-          method = "GET",
-          uri = s"/submit-economic-crime-levy-return/period/$periodKey",
-          headers = FakeHeaders(Seq(HeaderNames.HOST -> "localhost")),
-          body = AnyContentAsEmpty
-        )
+          val fakeRequest = FakeRequest(
+            method = "GET",
+            uri = s"/submit-economic-crime-levy-return/period/$periodKey",
+            headers = FakeHeaders(Seq(HeaderNames.HOST -> "localhost")),
+            body = AnyContentAsEmpty
+          )
 
-        val result: Future[Either[Result, ReturnDataRequest[AnyContentAsEmpty.type]]] =
-          dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, testEclRegistrationReference))
+          val result: Future[Either[Result, ReturnDataRequest[AnyContentAsEmpty.type]]] =
+            dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, testEclRegistrationReference))
 
-        await(result) shouldBe ReturnDataRequest(
-          fakeRequest,
-          internalId,
-          eclReturn,
-          None,
-          testEclRegistrationReference,
-          Some(periodKey)
-        )
+          await(result) shouldBe ReturnDataRequest(
+            fakeRequest,
+            internalId,
+            eclReturn,
+            None,
+            testEclRegistrationReference,
+            Some(periodKey)
+          )
     }
 
     "when period key is not in url, it is extracted from the session" in forAll {
-      eclReturn: EclReturn => (internalId: String, periodKey: String) =>
-        when(mockEclReturnService.getReturn(any())(any()))
-          .thenReturn(EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(Some(eclReturn)))))
+      eclReturn: EclReturn =>
+        (internalId: String, periodKey: String) =>
+          when(mockEclReturnService.getReturn(any())(any()))
+            .thenReturn(
+              EitherT[Future, DataHandlingError, Option[EclReturn]](Future.successful(Right(Some(eclReturn))))
+            )
 
-        when(mockSessionService.get(any(), any(), any())(any()))
-          .thenReturn(EitherT.rightT(periodKey))
+          when(mockSessionService.get(any(), any(), any())(any()))
+            .thenReturn(EitherT.rightT(periodKey))
 
-        val result: Future[Either[Result, ReturnDataRequest[AnyContentAsEmpty.type]]] =
-          dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, testEclRegistrationReference))
+          val result: Future[Either[Result, ReturnDataRequest[AnyContentAsEmpty.type]]] =
+            dataRetrievalOrErrorAction.refine(AuthorisedRequest(fakeRequest, internalId, testEclRegistrationReference))
 
-        await(result) shouldBe ReturnDataRequest(
-          fakeRequest,
-          internalId,
-          eclReturn,
-          None,
-          testEclRegistrationReference,
-          Some(periodKey)
-        )
+          await(result) shouldBe ReturnDataRequest(
+            fakeRequest,
+            internalId,
+            eclReturn,
+            None,
+            testEclRegistrationReference,
+            Some(periodKey)
+          )
     }
 
     "redirect to First time return error page when data retrieval fails" in forAll { (internalId: String) =>

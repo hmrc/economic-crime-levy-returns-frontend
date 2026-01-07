@@ -187,11 +187,12 @@ class SessionServiceSpec extends ServiceSpec {
   "delete" should {
     "delete the session with given id" in forAll(
       nonEmptyString
-    ) { id: String =>
-      when(mockSessionConnector.delete(ArgumentMatchers.eq(id))(any()))
-        .thenReturn(Future.successful(()))
+    ) {
+      id: String =>
+        when(mockSessionConnector.delete(ArgumentMatchers.eq(id))(any()))
+          .thenReturn(Future.successful(()))
 
-      await(service.delete(id).value) shouldBe Right(())
+        await(service.delete(id).value) shouldBe Right(())
     }
 
     "return an error if failure" in forAll(

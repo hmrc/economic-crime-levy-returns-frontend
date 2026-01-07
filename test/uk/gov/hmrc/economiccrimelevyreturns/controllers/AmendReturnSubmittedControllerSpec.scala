@@ -85,11 +85,11 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
 
           val result: Future[Result] = controller.onPageLoad()(
             fakeRequest.withSession(
-              (SessionKeys.email             -> email),
-              (SessionKeys.band              -> band.toString),
-              (SessionKeys.amountDue         -> amountDue.toString),
-              (SessionKeys.isIncrease        -> isIncrease.toString),
-              (SessionKeys.obligationDetails -> Json.stringify(Json.toJson(obligationDetails)))
+              SessionKeys.email             -> email,
+              SessionKeys.band              -> band.toString,
+              SessionKeys.amountDue         -> amountDue.toString,
+              SessionKeys.isIncrease        -> isIncrease.toString,
+              SessionKeys.obligationDetails -> Json.stringify(Json.toJson(obligationDetails))
             )
           )
 

@@ -22,7 +22,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 class ModeSpec extends SpecBase {
 
   "Mode.jsLiteral.to" should {
-    "behave as expected" in forAll { mode: Mode =>
+    "behave as expected" in forAll { (mode: Mode) =>
       Mode.jsLiteral.to(mode) shouldBe mode.toString
     }
   }

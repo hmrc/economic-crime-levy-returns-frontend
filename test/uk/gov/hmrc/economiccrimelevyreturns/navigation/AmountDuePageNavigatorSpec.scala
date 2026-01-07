@@ -26,10 +26,11 @@ class AmountDuePageNavigatorSpec extends SpecBase {
   val pageNavigator = new AmountDuePageNavigator()
 
   "nextPage" should {
-    "return a Call to the contact name page in NormalMode" in forAll { eclReturn: EclReturn =>
-      val updatedReturn: EclReturn = eclReturn.copy(contactName = None)
+    "return a Call to the contact name page in NormalMode" in forAll {
+      eclReturn: EclReturn =>
+        val updatedReturn: EclReturn = eclReturn.copy(contactName = None)
 
-      pageNavigator.nextPage(NormalMode, updatedReturn) shouldBe routes.ContactNameController.onPageLoad(NormalMode)
+        pageNavigator.nextPage(NormalMode, updatedReturn) shouldBe routes.ContactNameController.onPageLoad(NormalMode)
     }
 
     "return a Call to the contact name page in CheckMode if any of the contact details are absent from the ECL return" in forAll {

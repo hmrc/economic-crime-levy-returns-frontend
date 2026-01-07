@@ -23,10 +23,11 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 class BandSpec extends SpecBase {
 
   "read/write" should {
-    "process json correctly" in forAll { band: Band =>
-      val json   = Json.toJson(band)
-      val result = Json.fromJson[Band](json)
-      result shouldBe JsSuccess(band)
+    "process json correctly" in forAll {
+      band: Band =>
+        val json   = Json.toJson(band)
+        val result = Json.fromJson[Band](json)
+        result shouldBe JsSuccess(band)
     }
 
     "return an error if incorrect Json" in {

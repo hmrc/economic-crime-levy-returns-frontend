@@ -34,29 +34,31 @@ class EclAccountServiceSpec extends ServiceSpec {
   )
 
   "retrieveObligationData" should {
-    "return normally if success" in forAll { obligationData: ObligationData =>
-      when(mockEclAccountConnector.getObligations()(any()))
-        .thenReturn(OptionT[Future, ObligationData](Future.successful(Some(obligationData))))
+    "return normally if success" in forAll {
+      obligationData: ObligationData =>
+        when(mockEclAccountConnector.getObligations()(any()))
+          .thenReturn(OptionT[Future, ObligationData](Future.successful(Some(obligationData))))
 
-      val result = await(service.retrieveObligationData.value)
+        val result = await(service.retrieveObligationData.value)
 
-      result shouldBe Right(Some(obligationData))
+        result shouldBe Right(Some(obligationData))
     }
 
-    "return error if failure" in forAll { is5xxError: Boolean =>
-      val code = getErrorCode(is5xxError)
+    "return error if failure" in forAll {
+      is5xxError: Boolean =>
+        val code = getErrorCode(is5xxError)
 
-      when(mockEclAccountConnector.getObligations()(any()))
-        .thenReturn(OptionT[Future, ObligationData](Future.failed(testException)))
+        when(mockEclAccountConnector.getObligations()(any()))
+          .thenReturn(OptionT[Future, ObligationData](Future.failed(testException)))
 
-      await(service.retrieveObligationData.value) shouldBe
-        Left(EclAccountError.InternalUnexpectedError(Some(testException), Some(testException.getMessage)))
+        await(service.retrieveObligationData.value) shouldBe
+          Left(EclAccountError.InternalUnexpectedError(Some(testException), Some(testException.getMessage)))
 
-      when(mockEclAccountConnector.getObligations()(any()))
-        .thenReturn(OptionT[Future, ObligationData](Future.failed(UpstreamErrorResponse(code.toString, code))))
+        when(mockEclAccountConnector.getObligations()(any()))
+          .thenReturn(OptionT[Future, ObligationData](Future.failed(UpstreamErrorResponse(code.toString, code))))
 
-      await(service.retrieveObligationData.value) shouldBe
-        Left(EclAccountError.BadGateway(s"Get Obligation Data Failed - ${code.toString}", code))
+        await(service.retrieveObligationData.value) shouldBe
+          Left(EclAccountError.BadGateway(s"Get Obligation Data Failed - ${code.toString}", code))
     }
   }
 

@@ -48,7 +48,7 @@
 @startServiceUrl = @{
    startAmendUrl match {
         case Some(startAmendUrl) => Some(startAmendUrl)
-        case _ => Some(StartController.start.url)
+        case _ => Some(StartController.start().url)
     }
 }
 
@@ -92,7 +92,7 @@
     pageTitle = Some(pageTitle),
     serviceURLs = ServiceURLs(
         serviceUrl = startServiceUrl,
-        signOutUrl = Some(SignOutController.signOut.url)
+        signOutUrl = Some(SignOutController.signOut().url)
     ),
     isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
     templateOverrides = TemplateOverrides(

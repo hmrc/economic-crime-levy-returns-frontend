@@ -180,24 +180,26 @@ class ReturnsServiceSpec extends ServiceSpec {
   }
 
   "getReturn" should {
-    "return normally if success" in forAll { eclReturn: EclReturn =>
-      val internalId = eclReturn.internalId
+    "return normally if success" in forAll {
+      eclReturn: EclReturn =>
+        val internalId = eclReturn.internalId
 
-      when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
-        .thenReturn(Future.successful(eclReturn))
+        when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
+          .thenReturn(Future.successful(eclReturn))
 
-      val result = await(service.getReturn(internalId).value)
-      result shouldBe Right(Some(eclReturn))
+        val result = await(service.getReturn(internalId).value)
+        result shouldBe Right(Some(eclReturn))
     }
 
-    "return None if requested return cannot be found" in forAll { internalId: String =>
-      val code = NOT_FOUND
+    "return None if requested return cannot be found" in forAll {
+      internalId: String =>
+        val code = NOT_FOUND
 
-      when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
+        when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
+          .thenReturn(Future.failed(UpstreamErrorResponse(code.toString, code)))
 
-      val result = await(service.getReturn(internalId).value)
-      result shouldBe Right(None)
+        val result = await(service.getReturn(internalId).value)
+        result shouldBe Right(None)
     }
 
     "return an error if failure" in forAll { (internalId: String, is5xxError: Boolean) =>
@@ -219,20 +221,22 @@ class ReturnsServiceSpec extends ServiceSpec {
     }
 
     "getReturnValidationErrors" should {
-      "return normally if success" in forAll { internalId: String =>
-        when(mockEclReturnsConnector.validateEclReturn(ArgumentMatchers.eq(internalId))(any()))
-          .thenReturn(OptionT[Future, String](Future.successful(None)))
+      "return normally if success" in forAll {
+        internalId: String =>
+          when(mockEclReturnsConnector.validateEclReturn(ArgumentMatchers.eq(internalId))(any()))
+            .thenReturn(OptionT[Future, String](Future.successful(None)))
 
-        val result = await(service.getReturnValidationErrors(internalId).value)
-        result shouldBe Right(None)
+          val result = await(service.getReturnValidationErrors(internalId).value)
+          result shouldBe Right(None)
       }
 
-      "return validation error if there is one" in forAll { internalId: String =>
-        when(mockEclReturnsConnector.validateEclReturn(ArgumentMatchers.eq(internalId))(any()))
-          .thenReturn(OptionT[Future, String](Future.successful(Some(internalId))))
+      "return validation error if there is one" in forAll {
+        internalId: String =>
+          when(mockEclReturnsConnector.validateEclReturn(ArgumentMatchers.eq(internalId))(any()))
+            .thenReturn(OptionT[Future, String](Future.successful(Some(internalId))))
 
-        val result = await(service.getReturnValidationErrors(internalId).value)
-        result shouldBe Right(Some(DataValidationError(internalId)))
+          val result = await(service.getReturnValidationErrors(internalId).value)
+          result shouldBe Right(Some(DataValidationError(internalId)))
       }
 
       "return an error if failure" in forAll { (internalId: String, is5xxError: Boolean) =>
