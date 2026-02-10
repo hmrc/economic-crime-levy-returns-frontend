@@ -1,6 +1,5 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
@@ -9,6 +8,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues.emailMaxLength
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{Band, EclReturn, GetSubscriptionResponse, ObligationDetails, SessionData, SessionKeys}
+import org.scalacheck.Arbitrary.arbitrary
 
 class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -18,15 +18,15 @@ class AmendReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
     "return 200 status and the amend return submitted HTML view" in {
       stubAuthorised()
 
-      val subscriptionResponse = random[GetSubscriptionResponse]
-      val obligationDetails    = random[ObligationDetails]
+      val subscriptionResponse = arbitrary[GetSubscriptionResponse].sample.get
+      val obligationDetails    = arbitrary[ObligationDetails].sample.get
       val email                = emailAddress(emailMaxLength).sample.get
-      val band                 = random[Band]
-      val amountDue            = random[Int]
-      val isIncrease           = random[Boolean]
-      val eclReturn            = random[EclReturn]
+      val band                 = arbitrary[Band].sample.get
+      val amountDue            = arbitrary[Int].sample.get
+      val isIncrease           = arbitrary[Boolean].sample.get
+      val eclReturn            = arbitrary[EclReturn].sample.get
         .copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
-      val sessionData          = random[SessionData]
+      val sessionData          = arbitrary[SessionData].sample.get
       val validSessionData     = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubDeleteReturn()

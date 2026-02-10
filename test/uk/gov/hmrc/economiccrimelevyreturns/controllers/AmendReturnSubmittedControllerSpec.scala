@@ -17,7 +17,6 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.mockito.ArgumentMatchers.{any, anyString}
 import play.api.data.Form
 import play.api.http.Status.OK
@@ -31,6 +30,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, Band, EclReturn, GetSubscriptionResponse, ObligationDetails, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{RegistrationService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmendReturnSubmittedView
+import org.mockito.Mockito.{reset, times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 
 import scala.concurrent.Future
 import scala.concurrent.Future.unit
@@ -64,9 +65,9 @@ class AmendReturnSubmittedControllerSpec extends SpecBase {
         obligationDetails: ObligationDetails,
         email: String
       ) =>
-        val band       = random[Band]
-        val amountDue  = random[Int]
-        val isIncrease = random[Boolean]
+        val band       = arbitrary[Band].sample.get
+        val amountDue  = arbitrary[Int].sample.get
+        val isIncrease = arbitrary[Boolean].sample.get
         new TestContext(
           eclReturn.copy(
             contactEmailAddress = Some(email),

@@ -43,10 +43,9 @@ class BaseControllerSpec extends SpecBase {
     )
 
   "valueOrErrorF" should {
-    "return a value when there is one" in forAll {
-      value: String =>
-        val result = await(controller.valueOrErrorF(Some(value), text).value)
-        result shouldBe Right(value)
+    "return a value when there is one" in forAll { (value: String) =>
+      val result = await(controller.valueOrErrorF(Some(value), text).value)
+      result shouldBe Right(value)
     }
 
     "return an when there is no data" in {
@@ -56,10 +55,9 @@ class BaseControllerSpec extends SpecBase {
   }
 
   "valueOrError" should {
-    "return a value when there is one" in forAll {
-      value: String =>
-        val result = controller.valueOrError(Some(value), text)
-        result shouldBe Right(value)
+    "return a value when there is one" in forAll { (value: String) =>
+      val result = controller.valueOrError(Some(value), text)
+      result shouldBe Right(value)
     }
 
     "return an when there is no data" in {
@@ -75,30 +73,27 @@ class BaseControllerSpec extends SpecBase {
       result shouldBe Right(name)
     }
 
-    "return an error when there is no contact name" in forAll {
-      eclReturn: EclReturn =>
-        val request = getReturnRequest(eclReturn, None)
-        val result  = controller.getContactNameFromRequest(request)
-        result shouldBe Left(ResponseError.internalServiceError())
+    "return an error when there is no contact name" in forAll { (eclReturn: EclReturn) =>
+      val request = getReturnRequest(eclReturn, None)
+      val result  = controller.getContactNameFromRequest(request)
+      result shouldBe Left(ResponseError.internalServiceError())
     }
   }
 
   "addToSession" should {
-    "add data to the request session" in forAll {
-      string: String =>
-        fakeRequest.session.get(string) shouldBe None
-        val data   = Seq((string, string))
-        val result = controller.addToSession(data)(fakeRequest)
-        result.get(string) shouldBe Some(string)
+    "add data to the request session" in forAll { (string: String) =>
+      fakeRequest.session.get(string) shouldBe None
+      val data   = Seq((string, string))
+      val result = controller.addToSession(data)(fakeRequest)
+      result.get(string) shouldBe Some(string)
     }
 
-    "add data to a given session" in forAll {
-      string: String =>
-        val session = fakeRequest.session
-        session.get(string) shouldBe None
-        val data   = Seq((string, string))
-        val result = controller.addToSession(session, data)
-        result.get(string) shouldBe Some(string)
+    "add data to a given session" in forAll { (string: String) =>
+      val session = fakeRequest.session
+      session.get(string) shouldBe None
+      val data   = Seq((string, string))
+      val result = controller.addToSession(session, data)
+      result.get(string) shouldBe Some(string)
     }
   }
 }

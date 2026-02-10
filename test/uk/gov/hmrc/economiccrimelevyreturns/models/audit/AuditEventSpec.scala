@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.models.audit
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.libs.json.{JsValue, Json, OFormat}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
+import org.scalacheck.Arbitrary.arbitrary
 
 class AuditEventSpec extends SpecBase {
 
@@ -28,7 +28,7 @@ class AuditEventSpec extends SpecBase {
     implicit val format: OFormat[Data] = Json.format[Data]
   }
 
-  val testAuditType: String   = random[String]
+  val testAuditType: String   = arbitrary[String].sample.get
   val testDetailJson: JsValue = Json.toJson(Data(testAuditType))
 
   "extendedDataEvent" should {

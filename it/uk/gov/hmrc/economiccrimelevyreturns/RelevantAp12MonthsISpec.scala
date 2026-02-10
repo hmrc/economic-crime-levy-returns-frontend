@@ -1,12 +1,12 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import org.scalacheck.Arbitrary.arbitrary
 
 class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -41,7 +41,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the relevant AP 12 months view" in {
       stubAuthorised()
 
-      stubGetReturn(clearRelevantAp12Months(random[EclReturn]))
+      stubGetReturn(clearRelevantAp12Months(arbitrary[EclReturn].sample.get))
       testSetup()
       stubUpsertSession()
       stubGetEmptyObligations()
@@ -60,7 +60,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
     "save the selected option then redirect to the UK revenue page when the Yes option is selected" in {
       stubAuthorised()
 
-      val eclReturn = clearRelevantAp12Months(random[EclReturn])
+      val eclReturn = clearRelevantAp12Months(arbitrary[EclReturn].sample.get)
 
       testSetup()
       stubGetReturn(eclReturn)
@@ -79,7 +79,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
     "save the selected option then redirect to the relevant AP length page when the No option is selected" in {
       stubAuthorised()
 
-      val eclReturn = clearRelevantAp12Months(random[EclReturn])
+      val eclReturn = clearRelevantAp12Months(arbitrary[EclReturn].sample.get)
 
       testSetup()
       stubGetReturn(eclReturn)
@@ -106,7 +106,7 @@ class RelevantAp12MonthsISpec extends ISpecBase with AuthorisedBehaviour {
       testSetup = Some(testSetup),
       relatedValueInfo = Some(
         RelatedValueInfo(
-          value = random[Int],
+          value = arbitrary[Int].sample.get,
           updateEclReturnValue = updateRelevantApLength,
           clearEclReturnValue = clearRelevantApLength,
           destination = routes.RelevantApLengthController.onPageLoad(CheckMode)

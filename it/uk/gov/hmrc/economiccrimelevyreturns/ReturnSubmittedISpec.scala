@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
@@ -24,6 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetSubscriptionResponse, ObligationDetails, SessionData, SessionKeys}
+import org.scalacheck.Arbitrary.arbitrary
 
 class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -32,14 +32,15 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
 
     "respond with 200 status and the return submitted HTML view when it is not a nil return" in {
       stubAuthorised()
-      val chargeReference      = random[String]
-      val subscriptionResponse = random[GetSubscriptionResponse]
-      val email                = random[String]
-      val obligationDetails    = random[ObligationDetails]
+      val chargeReference      = arbitrary[String].sample.get
+      val subscriptionResponse = arbitrary[GetSubscriptionResponse].sample.get
+      val email                = arbitrary[String].sample.get
+      val obligationDetails    = arbitrary[ObligationDetails].sample.get
       val amountDue            = "10000"
       val eclReturn            =
-        random[EclReturn].copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
-      val sessionData          = random[SessionData]
+        arbitrary[EclReturn].sample.get
+          .copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
+      val sessionData          = arbitrary[SessionData].sample.get
       val validSessionData     = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubDeleteReturn()
@@ -66,13 +67,14 @@ class ReturnSubmittedISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the nil return submitted HTML view when it is a nil return" in {
       stubAuthorised()
 
-      val subscriptionResponse = random[GetSubscriptionResponse]
-      val email                = random[String]
-      val obligationDetails    = random[ObligationDetails]
+      val subscriptionResponse = arbitrary[GetSubscriptionResponse].sample.get
+      val email                = arbitrary[String].sample.get
+      val obligationDetails    = arbitrary[ObligationDetails].sample.get
       val amountDue            = "0"
       val eclReturn            =
-        random[EclReturn].copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
-      val sessionData          = random[SessionData]
+        arbitrary[EclReturn].sample.get
+          .copy(contactEmailAddress = Some(email), obligationDetails = Some(obligationDetails))
+      val sessionData          = arbitrary[SessionData].sample.get
       val validSessionData     = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubDeleteReturn()

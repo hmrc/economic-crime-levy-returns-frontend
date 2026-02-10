@@ -26,6 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SubmitEclReturnResponse}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HttpResponse, StringContextOps, UpstreamErrorResponse}
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Try}
@@ -78,21 +79,20 @@ class ReturnsConnectorSpec extends SpecBase {
   }
 
   "deleteReturn" should {
-    "return unit when the http client successfully returns a http response" in forAll {
-      internalId: String =>
-        val expectedUrl = url"$eclReturnsUrl/returns/$internalId"
+    "return unit when the http client successfully returns a http response" in forAll { (internalId: String) =>
+      val expectedUrl = url"$eclReturnsUrl/returns/$internalId"
 
-        when(mockHttpClient.delete(ArgumentMatchers.eq(expectedUrl))(any()))
-          .thenReturn(mockRequestBuilder)
-        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
-          .thenReturn(Future.successful(HttpResponse.apply(NO_CONTENT, "")))
+      when(mockHttpClient.delete(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(NO_CONTENT, "")))
 
-        val result: Unit = await(connector.deleteReturn(internalId))
-        result shouldBe ()
+      val result: Unit = await(connector.deleteReturn(internalId))
+      result shouldBe ()
 
-        verify(mockHttpClient, times(1)).delete(ArgumentMatchers.eq(expectedUrl))(any())
+      verify(mockHttpClient, times(1)).delete(ArgumentMatchers.eq(expectedUrl))(any())
 
-        reset(mockHttpClient)
+      reset(mockHttpClient)
     }
 
     "return UpstreamErrorResponse when call to returns service returns an error" in forAll { (internalId: String) =>
@@ -114,20 +114,19 @@ class ReturnsConnectorSpec extends SpecBase {
   }
 
   "upsertReturn" should {
-    "return the new or updated ecl return" in forAll {
-      eclReturn: EclReturn =>
-        val expectedUrl = url"$eclReturnsUrl/returns"
+    "return the new or updated ecl return" in forAll { (eclReturn: EclReturn) =>
+      val expectedUrl = url"$eclReturnsUrl/returns"
 
-        when(mockHttpClient.put(ArgumentMatchers.eq(expectedUrl))(any()))
-          .thenReturn(mockRequestBuilder)
-        when(mockRequestBuilder.withBody(ArgumentMatchers.eq(Json.toJson(eclReturn)))(any(), any(), any()))
-          .thenReturn(mockRequestBuilder)
-        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
-          .thenReturn(Future.successful(HttpResponse.apply(NO_CONTENT, Json.stringify(JsNull))))
+      when(mockHttpClient.put(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody(ArgumentMatchers.eq(Json.toJson(eclReturn)))(any(), any(), any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(NO_CONTENT, Json.stringify(JsNull))))
 
-        await(connector.upsertReturn(eclReturn)) shouldBe ()
+      await(connector.upsertReturn(eclReturn)) shouldBe ()
 
-        reset(mockHttpClient)
+      reset(mockHttpClient)
     }
 
     "return UpstreamErrorResponse when call to returns service returns an error" in forAll { (eclReturn: EclReturn) =>
@@ -151,18 +150,17 @@ class ReturnsConnectorSpec extends SpecBase {
   }
 
   "validateEclReturn" should {
-    "return None when the http client returns 200 OK and body is empty" in forAll {
-      internalId: String =>
-        val expectedUrl = url"$eclReturnsUrl/returns/$internalId/validation-errors"
+    "return None when the http client returns 200 OK and body is empty" in forAll { (internalId: String) =>
+      val expectedUrl = url"$eclReturnsUrl/returns/$internalId/validation-errors"
 
-        when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
-          .thenReturn(mockRequestBuilder)
-        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
-          .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(JsNull))))
+      when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))
+        .thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        .thenReturn(Future.successful(HttpResponse.apply(OK, Json.stringify(JsNull))))
 
-        val result = await(connector.validateEclReturn(internalId).value)
+      val result = await(connector.validateEclReturn(internalId).value)
 
-        result shouldBe None
+      result shouldBe None
     }
 
     "return Some with DataValidationError when 200 OK is returned with validation errors in the body" in forAll {

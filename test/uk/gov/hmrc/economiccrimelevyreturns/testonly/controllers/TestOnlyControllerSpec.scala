@@ -26,6 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.testonly.connectors.TestOnlyConnector
 import uk.gov.hmrc.http.HttpResponse
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 
@@ -45,44 +46,41 @@ class TestOnlyControllerSpec extends SpecBase {
   val response: HttpResponse = HttpResponse(OK, "")
 
   "clearAllData" should {
-    "return as expected" in forAll {
-      eclReturn: EclReturn =>
-        new TestContext(eclReturn) {
-          when(mockConnector.clearAllData()(any()))
-            .thenReturn(Future.successful(response))
+    "return as expected" in forAll { (eclReturn: EclReturn) =>
+      new TestContext(eclReturn) {
+        when(mockConnector.clearAllData()(any()))
+          .thenReturn(Future.successful(response))
 
-          val result: Future[Result] = controller.clearAllData()(fakeRequest)
+        val result: Future[Result] = controller.clearAllData()(fakeRequest)
 
-          status(result)          shouldBe response.status
-          contentAsString(result) shouldBe response.body
-        }
+        status(result)          shouldBe response.status
+        contentAsString(result) shouldBe response.body
+      }
     }
   }
 
   "clearCurrentData" should {
-    "return as expected" in forAll {
-      eclReturn: EclReturn =>
-        new TestContext(eclReturn) {
-          when(mockConnector.clearCurrentData()(any()))
-            .thenReturn(Future.successful(response))
+    "return as expected" in forAll { (eclReturn: EclReturn) =>
+      new TestContext(eclReturn) {
+        when(mockConnector.clearCurrentData()(any()))
+          .thenReturn(Future.successful(response))
 
-          val result: Future[Result] = controller.clearCurrentData()(fakeRequest)
+        val result: Future[Result] = controller.clearCurrentData()(fakeRequest)
 
-          status(result)          shouldBe response.status
-          contentAsString(result) shouldBe response.body
-        }
+        status(result)          shouldBe response.status
+        contentAsString(result) shouldBe response.body
+      }
     }
   }
 
   "getReturnData" should {
-    "return as expected" in forAll {
-      eclReturn: EclReturn =>
-        new TestContext(eclReturn) {
-          val result: Future[Result] = controller.getReturnData()(fakeRequest)
+    "return as expected" in forAll { (eclReturn: EclReturn) =>
+      new TestContext(eclReturn) {
+        val result: Future[Result] = controller.getReturnData()(fakeRequest)
 
-          status(result)          shouldBe OK
-          contentAsString(result) shouldBe Json.stringify(Json.toJson[EclReturn](eclReturn))
-        }
+        status(result)          shouldBe OK
+        contentAsString(result) shouldBe Json.stringify(Json.toJson[EclReturn](eclReturn))
+      }
     }
   }
 }

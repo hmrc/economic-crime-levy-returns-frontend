@@ -1,12 +1,12 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{AmendReturn, EclReturn, Obligation, ObligationData, ObligationDetails, Open, SessionData, SessionKeys}
+import org.scalacheck.Arbitrary.arbitrary
 
 import java.time.LocalDate
 
@@ -20,7 +20,7 @@ class StartAmendISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and amend start HTML view if period key is valid" in {
       stubAuthorised()
 
-      val openObligation = random[ObligationDetails].copy(
+      val openObligation = arbitrary[ObligationDetails].sample.get.copy(
         status = Open,
         inboundCorrespondenceFromDate = LocalDate.parse("2022-04-01"),
         inboundCorrespondenceToDate = LocalDate.parse("2023-03-31"),

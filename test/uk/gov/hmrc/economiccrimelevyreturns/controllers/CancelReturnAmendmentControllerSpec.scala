@@ -28,6 +28,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.CancelReturnAmendmentView
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 

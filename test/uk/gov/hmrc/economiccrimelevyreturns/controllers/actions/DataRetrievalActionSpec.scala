@@ -28,6 +28,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 
@@ -52,66 +53,67 @@ class DataRetrievalActionSpec extends SpecBase {
 
   "transform" should {
     "transform an AuthorisedRequest into a ReturnDataRequest" in forAll {
-      eclReturn: EclReturn =>
-        (internalId: String, eclReferenceNumber: String) =>
-          when(mockEclReturnService.getOrCreateReturn(any())(any(), any()))
-            .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
+      (eclReturn: EclReturn) => (internalId: String, eclReferenceNumber: String) =>
+        when(mockEclReturnService.getOrCreateReturn(any())(any(), any()))
+          .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
 
-          when(mockSessionService.get(any(), any(), any())(any()))
-            .thenReturn(EitherT.rightT(alphaNumericString))
+        when(mockSessionService.get(any(), any(), any())(any()))
+          .thenReturn(
+            EitherT.pure[Future, DataHandlingError](alphaNumericString)
+          )
 
-          val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
-            dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
+        val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
+          dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
 
-          await(result) shouldBe ReturnDataRequest(fakeRequest, internalId, eclReturn, None, eclReferenceNumber, None)
+        await(result) shouldBe ReturnDataRequest(fakeRequest, internalId, eclReturn, None, eclReferenceNumber, None)
     }
 
     "when period key is present in url is is extracted from the url rather than session" in forAll {
-      eclReturn: EclReturn =>
-        (internalId: String, eclReferenceNumber: String, periodKey: String) =>
-          when(mockEclReturnService.getOrCreateReturn(any())(any(), any()))
-            .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
+      (eclReturn: EclReturn) => (internalId: String, eclReferenceNumber: String, periodKey: String) =>
+        when(mockEclReturnService.getOrCreateReturn(any())(any(), any()))
+          .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
 
-          val fakeRequest = FakeRequest(
-            method = "GET",
-            uri = s"/submit-economic-crime-levy-return/period/$periodKey",
-            headers = FakeHeaders(Seq(HeaderNames.HOST -> "localhost")),
-            body = AnyContentAsEmpty
-          )
+        val fakeRequest = FakeRequest(
+          method = "GET",
+          uri = s"/submit-economic-crime-levy-return/period/$periodKey",
+          headers = FakeHeaders(Seq(HeaderNames.HOST -> "localhost")),
+          body = AnyContentAsEmpty
+        )
 
-          val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
-            dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
+        val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
+          dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
 
-          await(result) shouldBe ReturnDataRequest(
-            fakeRequest,
-            internalId,
-            eclReturn,
-            None,
-            eclReferenceNumber,
-            Some(periodKey)
-          )
+        await(result) shouldBe ReturnDataRequest(
+          fakeRequest,
+          internalId,
+          eclReturn,
+          None,
+          eclReferenceNumber,
+          Some(periodKey)
+        )
     }
 
     "when period key is not in url, it is extracted from the session" in forAll {
-      eclReturn: EclReturn =>
-        (internalId: String, eclReferenceNumber: String, periodKey: String) =>
-          when(mockEclReturnService.getOrCreateReturn(any())(any(), any()))
-            .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
+      (eclReturn: EclReturn) => (internalId: String, eclReferenceNumber: String, periodKey: String) =>
+        when(mockEclReturnService.getOrCreateReturn(any())(any(), any()))
+          .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
 
-          when(mockSessionService.get(any(), any(), any())(any()))
-            .thenReturn(EitherT.rightT(periodKey))
-
-          val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
-            dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
-
-          await(result) shouldBe ReturnDataRequest(
-            fakeRequest,
-            internalId,
-            eclReturn,
-            None,
-            eclReferenceNumber,
-            Some(periodKey)
+        when(mockSessionService.get(any(), any(), any())(any()))
+          .thenReturn(
+            EitherT.pure[Future, DataHandlingError](alphaNumericString)
           )
+
+        val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
+          dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
+
+        await(result) shouldBe ReturnDataRequest(
+          fakeRequest,
+          internalId,
+          eclReturn,
+          None,
+          eclReferenceNumber,
+          Some(periodKey)
+        )
     }
 
     "transform returns a failed exception" in forAll { (internalId: String, eclReferenceNumber: String) =>

@@ -30,6 +30,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.SessionError
 import uk.gov.hmrc.economiccrimelevyreturns.services.SessionService
 import uk.gov.hmrc.http.HttpVerbs.GET
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 

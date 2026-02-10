@@ -33,6 +33,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactNamePageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactNameView
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 
@@ -62,15 +63,14 @@ class ContactNameControllerSpec extends SpecBase {
   }
 
   "onPageLoad" should {
-    "return OK and the correct view when no answer has already been provided" in forAll {
-      eclReturn: EclReturn =>
-        new TestContext(eclReturn.copy(contactName = None)) {
-          val result: Future[Result] = controller.onPageLoad(NormalMode)(fakeRequest)
+    "return OK and the correct view when no answer has already been provided" in forAll { (eclReturn: EclReturn) =>
+      new TestContext(eclReturn.copy(contactName = None)) {
+        val result: Future[Result] = controller.onPageLoad(NormalMode)(fakeRequest)
 
-          status(result) shouldBe OK
+        status(result) shouldBe OK
 
-          contentAsString(result) shouldBe view(form, NormalMode)(fakeRequest, messages).toString
-        }
+        contentAsString(result) shouldBe view(form, NormalMode)(fakeRequest, messages).toString
+      }
     }
 
     "populate the view correctly when the question has previously been answered" in forAll {
@@ -108,17 +108,16 @@ class ContactNameControllerSpec extends SpecBase {
       }
     }
 
-    "return a Bad Request with form errors when invalid data is submitted" in forAll {
-      eclReturn: EclReturn =>
-        new TestContext(eclReturn) {
-          val result: Future[Result]       =
-            controller.onSubmit(NormalMode)(fakeRequest.withFormUrlEncodedBody(("value", "")))
-          val formWithErrors: Form[String] = form.bind(Map("value" -> ""))
+    "return a Bad Request with form errors when invalid data is submitted" in forAll { (eclReturn: EclReturn) =>
+      new TestContext(eclReturn) {
+        val result: Future[Result]       =
+          controller.onSubmit(NormalMode)(fakeRequest.withFormUrlEncodedBody(("value", "")))
+        val formWithErrors: Form[String] = form.bind(Map("value" -> ""))
 
-          status(result) shouldBe BAD_REQUEST
+        status(result) shouldBe BAD_REQUEST
 
-          contentAsString(result) shouldBe view(formWithErrors, NormalMode)(fakeRequest, messages).toString
-        }
+        contentAsString(result) shouldBe view(formWithErrors, NormalMode)(fakeRequest, messages).toString
+      }
     }
   }
 }

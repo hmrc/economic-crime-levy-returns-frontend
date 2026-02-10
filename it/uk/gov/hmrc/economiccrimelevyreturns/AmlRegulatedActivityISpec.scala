@@ -1,6 +1,5 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.scalacheck.Gen
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
@@ -9,6 +8,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
+import org.scalacheck.Arbitrary.arbitrary
 
 class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -46,8 +46,8 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the Aml regulated HTML view" in {
       stubAuthorised()
 
-      val eclReturn        = random[EclReturn]
-      val sessionData      = random[SessionData]
+      val eclReturn        = arbitrary[EclReturn].sample.get
+      val sessionData      = arbitrary[SessionData].sample.get
       val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
@@ -70,8 +70,9 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn        =
-        random[EclReturn].copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
-      val sessionData      = random[SessionData]
+        arbitrary[EclReturn].sample.get
+          .copy(carriedOutAmlRegulatedActivityForFullFy = None, amlRegulatedActivityLength = None)
+      val sessionData      = arbitrary[SessionData].sample.get
       val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
@@ -98,12 +99,12 @@ class AmlRegulatedActivityISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val eclReturn        =
-        random[EclReturn].copy(
+        arbitrary[EclReturn].sample.get.copy(
           internalId = testInternalId,
           carriedOutAmlRegulatedActivityForFullFy = None,
           amlRegulatedActivityLength = None
         )
-      val sessionData      = random[SessionData]
+      val sessionData      = arbitrary[SessionData].sample.get
       val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)

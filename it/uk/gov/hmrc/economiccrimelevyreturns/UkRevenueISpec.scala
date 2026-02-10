@@ -1,6 +1,5 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
@@ -9,6 +8,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
+import org.scalacheck.Arbitrary.arbitrary
 
 class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -29,7 +29,7 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
   }
 
   private def validRevenue: BigDecimal =
-    random[BigDecimal]
+    arbitrary[BigDecimal].sample.get
 
   s"GET ${routes.UkRevenueController.onPageLoad(NormalMode).url}" should {
     behave like authorisedActionRoute(routes.UkRevenueController.onPageLoad(NormalMode))
@@ -37,8 +37,8 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the UK revenue view" in {
       stubAuthorised()
 
-      val eclReturn        = random[EclReturn]
-      val sessionData      = random[SessionData]
+      val eclReturn        = arbitrary[EclReturn].sample.get
+      val sessionData      = arbitrary[SessionData].sample.get
       val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn)
@@ -60,11 +60,11 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
     "save the UK revenue then redirect to the AML regulated activity page when the calculated band size is not Small" in {
       stubAuthorised()
 
-      val eclReturn           = random[EclReturn]
+      val eclReturn           = arbitrary[EclReturn].sample.get
         .copy(amlRegulatedActivityLength = Some(365), relevantAp12Months = Some(true), calculatedLiability = None)
       val ukRevenue           = bigDecimalInRange(UkRevenueThreshold.toDouble, MinMaxValues.revenueMax.toDouble).sample.get
-      val calculatedLiability = random[CalculatedLiability].copy(calculatedBand = Large)
-      val sessionData         = random[SessionData]
+      val calculatedLiability = arbitrary[CalculatedLiability].sample.get.copy(calculatedBand = Large)
+      val sessionData         = arbitrary[SessionData].sample.get
       val validSessionData    = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn.copy(relevantApRevenue = None))
@@ -100,12 +100,12 @@ class UkRevenueISpec extends ISpecBase with AuthorisedBehaviour {
     "save the UK revenue then redirect to the ECL amount due page when the calculated band size is Small (nil return)" in {
       stubAuthorised()
 
-      val eclReturn           = random[EclReturn]
+      val eclReturn           = arbitrary[EclReturn].sample.get
         .copy(amlRegulatedActivityLength = Some(365), relevantAp12Months = Some(true), calculatedLiability = None)
       val ukRevenue           = bigDecimalInRange(MinMaxValues.revenueMin.toDouble, UkRevenueThreshold.toDouble).sample.get
       val calculatedLiability =
-        random[CalculatedLiability].copy(calculatedBand = Small)
-      val sessionData         = random[SessionData]
+        arbitrary[CalculatedLiability].sample.get.copy(calculatedBand = Small)
+      val sessionData         = arbitrary[SessionData].sample.get
       val validSessionData    = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetReturn(eclReturn.copy(relevantApRevenue = None))

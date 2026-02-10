@@ -1,6 +1,5 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.scalacheck.Gen
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
@@ -9,14 +8,15 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculateLiabilityRequest, CalculatedLiability, CheckMode, EclReturn, NormalMode, SessionData, SessionKeys}
+import org.scalacheck.Arbitrary.arbitrary
 
 class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
-  val ukRevenue: BigDecimal = random[BigDecimal]
+  val ukRevenue: BigDecimal = arbitrary[BigDecimal].sample.get
 
   private def updateAmlActivityLength(eclReturn: EclReturn, length: Int): EclReturn = {
     val updatedReturn       = eclReturn.copy(amlRegulatedActivityLength = Some(length))
-    val calculatedLiability = random[CalculatedLiability]
+    val calculatedLiability = arbitrary[CalculatedLiability].sample.get
     stubCalculateLiability(
       CalculateLiabilityRequest(
         length,
@@ -59,7 +59,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
     "respond with 200 status and the AML regulated activity length view" in {
       stubAuthorised()
 
-      stubGetReturn(testSetup(random[EclReturn]))
+      stubGetReturn(testSetup(arbitrary[EclReturn].sample.get))
       stubUpsertSession()
       stubGetEmptyObligations()
 
@@ -79,7 +79,7 @@ class AmlRegulatedActivityLengthISpec extends ISpecBase with AuthorisedBehaviour
 
       val amlActivityLength = validLength
 
-      val eclReturn = testSetup(random[EclReturn])
+      val eclReturn = testSetup(arbitrary[EclReturn].sample.get)
       stubGetReturn(clearAmlActivityLength(eclReturn))
       stubUpsertReturn(updateAmlActivityLength(eclReturn, amlActivityLength))
       stubGetEmptyObligations()

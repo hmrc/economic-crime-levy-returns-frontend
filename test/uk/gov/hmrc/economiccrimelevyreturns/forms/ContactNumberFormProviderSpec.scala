@@ -53,11 +53,10 @@ class ContactNumberFormProviderSpec extends StringFieldBehaviours {
 
     "fail to bind an invalid telephone number" in forAll(
       stringsWithMaxLength(MinMaxValues.telephoneNumberMaxLength).retryUntil(!_.matches(Regex.telephoneNumberRegex))
-    ) {
-      invalidNumber: String =>
-        val result: Form[String] = form.bind(Map("value" -> invalidNumber))
+    ) { (invalidNumber: String) =>
+      val result: Form[String] = form.bind(Map("value" -> invalidNumber))
 
-        result.errors.map(_.message) should contain only "contactNumber.error.invalid"
+      result.errors.map(_.message) should contain only "contactNumber.error.invalid"
     }
   }
 }

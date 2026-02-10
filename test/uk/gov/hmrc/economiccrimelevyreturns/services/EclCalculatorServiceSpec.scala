@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.services
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.economiccrimelevyreturns.connectors.EclCalculatorConnector
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, ObligationDetails}
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import org.mockito.Mockito.{reset, times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 
 import scala.concurrent.Future
 
@@ -35,12 +36,12 @@ class EclCalculatorServiceSpec extends ServiceSpec {
 
   def getValidReturn(eclReturn: EclReturn): EclReturn =
     eclReturn.copy(
-      relevantAp12Months = Some(random[Boolean]),
-      relevantApLength = Some(random[Int]),
-      relevantApRevenue = Some(random[BigDecimal]),
-      carriedOutAmlRegulatedActivityForFullFy = Some(random[Boolean]),
-      amlRegulatedActivityLength = Some(random[Int]),
-      obligationDetails = Some(random[ObligationDetails])
+      relevantAp12Months = Some(arbitrary[Boolean].sample.get),
+      relevantApLength = Some(arbitrary[Int].sample.get),
+      relevantApRevenue = Some(arbitrary[BigDecimal].sample.get),
+      carriedOutAmlRegulatedActivityForFullFy = Some(arbitrary[Boolean].sample.get),
+      amlRegulatedActivityLength = Some(arbitrary[Int].sample.get),
+      obligationDetails = Some(arbitrary[ObligationDetails].sample.get)
     )
 
   "calculateLiability" should {
