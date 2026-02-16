@@ -29,7 +29,10 @@ import java.time.LocalDate
 case class AmendReturnPdfViewModel(
   date: LocalDate,
   eclReturn: EclReturn,
-  eclReturnSubmission: Option[GetEclReturnSubmissionResponse]
+  eclReturnSubmission: Option[GetEclReturnSubmissionResponse],
+  customerName: Option[String],
+  returnYear: Option[String],
+  chargeReference: Option[String]
 ) extends TrackEclReturnChanges {
 
   def amendedAnswersDetails()(implicit messages: Messages): SummaryList =
