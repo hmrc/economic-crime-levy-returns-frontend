@@ -98,10 +98,6 @@ case class AmendReturnPdfViewModel(
           formatRow(ContactNameSummary.row(eclReturn.contactName))
         ) ++
         addIf(
-          isAmendReturnAndNot(hasContactNameChanged),
-          formatRow(ContactNameSummary.row(eclReturn.contactName))
-        ) ++
-        addIf(
           isAmendReturnAndNot(hasContactRoleChanged),
           formatRow(ContactRoleSummary.row(eclReturn.contactRole))
         ) ++
