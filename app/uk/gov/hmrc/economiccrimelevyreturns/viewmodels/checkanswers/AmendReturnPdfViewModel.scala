@@ -33,8 +33,7 @@ case class AmendReturnPdfViewModel(
   eclReturn: EclReturn,
   eclReturnSubmission: Option[GetEclReturnSubmissionResponse],
   customerName: Option[String],
-  returnYear: Option[String],
-  chargeReference: Option[String]
+  returnYear: Option[String]
 ) extends TrackEclReturnChanges {
 
   def amendedAnswersDetails()(implicit messages: Messages): SummaryList =

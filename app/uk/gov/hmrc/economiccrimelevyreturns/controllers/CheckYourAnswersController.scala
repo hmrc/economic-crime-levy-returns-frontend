@@ -301,8 +301,7 @@ class CheckYourAnswersController @Inject() (
       eclReturn = request.eclReturn,
       eclReturnSubmission = Some(eclReturnSubmission),
       customerName = Some(extractName(subscription.legalEntityDetails)),
-      returnYear = request.eclReturn.obligationDetails.map(ViewUtils.formatObligationPeriodYears),
-      chargeReference = eclReturnSubmission.chargeDetails.chargeReference
+      returnYear = request.eclReturn.obligationDetails.map(ViewUtils.formatObligationPeriodYears)
     )
 
   private def pdfViewModelWithoutEclReturnSubmission()(implicit
@@ -313,8 +312,7 @@ class CheckYourAnswersController @Inject() (
       eclReturn = request.eclReturn,
       eclReturnSubmission = None,
       customerName = None,
-      returnYear = request.eclReturn.obligationDetails.map(ViewUtils.formatObligationPeriodYears),
-      chargeReference = None
+      returnYear = request.eclReturn.obligationDetails.map(ViewUtils.formatObligationPeriodYears)
     )
 
   private def viewModelWithEclReturnSubmission(periodKey: String)(implicit
