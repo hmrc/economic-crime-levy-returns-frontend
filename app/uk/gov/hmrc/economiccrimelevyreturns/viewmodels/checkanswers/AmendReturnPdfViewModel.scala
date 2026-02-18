@@ -23,6 +23,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetEclReturnSubmissionResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{SummaryList, SummaryListRow}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.Key
 
 import java.time.LocalDate
 
@@ -90,10 +92,15 @@ case class AmendReturnPdfViewModel(
 
   def contactDetails()(implicit messages: Messages): SummaryList = SummaryListViewModel(
     rows = (
-      addIf(
-        isAmendReturnAndNot(hasContactNameChanged),
-        formatRow(ContactNameSummary.row(eclReturn.contactName))
-      ) ++
+      Seq(formatRow(entityNameRow())) ++
+        addIf(
+          isAmendReturnAndNot(hasContactNameChanged),
+          formatRow(ContactNameSummary.row(eclReturn.contactName))
+        ) ++
+        addIf(
+          isAmendReturnAndNot(hasContactNameChanged),
+          formatRow(ContactNameSummary.row(eclReturn.contactName))
+        ) ++
         addIf(
           isAmendReturnAndNot(hasContactRoleChanged),
           formatRow(ContactRoleSummary.row(eclReturn.contactRole))
@@ -112,7 +119,12 @@ case class AmendReturnPdfViewModel(
   def organisationDetails()(implicit request: ReturnDataRequest[_], messages: Messages): SummaryList =
     SummaryListViewModel(
       rows = (
-        Seq(EclReferenceNumberSummary.row(request.eclRegistrationReference)) ++
+        Seq(formatRow(returnYearRow()), formatRow(EclReferenceNumberSummary.row(request.eclRegistrationReference))) ++
+          addIf(
+            isAmendReturnAndNot(hasRelevantAp12MonthsChanged),
+            formatRow(RelevantAp12MonthsSummary.row(eclReturn.relevantAp12Months))
+          ) ++
+          Seq(EclReferenceNumberSummary.row(request.eclRegistrationReference)) ++
           addIf(
             isAmendReturnAndNot(hasRelevantAp12MonthsChanged),
             formatRow(RelevantAp12MonthsSummary.row(eclReturn.relevantAp12Months))
@@ -147,6 +159,22 @@ case class AmendReturnPdfViewModel(
   private def addIf[T](condition: Boolean, value: T): Seq[T] = if (condition) Seq(value) else Seq.empty
 
   private def formatRow(row: Option[SummaryListRow]): Option[SummaryListRow] = row.map(_.copy(actions = None))
+
+  private def entityNameRow()(implicit messages: Messages): Option[SummaryListRow] =
+    customerName.map { name =>
+      SummaryListRowViewModel(
+        key = Key(Text("Entity name")),
+        value = ValueViewModel(Text(name))
+      )
+    }
+
+  private def returnYearRow()(implicit messages: Messages): Option[SummaryListRow] =
+    returnYear.map { year =>
+      SummaryListRowViewModel(
+        key = Key(Text("Return year")),
+        value = ValueViewModel(Text(year))
+      )
+    }
 }
 
 object AmendReturnPdfViewModel {

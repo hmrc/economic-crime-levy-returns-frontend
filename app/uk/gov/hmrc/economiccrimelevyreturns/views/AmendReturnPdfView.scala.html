@@ -26,36 +26,6 @@
 @pdfLayout(messages("otherRegistration.pdfHtml.title")) {
     <p class="govuk-body" align="right">@messages("otherRegistration.pdfHtml.submissionDate", viewModel.date)</p>
 
-@* TEMP: return year debug output *@
-@viewModel.returnYear.map { year =>
-<p class="govuk-body">
-    <strong>Return year:</strong> @year
-</p>
-}
-
-
-@viewModel.customerName.map { name =>
-<p class="govuk-body">
-    <strong>Customer name:</strong> @name
-</p>
-}
-
-
-@viewModel.chargeReference.map { ref =>
-<p class="govuk-body">
-    <strong>Charge reference:</strong> @ref
-</p>
-}
-
-<p class="govuk-body"><strong>PeriodKey (chargeDetails):</strong> @viewModel.eclReturnSubmission.map(_.chargeDetails.periodKey).getOrElse("NONE")</p>
-<p class="govuk-body"><strong>ReturnType (chargeDetails):</strong> @viewModel.eclReturnSubmission.map(_.chargeDetails.returnType).getOrElse("NONE")</p>
-
-
-<p class="govuk-body">
-    <strong>Charge reference:</strong> @viewModel.chargeReference.getOrElse("MISSING")
-</p>
-
-
     <h2>@messages("checkYourAnswers.amendReason.title")</h2>
     @govukSummaryList(viewModel.amendReasonDetails())
 

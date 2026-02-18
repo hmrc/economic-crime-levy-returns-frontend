@@ -283,7 +283,7 @@ class CheckYourAnswersController @Inject() (
           last  <- details.lastName
         } yield s"$first $last"
       }
-      .getOrElse("Name unavailable") // might change this not sure yet
+      .getOrElse("Name unavailable")
 
   private def pdfViewModelWithEclReturnSubmission(periodKey: String)(implicit
     hc: HeaderCarrier,
@@ -305,7 +305,6 @@ class CheckYourAnswersController @Inject() (
       chargeReference = eclReturnSubmission.chargeDetails.chargeReference
     )
 
-  // What actually is this.. do i need to populate new fields here too?
   private def pdfViewModelWithoutEclReturnSubmission()(implicit
     request: ReturnDataRequest[AnyContent]
   ): AmendReturnPdfViewModel =
