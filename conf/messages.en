@@ -227,6 +227,7 @@ checkYourAnswers.contactEmail.label = Email address
 checkYourAnswers.contactNumber.label = Telephone number
 checkYourAnswers.amendReason.title = Reason for amending
 checkYourAnswers.amendReason.label = Additional Information
+checkYourAnswers.amendmentDetails.title = Amendment details
 checkYourAnswers.nowSend = Now submit your return
 checkYourAnswers.bySubmitting = By submitting this return, you are confirming that, to the best of your knowledge, the details you are providing are correct and complete.
 checkYourAnswers.confirmAndSend = Confirm and send

@@ -82,20 +82,21 @@ case class AmendReturnPdfViewModel(
       ).flatten
     ).withCssClass("govuk-!-margin-bottom-9")
 
-  def amendReasonDetails()(implicit messages: Messages): SummaryList =
+  def amendmentDetails()(implicit messages: Messages): SummaryList =
     SummaryListViewModel(
       rows = Seq(
-        formatRow(AmendReasonSummary.row(eclReturn.amendReason))
+        formatRow(returnYearRow()),
+        formatRow(entityNameRow()),
+        formatRow(amendReasonRow())
       ).flatten
     ).withCssClass("govuk-!-margin-bottom-9")
 
   def contactDetails()(implicit messages: Messages): SummaryList = SummaryListViewModel(
     rows = (
-      Seq(formatRow(entityNameRow())) ++
-        addIf(
-          isAmendReturnAndNot(hasContactNameChanged),
-          formatRow(ContactNameSummary.row(eclReturn.contactName))
-        ) ++
+      addIf(
+        isAmendReturnAndNot(hasContactNameChanged),
+        formatRow(ContactNameSummary.row(eclReturn.contactName))
+      ) ++
         addIf(
           isAmendReturnAndNot(hasContactRoleChanged),
           formatRow(ContactRoleSummary.row(eclReturn.contactRole))
@@ -114,12 +115,7 @@ case class AmendReturnPdfViewModel(
   def organisationDetails()(implicit request: ReturnDataRequest[_], messages: Messages): SummaryList =
     SummaryListViewModel(
       rows = (
-        Seq(formatRow(returnYearRow()), formatRow(EclReferenceNumberSummary.row(request.eclRegistrationReference))) ++
-          addIf(
-            isAmendReturnAndNot(hasRelevantAp12MonthsChanged),
-            formatRow(RelevantAp12MonthsSummary.row(eclReturn.relevantAp12Months))
-          ) ++
-          Seq(EclReferenceNumberSummary.row(request.eclRegistrationReference)) ++
+        Seq(EclReferenceNumberSummary.row(request.eclRegistrationReference)) ++
           addIf(
             isAmendReturnAndNot(hasRelevantAp12MonthsChanged),
             formatRow(RelevantAp12MonthsSummary.row(eclReturn.relevantAp12Months))
@@ -168,6 +164,14 @@ case class AmendReturnPdfViewModel(
       SummaryListRowViewModel(
         key = Key(Text("Return year")),
         value = ValueViewModel(Text(year))
+      )
+    }
+
+  private def amendReasonRow()(implicit messages: Messages): Option[SummaryListRow] =
+    eclReturn.amendReason.map { reason =>
+      SummaryListRowViewModel(
+        key = Key(Text("Reason for amending")),
+        value = ValueViewModel(Text(reason))
       )
     }
 }
