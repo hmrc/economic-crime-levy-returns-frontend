@@ -31,6 +31,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, RegistrationService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.utils.CorrelationIdHelper
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
+import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView, ErrorTemplate}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -274,20 +275,34 @@ class CheckYourAnswersController @Inject() (
       }
     }
 
+  private def extractName(details: GetLegalEntityDetails): String =
+    details.organisationName
+      .orElse {
+        for {
+          first <- details.firstName
+          last  <- details.lastName
+        } yield s"$first $last"
+      }
+      .getOrElse("Name unavailable")
+
   private def pdfViewModelWithEclReturnSubmission(periodKey: String)(implicit
     hc: HeaderCarrier,
     request: ReturnDataRequest[AnyContent]
   ): EitherT[Future, ResponseError, AmendReturnPdfViewModel] =
-    returnsService
-      .getEclReturnSubmission(periodKey, request.eclRegistrationReference)
-      .map(eclReturnSubmission =>
-        AmendReturnPdfViewModel(
-          date = LocalDate.now(),
-          eclReturn = request.eclReturn,
-          eclReturnSubmission = Some(eclReturnSubmission)
-        )
-      )
-      .asResponseError
+    for {
+      eclReturnSubmission <- returnsService
+                               .getEclReturnSubmission(periodKey, request.eclRegistrationReference)
+                               .asResponseError
+      subscription        <- registrationService
+                               .getSubscription(request.eclRegistrationReference)
+                               .asResponseError
+    } yield AmendReturnPdfViewModel(
+      date = LocalDate.now(),
+      eclReturn = request.eclReturn,
+      eclReturnSubmission = Some(eclReturnSubmission),
+      customerName = Some(extractName(subscription.legalEntityDetails)),
+      returnYear = request.eclReturn.obligationDetails.map(ViewUtils.formatObligationPeriodYears)
+    )
 
   private def pdfViewModelWithoutEclReturnSubmission()(implicit
     request: ReturnDataRequest[AnyContent]
@@ -295,7 +310,9 @@ class CheckYourAnswersController @Inject() (
     AmendReturnPdfViewModel(
       date = LocalDate.now(),
       eclReturn = request.eclReturn,
-      eclReturnSubmission = None
+      eclReturnSubmission = None,
+      customerName = None,
+      returnYear = request.eclReturn.obligationDetails.map(ViewUtils.formatObligationPeriodYears)
     )
 
   private def viewModelWithEclReturnSubmission(periodKey: String)(implicit

@@ -23,13 +23,17 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetEclReturnSubmissionResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.govuk.summarylist._
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{SummaryList, SummaryListRow}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.Key
 
 import java.time.LocalDate
 
 case class AmendReturnPdfViewModel(
   date: LocalDate,
   eclReturn: EclReturn,
-  eclReturnSubmission: Option[GetEclReturnSubmissionResponse]
+  eclReturnSubmission: Option[GetEclReturnSubmissionResponse],
+  customerName: Option[String],
+  returnYear: Option[String]
 ) extends TrackEclReturnChanges {
 
   def amendedAnswersDetails()(implicit messages: Messages): SummaryList =
@@ -78,10 +82,12 @@ case class AmendReturnPdfViewModel(
       ).flatten
     ).withCssClass("govuk-!-margin-bottom-9")
 
-  def amendReasonDetails()(implicit messages: Messages): SummaryList =
+  def amendmentDetails()(implicit messages: Messages): SummaryList =
     SummaryListViewModel(
       rows = Seq(
-        formatRow(AmendReasonSummary.row(eclReturn.amendReason))
+        formatRow(returnYearRow()),
+        formatRow(entityNameRow()),
+        formatRow(amendReasonRow())
       ).flatten
     ).withCssClass("govuk-!-margin-bottom-9")
 
@@ -144,6 +150,30 @@ case class AmendReturnPdfViewModel(
   private def addIf[T](condition: Boolean, value: T): Seq[T] = if (condition) Seq(value) else Seq.empty
 
   private def formatRow(row: Option[SummaryListRow]): Option[SummaryListRow] = row.map(_.copy(actions = None))
+
+  private def entityNameRow()(implicit messages: Messages): Option[SummaryListRow] =
+    customerName.map { name =>
+      SummaryListRowViewModel(
+        key = Key(Text("Entity name")),
+        value = ValueViewModel(Text(name))
+      )
+    }
+
+  private def returnYearRow()(implicit messages: Messages): Option[SummaryListRow] =
+    returnYear.map { year =>
+      SummaryListRowViewModel(
+        key = Key(Text("Return year")),
+        value = ValueViewModel(Text(year))
+      )
+    }
+
+  private def amendReasonRow()(implicit messages: Messages): Option[SummaryListRow] =
+    eclReturn.amendReason.map { reason =>
+      SummaryListRowViewModel(
+        key = Key(Text("Reason for amending")),
+        value = ValueViewModel(Text(reason))
+      )
+    }
 }
 
 object AmendReturnPdfViewModel {
