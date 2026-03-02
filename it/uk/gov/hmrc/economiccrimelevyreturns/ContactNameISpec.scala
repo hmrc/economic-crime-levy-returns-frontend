@@ -7,6 +7,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
+import org.scalacheck.Arbitrary.arbitrary
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries.given
 
 class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -35,7 +37,7 @@ class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the contact name HTML view" in {
       stubAuthorised()
 
-      stubGetReturn(testSetup(random[EclReturn]))
+      stubGetReturn(testSetup(arbitrary[EclReturn].sample.get))
       stubUpsertSession()
       stubGetEmptyObligations()
 
@@ -54,7 +56,7 @@ class ContactNameISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val name      = validContactName
-      val eclReturn = clearContactName(testSetup(random[EclReturn]))
+      val eclReturn = clearContactName(testSetup(arbitrary[EclReturn].sample.get))
 
       stubGetReturn(eclReturn)
       stubUpsertReturn(updateContactName(eclReturn, name))

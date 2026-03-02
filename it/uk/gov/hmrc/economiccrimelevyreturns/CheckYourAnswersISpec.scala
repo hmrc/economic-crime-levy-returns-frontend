@@ -1,7 +1,6 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo, verify}
-import org.scalacheck.ScalacheckShapeless.derivedArbitrary
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
@@ -13,6 +12,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataValidationError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetEclReturnSubmissionResponse, Languages, SessionData, SessionKeys}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import org.scalacheck.Arbitrary.arbitrary
+import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries.given
 
 class CheckYourAnswersISpec extends ISpecBase with AuthorisedBehaviour {
 
