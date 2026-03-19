@@ -33,6 +33,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode}
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.ContactEmailPageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.ContactEmailView
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 

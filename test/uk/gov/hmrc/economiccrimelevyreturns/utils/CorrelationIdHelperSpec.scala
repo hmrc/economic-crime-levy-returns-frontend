@@ -21,7 +21,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 class CorrelationIdHelperSpec extends SpecBase {
 
   "getOrCreateCorrelationId" should {
-    "return the correlation id if there is one on the request" in forAll { id: String =>
+    "return the correlation id if there is one on the request" in forAll { (id: String) =>
       val result  =
         CorrelationIdHelper.getOrCreateCorrelationId(fakeRequest.withHeaders(HttpHeader.xCorrelationId -> id))
       val headers = result.headers(Seq(HttpHeader.xCorrelationId))

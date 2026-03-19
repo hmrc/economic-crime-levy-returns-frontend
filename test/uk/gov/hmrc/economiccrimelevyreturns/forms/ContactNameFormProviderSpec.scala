@@ -52,7 +52,7 @@ class ContactNameFormProviderSpec extends StringFieldBehaviours {
 
     "fail to bind an invalid name" in forAll(
       stringsWithMaxLength(MinMaxValues.nameMaxLength).retryUntil(!_.matches(Regex.nameRegex))
-    ) { invalidName: String =>
+    ) { (invalidName: String) =>
       val result: Form[String] = form.bind(Map("value" -> invalidName))
 
       result.errors.map(_.message) should contain only "contactName.error.invalid"

@@ -1,6 +1,5 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.scalacheck.Gen
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
@@ -9,6 +8,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
+import org.scalacheck.Arbitrary.arbitrary
 
 class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -37,7 +37,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the relevant AP length view" in {
       stubAuthorised()
 
-      stubGetReturn(testSetup(random[EclReturn]))
+      stubGetReturn(testSetup(arbitrary[EclReturn].sample.get))
       stubUpsertSession()
       stubGetEmptyObligations()
 
@@ -55,7 +55,7 @@ class RelevantApLengthISpec extends ISpecBase with AuthorisedBehaviour {
     "save the relevant AP length then redirect to the UK revenue page" in {
       stubAuthorised()
 
-      val eclReturn        = testSetup(random[EclReturn])
+      val eclReturn        = testSetup(arbitrary[EclReturn].sample.get)
       val relevantApLength = validLength
 
       stubGetReturn(clearApLength(eclReturn))

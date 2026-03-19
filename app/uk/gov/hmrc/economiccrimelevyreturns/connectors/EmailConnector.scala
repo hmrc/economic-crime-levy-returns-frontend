@@ -26,6 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailReq
 import uk.gov.hmrc.economiccrimelevyreturns.models.email._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, Retries, StringContextOps}
+import play.api.libs.ws.writeableOf_JsValue
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}

@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.models
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.libs.json._
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
+import org.scalacheck.Arbitrary.arbitrary
 
 class EclReturnSpec extends SpecBase {
 
@@ -28,9 +28,9 @@ class EclReturnSpec extends SpecBase {
 
   def returnWithContactInfo(hasName: Boolean, hasRole: Boolean, hasEmail: Boolean, hasNumber: Boolean): EclReturn = {
     def value(isPresent: Boolean): Option[String] =
-      if (isPresent) Some(random[String]) else None
+      if (isPresent) Some(arbitrary[String].sample.get) else None
 
-    random[EclReturn].copy(
+    arbitrary[EclReturn].sample.get.copy(
       contactName = value(hasName),
       contactRole = value(hasRole),
       contactEmailAddress = value(hasEmail),

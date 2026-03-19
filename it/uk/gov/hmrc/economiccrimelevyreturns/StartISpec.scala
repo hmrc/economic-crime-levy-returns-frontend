@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
+import org.scalacheck.Arbitrary.arbitrary
 
 import java.time.LocalDate
 
@@ -47,7 +47,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
     "redirect to the start page if obligation details are held in the return data" in {
       stubAuthorised()
 
-      val obligationDetails = random[ObligationDetails]
+      val obligationDetails = arbitrary[ObligationDetails].sample.get
 
       stubGetReturn(
         EclReturn.empty(testInternalId, Some(FirstTimeReturn)).copy(obligationDetails = Some(obligationDetails))
@@ -68,7 +68,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the correct HTML view if the period key is for an open obligation and the due date is 30/09/2023" in {
       stubAuthorised()
 
-      val openObligation = random[ObligationDetails].copy(
+      val openObligation = arbitrary[ObligationDetails].sample.get.copy(
         status = Open,
         inboundCorrespondenceFromDate = LocalDate.parse("2022-04-01"),
         inboundCorrespondenceToDate = LocalDate.parse("2023-03-31"),
@@ -79,7 +79,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
       val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
       val emptyReturn    = EclReturn.empty(testInternalId, Some(FirstTimeReturn))
 
-      val eclRegistrationReference = random[String]
+      val eclRegistrationReference = arbitrary[String].sample.get
       val eclRegistrationDate      = "20230901"
 
       stubQueryKnownFacts(eclRegistrationReference, eclRegistrationDate)
@@ -100,7 +100,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the correct HTML view if the period key is for an open obligation and the due date is 30/09/2024" in {
       stubAuthorised()
 
-      val openObligation = random[ObligationDetails].copy(
+      val openObligation = arbitrary[ObligationDetails].sample.get.copy(
         status = Open,
         inboundCorrespondenceFromDate = LocalDate.parse("2023-04-01"),
         inboundCorrespondenceToDate = LocalDate.parse("2024-03-31"),
@@ -111,7 +111,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
       val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
       val emptyReturn    = EclReturn.empty(testInternalId, Some(FirstTimeReturn))
 
-      val eclRegistrationReference = random[String]
+      val eclRegistrationReference = arbitrary[String].sample.get
       val eclRegistrationDate      = "20230901"
 
       stubQueryKnownFacts(eclRegistrationReference, eclRegistrationDate)
@@ -134,16 +134,16 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
 
       val obligationData = ObligationData(obligations = Seq.empty)
 
-      val eclRegistrationReference = random[String]
+      val eclRegistrationReference = arbitrary[String].sample.get
       val eclRegistrationDate      = "20230901"
 
-      val eclReturn = random[EclReturn].copy(obligationDetails = None)
+      val eclReturn = arbitrary[EclReturn].sample.get.copy(obligationDetails = None)
 
       stubQueryKnownFacts(eclRegistrationReference, eclRegistrationDate)
       stubGetObligations(obligationData)
       stubUpsertSession()
 
-      val sessionData      = random[SessionData]
+      val sessionData      = arbitrary[SessionData].sample.get
       val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
       stubGetSession(validSessionData)
       stubGetReturn(eclReturn)
@@ -157,7 +157,7 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the already submitted return HTML view if the obligation for the period key is fulfilled" in {
       stubAuthorised()
 
-      val openObligation = random[ObligationDetails].copy(
+      val openObligation = arbitrary[ObligationDetails].sample.get.copy(
         status = Fulfilled,
         inboundCorrespondenceFromDate = LocalDate.parse("2022-04-01"),
         inboundCorrespondenceToDate = LocalDate.parse("2023-03-31"),
@@ -166,16 +166,16 @@ class StartISpec extends ISpecBase with AuthorisedBehaviour {
       )
 
       val obligationData = ObligationData(obligations = Seq(Obligation(Seq(openObligation))))
-      val eclReturn      = random[EclReturn]
+      val eclReturn      = arbitrary[EclReturn].sample.get
         .copy(internalId = testInternalId, returnType = Some(FirstTimeReturn), obligationDetails = Some(openObligation))
 
-      val eclRegistrationReference = random[String]
+      val eclRegistrationReference = arbitrary[String].sample.get
       val eclRegistrationDate      = "20230901"
 
       stubQueryKnownFacts(eclRegistrationReference, eclRegistrationDate)
       stubGetObligations(obligationData)
 
-      val sessionData      = random[SessionData]
+      val sessionData      = arbitrary[SessionData].sample.get
       val validSessionData = sessionData.copy(values = Map(SessionKeys.periodKey -> testPeriodKey))
 
       stubGetSession(validSessionData)

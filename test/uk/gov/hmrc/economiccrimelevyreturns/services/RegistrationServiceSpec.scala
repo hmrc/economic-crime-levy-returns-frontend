@@ -24,6 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.GetSubscriptionResponse
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 
@@ -50,7 +51,7 @@ class RegistrationServiceSpec extends ServiceSpec {
     }
 
     "return DataHandlingError.BadGateway when when call to returns connector fails with 5xx error" in forAll {
-      eclReference: String =>
+      (eclReference: String) =>
         beforeEach()
         val errorCode = INTERNAL_SERVER_ERROR
         val message   = "INTERNAL_SERVER_ERROR"
@@ -67,7 +68,7 @@ class RegistrationServiceSpec extends ServiceSpec {
     }
 
     "return DataHandlingError.InternalUnexpectedError when when call to returns connector fails with an unexpected error" in forAll {
-      eclReference: String =>
+      (eclReference: String) =>
         beforeEach()
         val throwable: Exception = new Exception()
 

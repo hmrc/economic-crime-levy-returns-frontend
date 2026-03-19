@@ -1,12 +1,12 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
+import org.scalacheck.Arbitrary.arbitrary
 
 import java.time.LocalDate
 
@@ -37,16 +37,16 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the amendment reason HTML view" in {
       stubAuthorised()
 
-      val fromFY            = random[LocalDate]
-      val toFY              = random[LocalDate]
-      val updatedObligation = random[ObligationDetails].copy(
+      val fromFY            = arbitrary[LocalDate].sample.get
+      val toFY              = arbitrary[LocalDate].sample.get
+      val updatedObligation = arbitrary[ObligationDetails].sample.get.copy(
         inboundCorrespondenceFromDate = fromFY,
         inboundCorrespondenceToDate = toFY
       )
 
       testSetup()
       stubGetReturn(
-        clearAmendReason(random[EclReturn])
+        clearAmendReason(arbitrary[EclReturn].sample.get)
           .copy(obligationDetails = Some(updatedObligation))
       )
       stubGetEmptyObligations()
@@ -66,7 +66,7 @@ class AmendReasonISpec extends ISpecBase with AuthorisedBehaviour {
     "save the provided reason then redirect to the contact role page" in {
       stubAuthorised()
 
-      val eclReturn = clearAmendReason(random[EclReturn])
+      val eclReturn = clearAmendReason(arbitrary[EclReturn].sample.get)
       val reason    = validReason
 
       testSetup()

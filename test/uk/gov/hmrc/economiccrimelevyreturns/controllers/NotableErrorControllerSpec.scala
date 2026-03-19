@@ -47,7 +47,7 @@ class NotableErrorControllerSpec extends SpecBase {
   }
 
   "answerAreInvalid" should {
-    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
+    "return OK and the correct view" in forAll { (eclReturn: EclReturn) =>
       new TestContext(eclReturn) {
         val result: Future[Result] = controller.answersAreInvalid()(fakeRequest)
 
@@ -59,7 +59,7 @@ class NotableErrorControllerSpec extends SpecBase {
   }
 
   "notRegistered" should {
-    "return SEE_OTHER" in forAll { eclReturn: EclReturn =>
+    "return SEE_OTHER" in forAll { (eclReturn: EclReturn) =>
       new TestContext(eclReturn) {
         val result: Future[Result] = controller.notRegistered()(fakeRequest)
 
@@ -69,7 +69,7 @@ class NotableErrorControllerSpec extends SpecBase {
   }
 
   "agentCannotSubmitReturn" should {
-    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
+    "return OK and the correct view" in forAll { (eclReturn: EclReturn) =>
       new TestContext(eclReturn) {
         val result: Future[Result] = controller.agentCannotSubmitReturn()(fakeRequest)
 
@@ -81,7 +81,7 @@ class NotableErrorControllerSpec extends SpecBase {
   }
 
   "eclReturnAlreadySubmitted" should {
-    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
+    "return OK and the correct view" in forAll { (eclReturn: EclReturn) =>
       new TestContext(eclReturn) {
         val result: Future[Result] = controller.eclReturnAlreadySubmitted()(fakeRequest)
 
@@ -93,7 +93,7 @@ class NotableErrorControllerSpec extends SpecBase {
   }
 
   "returnAmendmentAlreadyRequested" should {
-    "return OK and the correct view" in forAll { eclReturn: EclReturn =>
+    "return OK and the correct view" in forAll { (eclReturn: EclReturn) =>
       new TestContext(eclReturn) {
         val result: Future[Result] = controller.returnAmendmentAlreadyRequested()(fakeRequest)
 

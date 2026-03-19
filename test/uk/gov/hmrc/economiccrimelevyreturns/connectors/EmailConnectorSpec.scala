@@ -27,6 +27,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.email.ReturnSubmittedEmailReq
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedParameters, AmendReturnSubmittedRequest, ReturnSubmittedEmailParameters, ReturnSubmittedEmailRequest}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HttpResponse, StringContextOps, UpstreamErrorResponse}
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Try}

@@ -25,7 +25,7 @@ class UkRevenueDataCleanupSpec extends SpecBase {
   val dataCleanup = new UkRevenueDataCleanup
 
   "cleanup" should {
-    "return an ECL return with the calculated liability set to none" in forAll { eclReturn: EclReturn =>
+    "return an ECL return with the calculated liability set to none" in forAll { (eclReturn: EclReturn) =>
       dataCleanup.cleanup(eclReturn) shouldBe eclReturn.copy(
         calculatedLiability = None
       )

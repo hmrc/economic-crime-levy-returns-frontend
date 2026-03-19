@@ -1,6 +1,5 @@
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
@@ -8,6 +7,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.MinMaxValues
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models._
+import org.scalacheck.Arbitrary.arbitrary
 
 class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -36,7 +36,7 @@ class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the contact number HTML view" in {
       stubAuthorised()
 
-      val eclReturn = testSetup(random[EclReturn])
+      val eclReturn = testSetup(arbitrary[EclReturn].sample.get)
 
       stubGetReturn(eclReturn)
       stubUpsertSession()
@@ -56,7 +56,7 @@ class ContactNumberISpec extends ISpecBase with AuthorisedBehaviour {
       stubAuthorised()
 
       val number    = validContactNumber
-      val eclReturn = testSetup(random[EclReturn])
+      val eclReturn = testSetup(arbitrary[EclReturn].sample.get)
 
       stubGetReturn(clearContactNumber(eclReturn))
       stubUpsertReturn(updateContactNumber(eclReturn, number))

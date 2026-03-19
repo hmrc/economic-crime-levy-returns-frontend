@@ -16,19 +16,21 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.generators
 
-import org.scalacheck.Arbitrary
-import org.scalacheck.derive.MkArbitrary
+import org.scalacheck.{Arbitrary, Gen}
+import io.github.martinhh.derived.scalacheck.deriveArbitrary
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
+import scala.deriving.Mirror
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.EclTestData
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.QueryKnownFactsResponse
 import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedParameters, ReturnSubmittedEmailParameters}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataValidationError, ErrorCode}
 import uk.gov.hmrc.economiccrimelevyreturns.models._
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.derivedArbitrary
 
 object CachedArbitraries extends EclTestData with Generators {
 
-  private def mkArb[T](implicit mkArb: MkArbitrary[T]): Arbitrary[T] = MkArbitrary[T].arbitrary
+  private inline def mkArb[T](using Mirror.Of[T]): Arbitrary[T] =
+    deriveArbitrary[T]
 
   implicit lazy val arbAmendReturnSubmittedEmailParameters: Arbitrary[AmendReturnSubmittedParameters] = mkArb
   implicit lazy val arbBand: Arbitrary[Band]                                                          = mkArb
@@ -47,4 +49,9 @@ object CachedArbitraries extends EclTestData with Generators {
   implicit lazy val arbReturnSubmittedEmailParameters: Arbitrary[ReturnSubmittedEmailParameters]      = mkArb
   implicit lazy val arbReturnType: Arbitrary[ReturnType]                                              = mkArb
   implicit lazy val arbSubmitEclReturnResponse: Arbitrary[SubmitEclReturnResponse]                    = mkArb
+  implicit lazy val arbObligation: Arbitrary[Obligation]                                              = mkArb
+  implicit lazy val arbGetEclReturnChargeDetails: Arbitrary[GetEclReturnChargeDetails]                = mkArb
+  implicit lazy val arbGetEclReturnDeclarationDetails: Arbitrary[GetEclReturnDeclarationDetails]      = mkArb
+  implicit lazy val arbGetEclReturnDetails: Arbitrary[GetEclReturnDetails]                            = mkArb
+  implicit lazy val arbGetEclReturnSubmissionResponse: Arbitrary[GetEclReturnSubmissionResponse]      = mkArb
 }

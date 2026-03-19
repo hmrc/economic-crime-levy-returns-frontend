@@ -28,6 +28,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, ReturnDataRequest}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 
@@ -52,12 +53,14 @@ class DataRetrievalActionSpec extends SpecBase {
 
   "transform" should {
     "transform an AuthorisedRequest into a ReturnDataRequest" in forAll {
-      eclReturn: EclReturn => (internalId: String, eclReferenceNumber: String) =>
+      (eclReturn: EclReturn) => (internalId: String, eclReferenceNumber: String) =>
         when(mockEclReturnService.getOrCreateReturn(any())(any(), any()))
           .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
 
         when(mockSessionService.get(any(), any(), any())(any()))
-          .thenReturn(EitherT.rightT(alphaNumericString))
+          .thenReturn(
+            EitherT.pure[Future, DataHandlingError](alphaNumericString)
+          )
 
         val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
           dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))
@@ -66,7 +69,7 @@ class DataRetrievalActionSpec extends SpecBase {
     }
 
     "when period key is present in url is is extracted from the url rather than session" in forAll {
-      eclReturn: EclReturn => (internalId: String, eclReferenceNumber: String, periodKey: String) =>
+      (eclReturn: EclReturn) => (internalId: String, eclReferenceNumber: String, periodKey: String) =>
         when(mockEclReturnService.getOrCreateReturn(any())(any(), any()))
           .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
 
@@ -91,12 +94,14 @@ class DataRetrievalActionSpec extends SpecBase {
     }
 
     "when period key is not in url, it is extracted from the session" in forAll {
-      eclReturn: EclReturn => (internalId: String, eclReferenceNumber: String, periodKey: String) =>
+      (eclReturn: EclReturn) => (internalId: String, eclReferenceNumber: String, periodKey: String) =>
         when(mockEclReturnService.getOrCreateReturn(any())(any(), any()))
           .thenReturn(EitherT[Future, DataHandlingError, EclReturn](Future.successful(Right(eclReturn))))
 
         when(mockSessionService.get(any(), any(), any())(any()))
-          .thenReturn(EitherT.rightT(periodKey))
+          .thenReturn(
+            EitherT.pure[Future, DataHandlingError](alphaNumericString)
+          )
 
         val result: Future[ReturnDataRequest[AnyContentAsEmpty.type]] =
           dataRetrievalAction.transform(AuthorisedRequest(fakeRequest, internalId, eclReferenceNumber))

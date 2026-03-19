@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.controllers.actions
 
-import org.mockito.MockitoSugar.mock
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 import uk.gov.hmrc.economiccrimelevyreturns.services.SessionService

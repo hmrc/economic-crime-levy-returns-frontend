@@ -26,6 +26,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, SubmitEclReturnResponse}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HttpResponse, StringContextOps, UpstreamErrorResponse}
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Try}
@@ -78,7 +79,7 @@ class ReturnsConnectorSpec extends SpecBase {
   }
 
   "deleteReturn" should {
-    "return unit when the http client successfully returns a http response" in forAll { internalId: String =>
+    "return unit when the http client successfully returns a http response" in forAll { (internalId: String) =>
       val expectedUrl = url"$eclReturnsUrl/returns/$internalId"
 
       when(mockHttpClient.delete(ArgumentMatchers.eq(expectedUrl))(any()))
@@ -113,7 +114,7 @@ class ReturnsConnectorSpec extends SpecBase {
   }
 
   "upsertReturn" should {
-    "return the new or updated ecl return" in forAll { eclReturn: EclReturn =>
+    "return the new or updated ecl return" in forAll { (eclReturn: EclReturn) =>
       val expectedUrl = url"$eclReturnsUrl/returns"
 
       when(mockHttpClient.put(ArgumentMatchers.eq(expectedUrl))(any()))
@@ -149,7 +150,7 @@ class ReturnsConnectorSpec extends SpecBase {
   }
 
   "validateEclReturn" should {
-    "return None when the http client returns 200 OK and body is empty" in forAll { internalId: String =>
+    "return None when the http client returns 200 OK and body is empty" in forAll { (internalId: String) =>
       val expectedUrl = url"$eclReturnsUrl/returns/$internalId/validation-errors"
 
       when(mockHttpClient.get(ArgumentMatchers.eq(expectedUrl))(any()))

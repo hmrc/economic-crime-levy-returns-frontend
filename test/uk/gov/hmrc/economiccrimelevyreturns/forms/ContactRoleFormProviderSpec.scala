@@ -52,7 +52,7 @@ class ContactRoleFormProviderSpec extends StringFieldBehaviours {
 
     "fail to bind an invalid role" in forAll(
       stringsWithMaxLength(MinMaxValues.roleMaxLength).retryUntil(!_.matches(Regex.positionInCompanyRegex))
-    ) { invalidRole: String =>
+    ) { (invalidRole: String) =>
       val result: Form[String] = form.bind(Map("value" -> invalidRole))
 
       result.errors.map(_.message) should contain only "contactRole.error.invalid"

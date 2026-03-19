@@ -24,6 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.KeyValue
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.{EclEnrolment, Enrolment, QueryKnownFactsResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -34,7 +35,7 @@ class EnrolmentStoreProxyServiceSpec extends ServiceSpec {
 
   "getEclRegistrationDate" should {
     "return the ECL registration date from the query known facts response" in forAll {
-      eclRegistrationReference: String =>
+      (eclRegistrationReference: String) =>
         val queryKnownFactsResponse = QueryKnownFactsResponse(
           service = EclEnrolment.serviceName,
           enrolments = Seq(
@@ -54,7 +55,7 @@ class EnrolmentStoreProxyServiceSpec extends ServiceSpec {
     }
 
     "return InternalUnexpectedError if the ECL registration date could not be found in the enrolment" in forAll {
-      eclRegistrationReference: String =>
+      (eclRegistrationReference: String) =>
         val queryKnownFactsResponse = QueryKnownFactsResponse(
           service = EclEnrolment.serviceName,
           enrolments = Seq.empty

@@ -25,14 +25,14 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.errors.ErrorCode.errorCodes
 class ErrorCodeSpec extends SpecBase {
 
   "reads/writes" should {
-    "behave as expected" in forAll { error: ErrorCode =>
+    "behave as expected" in forAll { (error: ErrorCode) =>
       val json = Json.toJson(error)
       Json.fromJson[ErrorCode](json).asOpt shouldBe Some(error)
     }
 
     "return an error if invalid" in forAll(
       Arbitrary.arbitrary[String].retryUntil(!errorCodes.map(_.code).contains(_))
-    ) { text: String =>
+    ) { (text: String) =>
       Json.fromJson[ErrorCode](JsString(text)) shouldBe JsError()
     }
   }

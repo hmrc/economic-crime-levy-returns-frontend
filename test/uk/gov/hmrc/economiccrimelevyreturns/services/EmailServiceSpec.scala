@@ -25,6 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.email.{AmendReturnSubmittedPa
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.EmailSubmissionError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, GetCorrespondenceAddressDetails}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 

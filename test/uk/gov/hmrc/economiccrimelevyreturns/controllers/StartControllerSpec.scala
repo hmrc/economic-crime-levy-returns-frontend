@@ -17,7 +17,6 @@
 package uk.gov.hmrc.economiccrimelevyreturns.controllers
 
 import cats.data.EitherT
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import play.api.mvc.Result
@@ -29,6 +28,8 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EnrolmentStoreProxyService, ReturnsService, SessionService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AlreadySubmittedReturnView, ChooseReturnPeriodView, NoObligationForPeriodView, StartView}
+import org.mockito.Mockito.{reset, times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -282,7 +283,7 @@ class StartControllerSpec extends SpecBase {
     "redirect to Saved Responses page if there is a return url" in forAll { (eclReturn: EclReturn) =>
       new TestContext(eclReturn, periodKey) {
         when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.urlToReturnTo))(any()))
-          .thenReturn(EitherT.fromEither[Future](Right(Some(random[String]))))
+          .thenReturn(EitherT.fromEither[Future](Right(Some(arbitrary[String].sample.get))))
 
         when(mockSessionService.getOptional(any(), any(), ArgumentMatchers.eq(SessionKeys.periodKey))(any()))
           .thenReturn(EitherT.fromEither[Future](Right(Some("period-key"))))

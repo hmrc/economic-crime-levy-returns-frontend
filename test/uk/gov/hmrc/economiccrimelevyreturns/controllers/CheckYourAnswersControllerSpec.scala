@@ -32,6 +32,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.services.{EmailService, Registration
 import uk.gov.hmrc.economiccrimelevyreturns.viewmodels.checkanswers._
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.{AmendReturnPdfView, CheckYourAnswersView}
 import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 
@@ -157,7 +158,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
     }
 
     "return InternalServerError (500) when getReturnValidationErrors errors" in forAll {
-      validEclReturn: ValidEclReturn =>
+      (validEclReturn: ValidEclReturn) =>
         new TestContext(validEclReturn.eclReturn) {
           implicit val returnDataRequest: ReturnDataRequest[AnyContentAsEmpty.type] =
             ReturnDataRequest(
@@ -183,7 +184,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
         }
     }
 
-    "return InternalServerError (500) when periodKey is missing" in forAll { validEclReturn: ValidEclReturn =>
+    "return InternalServerError (500) when periodKey is missing" in forAll { (validEclReturn: ValidEclReturn) =>
       val eclReturn = validEclReturn.eclReturn.copy(returnType = Some(AmendReturn))
 
       new TestContext(eclReturn) {
@@ -448,7 +449,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
     }
 
     "return InternalServerError (500) when periodKey is missing for viewHtml" in forAll {
-      validEclReturn: ValidEclReturn =>
+      (validEclReturn: ValidEclReturn) =>
         val eclReturn = validEclReturn.eclReturn.copy(returnType = Some(AmendReturn))
 
         new TestContext(eclReturn) {

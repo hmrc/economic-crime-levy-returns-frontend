@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.test.FakeRequest
 import uk.gov.hmrc.economiccrimelevyreturns.base.ISpecBase
 import uk.gov.hmrc.economiccrimelevyreturns.behaviours.AuthorisedBehaviour
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import org.scalacheck.Arbitrary.arbitrary
 
 class NotableErrorISpec extends ISpecBase with AuthorisedBehaviour {
 
@@ -32,7 +32,7 @@ class NotableErrorISpec extends ISpecBase with AuthorisedBehaviour {
     "respond with 200 status and the answers are invalid HTML view" in {
       stubAuthorised()
 
-      val eclReturn = random[EclReturn]
+      val eclReturn = arbitrary[EclReturn].sample.get
 
       stubGetReturn(eclReturn)
       stubGetSessionEmpty()

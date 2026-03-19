@@ -27,6 +27,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.AuthorisedRequest
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn, FirstTimeReturn}
 import uk.gov.hmrc.economiccrimelevyreturns.{ValidEclReturn, ValidGetEclReturnSubmissionResponse}
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 
@@ -180,7 +181,7 @@ class ReturnsServiceSpec extends ServiceSpec {
   }
 
   "getReturn" should {
-    "return normally if success" in forAll { eclReturn: EclReturn =>
+    "return normally if success" in forAll { (eclReturn: EclReturn) =>
       val internalId = eclReturn.internalId
 
       when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
@@ -190,7 +191,7 @@ class ReturnsServiceSpec extends ServiceSpec {
       result shouldBe Right(Some(eclReturn))
     }
 
-    "return None if requested return cannot be found" in forAll { internalId: String =>
+    "return None if requested return cannot be found" in forAll { (internalId: String) =>
       val code = NOT_FOUND
 
       when(mockEclReturnsConnector.getReturn(ArgumentMatchers.eq(internalId))(any()))
@@ -219,7 +220,7 @@ class ReturnsServiceSpec extends ServiceSpec {
     }
 
     "getReturnValidationErrors" should {
-      "return normally if success" in forAll { internalId: String =>
+      "return normally if success" in forAll { (internalId: String) =>
         when(mockEclReturnsConnector.validateEclReturn(ArgumentMatchers.eq(internalId))(any()))
           .thenReturn(OptionT[Future, String](Future.successful(None)))
 
@@ -227,7 +228,7 @@ class ReturnsServiceSpec extends ServiceSpec {
         result shouldBe Right(None)
       }
 
-      "return validation error if there is one" in forAll { internalId: String =>
+      "return validation error if there is one" in forAll { (internalId: String) =>
         when(mockEclReturnsConnector.validateEclReturn(ArgumentMatchers.eq(internalId))(any()))
           .thenReturn(OptionT[Future, String](Future.successful(Some(internalId))))
 

@@ -185,7 +185,7 @@ class CheckYourAnswersController @Inject() (
                       email,
                       Some(band),
                       Some(amountDue),
-                      (amountDue > subscription.returnDetails.amountOfEclDutyLiable)
+                      amountDue > subscription.returnDetails.amountOfEclDutyLiable
                     )
                 )
               case _                                  =>
@@ -198,7 +198,7 @@ class CheckYourAnswersController @Inject() (
           case Right(email)    =>
             checkOptionalVal(request.eclReturn.calculatedLiability) match {
               case Right(calculatedLiability) =>
-                val session = {
+                val session     =
                   request.session.clearEclValues ++ response.chargeReference.fold(Seq.empty[(String, String)])(c =>
                     Seq(SessionKeys.chargeReference -> c)
                   ) ++ Seq(
@@ -210,7 +210,6 @@ class CheckYourAnswersController @Inject() (
                       calculatedLiability.amountDue.amount.toString(),
                     SessionKeys.returnType        -> Json.stringify(Json.toJson(request.eclReturn.returnType))
                   )
-                }
                 val sessionData = SessionData(request.internalId, session.data)
                 sessionService.upsert(sessionData)
 

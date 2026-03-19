@@ -27,6 +27,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.LiabilityCalculationError
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, EclReturn}
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 
@@ -52,7 +53,7 @@ class EclLiabilityServiceSpec extends SpecBase {
     }
 
     "return InternalUnexpectedError when the ECL return does not contain any of the required AP and/or AML answers" in forAll {
-      eclReturn: EclReturn =>
+      (eclReturn: EclReturn) =>
         val returnWithoutAp12Months = eclReturn.copy(
           relevantAp12Months = None
         )

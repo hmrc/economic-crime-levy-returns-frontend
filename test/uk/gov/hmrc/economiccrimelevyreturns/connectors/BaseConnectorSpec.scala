@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.connectors
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import play.api.http.Status.OK
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.economiccrimelevyreturns.base.SpecBase
 import uk.gov.hmrc.http.HttpResponse
+import org.scalacheck.Arbitrary.arbitrary
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -35,7 +35,7 @@ class BaseConnectorSpec extends SpecBase {
 
   class TestConnector extends BaseConnector {
     private def response(valid: Boolean) = {
-      val text = random[String]
+      val text = arbitrary[String].sample.get
       HttpResponse(
         OK,
         valid match {
@@ -62,13 +62,13 @@ class BaseConnectorSpec extends SpecBase {
     }
 
   "as" should {
-    "behave as expected" in forAll { valid: Boolean =>
+    "behave as expected" in forAll { (valid: Boolean) =>
       test(connector.as, valid)
     }
   }
 
   "asOption" should {
-    "behave as expected" in forAll { valid: Boolean =>
+    "behave as expected" in forAll { (valid: Boolean) =>
       test(connector.asOption, valid)
     }
   }

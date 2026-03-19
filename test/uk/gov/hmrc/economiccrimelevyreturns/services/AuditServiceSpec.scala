@@ -22,6 +22,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.ReturnType
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.AuditError
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 

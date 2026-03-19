@@ -23,6 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.ObligationData
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.EclAccountError
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 
@@ -34,7 +35,7 @@ class EclAccountServiceSpec extends ServiceSpec {
   )
 
   "retrieveObligationData" should {
-    "return normally if success" in forAll { obligationData: ObligationData =>
+    "return normally if success" in forAll { (obligationData: ObligationData) =>
       when(mockEclAccountConnector.getObligations()(any()))
         .thenReturn(OptionT[Future, ObligationData](Future.successful(Some(obligationData))))
 
@@ -43,7 +44,7 @@ class EclAccountServiceSpec extends ServiceSpec {
       result shouldBe Right(Some(obligationData))
     }
 
-    "return error if failure" in forAll { is5xxError: Boolean =>
+    "return error if failure" in forAll { (is5xxError: Boolean) =>
       val code = getErrorCode(is5xxError)
 
       when(mockEclAccountConnector.getObligations()(any()))

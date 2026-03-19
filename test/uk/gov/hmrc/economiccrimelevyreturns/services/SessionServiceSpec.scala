@@ -25,6 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.connectors.SessionDataConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.SessionError
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 
@@ -187,7 +188,7 @@ class SessionServiceSpec extends ServiceSpec {
   "delete" should {
     "delete the session with given id" in forAll(
       nonEmptyString
-    ) { id: String =>
+    ) { (id: String) =>
       when(mockSessionConnector.delete(ArgumentMatchers.eq(id))(any()))
         .thenReturn(Future.successful(()))
 

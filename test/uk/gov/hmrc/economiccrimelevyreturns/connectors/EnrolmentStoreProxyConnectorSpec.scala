@@ -28,6 +28,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import scala.util.{Failure, Try}
 import scala.concurrent.Future
+import org.mockito.Mockito.{reset, times, verify, when}
 
 class EnrolmentStoreProxyConnectorSpec extends SpecBase {
 

@@ -53,7 +53,7 @@ class ContactEmailFormProviderSpec extends StringFieldBehaviours {
 
     "fail to bind an invalid email address" in forAll(
       stringsWithMaxLength(MinMaxValues.emailMaxLength).retryUntil(!_.matches(Regex.emailRegex))
-    ) { invalidEmail: String =>
+    ) { (invalidEmail: String) =>
       val result: Form[String] = form.bind(Map("value" -> invalidEmail))
 
       result.errors.map(_.message) should contain("contactEmail.error.invalid")

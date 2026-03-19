@@ -5,7 +5,6 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns.base
 
-import com.danielasfregola.randomdatagenerator.RandomDataGenerator.random
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.Materializer
 import org.jsoup.Jsoup
@@ -26,6 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.controllers.routes
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.generators.Generators
 import uk.gov.hmrc.economiccrimelevyreturns.models.EclReturn
+import org.scalacheck.Arbitrary.arbitrary
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -149,7 +149,7 @@ abstract class ISpecBase
     testSetup: Option[(EclReturn, String) => EclReturn]
   ) = {
     val eclReturn = updateEclReturnValue(
-      random[EclReturn].copy(internalId = testInternalId),
+      arbitrary[EclReturn].sample.get.copy(internalId = testInternalId),
       value
     )
     setup(eclReturn, testSetup)
@@ -160,7 +160,7 @@ abstract class ISpecBase
     testSetup: Option[(EclReturn, String) => EclReturn]
   ) = {
     val eclReturn = clearEclReturnValue(
-      random[EclReturn].copy(internalId = testInternalId)
+      arbitrary[EclReturn].sample.get.copy(internalId = testInternalId)
     )
     setup(eclReturn, testSetup)
   }
