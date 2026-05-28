@@ -15,16 +15,14 @@
  *@
 
 @import uk.gov.hmrc.economiccrimelevyreturns.views.html.templates.Layout
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcCurrencyInput
 
 @this(
-        layout: Layout,
-        formHelper: FormWithCSRF,
-        govukErrorSummary: GovukErrorSummary,
-        govukInput: GovukInput,
-        govukButton: GovukButton,
-        govukDetails: GovukDetails,
-        hmrcCurrencyInput: HmrcCurrencyInput
+    layout: Layout,
+    formHelper: FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    govukInput: GovukInput,
+    govukButton: GovukButton,
+    govukDetails: GovukDetails
 )
 
 @(form: Form[BigDecimal], mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
@@ -59,14 +57,20 @@
     ))
 
     @formHelper(action = UkRevenueController.onSubmit(mode)) {
-        @hmrcCurrencyInput(CurrencyInput(
+        @govukInput(Input(
             id = "value",
             name = "value",
             value = form("value").value,
             classes = "govuk-input--width-10",
-            hint = Some(Hint(content = messages("ukRevenue.hint"))),
+            prefix = Some(PrefixOrSuffix(content = Text("£"))),
+            hint = Some(Hint(content = Text(messages("ukRevenue.hint")))),
             label = LabelViewModel(Text(messages("ukRevenue.h2"))).withSize(),
-            errorMessage = form("value").error.map(err => ErrorMessage(content = Text(messages(err.message, err.args: _*)), visuallyHiddenText = Some(messages("govukErrorMessage.visuallyHiddenText"))))
+            errorMessage = form("value").error.map(err =>
+                ErrorMessage(
+                    content = Text(messages(err.message, err.args: _*)),
+                    visuallyHiddenText = Some(messages("govukErrorMessage.visuallyHiddenText"))
+                )
+            )
         ))
 
         @govukButton(
