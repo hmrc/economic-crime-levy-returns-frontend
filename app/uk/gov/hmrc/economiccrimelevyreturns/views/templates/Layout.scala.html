@@ -17,6 +17,8 @@
 @import uk.gov.hmrc.economiccrimelevyreturns.config.AppConfig
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.{Banners, HmrcStandardPageParams, ServiceURLs, TemplateOverrides}
 @import views.html.helper.CSPNonce
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.{Cy, En}
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.userresearchbanner.UserResearchBanner
 
 
 @this(
@@ -33,7 +35,8 @@
     showBackLink: Boolean = true,
     timeout: Boolean = true,
     showSignOut: Boolean = true,
-    startAmendUrl: Option[String] = None
+    startAmendUrl: Option[String] = None,
+    showResearchBanner: Boolean = false
 )(contentBlock: Html)(implicit request: RequestHeader, messages: Messages)
 
 @topPageTitle = @{
@@ -93,6 +96,16 @@
     serviceURLs = ServiceURLs(
         serviceUrl = startServiceUrl,
         signOutUrl = Some(SignOutController.signOut().url)
+    ),
+    banners = Banners(
+        userResearchBanner =
+            if(showResearchBanner && appConfig.researchBannerEnabled)
+                Some(UserResearchBanner(
+                    language = if(messages.lang.code == "cy") Cy else En,
+                    url = if(messages.lang.code == "cy") appConfig.researchBannerCyUrl else appConfig.researchBannerUrl,
+                    hideCloseButton = true
+                ))
+            else None
     ),
     isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
     templateOverrides = TemplateOverrides(
