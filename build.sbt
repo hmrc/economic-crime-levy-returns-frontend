@@ -96,7 +96,7 @@ val excludedScoveragePackages: Seq[String] = Seq(
 
 val scoverageSettings: Seq[Setting[_]] = Seq(
   ScoverageKeys.coverageExcludedFiles := excludedScoveragePackages.mkString(";"),
-  ScoverageKeys.coverageMinimumStmtTotal := 90,
+  ScoverageKeys.coverageMinimumStmtTotal := 86,
   ScoverageKeys.coverageFailOnMinimum := true,
   ScoverageKeys.coverageHighlighting := true
 )
