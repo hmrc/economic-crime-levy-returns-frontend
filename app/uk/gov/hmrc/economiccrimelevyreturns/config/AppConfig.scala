@@ -54,4 +54,7 @@ class AppConfig @Inject() (configuration: Configuration, servicesConfig: Service
   val signInUrl: String                   = configuration.get[String]("urls.signIn")
   val signOutUrl: String                  = configuration.get[String]("urls.signOut")
   val timeout: Int                        = configuration.get[Int]("timeout-dialog.timeout")
+  val researchBannerEnabled: Boolean      = configuration.get[Boolean]("features.researchBannerEnabled")
+  val researchBannerUrl: String           = configuration.get[String]("urls.researchBanner")
+  val researchBannerCyUrl: String         = configuration.get[String]("urls.researchBannerCy")
 }
