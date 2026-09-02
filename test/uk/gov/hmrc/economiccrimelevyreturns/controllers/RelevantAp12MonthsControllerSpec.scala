@@ -32,6 +32,9 @@ import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
 import org.mockito.Mockito.{reset, times, verify, when}
+import play.api.Configuration
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.PreventReturnSubmissionAction
+import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
 
 import scala.concurrent.Future
 
@@ -48,11 +51,26 @@ class RelevantAp12MonthsControllerSpec extends SpecBase {
     override def cleanup(eclReturn: EclReturn): EclReturn = eclReturn
   }
 
+  val preventionConfiguration: Configuration =
+    Configuration.from(
+      Map(
+        "features.preventReturnSubmissionEnabled" -> false,
+        "features.preventedReturnTaxYears"        -> Seq("2026-2027")
+      )
+    )
+
+  val fakePreventReturnSubmissionAction =
+    new PreventReturnSubmissionAction(preventionConfiguration, appConfig) {
+      override protected def filter[A](request: ReturnDataRequest[A]): Future[Option[Result]] =
+        Future.successful(None)
+    }
+
   class TestContext(returnData: EclReturn) {
     val controller = new RelevantAp12MonthsController(
       mcc,
       fakeAuthorisedAction(returnData.internalId),
       fakeDataRetrievalAction(returnData),
+      fakePreventReturnSubmissionAction,
       mockEclReturnsService,
       mockEclLiabilityService,
       formProvider,

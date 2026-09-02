@@ -20,8 +20,8 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.economiccrimelevyreturns.cleanup.RelevantAp12MonthsDataCleanup
-import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, StoreUrlAction}
-import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits._
+import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.{AuthorisedAction, DataRetrievalAction, PreventReturnSubmissionAction, StoreUrlAction}
+import uk.gov.hmrc.economiccrimelevyreturns.forms.FormImplicits.*
 import uk.gov.hmrc.economiccrimelevyreturns.forms.RelevantAp12MonthsFormProvider
 import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CheckMode, EclReturn, Mode, NormalMode}
@@ -39,6 +39,7 @@ class RelevantAp12MonthsController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   authorise: AuthorisedAction,
   getReturnData: DataRetrievalAction,
+  preventReturnSubmission: PreventReturnSubmissionAction,
   eclReturnsService: ReturnsService,
   eclLiabilityService: EclCalculatorService,
   formProvider: RelevantAp12MonthsFormProvider,
@@ -53,30 +54,31 @@ class RelevantAp12MonthsController @Inject() (
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData andThen storeUrl) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (authorise andThen getReturnData andThen preventReturnSubmission andThen storeUrl) { implicit request =>
       Ok(view(form.prepare(request.eclReturn.relevantAp12Months), mode, request.startAmendUrl))
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (authorise andThen getReturnData).async { implicit request =>
-    implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
-    form
-      .bindFromRequest()
-      .fold(
-        formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
-        relevantAp12Months => {
-          val answerChanged = !request.eclReturn.relevantAp12Months.contains(relevantAp12Months)
-          val eclReturn     = dataCleanup.cleanup(request.eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
-          eclReturnsService
-            .upsertReturn(eclReturn)
-            .asResponseError
-            .foldF(
-              error => Future.successful(routeError(error)),
-              _ => navigateByMode(mode, relevantAp12Months, eclReturn, answerChanged)
-            )
-        }
-      )
-  }
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (authorise andThen getReturnData andThen preventReturnSubmission).async { implicit request =>
+      implicit val hc: HeaderCarrier = CorrelationIdHelper.getOrCreateCorrelationId(request)
+      form
+        .bindFromRequest()
+        .fold(
+          formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, request.startAmendUrl))),
+          relevantAp12Months => {
+            val answerChanged = !request.eclReturn.relevantAp12Months.contains(relevantAp12Months)
+            val eclReturn     = dataCleanup.cleanup(request.eclReturn.copy(relevantAp12Months = Some(relevantAp12Months)))
+            eclReturnsService
+              .upsertReturn(eclReturn)
+              .asResponseError
+              .foldF(
+                error => Future.successful(routeError(error)),
+                _ => navigateByMode(mode, relevantAp12Months, eclReturn, answerChanged)
+              )
+          }
+        )
+    }
 
   private def navigateByMode(mode: Mode, relevantAp12Months: Boolean, eclReturn: EclReturn, answerChanged: Boolean)(
     implicit request: Request[_]
