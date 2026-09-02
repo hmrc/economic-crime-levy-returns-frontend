@@ -45,8 +45,6 @@ class PreventReturnSubmissionAction @Inject() (
         preventionEnabled && preventedTaxYears.contains(taxYear)
       }
 
-    println(s"IS PREVENTED: $isPrevented")
-
     if (isPrevented) {
       Future.successful(Some(Redirect(appConfig.eclAccountUrl)))
     } else {
