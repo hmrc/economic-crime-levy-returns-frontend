@@ -17,6 +17,7 @@
 @import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Small
 @import uk.gov.hmrc.economiccrimelevyreturns.views.ViewUtils
 @import uk.gov.hmrc.economiccrimelevyreturns.views.html.templates.Layout
+@import uk.gov.hmrc.economiccrimelevyreturns.models.Band.*
 
 @this(
         layout: Layout,
@@ -26,37 +27,81 @@
         button: GovukButton
 )
 
-@(period: String, calculatedLiability: CalculatedLiability, accountingDetails: SummaryList, mode: Mode, startAmendUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
+@(period: String, calculatedLiability: CalculatedLiability, accountingDetails: SummaryList, mode: Mode, startAmendUrl: Option[String] = None, useNewBands: Boolean)(implicit request: Request[_], messages: Messages)
 
 @smallBandRange = @{
     if(!calculatedLiability.bands.apportioned) {
-        Text(messages("band.Small.defaultRange"))
+        if(useNewBands) {
+            Text(messages("band.noFee.defaultRange"))
+        } else {
+            Text(messages("band.Small.defaultRange"))
+        }
     } else {
         Text(messages("amountDue.band.range.bottom", ViewUtils.formatMoney(calculatedLiability.bands.small.to)))
     }
 }
 
-@mediumBandRange = @{
+@mediumBandRange(mediumBand: BandRange) = @{
     if(!calculatedLiability.bands.apportioned) {
         Text(messages("band.Medium.defaultRange"))
     } else {
-        Text(messages("amountDue.band.range", ViewUtils.formatMoney(calculatedLiability.bands.medium.from), ViewUtils.formatMoney(calculatedLiability.bands.medium.to)))
+        Text(messages("amountDue.band.range",ViewUtils.formatMoney(mediumBand.from),ViewUtils.formatMoney(mediumBand.to)))
     }
 }
 
-@largeBandRange = @{
+@largeBandRange(largeBand: BandRange) = @{
     if(!calculatedLiability.bands.apportioned) {
         Text(messages("band.Large.defaultRange"))
     } else {
-        Text(messages("amountDue.band.range", ViewUtils.formatMoney(calculatedLiability.bands.large.from), ViewUtils.formatMoney(calculatedLiability.bands.large.to)))
+        Text(messages("amountDue.band.range",ViewUtils.formatMoney(largeBand.from),ViewUtils.formatMoney(largeBand.to)))
     }
 }
 
-@veryLargeBandRange = @{
+@veryLargeBandRange(veryLargeBand: BandRange) = @{
     if(!calculatedLiability.bands.apportioned) {
         Text(messages("band.VeryLarge.defaultRange"))
     } else {
-        Text(messages("amountDue.band.range.top", ViewUtils.formatMoney(calculatedLiability.bands.veryLarge.from)))
+        Text(messages("amountDue.band.range.top",ViewUtils.formatMoney(veryLargeBand.from)))
+    }
+}
+
+@aBandRange(aBand: BandRange) = @{
+    if(!calculatedLiability.bands.apportioned) {
+        Text(messages("band.A.defaultRange"))
+    } else {
+        Text(messages("amountDue.band.range",ViewUtils.formatMoney(aBand.from),ViewUtils.formatMoney(aBand.to)))
+    }
+}
+
+@bBandRange(bBand: BandRange) = @{
+    if(!calculatedLiability.bands.apportioned) {
+        Text(messages("band.B.defaultRange"))
+    } else {
+        Text(messages("amountDue.band.range",ViewUtils.formatMoney(bBand.from),ViewUtils.formatMoney(bBand.to)))
+    }
+}
+
+@cBandRange(cBand: BandRange) = @{
+    if(!calculatedLiability.bands.apportioned) {
+        Text(messages("band.C.defaultRange"))
+    } else {
+        Text(messages("amountDue.band.range",ViewUtils.formatMoney(cBand.from),ViewUtils.formatMoney(cBand.to)))
+    }
+}
+
+@dBandRange(dBand: BandRange) = @{
+    if(!calculatedLiability.bands.apportioned) {
+        Text(messages("band.D.defaultRange"))
+    } else {
+        Text(messages("amountDue.band.range.top",ViewUtils.formatMoney(dBand.from)))
+    }
+}
+
+@amountDueDisplay = @{
+    if(calculatedLiability.calculatedBand == D && !calculatedLiability.amountDue.apportioned) {
+        messages("amountDue.band.d.amount")
+    } else {
+        ViewUtils.formatMoney(calculatedLiability.amountDue.amount)
     }
 }
 
@@ -65,36 +110,60 @@
         <h1 class="govuk-heading-l">@messages("amountDue.heading")</h1>
 
         @if(calculatedLiability.calculatedBand == Small) {
-            <p class="govuk-body">@messages("amountDue.nilReturn.p1", period)</p>
-            <p class="govuk-body">@messages("amountDue.nilReturn.p2")</p>
-            <p class="govuk-body">@messages("amountDue.nilReturn.p3")</p>
+            @if(useNewBands) {
+                <p class="govuk-body">@messages("amountDue.nilReturn.p1", period)</p>
+                <p class="govuk-body">@messages("amountDue.nilReturn.2026.p2")</p>
+                <p class="govuk-body">@messages("amountDue.nilReturn.p3")</p>
+            } else {
+                <p class="govuk-body">@messages("amountDue.nilReturn.p1", period)</p>
+                <p class="govuk-body">@messages("amountDue.nilReturn.p2")</p>
+                <p class="govuk-body">@messages("amountDue.nilReturn.p3")</p>
+            }
         } else {
-            <p class="govuk-body">@messages("amountDue.p1", ViewUtils.formatMoney(calculatedLiability.amountDue.amount), period)</p>
-            <p class="govuk-body">@messages("amountDue.p2", messages(s"band.${calculatedLiability.calculatedBand}"))</p>
+            @if(useNewBands) {
+                <p class="govuk-body">@messages("amountDue.2026.p1", amountDueDisplay, period)</p>
+                <p class="govuk-body">@messages("amountDue.2026.p2", messages(s"band.${calculatedLiability.calculatedBand}.label"))</p>
+            } else {
+                <p class="govuk-body">@messages("amountDue.p1", ViewUtils.formatMoney(calculatedLiability.amountDue.amount), period)</p>
+                <p class="govuk-body">@messages("amountDue.p2", messages(s"band.${calculatedLiability.calculatedBand}"))</p>
+            }
         }
+
 
         <h2 class="govuk-heading-m">@messages("amountDue.howWeWorkedThisOut")</h2>
 
-        <p class="govuk-body">@messages("amountDue.howWeWorkedThisOut.p1")</p>
+        @if(useNewBands) {
+            <p class="govuk-body">@messages("amountDue.howWeWorkedThisOut.2026.p1")</p>
 
-        <ul class="govuk-list govuk-list--bullet">
-            <li>@messages("amountDue.howWeWorkedThisOut.b1")</li>
-            <li>@messages("amountDue.howWeWorkedThisOut.b2")</li>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>@messages("amountDue.howWeWorkedThisOut.2026.b1")</li>
+                <li>@messages("amountDue.howWeWorkedThisOut.2026.b2")</li>
+                @if(calculatedLiability.calculatedBand != Small) {
+                    <li>@messages("amountDue.howWeWorkedThisOut.b3")</li>
+                }
+            </ul>
+        } else {
+            <p class="govuk-body">@messages("amountDue.howWeWorkedThisOut.p1")</p>
 
-            @if(calculatedLiability.calculatedBand != Small) {
-
-                <li>@messages("amountDue.howWeWorkedThisOut.b3")</li>
-
-            }
-
-        </ul>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>@messages("amountDue.howWeWorkedThisOut.b1")</li>
+                <li>@messages("amountDue.howWeWorkedThisOut.b2")</li>
+                @if(calculatedLiability.calculatedBand != Small) {
+                    <li>@messages("amountDue.howWeWorkedThisOut.b3")</li>
+                }
+            </ul>
+        }
 
         @summaryList(accountingDetails)
 
-        <h2 class="govuk-heading-m">@messages("amountDue.bands")</h2>
-
-        <p class="govuk-body">@messages("amountDue.bands.p1")</p>
-        <p class="govuk-body">@messages("amountDue.bands.p2")</p>
+        @if(useNewBands) {
+            <h2 class="govuk-heading-m">@messages("amountDue.2026.bands")</h2>
+            <p class="govuk-body">@messages("amountDue.2026.bands.p1")</p>
+        } else {
+            <h2 class="govuk-heading-m">@messages("amountDue.bands")</h2>
+            <p class="govuk-body">@messages("amountDue.bands.p1")</p>
+            <p class="govuk-body">@messages("amountDue.bands.p2")</p>
+        }
 
         @if(calculatedLiability.calculatedBand != Small && calculatedLiability.amountDue.apportioned == true) {
 
@@ -102,37 +171,89 @@
 
         }
 
-        @table(Table(
-            caption = Some(messages("amountDue.bands.caption")),
-            rows = Seq(
-              Seq(
-                TableRow(content = Text(messages("band.Small.label"))),
-                TableRow(content = smallBandRange),
-                TableRow(content = Text(messages("amountDue.band.small.amount")))
-              ),
-              Seq(
-                TableRow(content = Text(messages("band.Medium.label"))),
-                TableRow(content = mediumBandRange),
-                TableRow(content = Text(ViewUtils.formatMoney(calculatedLiability.bands.medium.amount)))
-              ),
-              Seq(
-                TableRow(content = Text(messages("band.Large.label"))),
-                TableRow(content = largeBandRange),
-                TableRow(content = Text(ViewUtils.formatMoney(calculatedLiability.bands.large.amount)))
-              ),
-              Seq(
-                TableRow(content = Text(messages("band.VeryLarge.label"))),
-                TableRow(content = veryLargeBandRange),
-                TableRow(content = Text(ViewUtils.formatMoney(calculatedLiability.bands.veryLarge.amount)))
-              )
-            ),
-            head = Some(Seq(
-              HeadCell(content = Text(messages("amountDue.bands.h1"))),
-              HeadCell(content = Text(messages("amountDue.bands.h2"))),
-              HeadCell(content = Text(messages("amountDue.bands.h3")))
-            )),
-            firstCellIsHeader = true
-        ))
+        @if(useNewBands) {
+            @for(
+                aBand <- calculatedLiability.bands.a;
+                bBand <- calculatedLiability.bands.b;
+                cBand <- calculatedLiability.bands.c;
+                dBand <- calculatedLiability.bands.d
+            ) {
+                @table(Table(
+                    caption = Some(messages("amountDue.bands.2026.caption")),
+                    rows = Seq(
+                        Seq(
+                            TableRow(content = Text(messages("band.noFee.label"))),
+                            TableRow(content = smallBandRange),
+                            TableRow(content = Text(messages("amountDue.band.small.amount")))
+                        ),
+                        Seq(
+                            TableRow(content = Text(messages("band.A.label"))),
+                            TableRow(content = aBandRange(aBand)),
+                            TableRow(content = Text(ViewUtils.formatMoney(aBand.amount)))
+                        ),
+                        Seq(
+                            TableRow(content = Text(messages("band.B.label"))),
+                            TableRow(content = bBandRange(bBand)),
+                            TableRow(content = Text(ViewUtils.formatMoney(bBand.amount)))
+                        ),
+                        Seq(
+                            TableRow(content = Text(messages("band.C.label"))),
+                            TableRow(content = cBandRange(cBand)),
+                            TableRow(content = Text(ViewUtils.formatMoney(cBand.amount)))
+                        ),
+                        Seq(
+                            TableRow(content = Text(messages("band.D.label"))),
+                            TableRow(content = dBandRange(dBand)),
+                            TableRow(content = Text(messages("amountDue.band.d.amount")))
+                        )
+                    ),
+                    head = Some(Seq(
+                        HeadCell(content = Text(messages("amountDue.bands.2026.h1"))),
+                        HeadCell(content = Text(messages("amountDue.bands.h2"))),
+                        HeadCell(content = Text(messages("amountDue.bands.h3")))
+                    )),
+                    firstCellIsHeader = true
+                ))
+            }
+        } else {
+            @for(
+                mediumBand <- calculatedLiability.bands.medium;
+                largeBand <- calculatedLiability.bands.large;
+                veryLargeBand <- calculatedLiability.bands.veryLarge
+            ) {
+                    @table(Table(
+                        caption = Some(messages("amountDue.bands.caption")),
+                        rows = Seq(
+                          Seq(
+                            TableRow(content = Text(messages("band.Small.label"))),
+                            TableRow(content = smallBandRange),
+                        TableRow(content = Text(messages("amountDue.band.small.amount")))
+                      ),
+                      Seq(
+                        TableRow(content = Text(messages("band.Medium.label"))),
+                        TableRow(content = mediumBandRange(mediumBand)),
+                        TableRow(content = Text(ViewUtils.formatMoney(mediumBand.amount)))
+                      ),
+                      Seq(
+                        TableRow(content = Text(messages("band.Large.label"))),
+                        TableRow(content = largeBandRange(largeBand)),
+                        TableRow(content = Text(ViewUtils.formatMoney(largeBand.amount)))
+                      ),
+                      Seq(
+                        TableRow(content = Text(messages("band.VeryLarge.label"))),
+                        TableRow(content = veryLargeBandRange(veryLargeBand)),
+                        TableRow(content = Text(ViewUtils.formatMoney(veryLargeBand.amount)))
+                      )
+                    ),
+                    head = Some(Seq(
+                      HeadCell(content = Text(messages("amountDue.bands.h1"))),
+                      HeadCell(content = Text(messages("amountDue.bands.h2"))),
+                      HeadCell(content = Text(messages("amountDue.bands.h3")))
+                    )),
+                    firstCellIsHeader = true
+                ))
+            }
+        }
 
         <h2 class="govuk-heading-m">@messages("amountDue.nextSteps")</h2>
 

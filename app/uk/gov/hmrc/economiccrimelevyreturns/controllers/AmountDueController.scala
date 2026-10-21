@@ -56,13 +56,16 @@ class AmountDueController @Inject() (
 
       (request.eclReturn.obligationDetails, request.eclReturn.calculatedLiability) match {
         case (Some(obligationDetails), Some(calculatedLiability)) =>
+          val year =
+            obligationDetails.inboundCorrespondenceFromDate.getYear
           Ok(
             view(
               ViewUtils.formatObligationPeriodYears(obligationDetails),
               calculatedLiability,
               accountingDetails,
               mode,
-              request.startAmendUrl
+              request.startAmendUrl,
+              year >= 2026
             )
           )
         case _                                                    => Redirect(routes.NotableErrorController.answersAreInvalid())
