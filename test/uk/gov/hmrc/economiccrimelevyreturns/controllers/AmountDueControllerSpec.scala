@@ -84,6 +84,8 @@ class AmountDueControllerSpec extends SpecBase {
 
           val result: Future[Result] = controller.onPageLoad(mode)(returnDataRequest)
 
+          val year = obligationDetails.inboundCorrespondenceFromDate.getYear
+
           val accountingDetails: SummaryList = SummaryListViewModel(
             rows = Seq(
               RelevantAp12MonthsSummary.row(returnDataRequest.eclReturn.relevantAp12Months),
@@ -99,7 +101,9 @@ class AmountDueControllerSpec extends SpecBase {
             ViewUtils.formatObligationPeriodYears(obligationDetails),
             calculatedLiability,
             accountingDetails,
-            mode
+            mode,
+            returnDataRequest.startAmendUrl,
+            year >= 2026
           )(fakeRequest, messages).toString
         }
     }
