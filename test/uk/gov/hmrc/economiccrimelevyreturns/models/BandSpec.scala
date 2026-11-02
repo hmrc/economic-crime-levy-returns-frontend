@@ -29,8 +29,17 @@ class BandSpec extends SpecBase {
       result shouldBe JsSuccess(band)
     }
 
+    "process new bands correctly" in {
+      val bands: Seq[Band] = Seq(Band.A, Band.B, Band.C, Band.D)
+      bands.foreach { band =>
+        val json = Json.toJson(band)
+        json                      shouldBe JsString(band.toString)
+        Json.fromJson[Band](json) shouldBe JsSuccess(band)
+      }
+    }
+
     "return an error if incorrect Json" in {
-      val s       = "A"
+      val s       = "Test"
       val result1 = Json.fromJson[Band](JsString(s))
       result1 shouldBe JsError(s"$s is not a valid Band")
 
