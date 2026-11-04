@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.economiccrimelevyreturns
 
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Gen
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.forms.mappings.{MinMaxValues, Regex}
 import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.Band.Medium
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.EclEnrolment
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import org.scalacheck.Arbitrary
-import io.github.martinhh.derived.scalacheck.{anyGivenArbitrary, deriveArbitrary}
+import io.github.martinhh.derived.scalacheck.anyGivenArbitrary
 
 import java.time.{Instant, LocalDate}
 import scala.math.BigDecimal.RoundingMode

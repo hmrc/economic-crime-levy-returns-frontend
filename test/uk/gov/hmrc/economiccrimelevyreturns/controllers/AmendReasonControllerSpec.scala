@@ -32,7 +32,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.{EclReturn, NormalMode, Oblig
 import uk.gov.hmrc.economiccrimelevyreturns.navigation.AmendReasonPageNavigator
 import uk.gov.hmrc.economiccrimelevyreturns.services.ReturnsService
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmendReasonView
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.when
 
 import java.time.LocalDate
 import scala.concurrent.Future

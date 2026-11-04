@@ -31,7 +31,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, Li
 import uk.gov.hmrc.economiccrimelevyreturns.models.{CalculatedLiability, CheckMode, EclReturn, Mode}
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.AmlRegulatedActivityView
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.when
 
 import scala.concurrent.Future
 
@@ -196,13 +196,6 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
             amlRegulatedActivityLength = Some(length)
           )
         ) {
-          val updatedReturn: EclReturn =
-            dataCleanup.cleanup(
-              baseReturn.copy(
-                carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy),
-                amlRegulatedActivityLength = Some(length)
-              )
-            )
 
           when(mockEclReturnsService.upsertReturn(any())(any()))
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))
@@ -233,13 +226,6 @@ class AmlRegulatedActivityControllerSpec extends SpecBase {
             amlRegulatedActivityLength = Some(length)
           )
         ) {
-          val updatedReturn: EclReturn =
-            dataCleanup.cleanup(
-              baseReturn.copy(
-                carriedOutAmlRegulatedActivityForFullFy = Some(carriedOutAmlRegulatedActivityForFullFy),
-                amlRegulatedActivityLength = Some(length)
-              )
-            )
 
           when(mockEclReturnsService.upsertReturn(any())(any()))
             .thenReturn(EitherT[Future, DataHandlingError, Unit](Future.successful(Right(()))))

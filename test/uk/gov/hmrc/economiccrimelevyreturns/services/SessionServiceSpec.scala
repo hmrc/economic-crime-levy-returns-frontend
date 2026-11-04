@@ -25,7 +25,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.connectors.SessionDataConnector
 import uk.gov.hmrc.economiccrimelevyreturns.models.SessionData
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.SessionError
 import uk.gov.hmrc.http.UpstreamErrorResponse
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.when
 
 import scala.concurrent.Future
 
