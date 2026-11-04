@@ -38,7 +38,7 @@ class CancelReturnAmendmentControllerSpec extends SpecBase {
   val formProvider: CancelReturnAmendmentFormProvider = new CancelReturnAmendmentFormProvider()
   val form: Form[Boolean]                             = formProvider()
 
-  def getExpectedValues(cancelReturnAmendment: Boolean, eclReturn: EclReturn): (String, Int) =
+  def getExpectedValues(cancelReturnAmendment: Boolean): (String, Int) =
     if (cancelReturnAmendment) {
       (appConfig.eclAccountUrl, 1)
     } else {
@@ -81,7 +81,7 @@ class CancelReturnAmendmentControllerSpec extends SpecBase {
           when(mockEclReturnsService.deleteReturn(anyString())(any()))
             .thenReturn(EitherT.fromEither[Future](Right(())))
 
-          val expected: (String, Int) = getExpectedValues(cancelReturnAmendment, eclReturn)
+          val expected: (String, Int) = getExpectedValues(cancelReturnAmendment)
 
           val result: Future[Result] =
             controller.onSubmit()(

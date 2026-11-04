@@ -24,7 +24,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.KeyValue
 import uk.gov.hmrc.economiccrimelevyreturns.models.eacd.{EclEnrolment, Enrolment, QueryKnownFactsResponse}
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.DataHandlingError
 import uk.gov.hmrc.http.UpstreamErrorResponse
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.when
 
 import java.time.LocalDate
 import scala.concurrent.Future

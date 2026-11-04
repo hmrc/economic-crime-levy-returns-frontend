@@ -31,7 +31,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.errors.{DataHandlingError, Li
 import uk.gov.hmrc.economiccrimelevyreturns.models._
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclCalculatorService, ReturnsService}
 import uk.gov.hmrc.economiccrimelevyreturns.views.html.RelevantAp12MonthsView
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.when
 import play.api.Configuration
 import uk.gov.hmrc.economiccrimelevyreturns.controllers.actions.PreventReturnSubmissionAction
 import uk.gov.hmrc.economiccrimelevyreturns.models.requests.ReturnDataRequest
