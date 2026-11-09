@@ -23,7 +23,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.generators.CachedArbitraries._
 import uk.gov.hmrc.economiccrimelevyreturns.models.ObligationData
 import uk.gov.hmrc.economiccrimelevyreturns.models.errors.EclAccountError
 import uk.gov.hmrc.http.UpstreamErrorResponse
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.when
 
 import scala.concurrent.Future
 

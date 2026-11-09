@@ -18,7 +18,7 @@ package uk.gov.hmrc.economiccrimelevyreturns.generators
 
 import org.scalacheck.{Arbitrary, Gen}
 import io.github.martinhh.derived.scalacheck.deriveArbitrary
-import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
+import uk.gov.hmrc.auth.core.EnrolmentIdentifier
 import scala.deriving.Mirror
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.economiccrimelevyreturns.EclTestData

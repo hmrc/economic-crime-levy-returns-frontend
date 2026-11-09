@@ -34,7 +34,7 @@ import uk.gov.hmrc.economiccrimelevyreturns.models.requests.{AuthorisedRequest, 
 import uk.gov.hmrc.economiccrimelevyreturns.services.{EclAccountService, ReturnsService, SessionService}
 import uk.gov.hmrc.http.HttpVerbs.GET
 import scala.concurrent.Future
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.when
 
 class DataRetrievalOrErrorActionSpec extends SpecBase {
 
