@@ -238,7 +238,7 @@ checkYourAnswers.contactEmail.label = Cyfeiriad e-bost
 checkYourAnswers.contactNumber.label = Rhif ffôn
 checkYourAnswers.amendReason.title = Rheswm dros ddiwygio
 checkYourAnswers.amendReason.label = Gwybodaeth ychwanegol
-checkYourAnswers.nowSend = Cyflwynwch eich datganiad nawr
+checkYourAnswers.nowSend = Cyflwyno’ch datganiad nawr
 checkYourAnswers.bySubmitting = Drwy gyflwyno’r datganiad hwn, rydych yn cadarnhau, hyd eithaf eich gwybodaeth, fod y manylion a roddwch yn gywir ac yn gyflawn.
 checkYourAnswers.confirmAndSend = Cadarnhau ac anfon
 checkYourAnswers.cancel = <a href="{0}" class="govuk-link">Canslo’r diwygiad hwn</a>
