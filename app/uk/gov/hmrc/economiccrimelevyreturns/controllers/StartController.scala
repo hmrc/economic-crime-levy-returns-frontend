@@ -103,6 +103,12 @@ class StartController @Inject() (
                   ViewUtils.formatObligationPeriodYears(obligationDetails),
                   None
                 )
+              ).withSession(
+                addToSession(
+                  Seq(
+                    SessionKeys.periodKey -> periodKey
+                  )
+                )
               )
           }
         case (_, None)                                   => Ok(noObligationForPeriodView())
